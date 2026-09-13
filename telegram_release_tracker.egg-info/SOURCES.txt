@@ -1,0 +1,10 @@
+pyproject.toml
+app/__init__.py
+app/config.py
+app/bot/__init__.py
+app/bot/main.py
+telegram_release_tracker.egg-info/PKG-INFO
+telegram_release_tracker.egg-info/SOURCES.txt
+telegram_release_tracker.egg-info/dependency_links.txt
+telegram_release_tracker.egg-info/requires.txt
+telegram_release_tracker.egg-info/top_level.txt

@@ -38,7 +38,9 @@ class MediaItem(Base):
 
     __tablename__ = "media_items"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid_mod.uuid4)
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(_uuid_mod.uuid4())
+    )
     media_type: Mapped[str]  # movie | tv | anime | game
     canonical_title_en: Mapped[Optional[str]]
     title_ru: Mapped[Optional[str]]

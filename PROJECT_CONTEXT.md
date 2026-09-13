@@ -61,8 +61,8 @@ project/
 - [DONE] Phase 0 — API research и proof-of-concept
 - [DONE] Phase 1 — Telegram bot skeleton + config
 - [DONE] Phase 2 — Database/schema
-- [TODO] Phase 3 — TMDb search + posters + RU/EN titles
-- [TODO] Phase 4 — Add/remove/list + notes
+- [DONE] Phase 3 — TMDb search + posters + RU/EN titles
+- [DONE] Phase 4 — Add/remove/list + notes
 - [TODO] Phase 5 — Notification rules + scheduler + event engine
 - [TODO] Phase 6 — Movie Digital release tracking
 - [TODO] Phase 7 — TV episode tracking
@@ -93,15 +93,26 @@ project/
 - Migration: 11f3f12cf425_initial_schema — full CREATE TABLE DDL for all 12 tables + indexes
 - Verified: `alembic upgrade head` → exit 0; `data/bot.db` contains all 12 real tables (media_items, tags, users, external_ids, media_aliases, notification_rules, release_events, sent_notifications, source_states, user_notes, user_watch_items, watch_item_tags) + alembic_version
 
+### Phase 3 (TMDb search)
+- Created: app/providers/__init__.py, app/providers/tmdb.py (async httpx client with timeout=30s; methods: search_movie, search_tv, get_movie_details, get_tv_details), tests/test_tmdb_search.py (manual test), launch_bot.py (dev convenience launcher using subprocess.Popen)
+- Updated: app/bot/main.py — added /search <query> handler (parses command, calls TMDbProvider for movies + TV, outputs top 5 results with RU titles and TMDb ids)
+- Verified: `/search Dune` in Telegram returned 5 movies + 5 TV series with RU titles (Дюна, Дюна: Часть вторая, etc.) and real TMDb ids (438631, 841, 693134, 1170608, 915935 for movies; 90228, 19566, 9156, 136216, 313586 for TV)
+
+### Phase 4 (watchlist + notes)
+- Created: app/services/__init__.py, app/services/watchlist.py (WatchlistService: add_watch_item, remove_watch_item, list_watch_items with pagination, get_media_item_by_external_id), app/services/notes.py (NotesService: create_or_update_note, get_note, list_notes, delete_note), tests/test_watchlist_notes.py (in-memory SQLite via StaticPool, no network)
+- Updated: app/bot/main.py — added /add <tmdb_id>, /remove <tmdb_id>, /watchlist, /note <tmdb_id> <текст>, /notes handlers + allowlist guard (empty list = dev mode). _resolve_media_item creates MediaItem + ExternalId from TMDb details.
+- Fixed: app/database/models.py — media_items.id default now returns str(uuid4) (was returning UUID object; SQLite could not bind it on INSERT)
+- Verified: `/add 841` → «✅ Добавлено: Dune»; `/watchlist` → list with `Dune (2021)`; `/note 841 Моя заметка` → «📝 Заметка для Dune: ...»; `/notes` → note listed; `/remove 841` → «🗑 Удалено из списка: Dune». tests/test_watchlist_notes.py passes (watchlist + notes CRUD).
+
 ## 6. CURRENT STATE
 
-Current phase: Phase 3 — TMDb search + posters + RU/EN titles (next)
+Current phase: Phase 5 — Notification rules + scheduler + event engine (next)
 
-Last successful step: Phase 2 complete — `alembic upgrade head` ran cleanly; `data/bot.db` contains all 12 tables.
+Last successful step: Phase 4 complete — `/add 841` → «✅ Добавлено: Dune»; `/watchlist`, `/note 841 ...`, `/notes`, `/remove 841` all verified in Telegram; tests/test_watchlist_notes.py passes.
 
-Currently doing: Nothing in progress. Next action is to begin Phase 3 (TMDb search provider).
+Currently doing: Nothing in progress. Next action is to begin Phase 5 (notification rules + adaptive scheduler + event/state engine).
 
-Waiting for user: Confirm whether to proceed directly to Phase 3 or make a Git commit for Phase 2 first.
+Waiting for user: Confirm whether to proceed directly to Phase 5.
 
 ## 7. IMPORTANT DECISIONS
 
@@ -115,6 +126,8 @@ Waiting for user: Confirm whether to proceed directly to Phase 3 or make a Git c
 - KinoPub: основной источник для Russian audio tracks и series availability.
 - KinoPub использует OAuth device flow: CLIENT_ID + CLIENT_SECRET → GetDeviceCode → user enters code on website → IsAuthenticated=true → AccessToken + RefreshToken. Processors: Auth, User, References, Devices, VideoContent, Bookmarks.
 - aiogram 3.x используется для Telegram bot (long polling, async).
+- media_items.id default возвращает str(uuid4) (не UUID-объект), иначе SQLite не может биндить тип UUID при INSERT.
+- Allowlist guard: пустой ALLOWED_TELEGRAM_USER_IDS = dev-режим (все пропускаем); непустой список = только перечисленные telegram_user_id.
 
 ## 8. THINGS WE TRIED AND REJECTED
 
@@ -204,7 +217,12 @@ Tables:
 
 ## 12. TEST STATUS
 
-(ещё нет тестов — Phase 15+)
+tests/test_watchlist_notes.py (in-memory SQLite via StaticPool, no network):
+- test_add_remove_watch_item: pass (add → duplicate returns None; list total==1; remove True then False)
+- test_notes_crud: pass (create/update/get/list/delete notes)
+Run: `.venv\Scripts\python.exe -m tests.test_watchlist_notes` → `watchlist + notes tests passed`
+
+Note: pytest is not yet installed in .venv (Phase 15 adds the real suite).
 
 ## 13. ENVIRONMENT
 
@@ -238,16 +256,17 @@ docker run --env-file .env -v $(pwd)/data:/app/data telegram-bot
 
 ## 15. NEXT STEPS
 
-Phase 3 (TMDb search + posters + RU/EN titles):
-1. Create `app/providers/__init__.py` and `app/providers/tmdb.py` — TMDbProvider with async httpx client.
-2. Implement `/search <query>` command handler in bot: call TMDbProvider.search(), return results with poster, RU/EN title, year, type.
-3. Normalize search results into a domain model (MediaItemSearchResult) with id, media_type, canonical_title_en, title_ru, year, description, poster_url.
-4. Verify: run bot, send `/search Dune`, confirm results appear with posters and titles.
+Phase 5 (Notification rules + scheduler + event engine):
+1. Define domain events + state comparison (old vs new → DomainEvent) in app/domain/.
+2. Add notification_rules CRUD wired to /watchlist item cards (which events the user cares about).
+3. Add adaptive scheduler (APScheduler) that polls providers at varying intervals and feeds the event engine.
+4. Wire sent_notifications dedup by stable event fingerprint before sending Telegram messages.
+5. Verify: run bot, confirm a state change produces exactly one notification (no duplicates).
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2025-09-13 (Phase 2 complete)
+Last checkpoint: 2025-09-13 (Phase 4 complete)
 
-Current phase: Phase 2 → Phase 3 transition
-Last completed action: `alembic upgrade head` ran cleanly; all 12 tables created in data/bot.db
-Next exact action: Begin Phase 3 — TMDb search provider (search by RU/EN titles, posters, alternative titles)
+Current phase: Phase 4 → Phase 5 transition
+Last completed action: `/add 841` → «✅ Добавлено: Dune»; `/watchlist`, `/note 841 ...`, `/notes`, `/remove 841` verified in Telegram; tests/test_watchlist_notes.py passes
+Next exact action: Begin Phase 5 — notification rules + adaptive scheduler + event/state engine
