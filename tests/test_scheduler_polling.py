@@ -16,12 +16,12 @@ class FakeProvider:
     def __init__(self):
         self.calls = 0
 
-    async def get_movie_details(self, movie_id):
+    async def get_movie_release_dates(self, movie_id):
         self.calls += 1
         if self.calls == 1:
-            return {}  # first poll: no date yet (baseline empty)
+            return []  # first poll: no digital date yet (baseline empty)
         else:
-            return {"release_date": "2026-09-10"}
+            return [{"iso_3166_1": "US", "release_dates": [{"type": 4, "release_date": "2026-09-10T00:00:00.000Z"}]}]
 
 
 def _make_session():

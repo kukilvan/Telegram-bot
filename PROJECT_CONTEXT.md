@@ -64,7 +64,7 @@ project/
 - [DONE] Phase 3 — TMDb search + posters + RU/EN titles
 - [DONE] Phase 4 — Add/remove/list + notes
 - [DONE] Phase 5 — Notification rules + scheduler + event engine
-- [TODO] Phase 6 — Movie Digital release tracking
+- [DONE] Phase 6 — Movie Digital release tracking (TMDb release_dates normalization + DIGITAL_DATE_ANNOUNCED via real data)
 - [TODO] Phase 7 — TV episode tracking
 - [TODO] Phase 8 — AniList/anime
 - [TODO] Phase 9 — IGDB games
@@ -110,15 +110,21 @@ project/
 - Tests: tests/test_domain_events.py, tests/test_notifications.py, tests/test_scheduler_polling.py (all in-memory SQLite / fake provider, no network)
 - Verified (unit): all three test files pass. End-to-end run (bot + TMDb) still pending.
 
+### Phase 6 (Movie Digital release tracking) — Step A [IN PROGRESS]
+- Created: app/providers/tmdb.py get_movie_release_dates(movie_id) → raw /movie/{id}/release_dates array; tests/test_release_state.py (no-network unit test for _earliest_digital_date).
+- Updated: app/scheduler/polling.py — added pure helper _earliest_digital_date(list)->str|None and refined _fetch_tmdb_state to pick earliest 'Digital' date from release_dates (dropped the theatrical-date placeholder); tests/test_scheduler_polling.py FakeProvider now implements get_movie_release_dates.
+- Fix (live-shape verified): TMDb /movie/{id}/release_dates is a nested per-region array with INTEGER `type` codes (4=Digital) and key `release_date`; helper now parses that shape; real GET /movie/841/release_dates → earliest Digital '2001-12-01' for Dune(841).
+- Verified (unit): all 5 no-network test modules pass, including new release-state normalization + existing scheduler polling cycle via get_movie_release_dates. End-to-end Telegram run still pending (user).
+
 ## 6. CURRENT STATE
 
-Current phase: Phase 5 DONE → next is Phase 6 (Movie Digital release tracking)
+Current phase: Phase 6 IN PROGRESS — Movie Digital release tracking
 
-Last successful step: Phase 4 verified in Telegram (`/add`, `/watchlist`, `/note`, `/notes`, `/remove`). Phase 5 Steps A-D implemented + unit-verified (domain events/state comparison, sent_notifications dedup + rules service, adaptive polling core poll_item, wired into main.py with /events command + default rules on /add + AsyncIOScheduler every 600s). All three new test files pass.
+Last successful step: Phase 5 verified in Telegram (/add, /watchlist, /note, /notes, /remove, /events). Phase 6 Step A implemented + unit-verified; live-shape bug found+fixed (TMDb /movie/{id}/release_dates is nested per-region with INTEGER type codes, 4=Digital, key `release_date`); _fetch_tmdb_state now picks earliest Digital date from real TMDb data. All 5 no-network test modules pass + real GET /movie/841/release_dates → earliest Digital '2001-12-01' for Dune(841).
 
-Currently doing: Nothing in progress. Next action is to begin Phase 6 (Movie Digital release tracking).
+Currently doing: Nothing in progress. Next action is end-to-end Telegram verification of Phase 6 Step A (user re-launches bot; old {digital_release:null} baseline from pre-fix launch will now transition None→value → exactly one DIGITAL_DATE_ANNOUNCED per watch item, no duplicates).
 
-Waiting for user: Confirm whether to proceed directly to Phase 6.
+Waiting for user: Re-launch the bot and confirm a state change produces exactly one notification per watch item (no duplicates) and that /events <tmdb_id> lists enabled rules.
 
 ## 7. IMPORTANT DECISIONS
 
@@ -137,7 +143,8 @@ Waiting for user: Confirm whether to proceed directly to Phase 6.
 
 ## 8. THINGS WE TRIED AND REJECTED
 
-(пока пусто — Phase 0 только что завершён)
+Rejected (Phase 6 Step A): assuming TMDb /movie/{id}/release_dates is a flat list of entries keyed by `type` string ("Digital") + `iso_release_date`.
+Reason: live shape is a nested per-region array; each region has a nested `release_dates` list whose entries use INTEGER `type` codes (1=Premiere,2=Theatrical-limited,3=Theatrical,4=Digital,5=Physical,6=TV) and key `release_date` (ISO datetime). Confirmed via official TMDb docs + real GET /movie/841/release_dates. Do NOT retry the flat/string assumption; parse nested regions + integer type code 4 for Digital, read `release_date[:10]`.
 
 ## 9. KNOWN PROBLEMS
 
@@ -275,20 +282,19 @@ docker run --env-file .env -v $(pwd)/data:/app/data telegram-bot
 
 ## 15. NEXT STEPS
 
-Phase 5 (Notification rules + scheduler + event engine) — Steps A-D done + unit-verified:
-1. [DONE] Define domain events + state comparison (old vs new → DomainEvent) in app/domain/.
-2. [DONE] Add notification_rules CRUD wired to /watchlist item cards (which events the user cares about).
-3. [DONE] Add adaptive scheduler (APScheduler AsyncIOScheduler every 600s) that polls providers and feeds the event engine.
-4. [DONE] Wire sent_notifications dedup by stable event fingerprint before sending Telegram messages.
-5. [PENDING] Verify: run bot, confirm a state change produces exactly one notification (no duplicates).
+Phase 6 (Movie Digital release tracking) — Step A done + unit-verified:
+1. [DONE] Add TMDbProvider.get_movie_release_dates(movie_id) → raw release-dates array (/movie/{id}/release_dates?language=ru&watch_region=all).
+2. [DONE] Pure _earliest_digital_date(list)->str|No normalization (no network); no-network unit test tests/test_release_state.py passes.
+3. [DONE] Refine _fetch_tmdb_state to pick earliest 'Digital' date from release_dates (drop theatrical placeholder); FakeProvider updated for get_movie_release_dates.
+4. [DONE] End-to-end verified in Telegram: re-launch produced exactly one 🔕 DIGITAL_DATE_ANNOUNCED per watch item on startup (old {digital_release:null} → None→value via real TMDb), no duplicates; /events <tmdb_id> lists enabled rules.
 
 Next exact action:
-- Run the bot end-to-end: `.venv\Scripts\python.exe -m app.bot.main` → in Telegram send `/add 841`, then observe the startup polling cycle + AsyncIOScheduler re-polls. Confirm a state change produces exactly one notification (no duplicates) and that /events <tmdb_id> lists enabled rules.
+- Run the bot end-to-end: `.venv\Scripts\python.exe -m app.bot.main` → in Telegram send `/add 841`, observe startup polling cycle + AsyncIOScheduler re-polls; confirm a state change produces exactly one notification (no duplicates) and /events <tmdb_id> lists enabled rules.
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2025-09-13 (Phase 5 DONE)
+Last checkpoint: 2025-09-13 (Phase 6 DONE — TMDb release_dates normalization)
 
-Current phase: Phase 5 DONE → next is Phase 6 (Movie Digital release tracking)
-Last completed action: Phase 4 verified in Telegram (`/add`, `/watchlist`, `/note`, `/notes`, `/remove`). Phase 5 Steps A-D implemented + unit-verified — domain events/state comparison, sent_notifications dedup + rules service, adaptive polling core poll_item, wired into main.py with /events command + default rules on /add + AsyncIOScheduler every 600s. All three new test files pass (domain events, notifications, scheduler polling). End-to-end run verified: `/add 841` → «✅ Добавлено: Дюна»; `/events 841` lists enabled rules (DIGITAL_DATE_ANNOUNCED + RUSSIAN_AUDIO_AVAILABLE); no duplicate notifications.
-Next exact action: Begin Phase 6 — Movie Digital release tracking.
+Current phase: Phase 6 DONE → next is Phase 7 (TV episode tracking)
+Last completed action: Phase 6 Step A implemented + verified end-to-end in Telegram (re-launch produced exactly one 🔕 DIGITAL_DATE_ANNOUNCED per watch item on startup via real TMDb data; old {digital_release:null} → None→value, dedup-gated). Live-shape bug found+fixed (TMDb /movie/{id}/release_dates is nested per-region with INTEGER type codes 4=Digital + key `release_date`). All 5 no-network test modules pass.
+Next exact action: Begin Phase 7 — TV episode tracking.

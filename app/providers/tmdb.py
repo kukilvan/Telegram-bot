@@ -91,3 +91,24 @@ class TMDbProvider:
             logging.error("TMDb get_tv_details HTTP %s", resp.status_code)
             return None
         return resp.json()
+
+    async def get_movie_release_dates(self, movie_id: int) -> list[dict]:
+        """Return raw TMDb release dates for a movie (per-region).
+
+        Endpoint: GET /movie/{id}/release_dates?language=ru&watch_region=all
+        Each item has keys: region, type ("Digital"|"Physical"|"Theatrical"),
+        iso_release_date, date.
+        """
+        params = {
+            "api_key": self._api_key,
+            "language": "ru",
+            "watch_region": "all",
+        }
+        resp = await self._client.get(
+            f"/movie/{movie_id}/release_dates", params=params
+        )
+        if resp.status_code != 200:
+            logging.error("TMDb get_movie_release_dates HTTP %s", resp.status_code)
+            return []
+        data = resp.json()
+        return data.get("results", [])

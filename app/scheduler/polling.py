@@ -43,11 +43,32 @@ def _store_state(session: Session, media_item_id: str, source_name: str, state: 
     session.commit()
 
 
-async def _fetch_tmdb_state(session: Session, provider, item: MediaItem) -> dict:
-    """Fetch current normalized TMDb state for a movie item.
+# TMDb movie release_dates `type` codes (official):
+#   1=Premiere, 2=Theatrical(limited), 3=Theatrical, 4=Digital, 5=Physical, 6=TV
+_DIGITAL_RELEASE_TYPE = 4
 
-    Placeholder normalization (Phase 6 refines digital release detection).
-    Returns {} when the item has no TMDb external id or details are missing.
+
+def _earliest_digital_date(regions: list[dict]) -> str | None:
+    """Return the earliest 'Digital' (type 4) release date across regions.
+
+    TMDb /movie/{id}/release_dates returns a nested per-region structure; each
+    region has `release_dates` entries with integer `type` codes and an ISO
+    datetime string in `release_date`. We pick the min Digital date.
+    """
+    digital = [
+        rd.get("release_date")[:10]
+        for r in regions or []
+        for rd in (r.get("release_dates") or [])
+        if rd.get("type") == _DIGITAL_RELEASE_TYPE and rd.get("release_date")
+    ]
+    return min(digital) if digital else None
+
+
+async def _fetch_tmdb_state(session: Session, provider, item: MediaItem) -> dict:
+    """Fetch current normalized TMDb state for a movie item (Phase 6).
+
+    Uses /movie/{id}/release_dates to pick the earliest 'Digital' release date;
+    returns {} when the item has no TMDb external id or details are missing.
     """
     ext = session.execute(
         select(ExternalId).where(
@@ -57,11 +78,8 @@ async def _fetch_tmdb_state(session: Session, provider, item: MediaItem) -> dict
     ).scalar_one_or_none()
     if ext is None:
         return {}
-    details = await provider.get_movie_details(int(ext.external_id))
-    if not details:
-        return {}
-    rd = details.get("release_date")
-    return {"digital_release": rd}
+    release_dates = await provider.get_movie_release_dates(int(ext.external_id))
+    return {"digital_release": _earliest_digital_date(release_dates)}
 
 
 async def poll_item(session: Session, provider, item: MediaItem, user_id: int):
