@@ -308,9 +308,14 @@ async def main() -> None:
                         if u is None:
                             continue
                         title = item.canonical_title_en or "item"
+                        date = ev.payload.get("date")
+                        if date:
+                            text = f"\U0001F514 {ev.event_type} \u2192 {title} ({date})"
+                        else:
+                            text = f"\U0001F514 {ev.event_type} \u2192 {title}"
                         await bot.send_message(
                             chat_id=u.telegram_user_id,
-                            text=f"\U0001F514 {ev.event_type} \u2192 {title}",
+                            text=text,
                         )
 
         # Phase 5: run one polling cycle at startup + schedule adaptive re-polls.
