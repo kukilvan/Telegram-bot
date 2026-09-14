@@ -122,9 +122,9 @@ Current phase: Phase 6 IN PROGRESS — Movie Digital release tracking
 
 Last successful step: Phase 5 verified in Telegram (/add, /watchlist, /note, /notes, /remove, /events). Phase 6 Step A implemented + unit-verified; live-shape bug found+fixed (TMDb /movie/{id}/release_dates is nested per-region with INTEGER type codes, 4=Digital, key `release_date`); _fetch_tmdb_state now picks earliest Digital date from real TMDb data. All 5 no-network test modules pass + real GET /movie/841/release_dates → earliest Digital '2001-12-01' for Dune(841).
 
-Currently doing: Nothing in progress. Next action is end-to-end Telegram verification of Phase 6 Step A (user re-launches bot; old {digital_release:null} baseline from pre-fix launch will now transition None→value → exactly one DIGITAL_DATE_ANNOUNCED per watch item, no duplicates).
+Currently doing: Nothing in progress. Phase 6 verified end-to-end in Telegram.
 
-Waiting for user: Re-launch the bot and confirm a state change produces exactly one notification per watch item (no duplicates) and that /events <tmdb_id> lists enabled rules.
+NEW FEATURE (planned, not yet implemented): "Already released" confirmation on add — when user adds ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed, the bot should show a notification about current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
 
 ## 7. IMPORTANT DECISIONS
 
@@ -282,14 +282,51 @@ docker run --env-file .env -v $(pwd)/data:/app/data telegram-bot
 
 ## 15. NEXT STEPS
 
-Phase 6 (Movie Digital release tracking) — Step A done + unit-verified:
+Phase 6 (Movie Digital release tracking) — DONE:
 1. [DONE] Add TMDbProvider.get_movie_release_dates(movie_id) → raw release-dates array (/movie/{id}/release_dates?language=ru&watch_region=all).
 2. [DONE] Pure _earliest_digital_date(list)->str|No normalization (no network); no-network unit test tests/test_release_state.py passes.
 3. [DONE] Refine _fetch_tmdb_state to pick earliest 'Digital' date from release_dates (drop theatrical placeholder); FakeProvider updated for get_movie_release_dates.
 4. [DONE] End-to-end verified in Telegram: re-launch produced exactly one 🔕 DIGITAL_DATE_ANNOUNCED per watch item on startup (old {digital_release:null} → None→value via real TMDb), no duplicates; /events <tmdb_id> lists enabled rules.
 
+NEW FEATURE (planned, not yet implemented): "Already released" confirmation on add — when user adds ANY item that already has known release dates or is fully out/completed, show notification about current state + ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
+
+Details:
+- Movies/Games (already released): show "Фильм/игра уже вышел" + ask add to watchlist? yes/no
+- TV/Anime (partial-season): detect all episodes of current season are out → notification "Все серии сезона N уже вышли" + ask whether to track
+- Completed series/anime: same flow as movies/games — show completion + ask whether to track (no special exception)
+- Pre-check before storing baseline; if already tracked → show state summary + ask keep/stop tracking
+
+Files this touches:
+- app/bot/main.py — /add handler pre-check
+- app/domain/events.py — new event types for TV/anime season-completeness
+- app/scheduler/polling.py — extend _fetch_tmdb_state with per-season episode counts
+- app/services/watchlist.py — confirmation flow (ask if not tracked; show state summary if already tracked)
+
 Next exact action:
-- Run the bot end-to-end: `.venv\Scripts\python.exe -m app.bot.main` → in Telegram send `/add 841`, observe startup polling cycle + AsyncIOScheduler re-polls; confirm a state change produces exactly one notification (no duplicates) and /events <tmdb_id> lists enabled rules.
+- Begin Phase 7 — TV episode tracking.
+
+### PHASE 7 ACTION PLAN (TV Episode Tracking) — detailed steps
+
+Goal: Track TV series episodes: new season announcements, per-season episode counts, Russian audio availability for new seasons. Avoid duplicate notifications when metadata updates but no new episode appears.
+
+Steps:
+1. TMDb TV details extension — extend get_tv_details / _fetch_tmdb_state to return latest season number, total episodes per season, air dates per episode (TMDb /tv/{id}/seasons or /tv/{id} with with_seasons=true)
+2. Normalized state for TV — add fields: latest_season, total_episodes_current_season, episodes_aired_current_season, rus_audio_latest_season; detect "all episodes of season N are out" vs "not all yet"
+3. New event types — NEW_SEASON_ANNOUNCED (new season announced), ALL_EPISODES_OUT (all episodes of a season have aired), SERIES_COMPLETED (series has completed flag, no more episodes)
+4. compare_states extension — detect transitions: old state has no latest_season → new state has it; old state has fewer episodes → new state has more (new episode aired); wire into existing dedup + enabled-rule gate
+5. Tests — in-memory SQLite unit tests for TV state comparison, NEW_SEASON_ANNOUNCED, ALL_EPISODES_OUT detection; no-network fake provider with real TMDb shape
+6. End-to-end verify — add a TV series in Telegram → confirm "all episodes out" confirmation dialog (new feature) or silent baseline-store if already tracked; confirm NEW_SEASON_ANNOUNCED fires exactly once per real new season
+
+Verification criteria:
+- /add <tv_tmdb_id> for an already-completed season shows the partial-season confirmation
+- NEW_SEASON_ANNOUNCED fires exactly once per real new season (no duplicates)
+- No false positives: metadata update without new episode → no event
+
+## 15b. PROJECT MAINTENANCE RULES
+
+All project data, plans, decisions, and state are updated and appended ONLY in this file (PROJECT_CONTEXT.md). No separate PLAN.md or other planning files should be created. If a new plan/decision/state needs to be recorded, it goes into this file immediately.
+
+This rule exists because: the project is small enough that one well-maintained context file is sufficient; splitting across multiple files risks confusion when reading PROJECT_CONTEXT.md but missing PLAN.md or other files.
 
 ## 16. LAST CHECKPOINT
 
