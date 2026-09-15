@@ -65,7 +65,8 @@ project/
 - [DONE] Phase 4 — Add/remove/list + notes
 - [DONE] Phase 5 — Notification rules + scheduler + event engine
 - [DONE] Phase 6 — Movie Digital release tracking (TMDb release_dates normalization + DIGITAL_DATE_ANNOUNCED via real data)
-- [TODO] Phase 7 — TV episode tracking
+- [DONE] Phase 7 — TV series episodes
+- [TODO] Phase 7.5 — Optimization of TMDb API calls (rate limit, adaptive intervals, request staggering)
 - [TODO] Phase 8 — AniList/anime
 - [TODO] Phase 9 — IGDB games
 - [TODO] Phase 10 — Steam Store
@@ -116,15 +117,29 @@ project/
 - Fix (live-shape verified): TMDb /movie/{id}/release_dates is a nested per-region array with INTEGER `type` codes (4=Digital) and key `release_date`; helper now parses that shape; real GET /movie/841/release_dates → earliest Digital '2001-12-01' for Dune(841).
 - Verified (unit): all 5 no-network test modules pass, including new release-state normalization + existing scheduler polling cycle via get_movie_release_dates. End-to-end Telegram run still pending (user).
 
+### Phase 7 (TV series episodes) — DONE
+- Created/changed: app/providers/tmdb.py `get_tv_seasons(tv_id)` (GET /tv/{id}, season metadata only) + `get_tv_season_episodes(tv_id, n)` (GET /tv/{id}/season/{n} → episode air dates); app/scheduler/polling.py `_tv_state_from_seasons(seasons)` pure normalizer (latest_season, total_episodes_current_season, episodes_aired_current_season) + TV/anime branch in `_fetch_tmdb_state` (two calls per poll: seasons metadata + latest-season episodes); app/domain/events.py NEW_SEASON_ANNOUNCED and ALL_EPISODES_OUT events with per-season payload {"season": N}, fingerprint now includes payload → per-season re-detection possible, identical payloads still dedup; app/bot/main.py — /add creates default rules by media type (tv → NEW_SEASON_ANNOUNCED + ALL_EPISODES_OUT, otherwise DIGITAL_DATE_ANNOUNCED + RUSSIAN_AUDIO_AVAILABLE), notification text renders season for TV events («📺 … → title, сезон N»); tests/test_scheduler_polling.py — SequenceTVProvider fake mirroring the real two-call TMDb flow + 4 new TV tests.
+- Bugs found+fixed this step (from previous agent's partial work): (1) polling called provider.get_tv_sections() but TMDbProvider only had get_tv_seasons → potential AttributeError on live TV polling; unified to get_tv_seasons (+ helper renamed _tv_state_from_seasons, log typo); (2) test asserted state key "total_episodes_current_session" instead of "...season" → failing unit test.
+- Important live discovery: TMDb show-level endpoint (/tv/{id}) does NOT return the episodes array even with with_seasons/append_to_response — only season metadata with episode_count. Episode air dates come only from /tv/{id}/season/{n}. Provider reflects this (two calls per poll for TV items).
+- Verified (unit): all 5 no-network test modules pass. Verified (live, real TMDb): _fetch_tmdb_state for The Last of Us (100088) → {'latest_season': 2, 'total_episodes_current_season': 7, 'episodes_aired_current_season': 7}. Verified (E2E Telegram by user): /search Silo → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification (silent baseline add on first poll — as designed). Committed as 5587645.
+
 ## 6. CURRENT STATE
 
-Current phase: Phase 6 IN PROGRESS — Movie Digital release tracking
+Current phase: Phase 7 DONE — TV series episodes (committed as 5587645; E2E verified by user in Telegram)
 
-Last successful step: Phase 5 verified in Telegram (/add, /watchlist, /note, /notes, /remove, /events). Phase 6 Step A implemented + unit-verified; live-shape bug found+fixed (TMDb /movie/{id}/release_dates is nested per-region with INTEGER type codes, 4=Digital, key `release_date`); _fetch_tmdb_state now picks earliest Digital date from real TMDb data. All 5 no-network test modules pass + real GET /movie/841/release_dates → earliest Digital '2001-12-01' for Dune(841).
+Last successful steps:
+- Phase 6 verified end-to-end in Telegram (exactly one DIGITAL_DATE_ANNOUNCED per movie on startup, no duplicates; /events lists enabled rules).
+- Phase 7 implemented + unit-verified + live TMDb shape verified + E2E verified by user: /search Silo → took 📺 id → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification (silent baseline add on first poll — as designed). Committed.
 
-Currently doing: Nothing in progress. Phase 6 verified end-to-end in Telegram.
+Currently doing: nothing in progress — waiting for user's go-ahead on the next step.
 
 NEW FEATURE (planned, not yet implemented): "Already released" confirmation on add — when user adds ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed, the bot should show a notification about current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
+
+Phase 7 E2E in Telegram — DONE (user confirmed): /search Silo → took 📺 id → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification; silent baseline add on first poll is by design, not an error.
+
+Expected next action (after user go-ahead):
+1. Implement the planned "already-released confirm-on-add" feature per its plan in section 15, then commit.
+2. Phase 7.5 (TMDb API call optimization) is queued in the roadmap; recommended to do before Phase 8+ when polling load grows.
 
 ## 7. IMPORTANT DECISIONS
 
@@ -160,7 +175,8 @@ Purpose: movie/TV metadata (search, details, alternative titles, release dates, 
 Auth: API token (free registration at themoviedb.org/settings/api)
 Env: TMDB_API_KEY
 Verified endpoints: search, movie details, TV details, seasons, episodes, external IDs, release dates, watch providers by region
-Rate limit: ~40 RPS soft ceiling per API key (historical 40-per-10s removed in 2019)
+Rate limit: legacy "40 requests / 10 s" disabled since Dec 16, 2019; soft upper limits sit around ~40–50 req/s and ≤20 concurrent connections per IP; no documented daily cap. Respect HTTP 429 with backoff (official docs: https://developer.themoviedb.org/docs/rate-limiting).
+Batch: NO bulk endpoint to fetch details of multiple ids in one request — confirmed by TMDb staff on Talk forum ("You can only get the movie details one movie at a time"). Daily export files exist but are unsuitable for live per-id tracking.
 
 ### AniList
 Status: working (research verified)
@@ -246,7 +262,10 @@ Run: `.venv\Scripts\python.exe -m tests.test_notifications` → `notifications t
 
 tests/test_scheduler_polling.py (fake provider + in-memory SQLite, no network):
 - test_poll_item_cycle: pass (poll 1 baseline []; poll 2 detects DIGITAL_DATE_ANNOUNCED via enabled-rule gate; poll 3 no re-detection [])
+- TV tests: test_tv_baseline_no_event, test_tv_new_season_announced (payload {"season": 2}), test_tv_all_episodes_out (fires exactly once), test_tv_state_normalization — all pass against the real two-call TMDb flow (seasons metadata + per-season episodes)
 Run: `.venv\Scripts\python.exe -m tests.test_scheduler_polling` → `scheduler polling tests passed`
+
+All 5 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, release_state) pass — re-verified 2026-09-15 before Phase 7 commit.
 
 Note: pytest is not yet installed in .venv (Phase 15 adds the real suite).
 
@@ -302,10 +321,12 @@ Files this touches:
 - app/scheduler/polling.py — extend _fetch_tmdb_state with per-season episode counts
 - app/services/watchlist.py — confirmation flow (ask if not tracked; show state summary if already tracked)
 
-Next exact action:
-- Begin Phase 7 — TV episode tracking.
+- [DONE] Phase 7 committed after user's E2E confirmation in Telegram.
 
-### PHASE 7 ACTION PLAN (TV Episode Tracking) — detailed steps
+Next exact action:
+- Implement the planned "already-released confirm-on-add" feature per its plan in this section (user-approved requirements), then commit.
+
+### PHASE 7 ACTION PLAN (TV Episode Tracking) — detailed steps [steps 1–5 DONE + unit/live verified; step 6 (Telegram E2E) pending user confirmation]
 
 Goal: Track TV series episodes: new season announcements, per-season episode counts, Russian audio availability for new seasons. Avoid duplicate notifications when metadata updates but no new episode appears.
 
@@ -322,6 +343,36 @@ Verification criteria:
 - NEW_SEASON_ANNOUNCED fires exactly once per real new season (no duplicates)
 - No false positives: metadata update without new episode → no event
 
+### PHASE 7.5 ACTION PLAN — Optimization of TMDb API calls (rate limit / adaptive intervals) [planned, detailed]
+
+Goal: reduce the number of TMDb requests so we do not get blocked by rate limits as the watchlist grows; make re-check frequency depend on item "freshness"; spread checks in time instead of one full cycle every 600 s.
+
+Problem with current behavior: one full polling cycle for ALL items every 600 s. Movies: ~2 TMDb calls per item per cycle (details + release_dates); TV/anime: 2 calls (season metadata + latest-season episodes). OK now, but it grows linearly with list size and will multiply when more providers are added (Phases 8–13).
+
+Research results (verified via official docs + TMDb staff statements):
+- Legacy limit "40 req / 10 s" disabled since Dec 16, 2019. Soft upper limits sit around ~40–50 req/s and ≤20 concurrent connections per IP; no documented daily cap (staff: "no daily maximum"). Must respect HTTP 429 with backoff (official docs: https://developer.themoviedb.org/docs/rate-limiting).
+- NO batch endpoint to fetch details of multiple ids in one request — TMDb staff confirmed on Talk forum: "You can only get the movie details one movie at a time" (https://www.themoviedb.org/talk/65cef6b09ac5350162dfa262). Daily export files exist but are unsuitable for live per-id tracking.
+- Conclusion: requests go per-item and must be staggered in time with a minimum interval between consecutive calls, not fired simultaneously.
+
+Planned design:
+1. Tiering by item state (based on the latest observed state):
+   - Release date known (or "digital" announced without an exact date) → re-check weekly (~604800 s), verify the date has not changed;
+   - No release information at all yet (nothing announced) → once a day (86400 s);
+   - TV/anime: current season is airing or waiting for new-season announcement — daily; season fully aired with no next-season activity — weekly.
+2. Per-item scheduling: store next_check_at per item (a column on user_watch_items, or derive from source_states.observed_at + tier). Scheduler processes only items whose deadline has arrived — instead of a full cycle every 600 s.
+3. Request staggering: minimum interval between consecutive TMDb calls ~1–2 s; spread checks for many items across the day (queue with jitter).
+4. Global cap and backoff: upper bound on requests per minute/hour; on HTTP 429 — exponential backoff and move the item to the next slot.
+5. Observability: count real TMDb calls in logs, verify the reduction over a day with the same watchlist.
+
+Steps:
+1. [ ] Define pure tier function (state → interval) + no-network unit tests
+2. [ ] Per-item next_check_at storage (DB column or derived value; Alembic migration if needed)
+3. [ ] Rework scheduler: process only "due" items, staggered by the minimum call interval
+4. [ ] 429 handling with exponential backoff in TMDbProvider
+5. [ ] Unit tests (no network) + E2E check: add several items and count requests over a day
+
+When to do: recommended before Phase 8+ (AniList/IGDB/KinoPub), when polling load grows; exact moment at user's discretion.
+
 ## 15b. PROJECT MAINTENANCE RULES
 
 All project data, plans, decisions, and state are updated and appended ONLY in this file (PROJECT_CONTEXT.md). No separate PLAN.md or other planning files should be created. If a new plan/decision/state needs to be recorded, it goes into this file immediately.
@@ -330,8 +381,8 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2025-09-13 (Phase 6 DONE — TMDb release_dates normalization)
+Last checkpoint: 2026-09-15 (Phase 7 committed + E2E verified by user)
 
-Current phase: Phase 6 DONE → next is Phase 7 (TV episode tracking)
-Last completed action: Phase 6 Step A implemented + verified end-to-end in Telegram (re-launch produced exactly one 🔕 DIGITAL_DATE_ANNOUNCED per watch item on startup via real TMDb data; old {digital_release:null} → None→value, dedup-gated). Live-shape bug found+fixed (TMDb /movie/{id}/release_dates is nested per-region with INTEGER type codes 4=Digital + key `release_date`). All 5 no-network test modules pass.
-Next exact action: Begin Phase 7 — TV episode tracking.
+Current phase: Phase 7 DONE. Next, after user go-ahead: implementation of "already-released confirm-on-add" feature (plan in section 15).
+Last completed action: re-ran all 5 no-network test modules (all pass); committed Phase 7 code+tests as 5587645; added detailed Phase 7.5 plan to roadmap and section 15 (TMDb API call optimization, rate limit / adaptive intervals) based on verified TMDb docs/staff statements: legacy "40 req/10s" disabled since Dec 2019, soft ceiling ~40–50 req/s and ≤20 concurrent connections/IP, no documented daily cap, NO batch endpoint for multi-id details → per-item requests staggered in time.
+Next exact action: after user go-ahead — implement "already-released confirm-on-add" feature per section 15 plan; Phase 7.5 queued in the roadmap (recommended before Phase 8+).
