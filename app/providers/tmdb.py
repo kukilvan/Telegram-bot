@@ -112,3 +112,37 @@ class TMDbProvider:
             return []
         data = resp.json()
         return data.get("results", [])
+
+    async def get_tv_seasons(self, tv_id: int) -> list[dict]:
+        """Return the raw TMDb seasons array for a TV series.
+
+        Endpoint: GET /tv/{id}?language=ru&watch_region=all
+        NOTE (verified live): the show-level endpoint returns season metadata
+        only — `season_number`, `episode_count` etc. — but NOT the episodes
+        array, even with with_seasons/append_to_response. For per-episode air
+        dates use get_tv_season_episodes().
+        """
+        params = {"api_key": self._api_key, "language": "ru", "watch_region": "all"}
+        resp = await self._client.get(f"/tv/{tv_id}", params=params)
+        if resp.status_code != 200:
+            logging.error("TMDb get_tv_seasons HTTP %s", resp.status_code)
+            return []
+        data = resp.json()
+        return data.get("seasons") or []
+
+    async def get_tv_season_episodes(self, tv_id: int, season_number: int) -> list[dict]:
+        """Return the raw TMDb episodes array for one TV season.
+
+        Endpoint: GET /tv/{id}/season/{n}?language=ru
+        Each episode carries an ISO `air_date` string or null when not aired yet.
+        Required because the show-level endpoint does not embed episodes (verified live).
+        """
+        params = {"api_key": self._api_key, "language": "ru"}
+        resp = await self._client.get(
+            f"/tv/{tv_id}/season/{season_number}", params=params
+        )
+        if resp.status_code != 200:
+            logging.error("TMDb get_tv_season_episodes HTTP %s", resp.status_code)
+            return []
+        data = resp.json()
+        return data.get("episodes") or []

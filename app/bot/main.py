@@ -176,8 +176,15 @@ async def main() -> None:
                 if added is None:
                     await message.answer(f"Уже в списке отслеживания: {title}")
                 else:
-                    # Phase 5: create default enabled rules for relevant events on add.
-                    for ev_type in ("DIGITAL_DATE_ANNOUNCED", "RUSSIAN_AUDIO_AVAILABLE"):
+                    # Phase 5/7: create default enabled rules per media type on add.
+                    if item.media_type == "tv":
+                        default_rules = ("NEW_SEASON_ANNOUNCED", "ALL_EPISODES_OUT")
+                    else:
+                        default_rules = (
+                            "DIGITAL_DATE_ANNOUNCED",
+                            "RUSSIAN_AUDIO_AVAILABLE",
+                        )
+                    for ev_type in default_rules:
                         set_rule(s, user.id, item.id, ev_type, True)
                     await message.answer(f"✅ Добавлено: {title}")
 
@@ -309,8 +316,11 @@ async def main() -> None:
                             continue
                         title = item.canonical_title_en or "item"
                         date = ev.payload.get("date")
+                        season = ev.payload.get("season")
                         if date:
                             text = f"\U0001F514 {ev.event_type} \u2192 {title} ({date})"
+                        elif season is not None:
+                            text = f"\U0001F4FA {ev.event_type} \u2192 {title}, сезон {season}"
                         else:
                             text = f"\U0001F514 {ev.event_type} \u2192 {title}"
                         await bot.send_message(

@@ -23,12 +23,18 @@ class DomainEvent:
     payload: dict[str, Any] = field(default_factory=dict)
 
     def fingerprint(self) -> str:
-        """Stable hash used for deduplication (see sent_notifications)."""
+        """Stable hash used for deduplication (see sent_notifications).
+
+        The payload is included so per-season TV events can be re-detected
+        (e.g. ALL_EPISODES_OUT for season 1, then again for season 2), while
+        identical payloads still dedup to a single notification.
+        """
         raw = json.dumps(
             {
                 "event_type": self.event_type,
                 "media_item_id": self.media_item_id,
                 "source": self.source,
+                "payload": dict(self.payload),
             },
             sort_keys=True,
         ).encode()
@@ -41,6 +47,8 @@ DIGITAL_RELEASED = "DIGITAL_RELEASED"
 RUSSIAN_AUDIO_AVAILABLE = "RUSSIAN_AUDIO_AVAILABLE"
 KINOPUB_AVAILABLE = "KINOPUB_AVAILABLE"
 STEAM_STORE_PAGE_AVAILABLE = "STEAM_STORE_PAGE_AVAILABLE"
+NEW_SEASON_ANNOUNCED = "NEW_SEASON_ANNOUNCED"
+ALL_EPISODES_OUT = "ALL_EPISODES_OUT"
 NEW_EPISODE = "NEW_EPISODE"
 RELEASE_DATE_CHANGED = "RELEASE_DATE_CHANGED"
 READY_TO_WATCH = "READY_TO_WATCH"
@@ -78,6 +86,34 @@ def compare_states(old: dict, new: dict) -> list[DomainEvent]:
                 event_type=STEAM_STORE_PAGE_AVAILABLE,
                 source="steam",
                 payload={},
+            )
+        )
+    # TV season tracking (Phase 7).
+    old_season = old.get("latest_season")
+    new_season = new.get("latest_season")
+    if new_season is not None and (old_season is None or new_season > old_season):
+        events.append(
+            DomainEvent(
+                event_type=NEW_SEASON_ANNOUNCED,
+                source="tmdb",
+                payload={"season": new_season},
+            )
+        )
+    if (
+        new_season is not None
+        and new.get("total_episodes_current_season")
+        and new.get("episodes_aired_current_season") == new.get("total_episodes_current_season")
+        and not (
+            old.get("latest_season") == new_season
+            and old.get("total_episodes_current_season") == new.get("total_episodes_current_season")
+            and old.get("episodes_aired_current_season") == new.get("total_episodes_current_season")
+        )
+    ):
+        events.append(
+            DomainEvent(
+                event_type=ALL_EPISODES_OUT,
+                source="tmdb",
+                payload={"season": new_season},
             )
         )
     return events
