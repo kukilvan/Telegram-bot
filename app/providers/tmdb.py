@@ -78,6 +78,11 @@ class TMDbProvider:
         """Get full movie details (poster, backdrop, release dates)."""
         params = {"api_key": self._api_key, "language": "ru"}
         resp = await self._client.get(f"/movie/{movie_id}", params=params)
+        if resp.status_code == 404:
+            # Expected during dual-endpoint resolution: TMDb shares one numeric
+            # id space across movies and TV, so a TV-only id has no movie.
+            logging.debug("TMDb get_movie_details HTTP 404 (no movie at this id)")
+            return None
         if resp.status_code != 200:
             logging.error("TMDb get_movie_details HTTP %s", resp.status_code)
             return None
@@ -87,6 +92,10 @@ class TMDbProvider:
         """Get full TV series details (poster, backdrop)."""
         params = {"api_key": self._api_key, "language": "ru"}
         resp = await self._client.get(f"/tv/{tv_id}", params=params)
+        if resp.status_code == 404:
+            # Expected during dual-endpoint resolution: a movie-only id has no TV show.
+            logging.debug("TMDb get_tv_details HTTP 404 (no TV at this id)")
+            return None
         if resp.status_code != 200:
             logging.error("TMDb get_tv_details HTTP %s", resp.status_code)
             return None

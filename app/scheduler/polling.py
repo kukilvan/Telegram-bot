@@ -2,6 +2,7 @@
 
 import json as _json
 from dataclasses import replace as _replace
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -64,11 +65,17 @@ def _earliest_digital_date(regions: list[dict]) -> str | None:
     return min(digital) if digital else None
 
 
-def _tv_state_from_seasons(seasons: list[dict]) -> dict:
+def _tv_state_from_seasons(seasons: list[dict], today: str) -> dict:
     """Normalize a TMDb seasons array into TV tracking state (pure, no network).
 
     Fields: latest_season, total_episodes_current_season,
     episodes_aired_current_season.
+
+    An episode counts as aired only if its air_date is not null AND on or before
+    `today`. Scheduled FUTURE air dates do NOT count — otherwise an announced
+    season with placeholder/future-dated episodes would be reported as fully
+    out (verified live: Silo S4 = 1 placeholder ep dated 2027-07-08; Fonari
+    S1 = 5 aired + 3 future as of 2026-09-15).
     """
     if not seasons:
         return {
@@ -80,7 +87,11 @@ def _tv_state_from_seasons(seasons: list[dict]) -> dict:
     current = [s for s in seasons if (s.get("season_number") or 1) == latest]
     episodes = current[0].get("episodes") or []
     total = len(episodes)
-    aired = sum(1 for ep in episodes if ep.get("air_date"))
+    aired = 0
+    for ep in episodes:
+        ad = (ep.get("air_date") or "")[:10]
+        if ad and ad <= today:
+            aired += 1
     return {
         "latest_season": latest,
         "total_episodes_current_season": total,
@@ -119,7 +130,8 @@ async def _fetch_tmdb_state(session: Session, provider, item: MediaItem) -> dict
         return _tv_state_from_seasons(
             [{"season_number": latest, "episodes": episodes}]
             if latest is not None
-            else []
+            else [],
+            today=date.today().isoformat(),
         )
     release_dates = await provider.get_movie_release_dates(int(ext.external_id))
     return {"digital_release": _earliest_digital_date(release_dates)}

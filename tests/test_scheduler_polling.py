@@ -189,7 +189,8 @@ def test_tv_state_normalization():
             {"air_date": None},
         ]},
     ]
-    state = _tv_state_from_seasons(seasons)
+    TODAY = "2026-09-15"  # injected date; pure function, no clock reads
+    state = _tv_state_from_seasons(seasons, TODAY)
     assert state["latest_season"] == 2
     assert state["total_episodes_current_season"] == 3
     assert state["episodes_aired_current_season"] == 2
@@ -208,6 +209,22 @@ def test_tv_state_normalization():
 
     none_events = compare_states(state, state)
     assert none_events == [], "no event when nothing changed"
+
+    # Announced season whose episode is a FUTURE-dated placeholder must not be
+    # counted as fully out (live Silo S4 shape: placeholder ep dated 2027-07-08).
+    silo_like = [
+        {"season_number": 4, "episodes": [
+            {"air_date": "2026-08-20"},   # past -> aired
+            {"air_date": "2027-07-08"},   # future placeholder -> NOT counted as aired
+            {"air_date": None},           # unscheduled -> NOT counted as aired
+        ]}
+    ]
+    silo_state = _tv_state_from_seasons(silo_like, TODAY)
+    assert silo_state == {
+        "latest_season": 4,
+        "total_episodes_current_season": 3,
+        "episodes_aired_current_season": 1,
+    }, f"{silo_state}"
 
 
 if __name__ == "__main__":

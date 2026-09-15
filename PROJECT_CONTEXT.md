@@ -123,6 +123,17 @@ project/
 - Important live discovery: TMDb show-level endpoint (/tv/{id}) does NOT return the episodes array even with with_seasons/append_to_response — only season metadata with episode_count. Episode air dates come only from /tv/{id}/season/{n}. Provider reflects this (two calls per poll for TV items).
 - Verified (unit): all 5 no-network test modules pass. Verified (live, real TMDb): _fetch_tmdb_state for The Last of Us (100088) → {'latest_season': 2, 'total_episodes_current_season': 7, 'episodes_aired_current_season': 7}. Verified (E2E Telegram by user): /search Silo → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification (silent baseline add on first poll — as designed). Committed as 5587645.
 
+### NEW FEATURE: "already-released confirm-on-add" — implemented + unit-verified + E2E user-verified [TV aired-date fix pending final re-verification → then commit]
+- app/domain/events.py: `PreAddCheck` frozen dataclass + pure classifier `pre_add_check(state, media_type, today)` with codes released / upcoming / season_complete / airing / no_data; new event SEASON_PROGRESSED = per-episode progression within the same TV/anime season (suppressed when NEW_SEASON_ANNOUNCED fires simultaneously — no double notification).
+- app/bot/main.py: /add now pre-checks the current TMDb state BEFORE storing a baseline. Movie with past digital release date, or TV/anime whose latest season is fully aired → status line + inline buttons [✅ В список / ❌ Не нужно]. Airing season or no data yet → normal add plus one-line status info («Идёт сезон N, X/Y серий вышли»; announced-but-not-started season → «Сезон N анонсирован, серий ещё не вышло»). Duplicate /add for an already-tracked item → state summary + [🔄 Продолжить / ⏹ Остановить]. On "yes" the fetched state is stored immediately as baseline — old release dates and aired seasons do NOT retroactively fire notifications (fixes root cause of 🔕 DIGITAL_DATE_ANNOUNCED spam for long-released movies).
+- Fixed during user E2E attempts: two consecutive aiogram markup bugs at both /add confirmation keyboards — parameter name `inline_keys=` instead of documented `inline_keyboard=`, and flat button list vs required `list[list[InlineKeyboardButton]]` (every button its own row). Both sites fixed to `[ [btn], [btn] ]`; in-venv probe reproduced the user's exact 28-error ValidationError for the flat form.
+- TV episode-count fix (user-reported false «все серии вышли»): an episode counts as aired ONLY if air_date is non-null AND <= today; future scheduled/placeholder dates never count (`_tv_state_from_seasons(seasons, today)`). Root cause verified live: Silo(125988) S4 = single placeholder ep dated 2027-07-08 → was reported «Все серии сезона 4 уже вышли (1/1)»; Fonari(95350) S1 = 5 past + 3 future eps → was reported «8/8». After fix both classify as airing → normal /add with status line.
+- tests/test_pre_add_check.py: announced-stub and mid-season TV cases pinned; test_scheduler_polling.py updated (today param + future-placeholder case); all 6 no-network modules pass.
+- E2E verified by user in Telegram (chat log): /add 841 → «Дата цифрового релиза уже известна... — уже вышел» + buttons [✅/❌]; ✅ press → added, NO retroactive DIGITAL_DATE_ANNOUNCED; duplicate /add 841 → «📌 Уже в списке отслеживания: Дюна (1984)» + [🔄/⏹].
+- Bug A fix — TMDb shares ONE numeric id space across movies and TV: the same number can be both /movie/{id} and /tv/{id}. Old movie-first resolution silently picked the wrong type for colliding ids (user logs prove it: 60625 → «Eye Contact» instead of Рик и Морти, 76479 → «Deceived» instead of Пацаны/The Boys, 287527 → «Witches Blood» instead of Заветы, 250307 → «Arcade Fire Live...» instead of Больница Питт; Silo/Fonari "worked" only because no movie exists at those ids — NOT hardcoded). New resolution in app/bot/main.py: _lookup_tmdb_details probes BOTH endpoints per /add; exactly one MediaItem per (tmdb, id); both live → pick keyboard [🎬 film / 📺 series] handled in confirm_handler via pick_movie/pick_tv callbacks; single hit → create/self-heal (_ensure_media_item deletes stale wrong-type rows + all dependent rows first).
+- Bug B fix — button replies used cb.message.reply_text(...), which does NOT exist on aiogram 3.x Message (user log: AttributeError, "Did you mean: 'reply_photo'?") → every ✅/❌/🔄/⏹ action crashed AFTER its DB side effect. Replaced all four with cb.message.answer(); new tests/test_media_resolve.py pins pick-collision flow and self-heal via FakeDetailsProvider.
+- One-off DB cleanup DONE: stale wrong-type rows 60625, 76479, 250307, 287527 deleted with all dependent rows (incl. 3 user_watch_items); temp inspect/cleanup scripts removed afterwards; data/bot.db now holds the 7 legitimate items only.
+
 ## 6. CURRENT STATE
 
 Current phase: Phase 7 DONE — TV series episodes (committed as 5587645; E2E verified by user in Telegram)
@@ -131,15 +142,26 @@ Last successful steps:
 - Phase 6 verified end-to-end in Telegram (exactly one DIGITAL_DATE_ANNOUNCED per movie on startup, no duplicates; /events lists enabled rules).
 - Phase 7 implemented + unit-verified + live TMDb shape verified + E2E verified by user: /search Silo → took 📺 id → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification (silent baseline add on first poll — as designed). Committed.
 
-Currently doing: nothing in progress — waiting for user's go-ahead on the next step.
+"already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today counting + Bug A/B fixes — E2E user-verified in Telegram on 15/09 (evidence: §16). About to be committed as ONE feature commit. All 7 no-network test modules pass; expected 404s from dual-endpoint probing are logged at DEBUG, not ERROR (console stays clean).
 
-NEW FEATURE (planned, not yet implemented): "Already released" confirmation on add — when user adds ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed, the bot should show a notification about current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
+Requirements (user-approved): when adding ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed → show current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
 
 Phase 7 E2E in Telegram — DONE (user confirmed): /search Silo → took 📺 id → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification; silent baseline add on first poll is by design, not an error.
 
-Expected next action (after user go-ahead):
-1. Implement the planned "already-released confirm-on-add" feature per its plan in section 15, then commit.
-2. Phase 7.5 (TMDb API call optimization) is queued in the roadmap; recommended to do before Phase 8+ when polling load grows.
+Expected next action:
+1. User picks the next phase: Phase 7.5 (TMDb API call optimization — plan in §15, user-approved) or Phase 8 (AniList/anime).
+2. The checklist below is retained as a regression checklist for future changes to /add resolution.
+
+User verification checklist (Telegram):
+1) Kill stale bot instances and start fresh:
+   `cd E:\LocalAI\Bionic\Telegram-bot`
+   `Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -like '*app.bot.main*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`
+   `.\.venv\Scripts\Activate.ps1`
+   `python -m app.bot.main`  (no console output on start is normal by design; handler errors print as ERROR:aiogram.event tracebacks)
+2) `/add <id of old released movie>` (e.g. Dune 841): expect «Дата цифрового релиза уже известна: ... — уже вышел» + [✅ В список / ❌ Не нужно]. ✅ → added, NO retroactive DIGITAL_DATE_ANNOUNCED; ❌ → «Не добавлено».
+3) `/add <airing series or movie without date yet>`: normal add + status line. Specifically: /add 95350 (Фонари) → «✅ Добавлено: Фонари (2026)» + «Идёт сезон 1, 5/8 серий вышли», no prompt; /add 125988 (Укрытие) → normal add with «Сезон 4 анонсирован, серий ещё не вышло».
+4) Ambiguous TMDb id — the same number exists as BOTH a movie and a TV show (e.g. /add 60625 after cleanup): bot asks «Этот TMDb id совпадает с двумя произведениями» + [🎬 film / 📺 series]; pressing one resolves to that type and continues the normal add flow.
+5) Repeat /add for an already-tracked item → «📌 Уже в списке отслеживания: ...» + [🔄 Продолжить / ⏹ Остановить]; every button action must produce a visible chat reply (Bug B fixed — previously buttons crashed silently).
 
 ## 7. IMPORTANT DECISIONS
 
@@ -155,11 +177,20 @@ Expected next action (after user go-ahead):
 - aiogram 3.x используется для Telegram bot (long polling, async).
 - media_items.id default возвращает str(uuid4) (не UUID-объект), иначе SQLite не может биндить тип UUID при INSERT.
 - Allowlist guard: пустой ALLOWED_TELEGRAM_USER_IDS = dev-режим (все пропускаем); непустой список = только перечисленные telegram_user_id.
+- SEASON_PROGRESSED — событие выхода серии внутри текущего сезона TV/аниме; по умолчанию НЕ включается при /add (можно включить через правила вручную). Новые сезоны по-прежнему уведомляются NEW_SEASON_ANNOUNCED, завершение сезона — ALL_EPISODES_OUT.
+- TV/anime эпизоды считаются вышедшими ТОЛЬКО если air_date не null и <= сегодня; future-даты (плейсхолдерные эпизоды анонсированных сезонов) никогда не считаются вышедшими — иначе анонсированный сезон ошибочно сообщается как полностью вышедший.
+- aiogram 3.x InlineKeyboardMarkup: поле `inline_keyboard` требует вложенный список рядов `list[list[InlineKeyboardButton]]` (каждая кнопка — отдельный ряд), плоский список кнопок даёт pydantic ValidationError.
+- TMDb использует ОДНО общее числовое пространство id для фильмов и сериалов: одно число может существовать одновременно как /movie/{id} и /tv/{id}. Поэтому /add обязан опрашивать ОБА эндпоинта; в БД ровно один MediaItem на (tmdb, id).
+- Self-heal при резолвинге: если для того же tmdb id осталась старая строка неверного типа, она удаляется вместе со всеми зависимыми строками до создания нового MediaItem.
+- aiogram 3.x: у Message НЕТ метода reply_text — только .answer() (message.answer / cb.message.answer); вызов .reply_text падает с AttributeError в рантайме.
 
 ## 8. THINGS WE TRIED AND REJECTED
 
 Rejected (Phase 6 Step A): assuming TMDb /movie/{id}/release_dates is a flat list of entries keyed by `type` string ("Digital") + `iso_release_date`.
 Reason: live shape is a nested per-region array; each region has a nested `release_dates` list whose entries use INTEGER `type` codes (1=Premiere,2=Theatrical-limited,3=Theatrical,4=Digital,5=Physical,6=TV) and key `release_date` (ISO datetime). Confirmed via official TMDb docs + real GET /movie/841/release_dates. Do NOT retry the flat/string assumption; parse nested regions + integer type code 4 for Digital, read `release_date[:10]`.
+
+Rejected (aiogram InlineKeyboardMarkup at /add confirm keyboards): passing buttons as a flat list or using parameter name `inline_keys=`.
+Reason: aiogram 3.x field is `inline_keyboard: list[list[InlineKeyboardButton]]` — every button must be its own row `[ [btn1], [btn2] ]`; a flat list raises pydantic ValidationError (reproduced the user's exact 28-error log in-venv). Both /add keyboard sites now use row form.
 
 ## 9. KNOWN PROBLEMS
 
@@ -265,7 +296,15 @@ tests/test_scheduler_polling.py (fake provider + in-memory SQLite, no network):
 - TV tests: test_tv_baseline_no_event, test_tv_new_season_announced (payload {"season": 2}), test_tv_all_episodes_out (fires exactly once), test_tv_state_normalization — all pass against the real two-call TMDb flow (seasons metadata + per-season episodes)
 Run: `.venv\Scripts\python.exe -m tests.test_scheduler_polling` → `scheduler polling tests passed`
 
-All 5 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, release_state) pass — re-verified 2026-09-15 before Phase 7 commit.
+tests/test_pre_add_check.py (pure logic, no network):
+- pre_add_check classification for movies (released/upcoming/no_data) and TV/anime (season_complete/airing/no_data), including announced-but-not-started stub season ({latest_season:4,total:1,aired:0} → airing, NOT complete — live Silo S4 shape) and mid-season with future eps ({latest:1,total:8,aired:5} → airing — live Fonari S1 shape); SEASON_PROGRESSED within same season (suppressed on season transition; no events when state unchanged)
+Run: `.venv\Scripts\python.exe -m tests.test_pre_add_check` → `pre add check tests passed`
+
+tests/test_media_resolve.py (in-memory SQLite via StaticPool + FakeDetailsProvider, no network):
+- _make_media_item field mapping; _lookup_tmdb_details both/one/neither hits (real collision case id=60625); _ensure_media_item create / same-type hit / self-heal with dependent-row deletion; _resolve_media_for_add none / single-hit create / collision pick / existing-preferred / stale-residue
+Run: `.venv\Scripts\python.exe -m tests.test_media_resolve` → `media resolve tests passed`
+
+All 7 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, release_state, pre_add_check, media_resolve) pass — re-verified after the Bug A/B fixes.
 
 Note: pytest is not yet installed in .venv (Phase 15 adds the real suite).
 
@@ -322,9 +361,10 @@ Files this touches:
 - app/services/watchlist.py — confirmation flow (ask if not tracked; show state summary if already tracked)
 
 - [DONE] Phase 7 committed after user's E2E confirmation in Telegram.
+- [DONE, unit verified] "already-released confirm-on-add" implemented; awaiting user E2E verification → then commit.
 
 Next exact action:
-- Implement the planned "already-released confirm-on-add" feature per its plan in this section (user-approved requirements), then commit.
+- After user confirms the section 6 checklist in Telegram — commit this feature.
 
 ### PHASE 7 ACTION PLAN (TV Episode Tracking) — detailed steps [steps 1–5 DONE + unit/live verified; step 6 (Telegram E2E) pending user confirmation]
 
@@ -381,8 +421,8 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-15 (Phase 7 committed + E2E verified by user)
+Last checkpoint: 2026-09-15 (after user E2E verification of the confirm-on-add feature; feature commit hash recorded in a docs commit)
 
-Current phase: Phase 7 DONE. Next, after user go-ahead: implementation of "already-released confirm-on-add" feature (plan in section 15).
-Last completed action: re-ran all 5 no-network test modules (all pass); committed Phase 7 code+tests as 5587645; added detailed Phase 7.5 plan to roadmap and section 15 (TMDb API call optimization, rate limit / adaptive intervals) based on verified TMDb docs/staff statements: legacy "40 req/10s" disabled since Dec 2019, soft ceiling ~40–50 req/s and ≤20 concurrent connections/IP, no documented daily cap, NO batch endpoint for multi-id details → per-item requests staggered in time.
-Next exact action: after user go-ahead — implement "already-released confirm-on-add" feature per section 15 plan; Phase 7.5 queued in the roadmap (recommended before Phase 8+).
+Current state: "already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today fix + Bug A (TMDb shared id space → dual-endpoint lookup, pick keyboard for collisions, self-heal of stale rows) + Bug B (Message.reply_text absent in aiogram 3.x → .answer()) — implemented, unit-tested and USER E2E-verified on 15/09. All 7 no-network test modules pass; py_compile OK. One-off cleanup deleted 4 garbage rows (250307/287527/60625/76479) with dependents from data/bot.db; DB now holds the legitimate items only.
+Last completed action: user re-verified everything in Telegram (chat log 15/09): /add 95350 & /add 125988 → duplicate prompt with WORKING buttons [🔄/⏹], then normal add with correct status lines; /add 60625 → pick keyboard 🎬/📺 → «✅ Добавлено: Рик и Морти» after confirm («Все серии сезона 9 уже вышли (10/10)»); duplicate /add 60625 → keep prompt works; /add 250307 → pick → «✅ Добавлено: Больница Питт (2025), Сезон 3 анонсирован, серий ещё не вышло»; /search + /add 117648 → confirm flow for completed season 5. Console showed only the expected TMDb movie-404s from dual probing → demoted to DEBUG in get_movie_details/get_tv_details; all 7 test modules re-run (pass); py_compile OK.
+Next exact action: ONE feature commit (confirm-on-add + SEASON_PROGRESSED + TV aired<=today counting + Bug A/B fixes + 404→DEBUG logging), then a tiny docs commit recording the commit hash; after that — Phase 7.5 or Phase 8 per user choice.

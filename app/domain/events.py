@@ -50,6 +50,7 @@ STEAM_STORE_PAGE_AVAILABLE = "STEAM_STORE_PAGE_AVAILABLE"
 NEW_SEASON_ANNOUNCED = "NEW_SEASON_ANNOUNCED"
 ALL_EPISODES_OUT = "ALL_EPISODES_OUT"
 NEW_EPISODE = "NEW_EPISODE"
+SEASON_PROGRESSED = "SEASON_PROGRESSED"
 RELEASE_DATE_CHANGED = "RELEASE_DATE_CHANGED"
 READY_TO_WATCH = "READY_TO_WATCH"
 
@@ -99,6 +100,20 @@ def compare_states(old: dict, new: dict) -> list[DomainEvent]:
                 payload={"season": new_season},
             )
         )
+    # TV season progressed WITHIN the same season number (episode count or aired
+    # changed). Suppressed on a season transition: NEW_SEASON_ANNOUNCED already
+    # carries that change, so we do not double-notify.
+    if old_season is not None and new_season == old_season and (
+        old.get("total_episodes_current_season") != new.get("total_episodes_current_season")
+        or old.get("episodes_aired_current_season") != new.get("episodes_aired_current_season")
+    ):
+        events.append(
+            DomainEvent(
+                event_type=SEASON_PROGRESSED,
+                source="tmdb",
+                payload={"season": new_season},
+            )
+        )
     if (
         new_season is not None
         and new.get("total_episodes_current_season")
@@ -117,3 +132,47 @@ def compare_states(old: dict, new: dict) -> list[DomainEvent]:
             )
         )
     return events
+
+
+@dataclass(frozen=True)
+class PreAddCheck:
+    """Classification of a media item state BEFORE adding it to the watchlist.
+
+    code is one of:
+      "released"       - movie/game: known digital release date in the past (out)
+      "upcoming"       - movie/game: known digital release date, still in the future
+      "season_complete"- TV/anime: all episodes of the latest season are out
+                         (covers finished shows too — their final season is aired)
+      "airing"         - TV/anime: a season exists but is not fully out yet
+      "no_data"        - no relevant TMDb state available yet
+    """
+
+    code: str
+    date: str | None = None   # known digital release date (movie)
+    season: int | None = None  # latest season number (TV/anime)
+    aired: int = 0            # episodes of the latest season already out
+    total: int = 0            # episodes in the latest season
+
+
+def pre_add_check(state: dict, media_type: str, today: str) -> PreAddCheck:
+    """Pure classification of a normalized TMDb state (no network).
+
+    `today` is an ISO date string 'YYYY-MM-DD' (injected for testability).
+    A known digital release date in the PAST means "already released" — the bot
+    must ask before tracking; a FUTURE date means upcoming — normal add.
+    """
+    if media_type in ("tv", "anime"):
+        season = state.get("latest_season")
+        total = int(state.get("total_episodes_current_season") or 0)
+        aired = int(state.get("episodes_aired_current_season") or 0)
+        if season is not None and total > 0 and aired >= total:
+            return PreAddCheck(code="season_complete", season=season, aired=aired, total=total)
+        if season is not None:
+            return PreAddCheck(code="airing", season=season, aired=aired, total=total)
+        return PreAddCheck(code="no_data")
+    release = state.get("digital_release")
+    if release:
+        day = str(release)[:10]
+        code = "released" if day <= today else "upcoming"
+        return PreAddCheck(code=code, date=day)
+    return PreAddCheck(code="no_data")
