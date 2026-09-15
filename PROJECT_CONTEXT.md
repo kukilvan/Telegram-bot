@@ -142,7 +142,7 @@ Last successful steps:
 - Phase 6 verified end-to-end in Telegram (exactly one DIGITAL_DATE_ANNOUNCED per movie on startup, no duplicates; /events lists enabled rules).
 - Phase 7 implemented + unit-verified + live TMDb shape verified + E2E verified by user: /search Silo → took 📺 id → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification (silent baseline add on first poll — as designed). Committed.
 
-"already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today counting + Bug A/B fixes — E2E user-verified in Telegram on 15/09 (evidence: §16). About to be committed as ONE feature commit. All 7 no-network test modules pass; expected 404s from dual-endpoint probing are logged at DEBUG, not ERROR (console stays clean).
+"already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today counting + Bug A/B fixes — E2E user-verified in Telegram on 15/09 (evidence: §16). Committed as 4deeb3c. All 7 no-network test modules pass; expected 404s from dual-endpoint probing are logged at DEBUG, not ERROR (console stays clean).
 
 Requirements (user-approved): when adding ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed → show current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
 
@@ -421,7 +421,7 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-15 (after user E2E verification of the confirm-on-add feature; feature commit hash recorded in a docs commit)
+Last checkpoint: 2026-09-15 (confirm-on-add feature committed as 4deeb3c after user E2E verification)
 
 Current state: "already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today fix + Bug A (TMDb shared id space → dual-endpoint lookup, pick keyboard for collisions, self-heal of stale rows) + Bug B (Message.reply_text absent in aiogram 3.x → .answer()) — implemented, unit-tested and USER E2E-verified on 15/09. All 7 no-network test modules pass; py_compile OK. One-off cleanup deleted 4 garbage rows (250307/287527/60625/76479) with dependents from data/bot.db; DB now holds the legitimate items only.
 Last completed action: user re-verified everything in Telegram (chat log 15/09): /add 95350 & /add 125988 → duplicate prompt with WORKING buttons [🔄/⏹], then normal add with correct status lines; /add 60625 → pick keyboard 🎬/📺 → «✅ Добавлено: Рик и Морти» after confirm («Все серии сезона 9 уже вышли (10/10)»); duplicate /add 60625 → keep prompt works; /add 250307 → pick → «✅ Добавлено: Больница Питт (2025), Сезон 3 анонсирован, серий ещё не вышло»; /search + /add 117648 → confirm flow for completed season 5. Console showed only the expected TMDb movie-404s from dual probing → demoted to DEBUG in get_movie_details/get_tv_details; all 7 test modules re-run (pass); py_compile OK.
