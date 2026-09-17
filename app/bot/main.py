@@ -27,7 +27,7 @@ from app.database.models import (
 )
 from app.database.session import ensure_data_dir, get_session_factory
 from app.providers.tmdb import TMDbProvider
-from app.scheduler.polling import _fetch_tmdb_state, poll_item, _store_state
+from app.scheduler.polling import _fetch_tmdb_state, poll_due_items, poll_item, _store_state
 from app.services.notes import create_or_update_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.watchlist import (
@@ -540,20 +540,21 @@ async def main() -> None:
                     lines.append(f"• {r.event_type}")
                 await message.answer("\n".join(lines))
 
-        async def _run_polling_cycle():
-            """One adaptive polling cycle for all watch items (Phase 5)."""
+        async def _poll_due_items():
+            """Phase 7.5 adaptive scan: process only watch items whose tier
+            deadline has arrived (staggered TMDb calls, per-item intervals).
+            """
+            before = tmdb.call_count
             with db() as s:
-                rows = s.execute(select(UserWatchItem)).scalars().all()
-                for w in rows:
-                    item = s.get(MediaItem, w.media_item_id)
-                    if item is None:
+                results = await poll_due_items(s, tmdb)
+                for user_id, item, events in results:
+                    if not events:
                         continue
-                    events = await poll_item(s, tmdb, item, user_id=w.user_id)
+                    u = s.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+                    if u is None:
+                        continue
+                    title = item.canonical_title_en or "item"
                     for ev in events:
-                        u = s.execute(select(User).where(User.id == w.user_id)).scalar_one_or_none()
-                        if u is None:
-                            continue
-                        title = item.canonical_title_en or "item"
                         date = ev.payload.get("date")
                         season = ev.payload.get("season")
                         if date:
@@ -566,13 +567,20 @@ async def main() -> None:
                             chat_id=u.telegram_user_id,
                             text=text,
                         )
+            logging.info(
+                "poll scan done: %d due items, %d TMDb calls (total %d)",
+                len(results), tmdb.call_count - before, tmdb.call_count,
+            )
 
-        # Phase 5: run one polling cycle at startup + schedule adaptive re-polls.
-        await _run_polling_cycle()
+        # Phase 7.5: one due-item scan at startup (all items are due on the first
+        # run because next_check_at is NULL) + recurring scan of only due items.
+        await _poll_due_items()
 
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
         scheduler = AsyncIOScheduler()
-        scheduler.add_job(_run_polling_cycle, "interval", seconds=600)  # every 10 min
+        scheduler.add_job(
+            _poll_due_items, "interval", seconds=settings.poll_scan_interval_seconds
+        )
         scheduler.start()
 
         # Long polling (for VPS deployment without webhook setup)

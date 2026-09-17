@@ -1,13 +1,19 @@
-"""Adaptive polling cycle (Phase 5): fetch → compare → dedup → send."""
+"""Adaptive polling cycle: fetch → compare → dedup → send.
+
+Phase 7.5: the full-every-600s cycle was replaced by a due-item scan — each item
+keeps its own re-check deadline (source_states.next_check_at), tiers are computed
+from the observed state, and TMDb calls are staggered/capped inside TMDbProvider.
+"""
 
 import json as _json
+import random
 from dataclasses import replace as _replace
-from datetime import date
+from datetime import date, datetime, timedelta, timezone as _tz
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from app.database.models import ExternalId, MediaItem, SourceState
+from app.database.models import ExternalId, MediaItem, SourceState, UserWatchItem
 from app.domain.events import compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
 
@@ -41,6 +47,7 @@ def _store_state(session: Session, media_item_id: str, source_name: str, state: 
         session.add(row)
     else:
         row.state_data = _json.dumps(state)
+        row.observed_at = datetime.now(tz=_tz.utc)  # keep the "last observed" moment fresh
     session.commit()
 
 
@@ -166,3 +173,70 @@ async def poll_item(session: Session, provider, item: MediaItem, user_id: int):
 
     _store_state(session, item.id, "tmdb", state)
     return to_send
+
+
+def _due_rows_query(session):
+    """All watch rows joined with their tmdb source-state row (outer join).
+
+    A watch row without any stored state yet is due immediately (it still needs a baseline fetch).
+    """
+    return (
+        select(UserWatchItem, SourceState)
+        .join(MediaItem, UserWatchItem.media_item_id == MediaItem.id)
+        .outerjoin(
+            SourceState,
+            and_(
+                SourceState.media_item_id == MediaItem.id,
+                SourceState.source_name == "tmdb",
+            ),
+        )
+    )
+
+
+async def poll_due_items(session: Session, provider, now=None) -> list[tuple[int, MediaItem, list]]:
+    """Process only watch items whose tier deadline has arrived (Phase 7.5).
+
+    Staggering happens inside TMDbProvider (~1.5 s between calls + per-minute cap), so even many due items are never fired as a burst.
+    Each processed item gets a fresh deadline: now + tier_interval(new state) + up to JITTER_MAX_SECONDS of spread, plus RATE_LIMIT_EXTRA_DELAY if the fetch hit HTTP 429 (the item moves to its next slot).
+
+    Returns (user_id, MediaItem, events) per processed item so callers can send notifications. Timestamps are stored/compared as naive-UTC for safe SQLite comparison.
+    """
+    from app.scheduler.tiering import (
+        JITTER_MAX_SECONDS,
+        RATE_LIMIT_EXTRA_DELAY,
+        due_sort_key,
+        tier_interval,
+    )
+
+    now = now or datetime.now(tz=_tz.utc).replace(tzinfo=None)
+    rows = session.execute(_due_rows_query(session)).all()
+    due_rows = [
+        (w, st)
+        for w, st in rows
+        if st is None or (st.next_check_at is not None and st.next_check_at <= now)
+    ]
+    # Oldest deadlines first; items without a deadline go out right away.
+    due_rows.sort(key=lambda pair: due_sort_key(pair[1].next_check_at))
+
+    results = []
+    for w, st in due_rows:
+        item = session.get(MediaItem, w.media_item_id)
+        if item is None:
+            continue
+        events = await poll_item(session, provider, item, user_id=w.user_id)
+        state_now = _load_state(session, item.id, "tmdb") or {}
+        interval = tier_interval(state_now, item.media_type)
+        jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
+        extra = RATE_LIMIT_EXTRA_DELAY if getattr(provider, "hit_429", False) else 0.0
+        deadline = now + timedelta(seconds=interval + jitter + extra)
+        st_row = session.execute(
+            select(SourceState).where(
+                (SourceState.media_item_id == item.id)
+                &
+                (SourceState.source_name == "tmdb")
+            )
+        ).scalar_one()
+        st_row.next_check_at = deadline
+        session.commit()
+        results.append((w.user_id, item, events))
+    return results

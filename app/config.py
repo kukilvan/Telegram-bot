@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     # TMDb
     tmdb_api_key: str
 
+    # TMDb adaptive polling tuning (Phase 7.5)
+    tmdb_min_call_interval: float = 1.5        # seconds between consecutive TMDb calls
+    tmdb_max_calls_per_minute: int = 30       # rolling per-minute cap on requests
+    tmdb_429_backoff_base_seconds: float = 5.0  # initial wait on HTTP 429 (doubles per retry)
+    tmdb_429_max_retries: int = 3             # retries after the first 429
+    poll_scan_interval_seconds: int = 120     # how often the scheduler scans for due items
+
     # IGDB
     igdb_client_id: str
 

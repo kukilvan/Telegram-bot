@@ -66,7 +66,7 @@ project/
 - [DONE] Phase 5 — Notification rules + scheduler + event engine
 - [DONE] Phase 6 — Movie Digital release tracking (TMDb release_dates normalization + DIGITAL_DATE_ANNOUNCED via real data)
 - [DONE] Phase 7 — TV series episodes
-- [TODO] Phase 7.5 — Optimization of TMDb API calls (rate limit, adaptive intervals, request staggering)
+- [DONE] Phase 7.5 — Optimization of TMDb API calls (rate limit, adaptive intervals, request staggering)
 - [TODO] Phase 8 — AniList/anime
 - [TODO] Phase 9 — IGDB games
 - [TODO] Phase 10 — Steam Store
@@ -117,6 +117,17 @@ project/
 - Fix (live-shape verified): TMDb /movie/{id}/release_dates is a nested per-region array with INTEGER `type` codes (4=Digital) and key `release_date`; helper now parses that shape; real GET /movie/841/release_dates → earliest Digital '2001-12-01' for Dune(841).
 - Verified (unit): all 5 no-network test modules pass, including new release-state normalization + existing scheduler polling cycle via get_movie_release_dates. End-to-end Telegram run still pending (user).
 
+### Phase 7.5 (TMDb API optimization) — DONE
+- Created: app/scheduler/tiering.py (pure tier function: state → DAILY/WEEKLY interval; jitter + 429 backoff constants; due sort key)
+- Updated: app/scheduler/polling.py — full-every-600s cycle replaced by poll_due_items() (due-item scan, tier-based deadlines, staggered calls)
+- Updated: app/providers/tmdb.py — _throttle() enforces min_call_interval + rolling per-minute cap; _get() implements HTTP 429 exponential backoff; call_count/hit_429 observability
+- Updated: app/config.py — added Phase 7.5 settings (tmdb_min_call_interval, tmdb_max_calls_per_minute, tmdb_429_backoff_base_seconds, tmdb_429_max_retries, poll_scan_interval_seconds)
+- Updated: app/bot/main.py — _poll_due_items() replaces old startup poll; scheduler uses poll_scan_interval_seconds interval
+- Updated: .env.example — added Phase 7.5 tuning variables
+- Migration: a7c3e91f2d48 — adds next_check_at column to source_states
+- Tests: tests/test_tiering.py (6 tests: movie/game known→weekly, no-info→daily, TV fully-aired→weekly, airing→daily, stub-announced→daily, due_sort_key)
+- Verified: all 8 no-network test modules pass (watchlist_notes, domain_events, notifications, scheduler_polling, pre_add_check, media_resolve, tiering); py_compile OK; migration applied (alembic upgrade head → a7c3e91f2d48)
+
 ### Phase 7 (TV series episodes) — DONE
 - Created/changed: app/providers/tmdb.py `get_tv_seasons(tv_id)` (GET /tv/{id}, season metadata only) + `get_tv_season_episodes(tv_id, n)` (GET /tv/{id}/season/{n} → episode air dates); app/scheduler/polling.py `_tv_state_from_seasons(seasons)` pure normalizer (latest_season, total_episodes_current_season, episodes_aired_current_season) + TV/anime branch in `_fetch_tmdb_state` (two calls per poll: seasons metadata + latest-season episodes); app/domain/events.py NEW_SEASON_ANNOUNCED and ALL_EPISODES_OUT events with per-season payload {"season": N}, fingerprint now includes payload → per-season re-detection possible, identical payloads still dedup; app/bot/main.py — /add creates default rules by media type (tv → NEW_SEASON_ANNOUNCED + ALL_EPISODES_OUT, otherwise DIGITAL_DATE_ANNOUNCED + RUSSIAN_AUDIO_AVAILABLE), notification text renders season for TV events («📺 … → title, сезон N»); tests/test_scheduler_polling.py — SequenceTVProvider fake mirroring the real two-call TMDb flow + 4 new TV tests.
 - Bugs found+fixed this step (from previous agent's partial work): (1) polling called provider.get_tv_sections() but TMDbProvider only had get_tv_seasons → potential AttributeError on live TV polling; unified to get_tv_seasons (+ helper renamed _tv_state_from_seasons, log typo); (2) test asserted state key "total_episodes_current_session" instead of "...season" → failing unit test.
@@ -136,13 +147,16 @@ project/
 
 ## 6. CURRENT STATE
 
-Current phase: Phase 7 DONE — TV series episodes (committed as 5587645; E2E verified by user in Telegram)
+Current phase: Phase 7.5 DONE — TMDb API optimization (adaptive polling, tiering, rate limiting)
 
 Last successful steps:
-- Phase 6 verified end-to-end in Telegram (exactly one DIGITAL_DATE_ANNOUNCED per movie on startup, no duplicates; /events lists enabled rules).
-- Phase 7 implemented + unit-verified + live TMDb shape verified + E2E verified by user: /search Silo → took 📺 id → /add <tv_id> → «✅ Добавлено: Укрытие», no premature notification (silent baseline add on first poll — as designed). Committed.
+- All 8 no-network test modules pass (including new test_tiering.py)
+- Migration a7c3e91f2d48 applied (next_check_at column on source_states)
+- py_compile OK for all modified files
+- .env.example updated with Phase 7.5 settings
 
-"already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today counting + Bug A/B fixes — E2E user-verified in Telegram on 15/09 (evidence: §16). Committed as 4deeb3c. All 7 no-network test modules pass; expected 404s from dual-endpoint probing are logged at DEBUG, not ERROR (console stays clean).
+Expected next action:
+1. User picks the next phase: Phase 8 (AniList/anime) or Phase 7.5 E2E verification in Telegram.
 
 Requirements (user-approved): when adding ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed → show current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
 
@@ -183,6 +197,7 @@ User verification checklist (Telegram):
 - TMDb использует ОДНО общее числовое пространство id для фильмов и сериалов: одно число может существовать одновременно как /movie/{id} и /tv/{id}. Поэтому /add обязан опрашивать ОБА эндпоинта; в БД ровно один MediaItem на (tmdb, id).
 - Self-heal при резолвинге: если для того же tmdb id осталась старая строка неверного типа, она удаляется вместе со всеми зависимыми строками до создания нового MediaItem.
 - aiogram 3.x: у Message НЕТ метода reply_text — только .answer() (message.answer / cb.message.answer); вызов .reply_text падает с AttributeError в рантайме.
+- Phase 7.5: adaptive polling replaces full-every-600s cycle — each item keeps its own next_check_at deadline; tiers computed from observed state (known release → WEEKLY, no info → DAILY; airing TV → DAILY, completed season → WEEKLY); TMDb calls staggered by min_call_interval (default 1.5s) with rolling per-minute cap (default 30); HTTP 429 triggers exponential backoff.
 
 ## 8. THINGS WE TRIED AND REJECTED
 
@@ -304,7 +319,11 @@ tests/test_media_resolve.py (in-memory SQLite via StaticPool + FakeDetailsProvid
 - _make_media_item field mapping; _lookup_tmdb_details both/one/neither hits (real collision case id=60625); _ensure_media_item create / same-type hit / self-heal with dependent-row deletion; _resolve_media_for_add none / single-hit create / collision pick / existing-preferred / stale-residue
 Run: `.venv\Scripts\python.exe -m tests.test_media_resolve` → `media resolve tests passed`
 
-All 7 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, release_state, pre_add_check, media_resolve) pass — re-verified after the Bug A/B fixes.
+tests/test_tiering.py (pure logic, no network):
+- test_movie_with_known_date_is_weekly, test_movie_without_any_info_is_daily, test_empty_state_is_daily_for_every_type, test_tv_fully_aired_season_is_weekly, test_tv_airing_or_stubbed_announced_season_is_daily, test_due_sort_key_puts_missing_deadlines_first
+Run: `.venv\Scripts\python.exe -m tests.test_tiering` → `tiering tests passed`
+
+All 8 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, pre_add_check, media_resolve, tiering) pass — re-verified after Phase 7.5 implementation.
 
 Note: pytest is not yet installed in .venv (Phase 15 adds the real suite).
 
@@ -383,7 +402,27 @@ Verification criteria:
 - NEW_SEASON_ANNOUNCED fires exactly once per real new season (no duplicates)
 - No false positives: metadata update without new episode → no event
 
-### PHASE 7.5 ACTION PLAN — Optimization of TMDb API calls (rate limit / adaptive intervals) [planned, detailed]
+### PHASE 7.5 ACTION PLAN — Optimization of TMDb API calls (rate limit / adaptive intervals) [DONE]
+
+Implemented:
+1. [DONE] Pure tier function (state → interval) + 6 no-network unit tests in tests/test_tiering.py
+2. [DONE] next_check_at column on source_states (migration a7c3e91f2d48)
+3. [DONE] Reworked scheduler: poll_due_items() processes only "due" items, staggered by min_call_interval (1.5s default)
+4. [DONE] HTTP 429 handling with exponential backoff in TMDbProvider._get()
+5. [DONE] All 8 test modules pass; py_compile OK; migration applied
+
+Tier rules:
+- Movie/game with known digital release → WEEKLY (604800s)
+- Movie/game with no release info → DAILY (86400s)
+- TV/anime: current season airing or waiting → DAILY
+- TV/anime: season fully aired, no next-season activity → WEEKLY
+
+Configurable via env vars:
+- TMDB_MIN_CALL_INTERVAL=1.5
+- TMDB_MAX_CALLS_PER_MINUTE=30
+- TMDB_429_BACKOFF_BASE_SECONDS=5.0
+- TMDB_429_MAX_RETRIES=3
+- POLL_SCAN_INTERVAL_SECONDS=120
 
 Goal: reduce the number of TMDb requests so we do not get blocked by rate limits as the watchlist grows; make re-check frequency depend on item "freshness"; spread checks in time instead of one full cycle every 600 s.
 
@@ -421,8 +460,10 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-15 (confirm-on-add feature committed as 4deeb3c after user E2E verification)
+Last checkpoint: 2026-09-17 (Phase 7.5 implementation complete)
 
-Current state: "already-released confirm-on-add" + SEASON_PROGRESSED + TV aired<=today fix + Bug A (TMDb shared id space → dual-endpoint lookup, pick keyboard for collisions, self-heal of stale rows) + Bug B (Message.reply_text absent in aiogram 3.x → .answer()) — implemented, unit-tested and USER E2E-verified on 15/09. All 7 no-network test modules pass; py_compile OK. One-off cleanup deleted 4 garbage rows (250307/287527/60625/76479) with dependents from data/bot.db; DB now holds the legitimate items only.
-Last completed action: user re-verified everything in Telegram (chat log 15/09): /add 95350 & /add 125988 → duplicate prompt with WORKING buttons [🔄/⏹], then normal add with correct status lines; /add 60625 → pick keyboard 🎬/📺 → «✅ Добавлено: Рик и Морти» after confirm («Все серии сезона 9 уже вышли (10/10)»); duplicate /add 60625 → keep prompt works; /add 250307 → pick → «✅ Добавлено: Больница Питт (2025), Сезон 3 анонсирован, серий ещё не вышло»; /search + /add 117648 → confirm flow for completed season 5. Console showed only the expected TMDb movie-404s from dual probing → demoted to DEBUG in get_movie_details/get_tv_details; all 7 test modules re-run (pass); py_compile OK.
-Next exact action: ONE feature commit (confirm-on-add + SEASON_PROGRESSED + TV aired<=today counting + Bug A/B fixes + 404→DEBUG logging), then a tiny docs commit recording the commit hash; after that — Phase 7.5 or Phase 8 per user choice.
+Current state: Phase 7.5 DONE — TMDb API optimization with adaptive polling, tiering, rate limiting, and 429 backoff. All 8 test modules pass, migration applied, .env.example updated.
+
+Last completed action: Implemented all Phase 7.5 components: tiering.py (pure tier function), polling.py (due-item scan), tmdb.py (throttling + 429 backoff), config.py (settings), main.py (_poll_due_items), migration a7c3e91f2d48, tests/test_tiering.py (6 tests). All verified.
+
+Next exact action: User chooses next phase — Phase 8 (AniList/anime) or E2E verification of Phase 7.5 in Telegram.

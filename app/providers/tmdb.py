@@ -1,6 +1,9 @@
-"""TMDb provider: search + details via async httpx."""
+"""TMDb provider: search + details via async httpx, with Phase 7.5 adaptive throttling."""
 
+import asyncio
 import logging
+import time
+from collections import deque
 
 import httpx
 
@@ -8,11 +11,17 @@ from app.config import get_settings
 
 
 class TMDbProvider:
-    """Async TMDb API client.
+    """Async TMDb API client with staggered, capped request pacing (Phase 7.5).
 
     Base URL: https://api.themoviedb.org/3
     Auth: TMDB_API_KEY env var (free registration).
-    Rate limit: ~40 RPS soft ceiling per API key.
+    Rate limit: soft ceiling ~40-50 req/s and no documented daily cap. We never
+    fire bulk requests (no batch endpoint exists), so pacing is enforced here:
+      * at least `tmdb_min_call_interval` seconds between consecutive calls;
+      * rolling per-minute cap (`tmdb_max_calls_per_minute`);
+      * HTTP 429 retried with exponential backoff (honoring Retry-After when set).
+    Observability: `call_count` counts every real HTTP request so the reduction
+    over time can be checked in logs.
     """
 
     BASE_URL = "https://api.themoviedb.org/3"
@@ -20,6 +29,19 @@ class TMDbProvider:
     def __init__(self) -> None:
         settings = get_settings()
         self._api_key = settings.tmdb_api_key
+        self.min_call_interval = float(settings.tmdb_min_call_interval)
+        self.max_calls_per_minute = int(settings.tmdb_max_calls_per_minute)
+        self.backoff_base_seconds = float(settings.tmdb_429_backoff_base_seconds)
+        self.backoff_max_retries = int(settings.tmdb_429_max_retries)
+
+        # Phase 7.5 pacing state
+        self._last_call_at: float | None = None      # monotonic time of last real call
+        self._window_calls: deque[float] = deque()   # timestamps inside the rolling 60 s window
+
+        # Phase 7.5 observability / degradation flag
+        self.call_count = 0   # every real TMDb HTTP request attempted so far
+        self.hit_429 = False  # True if the last request batch hit HTTP 429
+
         # httpx.AsyncClient with connection pooling for long-polling bot.
         self._client = httpx.AsyncClient(
             base_url=self.BASE_URL,
@@ -30,9 +52,66 @@ class TMDbProvider:
         """Close the underlying httpx client."""
         await self._client.aclose()
 
-    async def search_movie(
-        self, query: str, page: int = 1
-    ) -> list[dict]:
+    async def _throttle(self) -> None:
+        """Sleep until pacing limits are satisfied before issuing a request.
+
+        Enforces both the minimum interval since the last call and the rolling
+        per-minute cap, so consecutive items are staggered in time instead of
+        being fired simultaneously.
+        """
+        now = time.monotonic()
+        while self._window_calls and now - self._window_calls[0] >= 60.0:
+            self._window_calls.popleft()
+        wait_interval = (
+            self.min_call_interval - (now - self._last_call_at)
+            if self._last_call_at is not None else 0.0
+        )
+        if len(self._window_calls) >= self.max_calls_per_minute:
+            # Wait until the oldest timestamp in the window ages out (>60 s).
+            wait_cap = (self._window_calls[0] + 60.0) - now
+        else:
+            wait_cap = 0.0
+        delay = max(wait_interval, wait_cap, 0.0)
+        if delay > 0:
+            await asyncio.sleep(delay)
+        stamp = time.monotonic()
+        self._last_call_at = stamp
+        self._window_calls.append(stamp)
+
+    async def _get(self, path: str, params: dict | None = None) -> httpx.Response | None:
+        """One throttled GET with exponential backoff on HTTP 429.
+
+        Returns the response, or None if every retry after a persistent 429
+        failed (callers degrade to an empty result and move the item to its next slot).
+        """
+        self.hit_429 = False
+        backoff = self.backoff_base_seconds
+        for attempt in range(1, self.backoff_max_retries + 1):
+            await self._throttle()
+            resp = await self._client.get(path, params=params)
+            self.call_count += 1
+            if resp.status_code == 429:
+                self.hit_429 = True
+                retry_after_raw = (resp.headers or {}).get("Retry-After")
+                try:
+                    wait = float(retry_after_raw)
+                except (TypeError, ValueError):
+                    wait = backoff
+                logging.warning(
+                    "TMDb 429 on %s; backing off %.1fs (attempt %d/%d)",
+                    path, max(wait, 0.0), attempt, self.backoff_max_retries,
+                )
+                await asyncio.sleep(max(0.0, wait))
+                backoff *= 2
+                continue
+            return resp
+        logging.error(
+            "TMDb still rate-limited after %d retries on %s; degrading to empty result",
+            self.backoff_max_retries, path,
+        )
+        return None
+
+    async def search_movie(self, query: str, page: int = 1) -> list[dict]:
         """Search movies by title (RU or EN). Returns raw TMDb results.
 
         Endpoint: GET /search/movie?language=ru&include_adult=false&query={query}
@@ -45,16 +124,14 @@ class TMDbProvider:
             "page": page,
             "query": query,
         }
-        resp = await self._client.get("/search/movie", params=params)
-        if resp.status_code != 200:
-            logging.error("TMDb search_movie HTTP %s", resp.status_code)
+        resp = await self._get("/search/movie", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb search_movie failed (HTTP %s)", resp.status_code if resp else 429)
             return []
         data = resp.json()
         return data.get("results", [])
 
-    async def search_tv(
-        self, query: str, page: int = 1
-    ) -> list[dict]:
+    async def search_tv(self, query: str, page: int = 1) -> list[dict]:
         """Search TV series by title (RU or EN). Returns raw TMDb results.
 
         Endpoint: GET /search/tv?language=ru&include_adult=false&query={query}
@@ -67,9 +144,9 @@ class TMDbProvider:
             "page": page,
             "query": query,
         }
-        resp = await self._client.get("/search/tv", params=params)
-        if resp.status_code != 200:
-            logging.error("TMDb search_tv HTTP %s", resp.status_code)
+        resp = await self._get("/search/tv", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb search_tv failed (HTTP %s)", resp.status_code if resp else 429)
             return []
         data = resp.json()
         return data.get("results", [])
@@ -77,27 +154,27 @@ class TMDbProvider:
     async def get_movie_details(self, movie_id: int) -> dict | None:
         """Get full movie details (poster, backdrop, release dates)."""
         params = {"api_key": self._api_key, "language": "ru"}
-        resp = await self._client.get(f"/movie/{movie_id}", params=params)
-        if resp.status_code == 404:
-            # Expected during dual-endpoint resolution: TMDb shares one numeric
-            # id space across movies and TV, so a TV-only id has no movie.
-            logging.debug("TMDb get_movie_details HTTP 404 (no movie at this id)")
-            return None
-        if resp.status_code != 200:
-            logging.error("TMDb get_movie_details HTTP %s", resp.status_code)
+        resp = await self._get(f"/movie/{movie_id}", params)
+        if resp is None or resp.status_code != 200:
+            if resp is not None and resp.status_code == 404:
+                # Expected during dual-endpoint resolution: TMDb shares one numeric
+                # id space across movies and TV, so a TV-only id has no movie.
+                logging.debug("TMDb get_movie_details HTTP 404 (no movie at this id)")
+            else:
+                logging.error("TMDb get_movie_details failed (HTTP %s)", resp.status_code if resp else 429)
             return None
         return resp.json()
 
     async def get_tv_details(self, tv_id: int) -> dict | None:
         """Get full TV series details (poster, backdrop)."""
         params = {"api_key": self._api_key, "language": "ru"}
-        resp = await self._client.get(f"/tv/{tv_id}", params=params)
-        if resp.status_code == 404:
-            # Expected during dual-endpoint resolution: a movie-only id has no TV show.
-            logging.debug("TMDb get_tv_details HTTP 404 (no TV at this id)")
-            return None
-        if resp.status_code != 200:
-            logging.error("TMDb get_tv_details HTTP %s", resp.status_code)
+        resp = await self._get(f"/tv/{tv_id}", params)
+        if resp is None or resp.status_code != 200:
+            if resp is not None and resp.status_code == 404:
+                # Expected during dual-endpoint resolution: a movie-only id has no TV show.
+                logging.debug("TMDb get_tv_details HTTP 404 (no TV at this id)")
+            else:
+                logging.error("TMDb get_tv_details failed (HTTP %s)", resp.status_code if resp else 429)
             return None
         return resp.json()
 
@@ -113,11 +190,9 @@ class TMDbProvider:
             "language": "ru",
             "watch_region": "all",
         }
-        resp = await self._client.get(
-            f"/movie/{movie_id}/release_dates", params=params
-        )
-        if resp.status_code != 200:
-            logging.error("TMDb get_movie_release_dates HTTP %s", resp.status_code)
+        resp = await self._get(f"/movie/{movie_id}/release_dates", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb get_movie_release_dates failed (HTTP %s)", resp.status_code if resp else 429)
             return []
         data = resp.json()
         return data.get("results", [])
@@ -132,9 +207,9 @@ class TMDbProvider:
         dates use get_tv_season_episodes().
         """
         params = {"api_key": self._api_key, "language": "ru", "watch_region": "all"}
-        resp = await self._client.get(f"/tv/{tv_id}", params=params)
-        if resp.status_code != 200:
-            logging.error("TMDb get_tv_seasons HTTP %s", resp.status_code)
+        resp = await self._get(f"/tv/{tv_id}", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb get_tv_seasons failed (HTTP %s)", resp.status_code if resp else 429)
             return []
         data = resp.json()
         return data.get("seasons") or []
@@ -147,11 +222,9 @@ class TMDbProvider:
         Required because the show-level endpoint does not embed episodes (verified live).
         """
         params = {"api_key": self._api_key, "language": "ru"}
-        resp = await self._client.get(
-            f"/tv/{tv_id}/season/{season_number}", params=params
-        )
-        if resp.status_code != 200:
-            logging.error("TMDb get_tv_season_episodes HTTP %s", resp.status_code)
+        resp = await self._get(f"/tv/{tv_id}/season/{season_number}", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb get_tv_season_episodes failed (HTTP %s)", resp.status_code if resp else 429)
             return []
         data = resp.json()
         return data.get("episodes") or []

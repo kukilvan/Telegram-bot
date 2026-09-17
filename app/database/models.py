@@ -153,6 +153,7 @@ class SourceState(Base):
     observed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.now(tz=_dt_timezone.utc)
     )
+    next_check_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))  # phase 7.5: per-item re-check deadline
     state_data: Mapped[Optional[str]]  # JSON blob of normalized state
 
 
