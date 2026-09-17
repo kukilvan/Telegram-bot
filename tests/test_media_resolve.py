@@ -174,7 +174,7 @@ def test_ensure_media_item_self_heals_stale():
 def test_resolve_media_for_add_not_found():
     s = _make_session()
     provider = FakeDetailsProvider(movie=None, tv=None)
-    result = asyncio.run(_resolve_media_for_add(s, 999888777, provider))
+    result = asyncio.run(_resolve_media_for_add(s, 999888777, provider, anilist_provider=None))
     assert result == ("none", None)
     assert _item_count(s) == 0
     s.close()
@@ -183,7 +183,7 @@ def test_resolve_media_for_add_not_found():
 def test_resolve_media_for_add_single_tv_hit():
     s = _make_session()
     provider = FakeDetailsProvider(movie=None, tv=TV_DETAIL)
-    result = asyncio.run(_resolve_media_for_add(s, 60625, provider))
+    result = asyncio.run(_resolve_media_for_add(s, 60625, provider, anilist_provider=None))
     assert result[0] == "item"
     item = result[1]
     assert item.media_type == "tv" and item.canonical_title_en == "Rick and Morty"
@@ -193,8 +193,8 @@ def test_resolve_media_for_add_single_tv_hit():
 def test_resolve_media_for_add_collision_returns_pick():
     s = _make_session()
     provider = FakeDetailsProvider()  # both endpoints live for this id
-    result = asyncio.run(_resolve_media_for_add(s, 60625, provider))
-    assert result[0] == "pick"
+    result = asyncio.run(_resolve_media_for_add(s, 60625, provider, anilist_provider=None))
+    assert result[0] == "pick_tmdb"
     assert (result[1], result[2]) == (MOVIE_DETAIL, TV_DETAIL)
     # Nothing created until the user picks.
     assert _item_count(s) == 0
@@ -207,7 +207,7 @@ def test_resolve_media_for_add_uses_existing_item():
     s = _make_session()
     _, existing = _seed_item(s, 60625, media_type="movie", title="Eye Contact")
     provider = FakeDetailsProvider()  # both live on TMDb
-    result = asyncio.run(_resolve_media_for_add(s, 60625, provider))
+    result = asyncio.run(_resolve_media_for_add(s, 60625, provider, anilist_provider=None))
     assert result[0] == "item" and result[1].id == existing.id
     assert _item_count(s) == 1
     s.close()
@@ -219,7 +219,7 @@ def test_resolve_media_for_add_stale_tv_override():
     s = _make_session()
     _, stale = _seed_item(s, 60625, media_type="movie", title="Eye Contact")
     provider = FakeDetailsProvider(movie=None, tv=TV_DETAIL)
-    result = asyncio.run(_resolve_media_for_add(s, 60625, provider))
+    result = asyncio.run(_resolve_media_for_add(s, 60625, provider, anilist_provider=None))
     assert result[0] == "item"
     item = result[1]
     assert item.media_type == "tv" and item.id != stale.id

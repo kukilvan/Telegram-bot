@@ -67,7 +67,7 @@ project/
 - [DONE] Phase 6 — Movie Digital release tracking (TMDb release_dates normalization + DIGITAL_DATE_ANNOUNCED via real data)
 - [DONE] Phase 7 — TV series episodes
 - [DONE] Phase 7.5 — Optimization of TMDb API calls (rate limit, adaptive intervals, request staggering)
-- [TODO] Phase 8 — AniList/anime
+- [DONE] Phase 8 — AniList/anime
 - [TODO] Phase 9 — IGDB games
 - [TODO] Phase 10 — Steam Store
 - [TODO] Phase 11 — PlayStation Store
@@ -128,7 +128,17 @@ project/
 - Tests: tests/test_tiering.py (6 tests: movie/game known→weekly, no-info→daily, TV fully-aired→weekly, airing→daily, stub-announced→daily, due_sort_key)
 - Verified: all 8 no-network test modules pass (watchlist_notes, domain_events, notifications, scheduler_polling, pre_add_check, media_resolve, tiering); py_compile OK; migration applied (alembic upgrade head → a7c3e91f2d48)
 
-### Phase 7 (TV series episodes) — DONE
+### Phase 8 (AniList/anime) — DONE
+- Created: app/providers/anilist.py — AniList GraphQL client with throttling (same pacing as TMDbProvider), search_anime, get_anime_details, get_next_episode
+- Updated: app/domain/events.py — added NEXT_EPISODE_AIRING event type + compare_anilist_states function (handles episode progression + status RELEASING→FINISHED → ALL_EPISODES_OUT)
+- Updated: app/scheduler/polling.py — _fetch_anilist_state + _normalize_anilist_details; poll_item now accepts both tmdb_provider and anilist_provider (anime items polled from both sources)
+- Updated: app/bot/main.py — AniList search results in /search; /add accepts AniList IDs (fallback when TMDb returns nothing); _ensure_anilist_item; _default_rules_for returns (NEXT_EPISODE_AIRING, ALL_EPISODES_OUT) for anime; _poll_due_items passes anilist provider
+- Updated: app/scheduler/tiering.py — docstring reflects Phase 8
+- Created: tests/test_anilist.py (5 tests: state normalization, episode airing detection, no-change, finished status, first poll)
+- Updated: tests/test_scheduler_polling.py — all poll_item calls updated for new signature (anilist_provider=None)
+- Verified: all 9 no-network test modules pass; py_compile OK
+
+### Phase 7.5 (TMDb API optimization) — DONE
 - Created/changed: app/providers/tmdb.py `get_tv_seasons(tv_id)` (GET /tv/{id}, season metadata only) + `get_tv_season_episodes(tv_id, n)` (GET /tv/{id}/season/{n} → episode air dates); app/scheduler/polling.py `_tv_state_from_seasons(seasons)` pure normalizer (latest_season, total_episodes_current_season, episodes_aired_current_season) + TV/anime branch in `_fetch_tmdb_state` (two calls per poll: seasons metadata + latest-season episodes); app/domain/events.py NEW_SEASON_ANNOUNCED and ALL_EPISODES_OUT events with per-season payload {"season": N}, fingerprint now includes payload → per-season re-detection possible, identical payloads still dedup; app/bot/main.py — /add creates default rules by media type (tv → NEW_SEASON_ANNOUNCED + ALL_EPISODES_OUT, otherwise DIGITAL_DATE_ANNOUNCED + RUSSIAN_AUDIO_AVAILABLE), notification text renders season for TV events («📺 … → title, сезон N»); tests/test_scheduler_polling.py — SequenceTVProvider fake mirroring the real two-call TMDb flow + 4 new TV tests.
 - Bugs found+fixed this step (from previous agent's partial work): (1) polling called provider.get_tv_sections() but TMDbProvider only had get_tv_seasons → potential AttributeError on live TV polling; unified to get_tv_seasons (+ helper renamed _tv_state_from_seasons, log typo); (2) test asserted state key "total_episodes_current_session" instead of "...season" → failing unit test.
 - Important live discovery: TMDb show-level endpoint (/tv/{id}) does NOT return the episodes array even with with_seasons/append_to_response — only season metadata with episode_count. Episode air dates come only from /tv/{id}/season/{n}. Provider reflects this (two calls per poll for TV items).
@@ -147,16 +157,14 @@ project/
 
 ## 6. CURRENT STATE
 
-Current phase: Phase 7.5 DONE — TMDb API optimization (adaptive polling, tiering, rate limiting)
+Current phase: Phase 8 DONE — AniList/anime integration (search, details, airing schedule, NEXT_EPISODE_AIRING events)
 
 Last successful steps:
-- All 8 no-network test modules pass (including new test_tiering.py)
-- Migration a7c3e91f2d48 applied (next_check_at column on source_states)
+- All 9 no-network test modules pass (including new test_anilist.py)
 - py_compile OK for all modified files
-- .env.example updated with Phase 7.5 settings
 
 Expected next action:
-1. User picks the next phase: Phase 8 (AniList/anime) or Phase 7.5 E2E verification in Telegram.
+1. User picks the next phase: Phase 9 (IGDB games) or Phase 8 E2E verification in Telegram.
 
 Requirements (user-approved): when adding ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed → show current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
 
@@ -198,6 +206,7 @@ User verification checklist (Telegram):
 - Self-heal при резолвинге: если для того же tmdb id осталась старая строка неверного типа, она удаляется вместе со всеми зависимыми строками до создания нового MediaItem.
 - aiogram 3.x: у Message НЕТ метода reply_text — только .answer() (message.answer / cb.message.answer); вызов .reply_text падает с AttributeError в рантайме.
 - Phase 7.5: adaptive polling replaces full-every-600s cycle — each item keeps its own next_check_at deadline; tiers computed from observed state (known release → WEEKLY, no info → DAILY; airing TV → DAILY, completed season → WEEKLY); TMDb calls staggered by min_call_interval (default 1.5s) with rolling per-minute cap (default 30); HTTP 429 triggers exponential backoff.
+- Phase 8: anime items now polled from BOTH TMDb and AniList (dual-source); AniList provides NEXT_EPISODE_AIRING events with episode number + air date; /search returns anime from AniList with 🎌 icon; /add accepts AniList IDs as fallback when TMDb returns nothing; default rules for anime: NEXT_EPISODE_AIRING + ALL_EPISODES_OUT.
 
 ## 8. THINGS WE TRIED AND REJECTED
 
@@ -323,7 +332,7 @@ tests/test_tiering.py (pure logic, no network):
 - test_movie_with_known_date_is_weekly, test_movie_without_any_info_is_daily, test_empty_state_is_daily_for_every_type, test_tv_fully_aired_season_is_weekly, test_tv_airing_or_stubbed_announced_season_is_daily, test_due_sort_key_puts_missing_deadlines_first
 Run: `.venv\Scripts\python.exe -m tests.test_tiering` → `tiering tests passed`
 
-All 8 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, pre_add_check, media_resolve, tiering) pass — re-verified after Phase 7.5 implementation.
+All 9 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, pre_add_check, media_resolve, tiering, anilist) pass — re-verified after Phase 8 implementation.
 
 Note: pytest is not yet installed in .venv (Phase 15 adds the real suite).
 
@@ -424,6 +433,20 @@ Configurable via env vars:
 - TMDB_429_MAX_RETRIES=3
 - POLL_SCAN_INTERVAL_SECONDS=120
 
+### PHASE 8 ACTION PLAN — AniList/anime [DONE]
+
+Implemented:
+1. [DONE] AniListProvider (app/providers/anilist.py): GraphQL search_anime, get_anime_details, get_next_episode with throttling
+2. [DONE] NEXT_EPISODE_AIRING event + compare_anilist_states in events.py
+3. [DONE] _fetch_anilist_state + _normalize_anilist_details in polling.py
+4. [DONE] poll_item accepts both tmdb_provider and anilist_provider (dual-source for anime)
+5. [DONE] main.py: AniList search in /search, AniList ID support in /add, _ensure_anilist_item
+6. [DONE] tests/test_anilist.py (5 tests: state normalization, episode airing, no-change, finished, first poll)
+7. [DONE] All 9 test modules pass; py_compile OK
+
+AniList API: https://graphql.anilist.co (GraphQL POST), no key needed for public data, ~90 req/min soft limit.
+Anime items now polled from BOTH TMDb and AniList — TMDb for season/episode tracking, AniList for NEXT_EPISODE_AIRING events.
+
 Goal: reduce the number of TMDb requests so we do not get blocked by rate limits as the watchlist grows; make re-check frequency depend on item "freshness"; spread checks in time instead of one full cycle every 600 s.
 
 Problem with current behavior: one full polling cycle for ALL items every 600 s. Movies: ~2 TMDb calls per item per cycle (details + release_dates); TV/anime: 2 calls (season metadata + latest-season episodes). OK now, but it grows linearly with list size and will multiply when more providers are added (Phases 8–13).
@@ -460,10 +483,10 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-17 (Phase 7.5 implementation complete)
+Last checkpoint: 2026-09-17 (Phase 8 implementation complete)
 
-Current state: Phase 7.5 DONE — TMDb API optimization with adaptive polling, tiering, rate limiting, and 429 backoff. All 8 test modules pass, migration applied, .env.example updated.
+Current state: Phase 8 DONE — AniList/anime integration with GraphQL search, anime details, airing schedule, NEXT_EPISODE_AIRING events, and AniList↔TMDb dual-source polling for anime. All 9 test modules pass, py_compile OK.
 
-Last completed action: Implemented all Phase 7.5 components: tiering.py (pure tier function), polling.py (due-item scan), tmdb.py (throttling + 429 backoff), config.py (settings), main.py (_poll_due_items), migration a7c3e91f2d48, tests/test_tiering.py (6 tests). All verified.
+Last completed action: Implemented all Phase 8 components: anilist.py (GraphQL provider), events.py (NEXT_EPISODE_AIRING + compare_anilist_states), polling.py (_fetch_anilist_state + dual-source polling), main.py (AniList search + AniList ID support), tiering.py (docstring), tests/test_anilist.py (5 tests). All verified.
 
-Next exact action: User chooses next phase — Phase 8 (AniList/anime) or E2E verification of Phase 7.5 in Telegram.
+Next exact action: User chooses next phase — Phase 9 (IGDB games) or E2E verification of Phase 8 in Telegram.

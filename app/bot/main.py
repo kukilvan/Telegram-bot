@@ -167,13 +167,14 @@ def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) ->
     return item
 
 
-async def _resolve_media_for_add(session, tmdb_id: int, provider):
-    """Resolve a TMDb id for the /add flow.
+async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_provider=None):
+    """Resolve a numeric id for the /add flow.
 
     Returns one of:
-      ("item", MediaItem)           — unambiguous (existing row or single hit)
-      ("pick", movie_details, tv_d) — both endpoints live: user must choose
-      ("none", None)                — nothing found on TMDb
+      ("item", MediaItem)              — unambiguous (existing row or single hit)
+      ("pick_tmdb", movie_details, tv) — TMDb movie+TV collision: user must choose
+      ("pick_anilist", tmdb_details, anilist_details, tmdb_type) — TMDb+AniList collision
+      ("none", None)                   — nothing found on any source
     """
     ext_items = []
     for ext in session.execute(
@@ -186,14 +187,33 @@ async def _resolve_media_for_add(session, tmdb_id: int, provider):
         if m is not None:
             ext_items.append(m)
 
-    movie, tv = await _lookup_tmdb_details(provider, tmdb_id)
+    movie, tv = await _lookup_tmdb_details(tmdb_provider, tmdb_id)
     hits: dict[str, dict] = {}
     if movie:
         hits["movie"] = movie
     if tv:
         hits["tv"] = tv
-    if not hits:
+
+    # Check AniList collision (Phase 8)
+    anilist_details = None
+    if anilist_provider:
+        anilist_details = await anilist_provider.get_anime_details(tmdb_id)
+
+    if not hits and not anilist_details:
         return ("none", None)
+
+    # TMDb+AniList collision: user must choose
+    if hits and anilist_details:
+        tmdb_type = "movie" if "movie" in hits else "tv"
+        tmdb_details = hits.get("movie") or hits.get("tv")
+        logging.info(f"Id {tmdb_id} collides across TMDb ({tmdb_type}) + AniList (anime); sending pick prompt")
+        return ("pick_anilist", tmdb_details, anilist_details, tmdb_type)
+
+    if not hits:
+        # Only AniList hit — create the anime item
+        logging.info(f"AniList id {tmdb_id}: single anime hit; creating item")
+        item = _ensure_anilist_item(session, tmdb_id, anilist_details)
+        return ("item", item)
 
     matching = [m for m in ext_items if m.media_type in hits]
     if len(matching) == 1:
@@ -201,7 +221,7 @@ async def _resolve_media_for_add(session, tmdb_id: int, provider):
         return ("item", matching[0])
     if "movie" in hits and "tv" in hits:
         logging.info(f"TMDb id {tmdb_id} collides across movie+TV; sending pick prompt")
-        return ("pick", movie, tv)
+        return ("pick_tmdb", movie, tv)
     media_type, details = next(iter(hits.items()))
     # Single live endpoint: create the item, self-healing stale wrong-type rows.
     logging.info(f"TMDb id {tmdb_id}: single '{media_type}' hit; creating item")
@@ -376,19 +396,13 @@ async def main() -> None:
                     return
                 user = _get_or_create_user(s, message.from_user.id)
 
-                # Try TMDb first
-                result = await _resolve_media_for_add(s, numeric_id, tmdb)
+                # Try TMDb + AniList collision detection
+                result = await _resolve_media_for_add(s, numeric_id, tmdb, anilist)
                 kind = result[0]
                 if kind == "none":
-                    # Try AniList
-                    anilist_details = await anilist.get_anime_details(numeric_id)
-                    if anilist_details is None:
-                        await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList.")
-                        return
-                    item = _ensure_anilist_item(s, numeric_id, anilist_details)
-                    await _perform_add_flow(s, tmdb, anilist, item, user.id, message)
+                    await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList.")
                     return
-                if kind == "pick":
+                if kind == "pick_tmdb":
                     movie_d, tv_d = result[1], result[2]
                     kb = InlineKeyboardMarkup(inline_keyboard=[
                         [InlineKeyboardButton(text=f"🎬 {movie_d.get('title', 'фильм')}", callback_data=f"pick_movie:{numeric_id}")],
@@ -396,6 +410,20 @@ async def main() -> None:
                     ])
                     await message.answer(
                         "Этот TMDb id совпадает с фильмом и сериалом. Какой добавить?",
+                        reply_markup=kb,
+                    )
+                    return
+                if kind == "pick_anilist":
+                    tmdb_d, anilist_d, tmdb_type = result[1], result[2], result[3]
+                    tmdb_title = tmdb_d.get("title") or tmdb_d.get("name", "TMDb")
+                    anilist_title = (anilist_d.get("title") or {}).get("romaji") or "AniList"
+                    icon = "🎬" if tmdb_type == "movie" else "📺"
+                    kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(text=f"{icon} {tmdb_title} (TMDb)", callback_data=f"pick_media:{numeric_id}:{tmdb_type}")],
+                        [InlineKeyboardButton(text=f"🎌 {anilist_title} (AniList)", callback_data=f"pick_media:{numeric_id}:anilist")],
+                    ])
+                    await message.answer(
+                        "Этот id совпадает с TMDb и AniList. Какой добавить?",
                         reply_markup=kb,
                     )
                     return
@@ -433,6 +461,43 @@ async def main() -> None:
                         return
                     item = _ensure_media_item(s, tmdb_id, details, media_type)
                     logging.info(f"pick_{media_type} {tmdb_id}: resolved to item {item.id}")
+                    await cb.answer()
+                    await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
+                    return
+
+                if action == "pick_media":
+                    parts = arg.split(":")
+                    if len(parts) != 2:
+                        await cb.answer("Неизвестная кнопка")
+                        return
+                    try:
+                        media_id = int(parts[0])
+                    except ValueError:
+                        await cb.answer("Неизвестная кнопка")
+                        return
+                    source = parts[1]
+                    if source == "anilist":
+                        anilist_details = await anilist.get_anime_details(media_id)
+                        if not anilist_details:
+                            await cb.answer()
+                            await cb.message.answer(f"AniList не вернул данные для id {media_id}.")
+                            return
+                        item = _ensure_anilist_item(s, media_id, anilist_details)
+                    elif source in ("movie", "tv"):
+                        details = (
+                            await tmdb.get_movie_details(media_id)
+                            if source == "movie"
+                            else await tmdb.get_tv_details(media_id)
+                        )
+                        if not details or not (details.get("title") or details.get("name")):
+                            await cb.answer()
+                            await cb.message.answer(f"TMDb не вернул данные для id {media_id}.")
+                            return
+                        item = _ensure_media_item(s, media_id, details, source)
+                    else:
+                        await cb.answer("Неизвестная кнопка")
+                        return
+                    logging.info(f"pick_media {media_id}/{source}: resolved to item {item.id}")
                     await cb.answer()
                     await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
                     return
