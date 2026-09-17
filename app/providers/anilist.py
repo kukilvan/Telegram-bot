@@ -65,7 +65,6 @@ class AniListProvider:
         status
         episodes
         seasonYear
-        description
         coverImage {
           large
         }
@@ -73,15 +72,6 @@ class AniListProvider:
           airingAt
           timeUntilAiring
           episode
-        }
-        airingSchedule {
-          edges {
-            node {
-              airingAt
-              episode
-            }
-            mediaId
-          }
         }
       }
     }
