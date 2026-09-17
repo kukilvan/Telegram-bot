@@ -123,12 +123,18 @@ def _ensure_anilist_item(session, anilist_id: int, details: dict) -> MediaItem:
     title = (details.get("title") or {}).get("romaji") or "Unknown"
     year = details.get("seasonYear")
     poster = details.get("coverImage", {}).get("large")
-    return MediaItem(
+    item = MediaItem(
         media_type="anime",
         canonical_title_en=title,
         year=int(year) if year else None,
         poster_url=f"https:{poster}" if poster else None,
     )
+    session.add(item)
+    session.flush()  # generate UUID primary key before FK reference
+    ext = ExternalId(media_item_id=item.id, source="anilist", external_id=str(anilist_id))
+    session.add(ext)
+    session.commit()
+    return item
 
 
 def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) -> MediaItem:
@@ -466,41 +472,48 @@ async def main() -> None:
                     return
 
                 if action == "pick_media":
-                    parts = arg.split(":")
-                    if len(parts) != 2:
-                        await cb.answer("Неизвестная кнопка")
-                        return
                     try:
-                        media_id = int(parts[0])
-                    except ValueError:
-                        await cb.answer("Неизвестная кнопка")
-                        return
-                    source = parts[1]
-                    if source == "anilist":
-                        anilist_details = await anilist.get_anime_details(media_id)
-                        if not anilist_details:
-                            await cb.answer()
-                            await cb.message.answer(f"AniList не вернул данные для id {media_id}.")
+                        parts = arg.split(":")
+                        if len(parts) != 2:
+                            await cb.answer("Неизвестная кнопка")
                             return
-                        item = _ensure_anilist_item(s, media_id, anilist_details)
-                    elif source in ("movie", "tv"):
-                        details = (
-                            await tmdb.get_movie_details(media_id)
-                            if source == "movie"
-                            else await tmdb.get_tv_details(media_id)
-                        )
-                        if not details or not (details.get("title") or details.get("name")):
-                            await cb.answer()
-                            await cb.message.answer(f"TMDb не вернул данные для id {media_id}.")
+                        try:
+                            media_id = int(parts[0])
+                        except ValueError:
+                            await cb.answer("Неизвестная кнопка")
                             return
-                        item = _ensure_media_item(s, media_id, details, source)
-                    else:
-                        await cb.answer("Неизвестная кнопка")
+                        source = parts[1]
+                        logging.info(f"pick_media callback: media_id={media_id}, source={source}")
+                        if source == "anilist":
+                            anilist_details = await anilist.get_anime_details(media_id)
+                            if not anilist_details:
+                                await cb.answer()
+                                await cb.message.answer(f"AniList не вернул данные для id {media_id}.")
+                                return
+                            item = _ensure_anilist_item(s, media_id, anilist_details)
+                        elif source in ("movie", "tv"):
+                            details = (
+                                await tmdb.get_movie_details(media_id)
+                                if source == "movie"
+                                else await tmdb.get_tv_details(media_id)
+                            )
+                            if not details or not (details.get("title") or details.get("name")):
+                                await cb.answer()
+                                await cb.message.answer(f"TMDb не вернул данные для id {media_id}.")
+                                return
+                            item = _ensure_media_item(s, media_id, details, source)
+                        else:
+                            await cb.answer("Неизвестная кнопка")
+                            return
+                        logging.info(f"pick_media {media_id}/{source}: resolved to item {item.id}")
+                        await cb.answer()
+                        await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
                         return
-                    logging.info(f"pick_media {media_id}/{source}: resolved to item {item.id}")
-                    await cb.answer()
-                    await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
-                    return
+                    except Exception as e:
+                        logging.error(f"pick_media handler error: {e}", exc_info=True)
+                        await cb.answer("Произошла ошибка")
+                        await cb.message.answer(f"Ошибка: {e}")
+                        return
 
                 item = s.get(MediaItem, arg) if arg else None
                 if item is None or action not in ("ca_yes", "ca_no", "wt_keep", "wt_stop"):

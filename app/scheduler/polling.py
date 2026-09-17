@@ -281,7 +281,7 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
         if st is None or (st.next_check_at is not None and st.next_check_at <= now)
     ]
     # Oldest deadlines first; items without a deadline go out right away.
-    due_rows.sort(key=lambda pair: due_sort_key(pair[1].next_check_at))
+    due_rows.sort(key=lambda pair: due_sort_key(pair[1].next_check_at if pair[1] else None))
 
     results = []
     for w, st in due_rows:
