@@ -27,6 +27,7 @@ from app.database.models import (
 )
 from app.database.session import ensure_data_dir, get_session_factory
 from app.providers.tmdb import TMDbProvider
+from app.providers.anilist import AniListProvider
 from app.scheduler.polling import _fetch_tmdb_state, poll_due_items, poll_item, _store_state
 from app.services.notes import create_or_update_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
@@ -103,6 +104,31 @@ def _delete_item_with_dependents(session, item: MediaItem):
     )
     session.execute(delete(ExternalId).where(ExternalId.media_item_id == item.id))
     session.delete(item)
+
+
+def _ensure_anilist_item(session, anilist_id: int, details: dict) -> MediaItem:
+    """Get (or create) the MediaItem for an AniList anime id."""
+    existing_exts = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "anilist") &
+            (ExternalId.external_id == str(anilist_id))
+        )
+    ).scalars().all()
+    if existing_exts:
+        ext = existing_exts[0]
+        item = session.get(MediaItem, ext.media_item_id)
+        if item is not None:
+            return item
+
+    title = (details.get("title") or {}).get("romaji") or "Unknown"
+    year = details.get("seasonYear")
+    poster = details.get("coverImage", {}).get("large")
+    return MediaItem(
+        media_type="anime",
+        canonical_title_en=title,
+        year=int(year) if year else None,
+        poster_url=f"https:{poster}" if poster else None,
+    )
 
 
 def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) -> MediaItem:
@@ -182,7 +208,7 @@ async def _resolve_media_for_add(session, tmdb_id: int, provider):
     return ("item", _ensure_media_item(session, tmdb_id, details, media_type))
 
 
-async def _perform_add_flow(s, tmdb, item: MediaItem, user_id: int, sender):
+async def _perform_add_flow(s, tmdb, anilist, item: MediaItem, user_id: int, sender):
     """Shared /add flow after the MediaItem is resolved.
 
     duplicate prompt -> released/season-complete confirm -> normal add.
@@ -244,9 +270,11 @@ async def _perform_add_flow(s, tmdb, item: MediaItem, user_id: int, sender):
 
 
 def _default_rules_for(media_type: str) -> tuple[str, ...]:
-    """Default enabled notification rules created on /add (Phases 5/7)."""
-    if media_type == "tv":  # anime shares the TMDb flow in later phases
+    """Default enabled notification rules created on /add (Phases 5/7/8)."""
+    if media_type == "tv":
         return ("NEW_SEASON_ANNOUNCED", "ALL_EPISODES_OUT")
+    if media_type == "anime":
+        return ("NEXT_EPISODE_AIRING", "ALL_EPISODES_OUT")
     return ("DIGITAL_DATE_ANNOUNCED", "RUSSIAN_AUDIO_AVAILABLE")
 
 
@@ -272,6 +300,7 @@ async def main() -> None:
 
     dp = Dispatcher()
     tmdb = TMDbProvider()
+    anilist = AniListProvider()
     ensure_data_dir()
     session_factory = get_session_factory()  # sessionmaker; call it to create a Session
 
@@ -306,8 +335,9 @@ async def main() -> None:
 
             movie_results = await tmdb.search_movie(query)
             tv_results = await tmdb.search_tv(query)
+            anime_results = await anilist.search_anime(query)
 
-            if not movie_results and not tv_results:
+            if not movie_results and not tv_results and not anime_results:
                 await message.answer("Ничего не найдено.")
                 return
 
@@ -315,12 +345,17 @@ async def main() -> None:
             for r in movie_results[:5]:
                 name = r.get("title", "Unknown")
                 year = (r.get("first_air_date") or "")[:4] if r.get("first_air_date") else ""
-                lines.append(f"🎬 {name} ({year}) [id={r['id']}]")
+                lines.append(f"🎬 {name} ({year}) [tmdb={r['id']}]")
 
             for r in tv_results[:5]:
                 name = r.get("name", "Unknown")
                 year = (r.get("first_air_date") or "")[:4] if r.get("first_air_date") else ""
-                lines.append(f"📺 {name} ({year}) [id={r['id']}]")
+                lines.append(f"📺 {name} ({year}) [tmdb={r['id']}]")
+
+            for r in anime_results[:5]:
+                name = r.get("title", {}).get("romaji") or r.get("title", {}).get("english") or "Unknown"
+                year = str(r.get("seasonYear") or "")
+                lines.append(f"🎌 {name} ({year}) [anilist={r['id']}]")
 
             await message.answer("\n".join(lines) or "Ничего не найдено.")
 
@@ -328,35 +363,44 @@ async def main() -> None:
         async def add_handler(message: Message):
             parts = message.text.split(maxsplit=1)
             if len(parts) < 2:
-                await message.answer("Использование: /add <tmdb_id>")
+                await message.answer("Использование: /add <tmdb_id> или /add <anilist_id>")
                 return
+            arg = parts[1]
             try:
-                tmdb_id = int(parts[1])
+                numeric_id = int(arg)
             except ValueError:
-                await message.answer("Нужно число TMDb id, например: /add 841")
+                await message.answer("Нужно число TMDb или AniList id, например: /add 841")
                 return
             with db() as s:
                 if not _is_allowed(message):
                     return
                 user = _get_or_create_user(s, message.from_user.id)
-                result = await _resolve_media_for_add(s, tmdb_id, tmdb)
+
+                # Try TMDb first
+                result = await _resolve_media_for_add(s, numeric_id, tmdb)
                 kind = result[0]
                 if kind == "none":
-                    await message.answer("Не нашёл этот TMDb id.")
+                    # Try AniList
+                    anilist_details = await anilist.get_anime_details(numeric_id)
+                    if anilist_details is None:
+                        await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList.")
+                        return
+                    item = _ensure_anilist_item(s, numeric_id, anilist_details)
+                    await _perform_add_flow(s, tmdb, anilist, item, user.id, message)
                     return
                 if kind == "pick":
                     movie_d, tv_d = result[1], result[2]
                     kb = InlineKeyboardMarkup(inline_keyboard=[
-                        [InlineKeyboardButton(text=f"🎬 {movie_d.get('title', 'фильм')}", callback_data=f"pick_movie:{tmdb_id}")],
-                        [InlineKeyboardButton(text=f"📺 {tv_d.get('name', 'сериал')}", callback_data=f"pick_tv:{tmdb_id}")],
+                        [InlineKeyboardButton(text=f"🎬 {movie_d.get('title', 'фильм')}", callback_data=f"pick_movie:{numeric_id}")],
+                        [InlineKeyboardButton(text=f"📺 {tv_d.get('name', 'сериал')}", callback_data=f"pick_tv:{numeric_id}")],
                     ])
                     await message.answer(
-                        "Этот TMDb id совпадает с двумя произведениями. Какой добавить?",
+                        "Этот TMDb id совпадает с фильмом и сериалом. Какой добавить?",
                         reply_markup=kb,
                     )
                     return
                 item = result[1]
-                await _perform_add_flow(s, tmdb, item, user.id, message)
+                await _perform_add_flow(s, tmdb, anilist, item, user.id, message)
 
         @dp.callback_query()
         async def confirm_handler(cb: CallbackQuery):
@@ -390,7 +434,7 @@ async def main() -> None:
                     item = _ensure_media_item(s, tmdb_id, details, media_type)
                     logging.info(f"pick_{media_type} {tmdb_id}: resolved to item {item.id}")
                     await cb.answer()
-                    await _perform_add_flow(s, tmdb, item, user.id, cb.message)
+                    await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
                     return
 
                 item = s.get(MediaItem, arg) if arg else None
@@ -403,8 +447,6 @@ async def main() -> None:
                     for ev_type in _default_rules_for(item.media_type):
                         set_rule(s, user.id, item.id, ev_type, True)
                     state = await _fetch_tmdb_state(s, tmdb, item)
-                    # Store the fetched state as baseline: already-known past dates /
-                    # aired seasons must NOT retroactively trigger notifications.
                     _store_state(s, item.id, "tmdb", state)
                     await cb.answer("Добавлено")
                     await cb.message.answer(f"✅ Добавлено: {title}")
@@ -546,7 +588,7 @@ async def main() -> None:
             """
             before = tmdb.call_count
             with db() as s:
-                results = await poll_due_items(s, tmdb)
+                results = await poll_due_items(s, tmdb, anilist)
                 for user_id, item, events in results:
                     if not events:
                         continue
@@ -557,10 +599,13 @@ async def main() -> None:
                     for ev in events:
                         date = ev.payload.get("date")
                         season = ev.payload.get("season")
+                        episode = ev.payload.get("episode")
                         if date:
                             text = f"\U0001F514 {ev.event_type} \u2192 {title} ({date})"
                         elif season is not None:
                             text = f"\U0001F4FA {ev.event_type} \u2192 {title}, сезон {season}"
+                        elif episode is not None:
+                            text = f"\U0001F3AC {ev.event_type} \u2192 {title}, серия {episode}"
                         else:
                             text = f"\U0001F514 {ev.event_type} \u2192 {title}"
                         await bot.send_message(

@@ -14,7 +14,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from app.database.models import ExternalId, MediaItem, SourceState, UserWatchItem
-from app.domain.events import compare_states
+from app.domain.events import compare_anilist_states, compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
 
 
@@ -144,34 +144,99 @@ async def _fetch_tmdb_state(session: Session, provider, item: MediaItem) -> dict
     return {"digital_release": _earliest_digital_date(release_dates)}
 
 
-async def poll_item(session: Session, provider, item: MediaItem, user_id: int):
+async def _fetch_anilist_state(session: Session, provider, item: MediaItem) -> dict:
+    """Fetch current normalized AniList state for an anime item (Phase 8).
+
+    Returns a dict with:
+      next_episode_number: int | None
+      next_episode_air_date: str | None  (ISO 'YYYY-MM-DD')
+      total_episodes: int
+      status: str (RELEASING / FINISHED / etc.)
+    """
+    ext = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "anilist") &
+            (ExternalId.media_item_id == item.id)
+        )
+    ).scalar_one_or_none()
+    if ext is None:
+        return {}
+    anilist_id = int(ext.external_id)
+    details = await provider.get_anime_details(anilist_id)
+    if details is None:
+        return {}
+    return _normalize_anilist_details(details)
+
+
+def _normalize_anilist_details(details: dict) -> dict:
+    """Normalize an AniList Media object into tracking state (pure, no network)."""
+    next_ep = details.get("nextAiringEpisode")
+    next_episode_number = next_ep.get("episode") if next_ep else None
+    next_episode_air_at = next_ep.get("airingAt") if next_ep else None
+    next_episode_air_date = (
+        datetime.fromtimestamp(next_episode_air_at, tz=_tz.utc).date().isoformat()
+        if next_episode_air_at else None
+    )
+
+    return {
+        "next_episode_number": next_episode_number,
+        "next_episode_air_date": next_episode_air_date,
+        "total_episodes": details.get("episodes") or 0,
+        "status": details.get("status") or "",
+    }
+
+
+async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int):
     """Run one polling cycle for a watch item.
 
-    Fetches the current normalized state from the provider, compares it with
+    Fetches the current normalized state from the provider(s), compares it with
     the last stored source_state, and for each detected event checks dedup +
     enabled rule before marking it sent. Returns events that passed both gates;
     the caller sends the returned Telegram messages.
+
+    Anime items are polled from BOTH TMDb and AniList (two independent sources).
     """
-    state = await _fetch_tmdb_state(session, provider, item)
-    old = _load_state(session, item.id, "tmdb")
-    if old is None:
-        # First poll: store baseline, no event.
-        _store_state(session, item.id, "tmdb", state)
-        return []
-
     to_send = []
-    for ev in compare_states(old, state):
-        ev = _replace(ev, media_item_id=item.id)  # attach item id for per-item dedup
-        fp = ev.fingerprint()
-        if has_been_sent(session, fp):
-            continue  # dedup: already sent
-        enabled_rules = get_enabled_rules(session, user_id, item.id)
-        if not any(r.event_type == ev.event_type for r in enabled_rules):
-            continue  # no enabled rule for this event type
-        mark_sent(session, fp, item.id)
-        to_send.append(ev)
 
-    _store_state(session, item.id, "tmdb", state)
+    # TMDb poll (movies, TV, anime)
+    state = await _fetch_tmdb_state(session, tmdb_provider, item)
+    old = _load_state(session, item.id, "tmdb")
+    if old is not None:
+        for ev in compare_states(old, state):
+            ev = _replace(ev, media_item_id=item.id)
+            fp = ev.fingerprint()
+            if has_been_sent(session, fp):
+                continue
+            enabled_rules = get_enabled_rules(session, user_id, item.id)
+            if not any(r.event_type == ev.event_type for r in enabled_rules):
+                continue
+            mark_sent(session, fp, item.id)
+            to_send.append(ev)
+        _store_state(session, item.id, "tmdb", state)
+    else:
+        if state:
+            _store_state(session, item.id, "tmdb", state)
+
+    # AniList poll (anime only)
+    if item.media_type == "anime" and anilist_provider is not None:
+        anilist_state = await _fetch_anilist_state(session, anilist_provider, item)
+        old_al = _load_state(session, item.id, "anilist")
+        if old_al is not None:
+            for ev in compare_anilist_states(old_al, anilist_state):
+                ev = _replace(ev, media_item_id=item.id)
+                fp = ev.fingerprint()
+                if has_been_sent(session, fp):
+                    continue
+                enabled_rules = get_enabled_rules(session, user_id, item.id)
+                if not any(r.event_type == ev.event_type for r in enabled_rules):
+                    continue
+                mark_sent(session, fp, item.id)
+                to_send.append(ev)
+            _store_state(session, item.id, "anilist", anilist_state)
+        else:
+            if anilist_state:
+                _store_state(session, item.id, "anilist", anilist_state)
+
     return to_send
 
 
@@ -193,7 +258,7 @@ def _due_rows_query(session):
     )
 
 
-async def poll_due_items(session: Session, provider, now=None) -> list[tuple[int, MediaItem, list]]:
+async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, now=None) -> list[tuple[int, MediaItem, list]]:
     """Process only watch items whose tier deadline has arrived (Phase 7.5).
 
     Staggering happens inside TMDbProvider (~1.5 s between calls + per-minute cap), so even many due items are never fired as a burst.
@@ -223,11 +288,11 @@ async def poll_due_items(session: Session, provider, now=None) -> list[tuple[int
         item = session.get(MediaItem, w.media_item_id)
         if item is None:
             continue
-        events = await poll_item(session, provider, item, user_id=w.user_id)
+        events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id)
         state_now = _load_state(session, item.id, "tmdb") or {}
         interval = tier_interval(state_now, item.media_type)
         jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
-        extra = RATE_LIMIT_EXTRA_DELAY if getattr(provider, "hit_429", False) else 0.0
+        extra = RATE_LIMIT_EXTRA_DELAY if getattr(tmdb_provider, "hit_429", False) else 0.0
         deadline = now + timedelta(seconds=interval + jitter + extra)
         st_row = session.execute(
             select(SourceState).where(

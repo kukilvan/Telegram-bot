@@ -75,15 +75,15 @@ def test_poll_item_cycle():
 
     provider = FakeProvider()
     # Poll 1: baseline (no prior state).
-    r1 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r1 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert r1 == [], "first poll stores baseline, no event"
     # Poll 2: state change detected + enabled-rule gate passes.
-    r2 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r2 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert len(r2) == 1 and r2[0].event_type == "DIGITAL_DATE_ANNOUNCED", (
         "state change should produce exactly one event"
     )
     # Poll 3: no re-detection (stored state now matches).
-    r3 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r3 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert r3 == [], "no duplicate on re-poll"
     s.close()
 
@@ -108,7 +108,7 @@ def test_tv_baseline_no_event():
     seasons_meta = [{"season_number": 1, "episode_count": 3}]
     episodes_seq = [[{"air_date": "2023-01-15"}, {"air_date": None}, {"air_date": None}]]
     provider = SequenceTVProvider([seasons_meta], [episodes_seq[0]])
-    r1 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r1 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert r1 == [], "first poll stores baseline without events"
     s.close()
 
@@ -133,14 +133,14 @@ def test_tv_new_season_announced():
         [{"air_date": None}, {"air_date": None}],            # poll 2: season 2 fresh
     ]
     provider = SequenceTVProvider(seasons_seq, episodes_seq)
-    r1 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r1 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert r1 == [], "baseline poll stores state without events"
-    r2 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r2 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert len(r2) == 1 and r2[0].event_type == "NEW_SEASON_ANNOUNCED", (
         "season bump should produce exactly one NEW_SEASON_ANNOUNCED"
     )
     assert r2[0].payload == {"season": 2}
-    r3 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r3 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert r3 == [], "no re-detection on next poll (dedup gate)"
     s.close()
 
@@ -162,9 +162,9 @@ def test_tv_all_episodes_out():
         [{"air_date": "2023-01-15"}, {"air_date": "2023-01-22"}, {"air_date": "2023-01-29"}],
     ]
     provider = SequenceTVProvider(seasons_seq, episodes_seq)
-    r1 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r1 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert r1 == [], "baseline poll stores state without events"
-    r2 = asyncio.run(poll_item(s, provider, item, user_id=user.id))
+    r2 = asyncio.run(poll_item(s, provider, None, item, user_id=user.id))
     assert len(r2) == 1 and r2[0].event_type == "ALL_EPISODES_OUT", (
         "all-episodes-out should produce exactly one event"
     )

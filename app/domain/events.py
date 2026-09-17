@@ -53,6 +53,55 @@ NEW_EPISODE = "NEW_EPISODE"
 SEASON_PROGRESSED = "SEASON_PROGRESSED"
 RELEASE_DATE_CHANGED = "RELEASE_DATE_CHANGED"
 READY_TO_WATCH = "READY_TO_WATCH"
+NEXT_EPISODE_AIRING = "NEXT_EPISODE_AIRING"
+
+
+def compare_anilist_states(old: dict, new: dict) -> list[DomainEvent]:
+    """Compare two normalized AniList states and return detected domain events.
+
+    AniList state fields:
+      next_episode_number: int | None  — next episode to air (or None if finished)
+      next_episode_air_date: str | None — ISO date 'YYYY-MM-DD' of next episode
+      total_episodes: int               — total episodes announced
+      status: str                       — RELEASING / FINISHED / etc.
+    """
+    events = []
+
+    # First poll: don't fire events
+    if not old:
+        return events
+
+    # Next episode airing: episode number increased or air date appeared
+    old_ep = old.get("next_episode_number")
+    new_ep = new.get("next_episode_number")
+    old_date = old.get("next_episode_air_date")
+    new_date = new.get("next_episode_air_date")
+
+    if new_ep is not None and (old_ep is None or new_ep > old_ep):
+        events.append(
+            DomainEvent(
+                event_type=NEXT_EPISODE_AIRING,
+                source="anilist",
+                payload={
+                    "episode": new_ep,
+                    "date": str(new_date) if new_date else None,
+                },
+            )
+        )
+
+    # Status changed from RELEASING to FINISHED
+    old_status = old.get("status")
+    new_status = new.get("status")
+    if old_status == "RELEASING" and new_status == "FINISHED":
+        events.append(
+            DomainEvent(
+                event_type=ALL_EPISODES_OUT,
+                source="anilist",
+                payload={"total_episodes": new.get("total_episodes", 0)},
+            )
+        )
+
+    return events
 
 
 def compare_states(old: dict, new: dict) -> list[DomainEvent]:
