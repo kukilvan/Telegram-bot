@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # Telegram
     telegram_bot_token: str
     allowed_telegram_user_ids_raw: str = ""  # comma-separated ints, e.g. "123456789,987654321"
+    owner_chat_id: str = ""  # Telegram chat ID for error notifications
 
     # TMDb
     tmdb_api_key: str
@@ -22,7 +23,8 @@ class Settings(BaseSettings):
     poll_scan_interval_seconds: int = 120     # how often the scheduler scans for due items
 
     # IGDB
-    igdb_client_id: str
+    igdb_client_id: str = ""
+    igdb_client_secret: str = ""
 
     # KinoPub (OAuth device flow)
     kinopub_client_id: str | None = None

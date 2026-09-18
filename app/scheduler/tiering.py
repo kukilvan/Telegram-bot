@@ -9,7 +9,7 @@ RATE_LIMIT_EXTRA_DELAY = 300  # extra seconds appended when an item's fetch hit 
 def tier_interval(state: dict | None, media_type: str) -> int:
     """Pure state -> re-check interval in seconds (no network, no clock).
 
-    Tier rules (approved plan §15, phase 7.5; Phase 8: anime via TMDb):
+    Tier rules (approved plan §15, phase 7.5; Phase 8: anime via TMDb; Phase 9: games via IGDB):
       movie/game: known digital release date -> WEEKLY (verify the date did not change);
                   no release information at all -> DAILY (wait for an announcement).
       tv/anime:   current season airing or waiting for a new-season announcement -> DAILY;

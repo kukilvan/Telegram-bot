@@ -2,8 +2,9 @@
 
 import asyncio
 import logging
+import sys
 from contextlib import contextmanager
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import delete, select
 
@@ -11,6 +12,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
+from app.bot.error_handler import ErrorMiddleware, send_startup_error_sync
 from app.domain.events import pre_add_check
 from app.config import get_settings
 from app.database.models import (
@@ -28,7 +30,8 @@ from app.database.models import (
 from app.database.session import ensure_data_dir, get_session_factory
 from app.providers.tmdb import TMDbProvider
 from app.providers.anilist import AniListProvider
-from app.scheduler.polling import _fetch_tmdb_state, poll_due_items, poll_item, _store_state
+from app.providers.igdb import IGDBProvider
+from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state
 from app.services.notes import create_or_update_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.watchlist import (
@@ -137,6 +140,48 @@ def _ensure_anilist_item(session, anilist_id: int, details: dict) -> MediaItem:
     return item
 
 
+def _ensure_igdb_item(session, igdb_id: int, details: dict) -> MediaItem:
+    """Get (or create) the MediaItem for an IGDB game id."""
+    existing_exts = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "igdb") &
+            (ExternalId.external_id == str(igdb_id))
+        )
+    ).scalars().all()
+    if existing_exts:
+        ext = existing_exts[0]
+        item = session.get(MediaItem, ext.media_item_id)
+        if item is not None:
+            return item
+
+    title = details.get("name") or "Unknown"
+    frd = details.get("first_release_date")
+    year = None
+    if frd:
+        if isinstance(frd, (int, float)):
+            year = datetime.fromtimestamp(frd).year
+        elif isinstance(frd, str):
+            try:
+                year = int(frd[:4])
+            except (ValueError, TypeError):
+                pass
+    cover = details.get("cover") or {}
+    poster = cover.get("url") or ""
+    poster_url = f"https:{poster}" if poster and poster.endswith("/") else (f"{poster}cover_big.jpg" if poster else None)
+    item = MediaItem(
+        media_type="game",
+        canonical_title_en=title,
+        year=year,
+        poster_url=poster_url,
+    )
+    session.add(item)
+    session.flush()  # generate UUID primary key before FK reference
+    ext = ExternalId(media_item_id=item.id, source="igdb", external_id=str(igdb_id))
+    session.add(ext)
+    session.commit()
+    return item
+
+
 def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) -> MediaItem:
     """Get (or create) the MediaItem for a TMDb id of an explicit type.
 
@@ -173,13 +218,15 @@ def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) ->
     return item
 
 
-async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_provider=None):
+async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_provider=None, igdb_provider=None):
     """Resolve a numeric id for the /add flow.
 
     Returns one of:
       ("item", MediaItem)              — unambiguous (existing row or single hit)
       ("pick_tmdb", movie_details, tv) — TMDb movie+TV collision: user must choose
       ("pick_anilist", tmdb_details, anilist_details, tmdb_type) — TMDb+AniList collision
+      ("pick_igdb", tmdb_details, igdb_details, tmdb_type) — TMDb+IGDB collision
+      ("pick_all_three", tmdb_details, anilist_details, igdb_details, tmdb_type) — all three
       ("none", None)                   — nothing found on any source
     """
     ext_items = []
@@ -205,21 +252,46 @@ async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_p
     if anilist_provider:
         anilist_details = await anilist_provider.get_anime_details(tmdb_id)
 
-    if not hits and not anilist_details:
+    # Check IGDB collision (Phase 9)
+    igdb_details = None
+    if igdb_provider:
+        igdb_details = await igdb_provider.get_game_details(tmdb_id)
+
+    if not hits and not anilist_details and not igdb_details:
         return ("none", None)
 
-    # TMDb+AniList collision: user must choose
-    if hits and anilist_details:
+    # All three sources have a hit
+    if hits and anilist_details and igdb_details:
         tmdb_type = "movie" if "movie" in hits else "tv"
         tmdb_details = hits.get("movie") or hits.get("tv")
-        logging.info(f"Id {tmdb_id} collides across TMDb ({tmdb_type}) + AniList (anime); sending pick prompt")
+        logging.info(f"Id {tmdb_id} collides across TMDb ({tmdb_type}) + AniList + IGDB; sending pick prompt")
+        return ("pick_all_three", tmdb_details, anilist_details, igdb_details, tmdb_type)
+
+    # TMDb+AniList collision
+    if hits and anilist_details and not igdb_details:
+        tmdb_type = "movie" if "movie" in hits else "tv"
+        tmdb_details = hits.get("movie") or hits.get("tv")
+        logging.info(f"Id {tmdb_id} collides across TMDb ({tmdb_type}) + AniList; sending pick prompt")
         return ("pick_anilist", tmdb_details, anilist_details, tmdb_type)
 
+    # TMDb+IGDB collision
+    if hits and igdb_details and not anilist_details:
+        tmdb_type = "movie" if "movie" in hits else "tv"
+        tmdb_details = hits.get("movie") or hits.get("tv")
+        logging.info(f"Id {tmdb_id} collides across TMDb ({tmdb_type}) + IGDB; sending pick prompt")
+        return ("pick_igdb", tmdb_details, igdb_details, tmdb_type)
+
     if not hits:
-        # Only AniList hit — create the anime item
-        logging.info(f"AniList id {tmdb_id}: single anime hit; creating item")
-        item = _ensure_anilist_item(session, tmdb_id, anilist_details)
-        return ("item", item)
+        # Only AniList or only IGDB hit
+        if anilist_details:
+            logging.info(f"AniList id {tmdb_id}: single anime hit; creating item")
+            item = _ensure_anilist_item(session, tmdb_id, anilist_details)
+            return ("item", item)
+        if igdb_details:
+            logging.info(f"IGDB id {tmdb_id}: single game hit; creating item")
+            item = _ensure_igdb_item(session, tmdb_id, igdb_details)
+            return ("item", item)
+        return ("none", None)
 
     matching = [m for m in ext_items if m.media_type in hits]
     if len(matching) == 1:
@@ -234,7 +306,7 @@ async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_p
     return ("item", _ensure_media_item(session, tmdb_id, details, media_type))
 
 
-async def _perform_add_flow(s, tmdb, anilist, item: MediaItem, user_id: int, sender):
+async def _perform_add_flow(s, tmdb, anilist, igdb, item: MediaItem, user_id: int, sender):
     """Shared /add flow after the MediaItem is resolved.
 
     duplicate prompt -> released/season-complete confirm -> normal add.
@@ -254,6 +326,10 @@ async def _perform_add_flow(s, tmdb, anilist, item: MediaItem, user_id: int, sen
     # Pre-check the current state BEFORE storing a baseline:
     # already released / season complete -> ask; active or no data -> add normally.
     state = await _fetch_tmdb_state(s, tmdb, item)
+    if item.media_type == "game" or state is None:
+        igdb_state = await _fetch_igdb_state(s, igdb, item)
+        if igdb_state:
+            state = igdb_state
     decision = pre_add_check(state, item.media_type, date.today().isoformat())
     status_line = _format_status_line(decision)
 
@@ -296,11 +372,13 @@ async def _perform_add_flow(s, tmdb, anilist, item: MediaItem, user_id: int, sen
 
 
 def _default_rules_for(media_type: str) -> tuple[str, ...]:
-    """Default enabled notification rules created on /add (Phases 5/7/8)."""
+    """Default enabled notification rules created on /add (Phases 5/7/8/9)."""
     if media_type == "tv":
         return ("NEW_SEASON_ANNOUNCED", "ALL_EPISODES_OUT")
     if media_type == "anime":
         return ("NEXT_EPISODE_AIRING", "ALL_EPISODES_OUT")
+    if media_type == "game":
+        return ("DIGITAL_DATE_ANNOUNCED",)
     return ("DIGITAL_DATE_ANNOUNCED", "RUSSIAN_AUDIO_AVAILABLE")
 
 
@@ -313,10 +391,13 @@ def _format_status_line(decision) -> str | None:
     if decision.code == "season_complete":
         return f"Все серии сезона {decision.season} уже вышли ({decision.aired}/{decision.total})"
     if decision.code == "airing":
-        if not decision.aired:
-            return f"Сезон {decision.season} анонсирован, серий ещё не вышло"
-        extra = f", {decision.aired}/{decision.total} серий вышли" if decision.total else ""
-        return f"Идёт сезон {decision.season}{extra}"
+        if decision.season is not None:
+            if not decision.aired:
+                return f"Сезон {decision.season} анонсирован, серий ещё не вышло"
+            extra = f", {decision.aired}/{decision.total} серий вышли" if decision.total else ""
+            return f"Идёт сезон {decision.season}{extra}"
+        # Anime with no season data but has air date
+        return "Аниме в процессе трансляции"
     return None
 
 
@@ -325,8 +406,11 @@ async def main() -> None:
     logging.info("Starting bot...")
 
     dp = Dispatcher()
+    # Register error reporting middleware (catches all unhandled exceptions)
+    dp.update.outer_middleware(ErrorMiddleware())
     tmdb = TMDbProvider()
     anilist = AniListProvider()
+    igdb = IGDBProvider()
     ensure_data_dir()
     session_factory = get_session_factory()  # sessionmaker; call it to create a Session
 
@@ -362,8 +446,9 @@ async def main() -> None:
             movie_results = await tmdb.search_movie(query)
             tv_results = await tmdb.search_tv(query)
             anime_results = await anilist.search_anime(query)
+            game_results = await igdb.search_games(query)
 
-            if not movie_results and not tv_results and not anime_results:
+            if not movie_results and not tv_results and not anime_results and not game_results:
                 await message.answer("Ничего не найдено.")
                 return
 
@@ -383,36 +468,53 @@ async def main() -> None:
                 year = str(r.get("seasonYear") or "")
                 lines.append(f"🎌 {name} ({year}) [anilist={r['id']}]")
 
+            for r in game_results[:5]:
+                name = r.get("name", "Unknown")
+                frd = r.get("first_release_date")
+                year = ""
+                if frd:
+                    try:
+                        frd_str = str(frd)
+                        # Check if it's a Unix timestamp (numeric, > 1000000000)
+                        if frd_str.isdigit() and int(frd_str) > 1000000000:
+                            from datetime import datetime as _dt, timezone as _tz
+                            year = str(_dt.fromtimestamp(int(frd_str), tz=_tz.utc).year)
+                        else:
+                            year = frd_str[:4]
+                    except (ValueError, TypeError, OSError):
+                        pass
+                lines.append(f"🎮 {name} ({year}) [igdb={r['id']}]")
+
             await message.answer("\n".join(lines) or "Ничего не найдено.")
 
         @dp.message(Command("add"))
         async def add_handler(message: Message):
             parts = message.text.split(maxsplit=1)
             if len(parts) < 2:
-                await message.answer("Использование: /add <tmdb_id> или /add <anilist_id>")
+                await message.answer("Использование: /add <tmdb_id>, /add <anilist_id> или /add <igdb_id>")
                 return
             arg = parts[1]
             try:
                 numeric_id = int(arg)
             except ValueError:
-                await message.answer("Нужно число TMDb или AniList id, например: /add 841")
+                await message.answer("Нужно число TMDb, AniList или IGDB id, например: /add 841")
                 return
             with db() as s:
                 if not _is_allowed(message):
                     return
                 user = _get_or_create_user(s, message.from_user.id)
 
-                # Try TMDb + AniList collision detection
-                result = await _resolve_media_for_add(s, numeric_id, tmdb, anilist)
+                # Try TMDb + AniList + IGDB collision detection
+                result = await _resolve_media_for_add(s, numeric_id, tmdb, anilist, igdb)
                 kind = result[0]
                 if kind == "none":
-                    await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList.")
+                    await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList, ни в IGDB.")
                     return
                 if kind == "pick_tmdb":
                     movie_d, tv_d = result[1], result[2]
                     kb = InlineKeyboardMarkup(inline_keyboard=[
-                        [InlineKeyboardButton(text=f"🎬 {movie_d.get('title', 'фильм')}", callback_data=f"pick_movie:{numeric_id}")],
-                        [InlineKeyboardButton(text=f"📺 {tv_d.get('name', 'сериал')}", callback_data=f"pick_tv:{numeric_id}")],
+                        [InlineKeyboardButton(text=f"🎬 {movie_d.get('title', 'фильм')}", callback_data=f"pick_media:{numeric_id}:movie")],
+                        [InlineKeyboardButton(text=f"📺 {tv_d.get('name', 'сериал')}", callback_data=f"pick_media:{numeric_id}:tv")],
                     ])
                     await message.answer(
                         "Этот TMDb id совпадает с фильмом и сериалом. Какой добавить?",
@@ -433,8 +535,38 @@ async def main() -> None:
                         reply_markup=kb,
                     )
                     return
+                if kind == "pick_igdb":
+                    tmdb_d, igdb_d, tmdb_type = result[1], result[2], result[3]
+                    tmdb_title = tmdb_d.get("title") or tmdb_d.get("name", "TMDb")
+                    igdb_title = igdb_d.get("name") or "IGDB"
+                    icon = "🎬" if tmdb_type == "movie" else "📺"
+                    kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(text=f"{icon} {tmdb_title} (TMDb)", callback_data=f"pick_media:{numeric_id}:{tmdb_type}")],
+                        [InlineKeyboardButton(text=f"🎮 {igdb_title} (IGDB)", callback_data=f"pick_media:{numeric_id}:igdb")],
+                    ])
+                    await message.answer(
+                        "Этот id совпадает с TMDb и IGDB. Какой добавить?",
+                        reply_markup=kb,
+                    )
+                    return
+                if kind == "pick_all_three":
+                    tmdb_d, anilist_d, igdb_d, tmdb_type = result[1], result[2], result[3], result[4]
+                    tmdb_title = tmdb_d.get("title") or tmdb_d.get("name", "TMDb")
+                    anilist_title = (anilist_d.get("title") or {}).get("romaji") or "AniList"
+                    igdb_title = igdb_d.get("name") or "IGDB"
+                    icon = "🎬" if tmdb_type == "movie" else "📺"
+                    kb = InlineKeyboardMarkup(inline_keyboard=[
+                        [InlineKeyboardButton(text=f"{icon} {tmdb_title} (TMDb)", callback_data=f"pick_media:{numeric_id}:{tmdb_type}")],
+                        [InlineKeyboardButton(text=f"🎌 {anilist_title} (AniList)", callback_data=f"pick_media:{numeric_id}:anilist")],
+                        [InlineKeyboardButton(text=f"🎮 {igdb_title} (IGDB)", callback_data=f"pick_media:{numeric_id}:igdb")],
+                    ])
+                    await message.answer(
+                        "Этот id совпадает с TMDb, AniList и IGDB. Какой добавить?",
+                        reply_markup=kb,
+                    )
+                    return
                 item = result[1]
-                await _perform_add_flow(s, tmdb, anilist, item, user.id, message)
+                await _perform_add_flow(s, tmdb, anilist, igdb, item, user.id, message)
 
         @dp.callback_query()
         async def confirm_handler(cb: CallbackQuery):
@@ -448,49 +580,56 @@ async def main() -> None:
 
                 if action in ("pick_movie", "pick_tv"):
                     try:
-                        tmdb_id = int(arg)
+                        media_id = int(arg)
                     except ValueError:
                         await cb.answer("Неизвестная кнопка")
                         return
                     media_type = "movie" if action == "pick_movie" else "tv"
                     details = (
-                        await tmdb.get_movie_details(tmdb_id)
+                        await tmdb.get_movie_details(media_id)
                         if media_type == "movie"
-                        else await tmdb.get_tv_details(tmdb_id)
+                        else await tmdb.get_tv_details(media_id)
                     )
                     valid = bool(
                         details and (details.get("title") or details.get("name"))
                     )
                     if not valid:
                         await cb.answer()
-                        await cb.message.answer(f"TMDb не вернул данные для id {tmdb_id}.")
+                        await cb.message.answer(f"TMDb не вернул данные для id {media_id}.")
                         return
-                    item = _ensure_media_item(s, tmdb_id, details, media_type)
-                    logging.info(f"pick_{media_type} {tmdb_id}: resolved to item {item.id}")
+                    item = _ensure_media_item(s, media_id, details, media_type)
+                    logging.info(f"pick_{media_type} {media_id}: resolved to item {item.id}")
                     await cb.answer()
-                    await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
+                    await _perform_add_flow(s, tmdb, anilist, igdb, item, user.id, cb.message)
                     return
 
                 if action == "pick_media":
+                    # Answer callback IMMEDIATELY to avoid timeout, then process
+                    await cb.answer()
                     try:
                         parts = arg.split(":")
                         if len(parts) != 2:
-                            await cb.answer("Неизвестная кнопка")
+                            await cb.message.answer("Неизвестная кнопка")
                             return
                         try:
                             media_id = int(parts[0])
                         except ValueError:
-                            await cb.answer("Неизвестная кнопка")
+                            await cb.message.answer("Неизвестная кнопка")
                             return
                         source = parts[1]
                         logging.info(f"pick_media callback: media_id={media_id}, source={source}")
                         if source == "anilist":
                             anilist_details = await anilist.get_anime_details(media_id)
                             if not anilist_details:
-                                await cb.answer()
                                 await cb.message.answer(f"AniList не вернул данные для id {media_id}.")
                                 return
                             item = _ensure_anilist_item(s, media_id, anilist_details)
+                        elif source == "igdb":
+                            igdb_details = await igdb.get_game_details(media_id)
+                            if not igdb_details:
+                                await cb.message.answer(f"IGDB не вернул данные для id {media_id}.")
+                                return
+                            item = _ensure_igdb_item(s, media_id, igdb_details)
                         elif source in ("movie", "tv"):
                             details = (
                                 await tmdb.get_movie_details(media_id)
@@ -498,21 +637,21 @@ async def main() -> None:
                                 else await tmdb.get_tv_details(media_id)
                             )
                             if not details or not (details.get("title") or details.get("name")):
-                                await cb.answer()
                                 await cb.message.answer(f"TMDb не вернул данные для id {media_id}.")
                                 return
                             item = _ensure_media_item(s, media_id, details, source)
                         else:
-                            await cb.answer("Неизвестная кнопка")
+                            await cb.message.answer("Неизвестная кнопка")
                             return
                         logging.info(f"pick_media {media_id}/{source}: resolved to item {item.id}")
-                        await cb.answer()
-                        await _perform_add_flow(s, tmdb, anilist, item, user.id, cb.message)
+                        await _perform_add_flow(s, tmdb, anilist, igdb, item, user.id, cb.message)
                         return
                     except Exception as e:
                         logging.error(f"pick_media handler error: {e}", exc_info=True)
-                        await cb.answer("Произошла ошибка")
-                        await cb.message.answer(f"Ошибка: {e}")
+                        try:
+                            await cb.message.answer(f"Ошибка при обработке: {e}")
+                        except Exception:
+                            pass
                         return
 
                 item = s.get(MediaItem, arg) if arg else None
@@ -525,7 +664,11 @@ async def main() -> None:
                     for ev_type in _default_rules_for(item.media_type):
                         set_rule(s, user.id, item.id, ev_type, True)
                     state = await _fetch_tmdb_state(s, tmdb, item)
-                    _store_state(s, item.id, "tmdb", state)
+                    if item.media_type == "game" or state is None:
+                        igdb_state = await _fetch_igdb_state(s, igdb, item)
+                        if igdb_state:
+                            state = igdb_state
+                    _store_state(s, item.id, "tmdb" if item.media_type != "game" else "igdb", state)
                     await cb.answer("Добавлено")
                     await cb.message.answer(f"✅ Добавлено: {title}")
                 elif action == "ca_no":
@@ -666,7 +809,7 @@ async def main() -> None:
             """
             before = tmdb.call_count
             with db() as s:
-                results = await poll_due_items(s, tmdb, anilist)
+                results = await poll_due_items(s, tmdb, anilist, igdb)
                 for user_id, item, events in results:
                     if not events:
                         continue
@@ -711,4 +854,14 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        # Startup crash protection: send error via HTTP before anything else
+        try:
+            from app.config import get_settings
+            settings = get_settings()
+            send_startup_error_sync(settings.telegram_bot_token, settings.owner_chat_id, e)
+        except Exception:
+            pass  # Best effort — don't crash on error reporting
+        raise

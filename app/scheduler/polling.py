@@ -14,7 +14,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from app.database.models import ExternalId, MediaItem, SourceState, UserWatchItem
-from app.domain.events import compare_anilist_states, compare_states
+from app.domain.events import compare_anilist_states, compare_igdb_states, compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
 
 
@@ -186,7 +186,59 @@ def _normalize_anilist_details(details: dict) -> dict:
     }
 
 
-async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int):
+def _normalize_igdb_details(details: dict) -> dict:
+    """Normalize an IGDB game object into tracking state (pure, no network)."""
+    release_dates = details.get("release_dates") or []
+    # Find the earliest release date
+    earliest = None
+    release_status = None
+    for rd in release_dates:
+        date_str = rd.get("date")
+        if date_str:
+            if isinstance(date_str, (int, float)):
+                date_str = datetime.fromtimestamp(date_str, tz=_tz.utc).date().isoformat()
+            elif isinstance(date_str, str):
+                date_str = date_str[:10]
+            if earliest is None or date_str < earliest:
+                earliest = date_str
+        status = rd.get("status")
+        if status == 2:  # Released
+            release_status = "Released"
+        elif status == 3 and release_status != "Released":  # Coming Soon
+            release_status = "Coming Soon"
+    # Check first_release_date field as fallback
+    frd = details.get("first_release_date")
+    if frd:
+        if isinstance(frd, (int, float)):
+            frd = datetime.fromtimestamp(frd, tz=_tz.utc).date().isoformat()
+        elif isinstance(frd, str):
+            frd = frd[:10]
+        if earliest is None or frd < earliest:
+            earliest = frd
+    return {
+        "igdb_digital_release": earliest,
+        "release_status": release_status,
+    }
+
+
+async def _fetch_igdb_state(session: Session, provider, item: MediaItem) -> dict:
+    """Fetch current normalized IGDB state for a game item (Phase 9)."""
+    ext = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "igdb") &
+            (ExternalId.media_item_id == item.id)
+        )
+    ).scalar_one_or_none()
+    if ext is None:
+        return {}
+    igdb_id = int(ext.external_id)
+    details = await provider.get_game_details(igdb_id)
+    if details is None:
+        return {}
+    return _normalize_igdb_details(details)
+
+
+async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
     """Run one polling cycle for a watch item.
 
     Fetches the current normalized state from the provider(s), compares it with
@@ -195,6 +247,7 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
     the caller sends the returned Telegram messages.
 
     Anime items are polled from BOTH TMDb and AniList (two independent sources).
+    Game items are polled from IGDB.
     """
     to_send = []
 
@@ -237,6 +290,26 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
             if anilist_state:
                 _store_state(session, item.id, "anilist", anilist_state)
 
+    # IGDB poll (games only)
+    if item.media_type == "game" and igdb_provider is not None:
+        igdb_state = await _fetch_igdb_state(session, igdb_provider, item)
+        old_igdb = _load_state(session, item.id, "igdb")
+        if old_igdb is not None:
+            for ev in compare_igdb_states(old_igdb, igdb_state):
+                ev = _replace(ev, media_item_id=item.id)
+                fp = ev.fingerprint()
+                if has_been_sent(session, fp):
+                    continue
+                enabled_rules = get_enabled_rules(session, user_id, item.id)
+                if not any(r.event_type == ev.event_type for r in enabled_rules):
+                    continue
+                mark_sent(session, fp, item.id)
+                to_send.append(ev)
+            _store_state(session, item.id, "igdb", igdb_state)
+        else:
+            if igdb_state:
+                _store_state(session, item.id, "igdb", igdb_state)
+
     return to_send
 
 
@@ -258,7 +331,7 @@ def _due_rows_query(session):
     )
 
 
-async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, now=None) -> list[tuple[int, MediaItem, list]]:
+async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, igdb_provider=None, now=None) -> list[tuple[int, MediaItem, list]]:
     """Process only watch items whose tier deadline has arrived (Phase 7.5).
 
     Staggering happens inside TMDbProvider (~1.5 s between calls + per-minute cap), so even many due items are never fired as a burst.
@@ -288,20 +361,22 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
         item = session.get(MediaItem, w.media_item_id)
         if item is None:
             continue
-        events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id)
+        events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)
         state_now = _load_state(session, item.id, "tmdb") or {}
         interval = tier_interval(state_now, item.media_type)
         jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
         extra = RATE_LIMIT_EXTRA_DELAY if getattr(tmdb_provider, "hit_429", False) else 0.0
         deadline = now + timedelta(seconds=interval + jitter + extra)
+        # Use scalar_one_or_none: game items may not have a tmdb SourceState row
         st_row = session.execute(
             select(SourceState).where(
                 (SourceState.media_item_id == item.id)
                 &
                 (SourceState.source_name == "tmdb")
             )
-        ).scalar_one()
-        st_row.next_check_at = deadline
-        session.commit()
+        ).scalar_one_or_none()
+        if st_row is not None:
+            st_row.next_check_at = deadline
+            session.commit()
         results.append((w.user_id, item, events))
     return results

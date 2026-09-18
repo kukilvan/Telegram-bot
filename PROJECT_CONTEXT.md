@@ -73,11 +73,14 @@ project/
 - [TODO] Phase 11 — PlayStation Store
 - [TODO] Phase 12 — KinoPub
 - [TODO] Phase 13 — READY_TO_WATCH rules
-- [TODO] Phase 14 — Красивый Telegram UI
+- [DONE] Phase 14 — Красивый Telegram UI
 - [TODO] Phase 15 — Tests, backups, logging
 - [TODO] Phase 16 — Docker
 - [TODO] Phase 17 — VPS deployment 24/7
 - [TODO] Phase 18 — Serverless evaluation
+- [TODO] Phase 19 — Bot response optimization (currently 6-8s, target ~500ms)
+- [TODO] Phase 20 — Fuzzy search for typos (1-2 wrong letters shouldn't return nothing)
+- [TODO] Phase 21 — Autocomplete dropdown when typing (inline suggestions as user types)
 
 ## 5. COMPLETED WORK
 
@@ -490,3 +493,26 @@ Current state: Phase 8 DONE — AniList/anime integration with GraphQL search, a
 Last completed action: Implemented all Phase 8 components: anilist.py (GraphQL provider), events.py (NEXT_EPISODE_AIRING + compare_anilist_states), polling.py (_fetch_anilist_state + dual-source polling), main.py (AniList search + AniList ID support), tiering.py (docstring), tests/test_anilist.py (5 tests). All verified.
 
 Next exact action: User chooses next phase — Phase 9 (IGDB games) or E2E verification of Phase 8 in Telegram.
+
+## 17. END-OF-SESSION VERIFICATION PROCEDURE
+
+At the END of EVERY work session (before telling the user the task is done), perform these steps:
+
+1. Stop all current bot processes:
+   `Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*app.bot.main*' } | ForEach-Object { Stop-Process -Id $_.ProcessId }`
+
+2. Restart the bot:
+   ```
+   cd E:\LocalAI\Bionic\Telegram-bot
+   .venv\Scripts\Activate.ps1
+   python -m app.bot.main
+   ```
+
+3. Watch console output for 10-15 seconds after startup — ensure no tracebacks or errors.
+
+4. Tell the user the bot has been restarted and is ready for testing. Ask them to manually send test messages/commands related to what was changed in this session.
+
+5. If NO error notification arrived in Telegram during testing AND no tracebacks in console — the session is considered successfully completed.
+   If an error arrived — debug and fix it before marking the session as complete.
+
+This procedure must be followed at the end of EVERY session, not just this one.

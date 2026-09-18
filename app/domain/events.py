@@ -138,6 +138,18 @@ def compare_states(old: dict, new: dict) -> list[DomainEvent]:
                 payload={},
             )
         )
+    # Game release date status changed (e.g. Coming Soon → Released).
+    # Uses 'igdb_digital_release' to avoid collision with TMDb 'digital_release'.
+    old_release = old.get("igdb_digital_release")
+    new_release = new.get("igdb_digital_release")
+    if old_release is None and new_release:
+        events.append(
+            DomainEvent(
+                event_type=DIGITAL_DATE_ANNOUNCED,
+                source="igdb",
+                payload={"date": str(new_release)},
+            )
+        )
     # TV season tracking (Phase 7).
     old_season = old.get("latest_season")
     new_season = new.get("latest_season")
@@ -183,6 +195,47 @@ def compare_states(old: dict, new: dict) -> list[DomainEvent]:
     return events
 
 
+def compare_igdb_states(old: dict, new: dict) -> list[DomainEvent]:
+    """Compare two normalized IGDB game states and return detected domain events.
+
+    IGDB state fields:
+      digital_release: str | None — first release date (ISO 'YYYY-MM-DD')
+      release_status: str | None  — 'Released', 'Coming Soon', 'Late', etc.
+      platforms: list[str]        — platform names
+    """
+    events = []
+
+    # First poll: don't fire events
+    if not old:
+        return events
+
+    # Release date appeared (was unknown, now known)
+    old_release = old.get("digital_release")
+    new_release = new.get("digital_release")
+    if old_release is None and new_release:
+        events.append(
+            DomainEvent(
+                event_type=DIGITAL_DATE_ANNOUNCED,
+                source="igdb",
+                payload={"date": str(new_release)},
+            )
+        )
+
+    # Release status changed to Released
+    old_status = old.get("release_status")
+    new_status = new.get("release_status")
+    if old_status != "Released" and new_status == "Released":
+        events.append(
+            DomainEvent(
+                event_type=DIGITAL_RELEASED,
+                source="igdb",
+                payload={"date": str(new_release) if new_release else None},
+            )
+        )
+
+    return events
+
+
 @dataclass(frozen=True)
 class PreAddCheck:
     """Classification of a media item state BEFORE adding it to the watchlist.
@@ -204,7 +257,7 @@ class PreAddCheck:
 
 
 def pre_add_check(state: dict, media_type: str, today: str) -> PreAddCheck:
-    """Pure classification of a normalized TMDb state (no network).
+    """Pure classification of a normalized source state (no network).
 
     `today` is an ISO date string 'YYYY-MM-DD' (injected for testability).
     A known digital release date in the PAST means "already released" — the bot
@@ -218,8 +271,13 @@ def pre_add_check(state: dict, media_type: str, today: str) -> PreAddCheck:
             return PreAddCheck(code="season_complete", season=season, aired=aired, total=total)
         if season is not None:
             return PreAddCheck(code="airing", season=season, aired=aired, total=total)
+        # Check AniList-specific fields for anime
+        air_date = state.get("next_episode_air_date")
+        if air_date:
+            return PreAddCheck(code="airing", season=None, aired=0, total=0)
         return PreAddCheck(code="no_data")
-    release = state.get("digital_release")
+    # movie, game: check both TMDb digital_release and IGDB igdb_digital_release
+    release = state.get("digital_release") or state.get("igdb_digital_release")
     if release:
         day = str(release)[:10]
         code = "released" if day <= today else "upcoming"
