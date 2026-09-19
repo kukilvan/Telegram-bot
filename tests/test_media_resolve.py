@@ -8,7 +8,6 @@ from sqlalchemy.pool import StaticPool
 
 from app.bot.main import (
     _ensure_media_item,
-    _lookup_tmdb_details,
     _make_media_item,
     _resolve_media_for_add,
 )
@@ -105,20 +104,6 @@ def test_make_media_item():
     assert tv.canonical_title_en == "Rick and Morty"
     assert tv.year is None
     assert tv.poster_url is None
-
-
-def test_lookup_tmdb_details():
-    both = FakeDetailsProvider()
-    r = asyncio.run(_lookup_tmdb_details(both, 60625))
-    assert (r[0], r[1]) == (MOVIE_DETAIL, TV_DETAIL)
-
-    movie_only = FakeDetailsProvider(tv=None)
-    r2 = asyncio.run(_lookup_tmdb_details(movie_only, 60625))
-    assert r2 == (MOVIE_DETAIL, None)
-
-    neither = FakeDetailsProvider(movie=None, tv=None)
-    r3 = asyncio.run(_lookup_tmdb_details(neither, 700111))
-    assert r3 == (None, None)
 
 
 def test_ensure_media_item_creates():
@@ -229,7 +214,6 @@ def test_resolve_media_for_add_stale_tv_override():
 
 if __name__ == "__main__":
     test_make_media_item()
-    test_lookup_tmdb_details()
     test_ensure_media_item_creates()
     test_ensure_media_item_returns_existing()
     test_ensure_media_item_self_heals_stale()

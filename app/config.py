@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # PlayStation Store region
     ps_store_region: str = "US"
 
+    # Steam Store region
+    steam_country_code: str = "IL"
+
     @property
     def allowed_telegram_user_ids(self) -> list[int]:
         if not self.allowed_telegram_user_ids_raw:

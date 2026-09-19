@@ -1,0 +1,68 @@
+"""Steam Store provider.
+
+Public endpoints — no API key required.
+- Search: GET /api/storesearch/?term={query}&l=english&cc={cc}
+- App details: GET /api/appdetails?appids={appid}&cc={cc}
+"""
+
+import logging
+from typing import Any
+
+import httpx
+
+logger = logging.getLogger(__name__)
+
+
+class SteamProvider:
+    """Steam Store API client."""
+
+    BASE_URL = "https://store.steampowered.com"
+
+    def __init__(self, country_code: str = "US"):
+        self.country_code = country_code
+        self._client = httpx.AsyncClient(timeout=15.0)
+        self.call_count = 0
+
+    async def search_games(self, query: str, limit: int = 10) -> list[dict]:
+        """Search Steam store by term. Returns up to 10 results."""
+        if not query:
+            return []
+        try:
+            self.call_count += 1
+            resp = await self._client.get(
+                f"{self.BASE_URL}/api/storesearch/",
+                params={"term": query, "l": "english", "cc": self.country_code},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            items = data.get("items", [])
+            # Filter to apps only (not bundles)
+            apps = [item for item in items if item.get("type") == "app"]
+            logger.info(f"Steam search '{query}': got {len(apps)} apps")
+            return apps[:limit]
+        except Exception as e:
+            logger.error(f"Steam search failed: {e}")
+            return []
+
+    async def get_game_details(self, appid: int) -> dict | None:
+        """Get full game details for a Steam appid."""
+        try:
+            self.call_count += 1
+            resp = await self._client.get(
+                f"{self.BASE_URL}/api/appdetails",
+                params={"appids": appid, "cc": self.country_code},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            app_data = data.get(str(appid), {})
+            if not app_data.get("success"):
+                return None
+            details = app_data.get("data", {})
+            return details
+        except Exception as e:
+            logger.error(f"Steam appdetails failed for {appid}: {e}")
+            return None
+
+    async def close(self):
+        """Close the HTTP client."""
+        await self._client.aclose()

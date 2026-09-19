@@ -236,6 +236,44 @@ def compare_igdb_states(old: dict, new: dict) -> list[DomainEvent]:
     return events
 
 
+def compare_steam_states(old: dict, new: dict) -> list[DomainEvent]:
+    """Compare two normalized Steam states and return detected domain events.
+
+    Steam state fields:
+      steam_release_date: str | None — release date (ISO 'YYYY-MM-DD')
+      store_page: bool               — True if store page exists
+    """
+    events = []
+
+    # First poll: don't fire events
+    if not old:
+        return events
+
+    # Steam store page appeared (was unknown, now known)
+    if not old.get("store_page") and new.get("store_page"):
+        events.append(
+            DomainEvent(
+                event_type=STEAM_STORE_PAGE_AVAILABLE,
+                source="steam",
+                payload={},
+            )
+        )
+
+    # Release date appeared (was unknown, now known)
+    old_release = old.get("steam_release_date")
+    new_release = new.get("steam_release_date")
+    if old_release is None and new_release:
+        events.append(
+            DomainEvent(
+                event_type=DIGITAL_DATE_ANNOUNCED,
+                source="steam",
+                payload={"date": str(new_release)},
+            )
+        )
+
+    return events
+
+
 @dataclass(frozen=True)
 class PreAddCheck:
     """Classification of a media item state BEFORE adding it to the watchlist.
@@ -276,8 +314,8 @@ def pre_add_check(state: dict, media_type: str, today: str) -> PreAddCheck:
         if air_date:
             return PreAddCheck(code="airing", season=None, aired=0, total=0)
         return PreAddCheck(code="no_data")
-    # movie, game: check both TMDb digital_release and IGDB igdb_digital_release
-    release = state.get("digital_release") or state.get("igdb_digital_release")
+    # movie, game: check TMDb digital_release, IGDB igdb_digital_release, and Steam release_date
+    release = state.get("digital_release") or state.get("igdb_digital_release") or state.get("steam_release_date")
     if release:
         day = str(release)[:10]
         code = "released" if day <= today else "upcoming"

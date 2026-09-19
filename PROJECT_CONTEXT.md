@@ -68,7 +68,7 @@ project/
 - [DONE] Phase 7 — TV series episodes
 - [DONE] Phase 7.5 — Optimization of TMDb API calls (rate limit, adaptive intervals, request staggering)
 - [DONE] Phase 8 — AniList/anime
-- [TODO] Phase 9 — IGDB games
+- [DONE] Phase 9 — IGDB games
 - [TODO] Phase 10 — Steam Store
 - [TODO] Phase 11 — PlayStation Store
 - [TODO] Phase 12 — KinoPub
@@ -78,9 +78,9 @@ project/
 - [TODO] Phase 16 — Docker
 - [TODO] Phase 17 — VPS deployment 24/7
 - [TODO] Phase 18 — Serverless evaluation
-- [TODO] Phase 19 — Bot response optimization (currently 6-8s, target ~500ms)
-- [TODO] Phase 20 — Fuzzy search for typos (1-2 wrong letters shouldn't return nothing)
-- [TODO] Phase 21 — Autocomplete dropdown when typing (inline suggestions as user types)
+- [DONE] Phase 19 — Bot response optimization (parallel requests + search cache)
+- [FAILED] Phase 20 — Fuzzy search for typos: tried generating typo candidates (deletions, swaps, suffixes), but results were consistently irrelevant. API fuzzy matching doesn't align with user intent. Need different approach.
+- [DONE] Phase 21 — Inline autocomplete search (@botname query returns results)
 
 ## 5. COMPLETED WORK
 

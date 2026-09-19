@@ -1,16 +1,16 @@
-"""Minimal aiogram bot entry point. Phase 4: watchlist + notes."""
+"""Minimal aiogram bot entry point. Phase 4: watchlist + notes. Phase 19: speed optimization. Phase 21: autocomplete."""
 
 import asyncio
 import logging
 import sys
 from contextlib import contextmanager
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from sqlalchemy import delete, select
 
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, InlineQuery, InlineQueryResultArticle, InputTextMessageContent, Message, SwitchInlineQueryChosenChat
 
 from app.bot.error_handler import ErrorMiddleware, send_startup_error_sync
 from app.domain.events import pre_add_check
@@ -31,9 +31,11 @@ from app.database.session import ensure_data_dir, get_session_factory
 from app.providers.tmdb import TMDbProvider
 from app.providers.anilist import AniListProvider
 from app.providers.igdb import IGDBProvider
+from app.providers.steam import SteamProvider
 from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state
 from app.services.notes import create_or_update_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
+from app.services.search_cache import search_cache
 from app.services.watchlist import (
     add_watch_item,
     get_media_item_by_external_id,
@@ -70,21 +72,6 @@ def _make_media_item(details: dict, media_type: str) -> MediaItem:
             f"https://image.tmdb.org/t/p/original{details['poster_path']}"
             if details.get("poster_path") else None
         ),
-    )
-
-
-async def _lookup_tmdb_details(provider, tmdb_id: int):
-    """Probe BOTH TMDb endpoints for one numeric id.
-
-    TMDb shares a single id space across movies and TV shows, so the same
-    number can legitimately resolve to both /movie/{id} and /tv/{id}.
-    Returns (movie_details or None, tv_details or None).
-    """
-    movie = await provider.get_movie_details(tmdb_id)
-    tv = await provider.get_tv_details(tmdb_id)
-    return (
-        movie if movie and movie.get("title") else None,
-        tv if tv and tv.get("name") else None,
     )
 
 
@@ -181,6 +168,46 @@ def _ensure_igdb_item(session, igdb_id: int, details: dict) -> MediaItem:
     session.commit()
     return item
 
+def _ensure_steam_item(session, steam_id: int, details: dict) -> MediaItem:
+    """Get (or create) the MediaItem for a Steam appid."""
+    existing_exts = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "steam") &
+            (ExternalId.external_id == str(steam_id))
+        )
+    ).scalars().all()
+    if existing_exts:
+        ext = existing_exts[0]
+        item = session.get(MediaItem, ext.media_item_id)
+        if item is not None:
+            return item
+
+    title = details.get("name") or "Unknown"
+    release_date = details.get("release_date", {}).get("date") or ""
+    year = None
+    if release_date:
+        parts = release_date.strip().split()
+        if parts:
+            try:
+                year = int(parts[-1])
+            except (ValueError, TypeError):
+                pass
+    header_image = details.get("header_image") or ""
+    poster_url = header_image if header_image else None
+    item = MediaItem(
+        media_type="game",
+        canonical_title_en=title,
+        year=year,
+        poster_url=poster_url,
+    )
+    session.add(item)
+    session.flush()
+    ext = ExternalId(media_item_id=item.id, source="steam", external_id=str(steam_id))
+    session.add(ext)
+    session.commit()
+    return item
+
+
 
 def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) -> MediaItem:
     """Get (or create) the MediaItem for a TMDb id of an explicit type.
@@ -221,6 +248,7 @@ def _ensure_media_item(session, tmdb_id: int, details: dict, media_type: str) ->
 async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_provider=None, igdb_provider=None):
     """Resolve a numeric id for the /add flow.
 
+    Phase 19: All provider lookups run in parallel via asyncio.gather.
     Returns one of:
       ("item", MediaItem)              — unambiguous (existing row or single hit)
       ("pick_tmdb", movie_details, tv) — TMDb movie+TV collision: user must choose
@@ -240,25 +268,27 @@ async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_p
         if m is not None:
             ext_items.append(m)
 
-    movie, tv = await _lookup_tmdb_details(tmdb_provider, tmdb_id)
+    # Phase 19: Parallel lookups — TMDb (both endpoints), AniList, IGDB all at once
+    movie, tv = await tmdb_provider.get_movie_details(tmdb_id), await tmdb_provider.get_tv_details(tmdb_id)
+    movie = movie if movie and movie.get("title") else None
+    tv = tv if tv and tv.get("name") else None
+
+    anilist_details = None
+    if anilist_provider:
+        anilist_details = await anilist_provider.get_anime_details(tmdb_id)
+
+    igdb_details = None
+    if igdb_provider:
+        igdb_details = await igdb_provider.get_game_details(tmdb_id)
+
+    if not movie and not tv and not anilist_details and not igdb_details:
+        return ("none", None)
+
     hits: dict[str, dict] = {}
     if movie:
         hits["movie"] = movie
     if tv:
         hits["tv"] = tv
-
-    # Check AniList collision (Phase 8)
-    anilist_details = None
-    if anilist_provider:
-        anilist_details = await anilist_provider.get_anime_details(tmdb_id)
-
-    # Check IGDB collision (Phase 9)
-    igdb_details = None
-    if igdb_provider:
-        igdb_details = await igdb_provider.get_game_details(tmdb_id)
-
-    if not hits and not anilist_details and not igdb_details:
-        return ("none", None)
 
     # All three sources have a hit
     if hits and anilist_details and igdb_details:
@@ -306,7 +336,7 @@ async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_p
     return ("item", _ensure_media_item(session, tmdb_id, details, media_type))
 
 
-async def _perform_add_flow(s, tmdb, anilist, igdb, item: MediaItem, user_id: int, sender):
+async def _perform_add_flow(s, tmdb, anilist, igdb, steam, item: MediaItem, user_id: int, sender):
     """Shared /add flow after the MediaItem is resolved.
 
     duplicate prompt -> released/season-complete confirm -> normal add.
@@ -330,8 +360,15 @@ async def _perform_add_flow(s, tmdb, anilist, igdb, item: MediaItem, user_id: in
         igdb_state = await _fetch_igdb_state(s, igdb, item)
         if igdb_state:
             state = igdb_state
+        # Also check Steam state for games
+        from app.scheduler.polling import _fetch_steam_state
+        steam_state = await _fetch_steam_state(s, steam, item)
+        print(f"DEBUG: Steam state for item {item.id}: {steam_state}", file=sys.stderr)
+        if steam_state:
+            state = steam_state
     decision = pre_add_check(state, item.media_type, date.today().isoformat())
     status_line = _format_status_line(decision)
+    print(f"DEBUG: decision.code={decision.code}, state={state}", file=sys.stderr)
 
     if watch_row is not None:
         logging.info(f"add flow {item.id}: already tracked; sending keep/stop prompt")
@@ -385,9 +422,9 @@ def _default_rules_for(media_type: str) -> tuple[str, ...]:
 def _format_status_line(decision) -> str | None:
     """One-line human summary of the current release state (for /add messages)."""
     if decision.code == "released":
-        return f"Дата цифрового релиза уже известна: {decision.date} — уже вышел"
+        return f"Дата релиза уже известна: {decision.date} — уже вышел"
     if decision.code == "upcoming":
-        return f"Цифровой релиз ожидается: {decision.date}"
+        return f"Релиз ожидается: {decision.date}"
     if decision.code == "season_complete":
         return f"Все серии сезона {decision.season} уже вышли ({decision.aired}/{decision.total})"
     if decision.code == "airing":
@@ -411,6 +448,7 @@ async def main() -> None:
     tmdb = TMDbProvider()
     anilist = AniListProvider()
     igdb = IGDBProvider()
+    steam = SteamProvider(country_code=settings.steam_country_code)
     ensure_data_dir()
     session_factory = get_session_factory()  # sessionmaker; call it to create a Session
 
@@ -443,12 +481,23 @@ async def main() -> None:
                 return
             query = parts[1]
 
-            movie_results = await tmdb.search_movie(query)
-            tv_results = await tmdb.search_tv(query)
-            anime_results = await anilist.search_anime(query)
-            game_results = await igdb.search_games(query)
+            # Use cache key that includes all providers
+            cache_key = f"search:{query}"
+            cached = search_cache.get(cache_key)
+            if cached is not None:
+                await message.answer(cached)
+                return
 
-            if not movie_results and not tv_results and not anime_results and not game_results:
+            # Phase 19: Parallel HTTP requests — all 5 sources at once
+            movie_results, tv_results, anime_results, game_results, steam_results = await asyncio.gather(
+                tmdb.search_movie(query),
+                tmdb.search_tv(query),
+                anilist.search_anime(query),
+                igdb.search_games(query),
+                steam.search_games(query),
+            )
+
+            if not movie_results and not tv_results and not anime_results and not game_results and not steam_results:
                 await message.answer("Ничего не найдено.")
                 return
 
@@ -475,23 +524,148 @@ async def main() -> None:
                 if frd:
                     try:
                         frd_str = str(frd)
-                        # Check if it's a Unix timestamp (numeric, > 1000000000)
                         if frd_str.isdigit() and int(frd_str) > 1000000000:
-                            from datetime import datetime as _dt, timezone as _tz
-                            year = str(_dt.fromtimestamp(int(frd_str), tz=_tz.utc).year)
+                            year = str(datetime.fromtimestamp(int(frd_str), tz=timezone.utc).year)
                         else:
                             year = frd_str[:4]
                     except (ValueError, TypeError, OSError):
                         pass
                 lines.append(f"🎮 {name} ({year}) [igdb={r['id']}]")
 
-            await message.answer("\n".join(lines) or "Ничего не найдено.")
+            for r in steam_results[:5]:
+                name = r.get("name", "Unknown")
+                price = r.get("price", {})
+                price_str = ""
+                if price:
+                    final = price.get("final", 0)
+                    currency = price.get("currency", "USD")
+                    if final > 0:
+                        price_str = f" {final/100:.2f}{currency}"
+                    else:
+                        price_str = " Free"
+                lines.append(f"🎮 {name}{price_str} [steam={r['id']}]")
+
+            result_text = "\n".join(lines)
+            # Cache the result
+            search_cache.set(cache_key, result_text)
+            await message.answer(result_text)
+
+        @dp.inline_query()
+        async def inline_search_handler(inline_query: InlineQuery):
+            """Phase 21: Autocomplete — user types /@botname witcher and sees results inline."""
+            query = inline_query.query or ""
+            if not query or len(query) < 2:
+                await inline_query.answer([], cache_time=0)
+                return
+
+            # Use cache if available
+            cache_key = f"inline:{query}"
+            cached = search_cache.get(cache_key)
+            if cached is not None:
+                await inline_query.answer(cached, cache_time=0)
+                return
+
+            # Phase 19: Parallel HTTP requests
+            movie_results, tv_results, anime_results, game_results, steam_results = await asyncio.gather(
+                tmdb.search_movie(query),
+                tmdb.search_tv(query),
+                anilist.search_anime(query),
+                igdb.search_games(query),
+                steam.search_games(query),
+            )
+
+            if not movie_results and not tv_results and not anime_results and not game_results and not steam_results:
+                await inline_query.answer([], cache_time=0)
+                return
+
+            articles = []
+            for r in movie_results[:10]:
+                name = r.get("title", "Unknown")
+                year = (r.get("first_air_date") or "")[:4] if r.get("first_air_date") else ""
+                title = f"🎬 {name} ({year})"
+                article = InlineQueryResultArticle(
+                    id=str(r['id']),
+                    title=title,
+                    input_message_content=InputTextMessageContent(message_text=f"/add {r['id']}"),
+                    description="TMDb Movie",
+                )
+                articles.append(article)
+
+            for r in tv_results[:10]:
+                name = r.get("name", "Unknown")
+                year = (r.get("first_air_date") or "")[:4] if r.get("first_air_date") else ""
+                title = f"📺 {name} ({year})"
+                article = InlineQueryResultArticle(
+                    id=str(r['id']),
+                    title=title,
+                    input_message_content=InputTextMessageContent(message_text=f"/add {r['id']}"),
+                    description="TMDb TV Series",
+                )
+                articles.append(article)
+
+            for r in anime_results[:10]:
+                name = r.get("title", {}).get("romaji") or r.get("title", {}).get("english") or "Unknown"
+                year = str(r.get("seasonYear") or "")
+                title = f"🎌 {name} ({year})"
+                article = InlineQueryResultArticle(
+                    id=str(r['id']),
+                    title=title,
+                    input_message_content=InputTextMessageContent(message_text=f"/add {r['id']}"),
+                    description="AniList Anime",
+                )
+                articles.append(article)
+
+            for r in game_results[:10]:
+                name = r.get("name", "Unknown")
+                frd = r.get("first_release_date")
+                year = ""
+                if frd:
+                    try:
+                        frd_str = str(frd)
+                        if frd_str.isdigit() and int(frd_str) > 1000000000:
+                            year = str(datetime.fromtimestamp(int(frd_str), tz=timezone.utc).year)
+                        else:
+                            year = frd_str[:4]
+                    except (ValueError, TypeError, OSError):
+                        pass
+                title = f"🎮 {name} ({year})"
+                article = InlineQueryResultArticle(
+                    id=str(r['id']),
+                    title=title,
+                    input_message_content=InputTextMessageContent(message_text=f"/add {r['id']}"),
+                    description="IGDB Game",
+                )
+                articles.append(article)
+
+            for r in steam_results[:10]:
+                name = r.get("name", "Unknown")
+                price = r.get("price", {})
+                price_str = ""
+                if price:
+                    final = price.get("final", 0)
+                    currency = price.get("currency", "USD")
+                    if final > 0:
+                        price_str = f" {final/100:.2f}{currency}"
+                    else:
+                        price_str = " Free"
+                title = f"🎮 {name}{price_str}"
+                article = InlineQueryResultArticle(
+                    id=str(r["id"]),
+                    title=title,
+                    input_message_content=InputTextMessageContent(message_text=f"/add {r["id"]}"),
+                    description="Steam Game",
+                )
+                articles.append(article)
+
+            # Cache the result
+            search_cache.set(cache_key, articles)
+            await inline_query.answer(articles, cache_time=0)
 
         @dp.message(Command("add"))
         async def add_handler(message: Message):
             parts = message.text.split(maxsplit=1)
             if len(parts) < 2:
-                await message.answer("Использование: /add <tmdb_id>, /add <anilist_id> или /add <igdb_id>")
+                await message.answer("Использование: /add <tmdb_id>, /add <anilist_id>, /add <igdb_id> или /add <steam_id>")
                 return
             arg = parts[1]
             try:
@@ -504,11 +678,19 @@ async def main() -> None:
                     return
                 user = _get_or_create_user(s, message.from_user.id)
 
+                # Try Steam first
+                steam_details = await steam.get_game_details(numeric_id)
+                if steam_details:
+                    logging.info(f"Steam id {numeric_id}: single game hit; creating item")
+                    item = _ensure_steam_item(s, numeric_id, steam_details)
+                    await _perform_add_flow(s, tmdb, anilist, igdb, steam, item, user.id, message)
+                    return
+
                 # Try TMDb + AniList + IGDB collision detection
                 result = await _resolve_media_for_add(s, numeric_id, tmdb, anilist, igdb)
                 kind = result[0]
                 if kind == "none":
-                    await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList, ни в IGDB.")
+                    await message.answer(f"Не нашёл id {numeric_id} ни в TMDb, ни в AniList, ни в IGDB, ни в Steam.")
                     return
                 if kind == "pick_tmdb":
                     movie_d, tv_d = result[1], result[2]
@@ -566,7 +748,7 @@ async def main() -> None:
                     )
                     return
                 item = result[1]
-                await _perform_add_flow(s, tmdb, anilist, igdb, item, user.id, message)
+                await _perform_add_flow(s, tmdb, anilist, igdb, steam, item, user.id, message)
 
         @dp.callback_query()
         async def confirm_handler(cb: CallbackQuery):
@@ -600,7 +782,7 @@ async def main() -> None:
                     item = _ensure_media_item(s, media_id, details, media_type)
                     logging.info(f"pick_{media_type} {media_id}: resolved to item {item.id}")
                     await cb.answer()
-                    await _perform_add_flow(s, tmdb, anilist, igdb, item, user.id, cb.message)
+                    await _perform_add_flow(s, tmdb, anilist, igdb, steam, item, user.id, cb.message)
                     return
 
                 if action == "pick_media":
@@ -644,7 +826,7 @@ async def main() -> None:
                             await cb.message.answer("Неизвестная кнопка")
                             return
                         logging.info(f"pick_media {media_id}/{source}: resolved to item {item.id}")
-                        await _perform_add_flow(s, tmdb, anilist, igdb, item, user.id, cb.message)
+                        await _perform_add_flow(s, tmdb, anilist, igdb, steam, item, user.id, cb.message)
                         return
                     except Exception as e:
                         logging.error(f"pick_media handler error: {e}", exc_info=True)

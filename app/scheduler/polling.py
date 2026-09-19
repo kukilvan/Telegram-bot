@@ -14,7 +14,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from app.database.models import ExternalId, MediaItem, SourceState, UserWatchItem
-from app.domain.events import compare_anilist_states, compare_igdb_states, compare_states
+from app.domain.events import compare_anilist_states, compare_igdb_states, compare_steam_states, compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
 
 
@@ -238,6 +238,46 @@ async def _fetch_igdb_state(session: Session, provider, item: MediaItem) -> dict
     return _normalize_igdb_details(details)
 
 
+async def _fetch_steam_state(session: Session, provider, item: MediaItem) -> dict:
+    """Fetch current normalized Steam state for a game item (Phase 10)."""
+    ext = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "steam") &
+            (ExternalId.media_item_id == item.id)
+        )
+    ).scalar_one_or_none()
+    if ext is None:
+        return {}
+    steam_id = int(ext.external_id)
+    details = await provider.get_game_details(steam_id)
+    if details is None:
+        return {}
+    return _normalize_steam_details(details)
+
+
+def _normalize_steam_details(details: dict) -> dict:
+    """Normalize Steam game details for state comparison (Phase 10)."""
+    release_date = details.get("release_date", {}).get("date") or ""
+    coming_soon = details.get("release_date", {}).get("coming_soon")
+    steam_date = None
+    if release_date and not coming_soon:
+        # Convert "25 Sep, 2023" or "May 4, 2023" to ISO format "2023-05-04"
+        from datetime import datetime as _dt
+        try:
+            parsed = _dt.strptime(release_date, "%d %b, %Y")
+            steam_date = parsed.strftime("%Y-%m-%d")
+        except ValueError:
+            try:
+                parsed = _dt.strptime(release_date, "%b %d, %Y")
+                steam_date = parsed.strftime("%Y-%m-%d")
+            except (ValueError, TypeError):
+                pass
+    return {
+        "steam_release_date": steam_date,
+        "store_page": True,
+    }
+
+
 async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
     """Run one polling cycle for a watch item.
 
@@ -309,6 +349,26 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
         else:
             if igdb_state:
                 _store_state(session, item.id, "igdb", igdb_state)
+
+    # Steam poll (games only)
+    if item.media_type == "game" and igdb_provider is not None:
+        steam_state = await _fetch_steam_state(session, igdb_provider, item)
+        old_steam = _load_state(session, item.id, "steam")
+        if old_steam is not None:
+            for ev in compare_steam_states(old_steam, steam_state):
+                ev = _replace(ev, media_item_id=item.id)
+                fp = ev.fingerprint()
+                if has_been_sent(session, fp):
+                    continue
+                enabled_rules = get_enabled_rules(session, user_id, item.id)
+                if not any(r.event_type == ev.event_type for r in enabled_rules):
+                    continue
+                mark_sent(session, fp, item.id)
+                to_send.append(ev)
+            _store_state(session, item.id, "steam", steam_state)
+        else:
+            if steam_state:
+                _store_state(session, item.id, "steam", steam_state)
 
     return to_send
 
