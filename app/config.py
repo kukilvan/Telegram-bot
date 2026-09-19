@@ -31,8 +31,11 @@ class Settings(BaseSettings):
     kinopub_client_secret: str | None = None
     kinopub_access_token: str | None = None
 
-    # PlayStation Store region
-    ps_store_region: str = "US"
+    # RAWG API (for PSN game search)
+    rawg_api_key: str = ""
+
+    # PlayStation Store (scraping, no API key needed)
+    ps_store_region: str = "il"
 
     # Steam Store region
     steam_country_code: str = "IL"

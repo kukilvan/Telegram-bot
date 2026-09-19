@@ -47,6 +47,7 @@ DIGITAL_RELEASED = "DIGITAL_RELEASED"
 RUSSIAN_AUDIO_AVAILABLE = "RUSSIAN_AUDIO_AVAILABLE"
 KINOPUB_AVAILABLE = "KINOPUB_AVAILABLE"
 STEAM_STORE_PAGE_AVAILABLE = "STEAM_STORE_PAGE_AVAILABLE"
+PSN_STORE_PAGE_AVAILABLE = "PSN_STORE_PAGE_AVAILABLE"
 NEW_SEASON_ANNOUNCED = "NEW_SEASON_ANNOUNCED"
 ALL_EPISODES_OUT = "ALL_EPISODES_OUT"
 NEW_EPISODE = "NEW_EPISODE"
@@ -274,6 +275,44 @@ def compare_steam_states(old: dict, new: dict) -> list[DomainEvent]:
     return events
 
 
+def compare_psn_states(old: dict, new: dict) -> list[DomainEvent]:
+    """Compare two normalized PSN states and return detected domain events.
+
+    PSN state fields:
+      psn_release_date: str | None - release date (ISO 'YYYY-MM-DD')
+      store_page: bool               - True if store page exists
+    """
+    events = []
+
+    # First poll: don't fire events
+    if not old:
+        return events
+
+    # Store page appeared
+    if not old.get("store_page") and new.get("store_page"):
+        events.append(
+            DomainEvent(
+                event_type=PSN_STORE_PAGE_AVAILABLE,
+                source="psn",
+                payload={},
+            )
+        )
+
+    # Release date appeared (was unknown, now known)
+    old_release = old.get("psn_release_date")
+    new_release = new.get("psn_release_date")
+    if old_release is None and new_release:
+        events.append(
+            DomainEvent(
+                event_type=DIGITAL_DATE_ANNOUNCED,
+                source="psn",
+                payload={"date": str(new_release)},
+            )
+        )
+
+    return events
+
+
 @dataclass(frozen=True)
 class PreAddCheck:
     """Classification of a media item state BEFORE adding it to the watchlist.
@@ -314,8 +353,8 @@ def pre_add_check(state: dict, media_type: str, today: str) -> PreAddCheck:
         if air_date:
             return PreAddCheck(code="airing", season=None, aired=0, total=0)
         return PreAddCheck(code="no_data")
-    # movie, game: check TMDb digital_release, IGDB igdb_digital_release, and Steam release_date
-    release = state.get("digital_release") or state.get("igdb_digital_release") or state.get("steam_release_date")
+    # movie, game: check TMDb digital_release, IGDB igdb_digital_release, Steam steam_release_date, and PSN psn_release_date
+    release = state.get("digital_release") or state.get("igdb_digital_release") or state.get("steam_release_date") or state.get("psn_release_date")
     if release:
         day = str(release)[:10]
         code = "released" if day <= today else "upcoming"

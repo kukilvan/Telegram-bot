@@ -278,6 +278,38 @@ def _normalize_steam_details(details: dict) -> dict:
     }
 
 
+async def _fetch_psn_state(session: Session, provider, item: MediaItem) -> dict:
+    """Fetch current normalized PSN state for a game item (Phase 11)."""
+    ext = session.execute(
+        select(ExternalId).where(
+            (ExternalId.source == "psn") &
+            (ExternalId.media_item_id == item.id)
+        )
+    ).scalar_one_or_none()
+    if ext is None:
+        return {}
+    psn_id = int(ext.external_id)
+    details = await provider.get_game_details(psn_id)
+    if details is None:
+        return {}
+    return _normalize_psn_details(details)
+
+
+def _normalize_psn_details(details: dict) -> dict:
+    """Normalize PSN game details for state comparison (Phase 11)."""
+    release_date = details.get("release_date") or ""
+    psn_date = None
+    if release_date:
+        try:
+            psn_date = str(release_date)[:10]
+        except (ValueError, TypeError):
+            pass
+    return {
+        "psn_release_date": psn_date,
+        "store_page": True,
+    }
+
+
 async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
     """Run one polling cycle for a watch item.
 
@@ -369,6 +401,28 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
         else:
             if steam_state:
                 _store_state(session, item.id, "steam", steam_state)
+
+    # PSN poll (games only)
+    if item.media_type == "game" and igdb_provider is not None:
+        from app.providers.psn import PSNProvider
+        psn = PSNProvider()
+        psn_state = await _fetch_psn_state(session, psn, item)
+        old_psn = _load_state(session, item.id, "psn")
+        if old_psn is not None:
+            for ev in compare_psn_states(old_psn, psn_state):
+                ev = _replace(ev, media_item_id=item.id)
+                fp = ev.fingerprint()
+                if has_been_sent(session, fp):
+                    continue
+                enabled_rules = get_enabled_rules(session, user_id, item.id)
+                if not any(r.event_type == ev.event_type for r in enabled_rules):
+                    continue
+                mark_sent(session, fp, item.id)
+                to_send.append(ev)
+            _store_state(session, item.id, "psn", psn_state)
+        else:
+            if psn_state:
+                _store_state(session, item.id, "psn", psn_state)
 
     return to_send
 
