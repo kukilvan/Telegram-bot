@@ -402,28 +402,6 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
             if steam_state:
                 _store_state(session, item.id, "steam", steam_state)
 
-    # PSN poll (games only)
-    if item.media_type == "game" and igdb_provider is not None:
-        from app.providers.psn import PSNProvider
-        psn = PSNProvider()
-        psn_state = await _fetch_psn_state(session, psn, item)
-        old_psn = _load_state(session, item.id, "psn")
-        if old_psn is not None:
-            for ev in compare_psn_states(old_psn, psn_state):
-                ev = _replace(ev, media_item_id=item.id)
-                fp = ev.fingerprint()
-                if has_been_sent(session, fp):
-                    continue
-                enabled_rules = get_enabled_rules(session, user_id, item.id)
-                if not any(r.event_type == ev.event_type for r in enabled_rules):
-                    continue
-                mark_sent(session, fp, item.id)
-                to_send.append(ev)
-            _store_state(session, item.id, "psn", psn_state)
-        else:
-            if psn_state:
-                _store_state(session, item.id, "psn", psn_state)
-
     return to_send
 
 

@@ -491,7 +491,7 @@ async def main() -> None:
     anilist = AniListProvider()
     igdb = IGDBProvider()
     steam = SteamProvider(country_code=settings.steam_country_code)
-    psn = PSNProvider(rawg_api_key=settings.rawg_api_key)
+    psn = PSNProvider(rawg_api_key=settings.rawg_api_key, graphql_hash=settings.psn_graphql_hash)
     ensure_data_dir()
     session_factory = get_session_factory()  # sessionmaker; call it to create a Session
 
@@ -594,16 +594,14 @@ async def main() -> None:
             if psn_results:
                 for r in psn_results[:5]:
                     name = r.get("name", "Unknown")
-                    price = r.get("price", {})
+                    base = r.get("base_price")
+                    sale = r.get("sale_price")
                     price_str = ""
-                    if price:
-                        final = price.get("final", 0)
-                        currency = price.get("currency", "GBP")
-                        if final > 0:
-                            price_str = f" {final/100:.2f}{currency}"
-                        else:
-                            price_str = " Free"
-                    lines.append(f"🎮 {name}{price_str} [psn={r['id']}]")
+                    if sale is not None and sale < base:
+                        price_str = f" {sale:.2f}₪"
+                    elif base is not None:
+                        price_str = f" {base:.2f}₪"
+                    lines.append(f"🎮 {name}{price_str} [psn={r.get('product_id', r['id'])}]")
 
             result_text = "\n".join(lines)
             # Cache the result
