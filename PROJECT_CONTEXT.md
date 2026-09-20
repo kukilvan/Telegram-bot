@@ -1,5 +1,19 @@
 # PROJECT_CONTEXT.md
 
+## ⚠️ GOLDEN RULE: NO COMMITS WITHOUT VERIFICATION ⚠️
+
+**НИКОГДА НЕ ДЕЛАЙ GIT COMMIT БЕЗ ПРОВЕРКИ!**
+
+Правило: ВСЕГДА сначала проверь исправление вручную (через Docker или напрямую), убедись что:
+1. Баг исправлен
+2. Все тесты проходят (`pytest tests/ -v`)
+3. Ничего не сломалось
+4. Бот запускается и работает
+
+ТОЛЬКО после того как пользователь написал "можно комитить" или "ok" — делай commit.
+
+**Нарушение этого правила запрещено.** Сначала проверка → потом подтверждение пользователя → потом commit.
+
 ## 1. PROJECT GOAL
 
 Личный Telegram-бот для отслеживания релизов фильмов, сериалов, аниме и видеоигр. Пользователь вводит название (на русском или английском), бот находит произведение по всем известным alias, пользователь добавляет его в watchlist и выбирает интересующие события (digital release, русская озвучка, KinoPub availability, новая серия, релиз игры).
@@ -184,10 +198,12 @@ project/
 All bugs discovered during Docker testing (2026-09-20). Do NOT fix until user gives explicit permission.
 
 ### BUG-1: TMDb ID collision — wrong item added when same ID exists as both movie and series
+**Status:** FIXED (2026-09-20)
 **Symptom:** User searches "Breaking Bad", sees "📺 Во все тяжкие (2008) [tmdb=1396]", runs `/add 1396`. Bot responds "✅ Добавлено: Зеркало (1975)" — completely wrong item.
-**Root cause:** TMDb API returns same ID for different media types (movie vs TV series). The `/add` handler picks the first match without respecting the user's selection from the search results. The `resolve_media_for_add` function doesn't filter by media_type when multiple items share the same external_id.
-**Files:** `app/bot/main.py` (add_handler), `app/services/media_resolve.py` (resolve_media_for_add)
-**Repro:** `/search Breaking Bad` → `/add 1396` → wrong item added
+**Root cause:** When TMDb ID 1396 had both movie and TV hits, the code checked existing DB items by media_type only (`m.media_type in hits`). If a stale/wrong-type item existed (e.g., "Зеркало" as movie with tmdb=1396), it was returned without verifying the title matched the API response.
+**Fix:** Added title-based matching in the collision path. When both movie+tv exist in hits, the code now checks if an existing DB item's `canonical_title_en` matches the API title for that media_type. Only returns existing item if both media_type AND title match. Otherwise shows picker.
+**Files:** `app/bot/main.py` (`_resolve_media_for_add`, lines ~365-385)
+**Repro:** `/search Breaking Bad` → `/add 1396` → was adding wrong item, now shows picker or correct existing item
 
 ### BUG-2: Notes not persisting in database
 **Symptom:** User runs `/note 693134 рандомный комент` → bot shows "📝 Заметка для Дюна: Часть вторая: рандомный комент". Next run `/note 693134` → bot shows "📝 Заметка для Дюна: Часть вторая: None".

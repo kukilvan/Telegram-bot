@@ -27,7 +27,7 @@ from app.database.models import (
     UserWatchItem,
     WatchItemTag,
 )
-from app.database.session import ensure_data_dir, get_session_factory
+from app.database.session import ensure_data_dir, get_session_factory, init_db
 from app.providers.tmdb import TMDbProvider
 from app.providers.anilist import AniListProvider
 from app.providers.igdb import IGDBProvider
@@ -362,15 +362,29 @@ async def _resolve_media_for_add(session, tmdb_id: int, tmdb_provider, anilist_p
             return ("item", item)
         return ("none", None)
 
-    matching = [m for m in ext_items if m.media_type in hits]
-    if len(matching) == 1:
-        # Existing item (created earlier via /add or pick button) matches a hit.
-        return ("item", matching[0])
+    # TMDb collision: movie+tv both exist — user must choose unless they already
+    # have one of them tracked. Check existing DB items against API titles.
     if "movie" in hits and "tv" in hits:
+        # Look for an existing item whose media_type and title match one of the hits
+        movie_title = movie.get("title", "")
+        tv_title = tv.get("name", "")
+        matched_existing = None
+        for m in ext_items:
+            if m.media_type == "movie" and m.canonical_title_en == movie_title:
+                matched_existing = m
+                break
+            if m.media_type == "tv" and m.canonical_title_en == tv_title:
+                matched_existing = m
+                break
+        if matched_existing is not None:
+            logging.info(f"TMDb id {tmdb_id}: existing item matches API hit; returning it")
+            return ("item", matched_existing)
         logging.info(f"TMDb id {tmdb_id} collides across movie+TV; sending pick prompt")
         return ("pick_tmdb", movie, tv)
+
+    # Single live endpoint: always go through _ensure_media_item to handle
+    # stale wrong-type rows and title mismatches reliably.
     media_type, details = next(iter(hits.items()))
-    # Single live endpoint: create the item, self-healing stale wrong-type rows.
     logging.info(f"TMDb id {tmdb_id}: single '{media_type}' hit; creating item")
     return ("item", _ensure_media_item(session, tmdb_id, details, media_type))
 
@@ -495,6 +509,7 @@ async def main() -> None:
     steam = SteamProvider(country_code=settings.steam_country_code)
     psn = PSNProvider(rawg_api_key=settings.rawg_api_key, graphql_hash=settings.psn_graphql_hash)
     ensure_data_dir()
+    init_db()
     session_factory = get_session_factory()  # sessionmaker; call it to create a Session
 
     @contextmanager
@@ -811,7 +826,7 @@ async def main() -> None:
                     name = details.get("title") or details.get("name") or details.get("canonical_title_en") or "Unknown"
                     year = (details.get("first_air_date") or details.get("release_date") or details.get("released") or "")[:4]
                     label = f"{name} ({year}) [{source}]"
-                    kb_rows.append([InlineKeyboardButton(text=label, callback_data=f"add_source:{numeric_id}:{source}")])
+                    kb_rows.append([InlineKeyboardButton(text=label, callback_data=f"add_source:{numeric_id}:{source}:{kind}")])
                 
                 kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
                 await message.answer(f"Найдено в {len(matches)} сервисах. Какой добавить?", reply_markup=kb)
@@ -964,7 +979,7 @@ async def main() -> None:
                     await cb.answer()
                     try:
                         parts = arg.split(":")
-                        if len(parts) != 2:
+                        if len(parts) != 3:
                             await cb.message.answer("Неизвестная кнопка")
                             return
                         try:
@@ -973,14 +988,19 @@ async def main() -> None:
                             await cb.message.answer("Неизвестная кнопка")
                             return
                         source = parts[1]
-                        logging.info(f"add_source callback: numeric_id={numeric_id}, source={source}")
+                        kind = parts[2]
+                        logging.info(f"add_source callback: numeric_id={numeric_id}, source={source}, kind={kind}")
                         
                         if source == "tmdb":
-                            details = await tmdb.get_movie_details(numeric_id) or await tmdb.get_tv_details(numeric_id)
+                            if kind == "movie":
+                                details = await tmdb.get_movie_details(numeric_id)
+                                media_type = "movie"
+                            else:
+                                details = await tmdb.get_tv_details(numeric_id)
+                                media_type = "tv"
                             if not details:
                                 await cb.message.answer(f"TMDb не вернул данные для id {numeric_id}.")
                                 return
-                            media_type = "movie" if details.get("title") else "tv"
                             item = _ensure_media_item(s, numeric_id, details, media_type)
                         elif source == "anilist":
                             results = await anilist.search_anime(str(numeric_id))
