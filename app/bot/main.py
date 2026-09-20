@@ -518,6 +518,10 @@ async def main() -> None:
         s = session_factory()
         try:
             yield s
+            s.commit()
+        except Exception:
+            s.rollback()
+            raise
         finally:
             s.close()
 
@@ -641,13 +645,38 @@ async def main() -> None:
                 await message.answer("Игры не найдены.")
                 return
 
-            lines = []
-            for r in results:
-                year_str = f" ({r['year']})" if r.get("year") else ""
-                platforms_str = ", ".join(f"{p['source']}={p['id']}" for p in r["platforms"])
-                lines.append(f"🎮 {r['title']}{year_str} [{platforms_str}]")
+            # Platform icons
+            platform_icons = {"steam": "🏪", "igdb": "🎮", "psn": "🎯"}
 
-            await message.answer("\n".join(lines))
+            kb_rows = []
+            for r in results:
+                name = r["title"]
+                for p in r["platforms"]:
+                    icon = platform_icons.get(p["source"], "🕹️")
+                    platform_name = p["source"].upper()
+                    rd = p.get("release_date")
+                    if rd:
+                        # Handle Unix timestamp or ISO date
+                        if isinstance(rd, int) and rd > 1000000000:
+                            from datetime import datetime, timezone
+                            rd = datetime.fromtimestamp(rd, tz=timezone.utc).strftime("%d.%m.%Y")
+                        elif isinstance(rd, str) and len(rd) >= 10:
+                            # ISO date "2026-09-21" -> "21.09.2026"
+                            parts_d = rd.split("-")
+                            if len(parts_d) == 3:
+                                rd = f"{parts_d[2]}.{parts_d[1]}.{parts_d[0]}"
+                        else:
+                            rd = None
+                    date_str = f" ({rd})" if rd else ""
+                    # Use | as separator to avoid issues with colons in names
+                    callback_data = f"add_platform|{name}|{p['source']}|{p['id']}|"
+                    kb_rows.append([InlineKeyboardButton(text=f"{icon} {name}{date_str} — {platform_name}", callback_data=callback_data)])
+
+            if kb_rows:
+                kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
+                await message.answer("Выберите платформу для добавления:", reply_markup=kb)
+            else:
+                await message.answer("Нет платформ для добавления.")
 
         @dp.inline_query()
         async def inline_search_handler(inline_query: InlineQuery):
@@ -921,7 +950,10 @@ async def main() -> None:
         async def confirm_handler(cb: CallbackQuery):
             """Inline-button actions from the /add confirmation flow."""
             data = cb.data or ""
-            action, _, arg = data.partition(":")
+            action, _, arg = data.partition("|")
+            if not arg:
+                action, _, arg = data.partition(":")
+            logging.info(f"callback: data={data!r}, action={action!r}, arg={arg!r}")
             with db() as s:
                 if not _is_allowed(cb):
                     return
@@ -1068,6 +1100,26 @@ async def main() -> None:
                         except Exception:
                             pass
                         return
+
+                if action == "add_platform":
+                    await cb.answer()
+                    logging.info(f"add_platform callback: arg={arg!r}")
+                    try:
+                        parts = arg.split("|", 3)
+                        logging.info(f"add_platform parts: {parts}")
+                        if len(parts) != 4:
+                            await cb.message.answer(f"Неизвестная кнопка (parts={len(parts)})")
+                            return
+                        title, source, platform_id, year_str = parts
+                        year = int(year_str) if year_str and year_str.isdigit() else None
+                        platforms = [{"source": source, "platform_id": platform_id, "release_date": "", "store_url": ""}]
+                        item, _ = media_resolve.add_game_to_watchlist(s, user.id, title, year, platforms)
+                        title_display = item.canonical_title_en or title
+                        await cb.message.answer(f"✅ Добавлено: {title_display} [{source.upper()}]")
+                    except Exception as e:
+                        logging.error(f"add_platform callback failed: {e}")
+                        await cb.message.answer("Ошибка при добавлении.")
+                    return
 
                 item = s.get(MediaItem, arg) if arg else None
                 if item is None or action not in ("ca_yes", "ca_no", "wt_keep", "wt_stop"):

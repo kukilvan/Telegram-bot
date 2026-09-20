@@ -58,23 +58,40 @@ async def search_games(query: str, limit: int = 10) -> list[dict]:
     all_items = []
 
     for item in steam_results:
+        rd = item.get("release_date", {})
+        if isinstance(rd, dict):
+            release_date = rd.get("date", "")
+        elif isinstance(rd, str):
+            release_date = rd
+        else:
+            release_date = ""
+        # Steam search uses 'id' not 'appid'
+        steam_id = item.get("id", "")
         all_items.append({
             "title": item.get("name", ""),
             "year": _extract_year_from_date(item.get("release_date", "")),
             "platform": "steam",
-            "platform_id": str(item.get("appid", "")),
-            "release_date": item.get("release_date", {}).get("date", "") if isinstance(item.get("release_date"), dict) else item.get("release_date", ""),
+            "platform_id": str(steam_id) if steam_id else "",
+            "release_date": release_date,
             "name": item.get("name", ""),
-            "store_url": f"https://store.steampowered.com/app/{item.get('appid', '')}/",
+            "store_url": f"https://store.steampowered.com/app/{steam_id}/" if steam_id else "",
         })
 
     for item in igdb_results:
+        frd = item.get("first_release_date")
+        release_date = ""
+        if frd:
+            if isinstance(frd, int) and frd > 1000000000:
+                from datetime import datetime, timezone
+                release_date = datetime.fromtimestamp(frd, tz=timezone.utc).strftime("%Y-%m-%d")
+            elif isinstance(frd, str):
+                release_date = frd
         all_items.append({
             "title": item.get("name", ""),
-            "year": _extract_year_from_date(item.get("first_release_date")),
+            "year": _extract_year_from_date(frd),
             "platform": "igdb",
             "platform_id": str(item.get("id", "")),
-            "release_date": _extract_year_from_date(item.get("first_release_date")),
+            "release_date": release_date,
             "name": item.get("name", ""),
             "store_url": "",
         })
