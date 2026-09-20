@@ -37,6 +37,7 @@ from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due
 from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
+from app.services import media_resolve
 from app.services.watchlist import (
     add_watch_item,
     get_media_item_by_external_id,
@@ -625,6 +626,29 @@ async def main() -> None:
             search_cache.set(cache_key, result_text)
             await message.answer(result_text)
 
+        @dp.message(Command("searchgame"))
+        async def searchgame_handler(message: Message):
+            """Phase 22: Search games across platforms, grouped by title+year."""
+            parts = message.text.split(maxsplit=1)
+            if len(parts) < 2:
+                await message.answer("Использование: /searchgame <название игры>")
+                return
+            query = parts[1]
+
+            results = await media_resolve.search_games(query, limit=10)
+
+            if not results:
+                await message.answer("Игры не найдены.")
+                return
+
+            lines = []
+            for r in results:
+                year_str = f" ({r['year']})" if r.get("year") else ""
+                platforms_str = ", ".join(f"{p['source']}={p['id']}" for p in r["platforms"])
+                lines.append(f"🎮 {r['title']}{year_str} [{platforms_str}]")
+
+            await message.answer("\n".join(lines))
+
         @dp.inline_query()
         async def inline_search_handler(inline_query: InlineQuery):
             """Phase 21: Autocomplete — user types /@botname witcher and sees results inline."""
@@ -824,7 +848,11 @@ async def main() -> None:
                 kb_rows = []
                 for kind, details, source in matches:
                     name = details.get("title") or details.get("name") or details.get("canonical_title_en") or "Unknown"
-                    year = (details.get("first_air_date") or details.get("release_date") or details.get("released") or "")[:4]
+                    raw_year = (details.get("first_air_date") or details.get("release_date") or details.get("released") or "")
+                    # Steam release_date is a dict {"date": "...", "coming_soon": true}, not a string
+                    if isinstance(raw_year, dict):
+                        raw_year = raw_year.get("date", "")
+                    year = str(raw_year)[:4] if raw_year else ""
                     label = f"{name} ({year}) [{source}]"
                     kb_rows.append([InlineKeyboardButton(text=label, callback_data=f"add_source:{numeric_id}:{source}:{kind}")])
                 
