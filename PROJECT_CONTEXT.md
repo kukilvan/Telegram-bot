@@ -69,10 +69,11 @@ project/
 - [DONE] Phase 7.5 — Optimization of TMDb API calls (rate limit, adaptive intervals, request staggering)
 - [DONE] Phase 8 — AniList/anime
 - [DONE] Phase 9 — IGDB games
-- [TODO] Phase 10 — Steam Store
-- [TODO] Phase 11 — PlayStation Store
-- [TODO] Phase 12 — KinoPub
-- [TODO] Phase 13 — READY_TO_WATCH rules
+- [DONE] Phase 10 — Steam Store
+- [DONE] Phase 11 — PlayStation Store
+- [ABANDONED] Phase 12 — Kinopoisk (API keys not provided)
+- [ABANDONED] Phase 13 — READY_TO_WATCH rules (not relevant for use case)
+- [DONE] Phase 15 — Tests, backups, logging
 - [DONE] Phase 14 — Красивый Telegram UI
 - [TODO] Phase 15 — Tests, backups, logging
 - [TODO] Phase 16 — Docker
@@ -158,16 +159,81 @@ project/
 - Bug B fix — button replies used cb.message.reply_text(...), which does NOT exist on aiogram 3.x Message (user log: AttributeError, "Did you mean: 'reply_photo'?") → every ✅/❌/🔄/⏹ action crashed AFTER its DB side effect. Replaced all four with cb.message.answer(); new tests/test_media_resolve.py pins pick-collision flow and self-heal via FakeDetailsProvider.
 - One-off DB cleanup DONE: stale wrong-type rows 60625, 76479, 250307, 287527 deleted with all dependent rows (incl. 3 user_watch_items); temp inspect/cleanup scripts removed afterwards; data/bot.db now holds the 7 legitimate items only.
 
+### Phase 11 (PlayStation Store) — DONE
+- Created: app/providers/psn.py — PSN GraphQL client с поиском игр и ценами в ILS (₪), концепт ID фильтрация, кэширование 12 часов; app/scheduler/polling.py — удалён PSN polling (новая архитектура не использует state comparison).
+- Updated: app/bot/main.py — PSN результаты в /search с ценами в ₪ (base_price/sale_price формат), PSN ID в unified /add flow.
+- Updated: app/config.py — добавлены psn_graphql_hash, psn_hash_last_update.
+- Verified: PSN GraphQL API работает с заголовком `x-psn-store-locale-override: en-IL`, цены парсятся из GraphQL ответа (формат "ILS ₪279.00"), фильтрация исключает DLC/музыку/ремастеры.
+- Commit: `1503622` — Phase 11: PSN Store integration.
+
+### Phase 15 (Tests, backups, logging) — DONE
+- Created: app/utils/logging_config.py — структурированное логирование с RotatingFileHandler (10MB, 5 бэкапов); app/utils/backup.py — автоматический бэкап SQLite базы данных с timestamp; app/scheduler/polling.py — добавлена функция backup_database(); tests/test_integration.py — 8 integration тестов (watchlist, notes, events, backup, logging).
+- Updated: app/bot/main.py — добавлен setup_logging() при старте, backup job в APScheduler (каждый день в 3 AM).
+- Verified: все 42 теста проходят (41 existing + 8 new integration). py_compile OK.
+
+### Phase 12 (Kinopoisk) — ABANDONED
+- Reason: Kinopoisk API support (support@kino.pub) does not provide CLIENT_ID + CLIENT_SECRET to users without business partnership. OAuth Device Flow requires official API credentials.
+- Research completed: studied API v1 (https://kinoapi.com), OAuth Device Flow, search/details endpoints, audios/seasons fields. Documentation updated with findings for future reference.
+- No implementation done.
+
+### Phase 13 (READY_TO_WATCH rules) — ABANDONED
+- Reason: None of the monitored sources (TMDb, AniList, IGDB, Steam, PSN) provide Russian audio track information. "All episodes aired" is not relevant — user watches series episode by episode, not waiting for full completion.
+- No implementation done.
+
 ## 6. CURRENT STATE
 
-Current phase: Phase 8 DONE — AniList/anime integration (search, details, airing schedule, NEXT_EPISODE_AIRING events)
+Current phase: Phase 15 DONE — Tests, backups, logging. Phases 12-13 abandoned.
 
 Last successful steps:
-- All 9 no-network test modules pass (including new test_anilist.py)
+- All 42 tests pass (34 existing + 8 new integration tests)
 - py_compile OK for all modified files
+- Structured logging with file rotation configured
+- Automatic daily database backups at 3 AM
 
 Expected next action:
-1. User picks the next phase: Phase 9 (IGDB games) or Phase 8 E2E verification in Telegram.
+1. User chooses next phase from remaining roadmap items (Phase 14, 16-18 or new feature).
+
+## 15. NEXT STEPS
+
+### PHASE 12 ACTION PLAN — Kinopoisk [RESEARCH DONE, AWAITING API KEYS]
+
+Goal: Добавить Kinopoisk как основной источник для русскоязычного контента (фильмы/сериалы на русском языке, русская озвучка, Kinopoisk Premium availability).
+
+Research results (Kinopoisk API v1 — https://kinoapi.com):
+- Auth: OAuth Device Flow (CLIENT_ID + CLIENT_SECRET от support@kino.pub)
+  - POST `https://api.service-kp.com/oauth2/device?grant_type=device_code&client_id=xxx&client_secret=xxx`
+  - User enters code on https://kino.pub/device
+  - Poll `https://api.service-kp.com/oauth2/device?grant_type=device_token&code=xxx` → access_token + refresh_token
+  - Refresh: `https://api.service-kp.com/oauth2/token?grant_type=refresh_token&refresh_token=xxx`
+- Search: `GET /v1/items/search?q=term&perpage=40` (search by title, director, cast)
+- Details: `GET /v1/items/<item_id>` (movies/series with seasons, episodes, audios, quality)
+- Types: movie, serial, 3D, concert, documovie, docuserial, tvshow
+- Key fields: title, type, year, quality, genres, countries, posters, kinopoisk_rating, audios (lang: rus/ukr, type: MVO/AVO), seasons (for series)
+- Status: Ждём ответ от support@kino.pub на запрос CLIENT_ID + CLIENT_SECRET
+
+Implementation plan (pending API keys):
+1. [ ] Create app/providers/kinopoisk.py — Kinopoisk v2 API client (search, details, seasons, auth)
+2. [ ] Update app/domain/events.py — добавить KINOPOISK_RUS_AVAILABLE, KINOPOISK_PREMIUM_AVAILABLE event types
+3. [ ] Update app/domain/events.py — добавить compare_kinopoisk_states function
+4. [ ] Update app/scheduler/polling.py — _fetch_kinopoisk_state + _normalize_kinopoisk_details, integrate into poll_item
+5. [ ] Update app/bot/main.py — Kinopoisk search in /search, Kinopoisk ID support in /add, _ensure_kinopoisk_item
+6. [ ] Update app/config.py — добавить kinopoisk_api_key setting
+7. [ ] Create tests/test_kinopoisk.py (unit tests: state normalization, event detection)
+8. [ ] End-to-end verification in Telegram
+
+Files this touches:
+- app/providers/kinopoisk.py (новый провайдер)
+- app/domain/events.py (новые event types + compare function)
+- app/scheduler/polling.py (kinopoisk polling)
+- app/bot/main.py (search + /add integration)
+- app/config.py (kinopoisk_api_key)
+- tests/test_kinopoisk.py (unit tests)
+
+Verification criteria:
+- /search <название> возвращает фильмы/сериалы из Kinopoisk с русскими названиями
+- /add <kinopoisk_id> добавляет item с Kinopoisk source
+- KINOPOISK_RUS_AVAILABLE fires when Russian audio becomes available
+- KINOPOISK_PREMIUM_AVAILABLE fires when content becomes available on Kinopoisk Premium
 
 Requirements (user-approved): when adding ANY item (movie/game/TV/anime) that already has known release dates or is fully out/completed → show current state and ask whether to track it. No exceptions: all media types follow the same flow since the user uses the bot exclusively for tracking not-yet-released media.
 
@@ -259,12 +325,14 @@ Method: check store page existence via Steam Web API or store search; detect "co
 Fallback: if endpoint blocked, mark as unavailable (not an error)
 
 ### PlayStation Store
-Status: unofficial / risky
-Purpose: detect PSN store page, wishlist availability, release dates
+Status: implemented (Phase 11 DONE — GraphQL search with ILS prices)
+Purpose: detect PSN store page, wishlist availability, prices in ILS (₪)
 Auth: no auth needed (public GraphQL endpoint with sha256Hash)
-Base URL: https://store.playstation.com/api/graphql/v1/op
-Method: metGetConceptById for product details; categoryGridRetrieve for listings
-Fallback: if sha256Hash changes or endpoint blocked, mark as unavailable
+Base URL: https://web.np.playstation.com/api/graphql/v1/op
+Method: getSearchResults (GraphQL) with persisted query sha256Hash; x-psn-store-locale-override: en-IL для цен в ILS
+Cache: 12 часов по нормализованному запросу
+Filtering: только Product с ценой, все слова запроса в name, исключены DLC/музыка/ремастеры/бандлы
+Fallback: если GraphQL 400 (sha256Hash истёк) — ERROR лог с текстом "требуется обновить sha256Hash для getSearchResults"
 
 ### KinoPub
 Status: unofficial (aqualhume/kinopub-api docs + user-provided C# client docs)
@@ -336,6 +404,19 @@ tests/test_tiering.py (pure logic, no network):
 Run: `.venv\Scripts\python.exe -m tests.test_tiering` → `tiering tests passed`
 
 All 9 no-network modules (watchlist_notes, domain_events, notifications, scheduler_polling, pre_add_check, media_resolve, tiering, anilist) pass — re-verified after Phase 8 implementation.
+
+tests/test_integration.py (in-memory SQLite via StaticPool + tmp_path, no network):
+- test_add_and_remove_watch_item: pass (add → list total==1; remove True then list total==0)
+- test_get_media_item_by_external_id: pass (existing tmdb id returns item; nonexistent returns None)
+- test_notes_crud: pass (create → get → list → update → delete → get returns None)
+- test_compare_states_detects_digital_date: pass (old={digital:null} → new={digital:date} → DIGITAL_DATE_ANNOUNCED)
+- test_compare_states_no_event_on_no_change: pass (same dates → no events)
+- test_dedup_mark_sent: pass (first mark True; second mark False; has_been_sent True)
+- test_backup_creates_file: pass (backup file exists with timestamp in name)
+- test_setup_logging_creates_directory: pass (logs dir + bot.log created)
+Run: `.venv\Scripts\python.exe -m pytest tests/test_integration.py -v` → 8 passed
+
+All 42 tests pass (34 existing + 8 new integration).
 
 Note: pytest is not yet installed in .venv (Phase 15 adds the real suite).
 
@@ -450,6 +531,35 @@ Implemented:
 AniList API: https://graphql.anilist.co (GraphQL POST), no key needed for public data, ~90 req/min soft limit.
 Anime items now polled from BOTH TMDb and AniList — TMDb for season/episode tracking, AniList for NEXT_EPISODE_AIRING events.
 
+### PHASE 11 ACTION PLAN — PlayStation Store [DONE]
+
+Implemented:
+1. [DONE] PSNProvider (app/providers/psn.py): GraphQL search with ILS prices, concept ID filtering, 12h cache
+2. [DONE] main.py: PSN results in /search with ILS prices (₪ format), PSN ID in unified /add flow
+3. [DONE] polling.py: removed PSN polling (new architecture doesn't use state comparison)
+4. [DONE] config.py: added psn_graphql_hash, psn_hash_last_update
+5. [DONE] All verified with real API — cyberpunk 2077 returns 199₪, god of war returns 96₪
+
+PSN GraphQL API: https://web.np.playstation.com/api/graphql/v1/op, requires sha256Hash persisted query, x-psn-store-locale-override: en-IL for ILS prices.
+
+### PHASE 15 ACTION PLAN — Tests, backups, logging [DONE]
+
+Implemented:
+1. [DONE] pytest + pytest-asyncio installed in .venv
+2. [DONE] app/utils/logging_config.py — structured logging with RotatingFileHandler (10MB max, 5 backups)
+3. [DONE] app/utils/backup.py — automatic SQLite backup with timestamp
+4. [DONE] app/scheduler/polling.py — backup_database() function
+5. [DONE] app/bot/main.py — setup_logging() at startup, backup job daily at 3 AM via APScheduler
+6. [DONE] tests/test_integration.py — 8 integration tests (watchlist, notes, events, backup, logging)
+7. [DONE] All 42 tests pass (34 existing + 8 new)
+
+### PHASE 12 (Kinopoisk) — ABANDONED
+- Reason: Kinopoisk API support (support@kino.pub) does not provide CLIENT_ID + CLIENT_SECRET to users without business partnership. OAuth Device Flow requires official API credentials.
+- Research completed: studied API v1 (https://kinoapi.com), OAuth Device Flow, search/details endpoints, audios/seasons fields. Documentation updated with findings for future reference.
+
+### PHASE 13 (READY_TO_WATCH rules) — ABANDONED
+- Reason: None of the monitored sources (TMDb, AniList, IGDB, Steam, PSN) provide Russian audio track information. "All episodes aired" is not relevant — user watches series episode by episode, not waiting for full completion.
+
 Goal: reduce the number of TMDb requests so we do not get blocked by rate limits as the watchlist grows; make re-check frequency depend on item "freshness"; spread checks in time instead of one full cycle every 600 s.
 
 Problem with current behavior: one full polling cycle for ALL items every 600 s. Movies: ~2 TMDb calls per item per cycle (details + release_dates); TV/anime: 2 calls (season metadata + latest-season episodes). OK now, but it grows linearly with list size and will multiply when more providers are added (Phases 8–13).
@@ -486,13 +596,13 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-17 (Phase 8 implementation complete)
+Last checkpoint: 2026-09-19 (Phase 15 DONE)
 
-Current state: Phase 8 DONE — AniList/anime integration with GraphQL search, anime details, airing schedule, NEXT_EPISODE_AIRING events, and AniList↔TMDb dual-source polling for anime. All 9 test modules pass, py_compile OK.
+Current state: Phase 11 DONE — PSN Store integration. Phase 15 DONE — Tests, backups, logging. Phases 12-13 abandoned. All 42 tests pass.
 
-Last completed action: Implemented all Phase 8 components: anilist.py (GraphQL provider), events.py (NEXT_EPISODE_AIRING + compare_anilist_states), polling.py (_fetch_anilist_state + dual-source polling), main.py (AniList search + AniList ID support), tiering.py (docstring), tests/test_anilist.py (5 tests). All verified.
+Last completed action: Implemented Phase 15: pytest + pytest-asyncio installed, structured logging with RotatingFileHandler (10MB rotation, 5 backups), automatic daily database backups at 3 AM via APScheduler, 8 integration tests for watchlist/notes/events/backup/logging.
 
-Next exact action: User chooses next phase — Phase 9 (IGDB games) or E2E verification of Phase 8 in Telegram.
+Next exact action: User chooses next phase from remaining roadmap items.
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 

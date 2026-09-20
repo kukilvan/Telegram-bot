@@ -33,7 +33,7 @@ from app.providers.anilist import AniListProvider
 from app.providers.igdb import IGDBProvider
 from app.providers.steam import SteamProvider
 from app.providers.psn import PSNProvider
-from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state
+from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state, backup_database as _backup_database
 from app.services.notes import create_or_update_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
@@ -43,6 +43,7 @@ from app.services.watchlist import (
     list_watch_items,
     remove_watch_item,
 )
+from app.utils.logging_config import setup_logging
 
 
 def _get_or_create_user(session, telegram_user_id: int):
@@ -481,6 +482,7 @@ def _format_status_line(decision) -> str | None:
 
 
 async def main() -> None:
+    setup_logging(level="INFO")
     settings = get_settings()
     logging.info("Starting bot...")
 
@@ -1211,6 +1213,10 @@ async def main() -> None:
         scheduler = AsyncIOScheduler()
         scheduler.add_job(
             _poll_due_items, "interval", seconds=settings.poll_scan_interval_seconds
+        )
+        # Phase 15: daily database backup at 3 AM
+        scheduler.add_job(
+            _backup_database, "cron", hour=3, minute=0
         )
         scheduler.start()
 

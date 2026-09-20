@@ -472,3 +472,15 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
             session.commit()
         results.append((w.user_id, item, events))
     return results
+
+
+def backup_database() -> None:
+    """Create a backup of the SQLite database. Called periodically by the scheduler."""
+    from app.utils.backup import create_backup
+    import logging
+    
+    backup = create_backup()
+    if backup:
+        logging.info(f"Database backup created: {backup}")
+    else:
+        logging.warning("No database file found for backup")
