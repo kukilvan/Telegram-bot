@@ -73,9 +73,8 @@ project/
 - [DONE] Phase 11 — PlayStation Store
 - [ABANDONED] Phase 12 — Kinopoisk (API keys not provided)
 - [ABANDONED] Phase 13 — READY_TO_WATCH rules (not relevant for use case)
-- [DONE] Phase 15 — Tests, backups, logging
 - [DONE] Phase 14 — Красивый Telegram UI
-- [TODO] Phase 15 — Tests, backups, logging
+- [DONE] Phase 15 — Tests, backups, logging
 - [TODO] Phase 16 — Docker
 - [TODO] Phase 17 — VPS deployment 24/7
 - [TODO] Phase 18 — Serverless evaluation
