@@ -63,6 +63,21 @@ class ExternalId(Base):
     external_id: Mapped[str]
 
 
+class GamePlatform(Base):
+    """Platform-specific release info for a game. Phase 22 — Unified Game Entity."""
+
+    __tablename__ = "game_platforms"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    media_item_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("media_items.id"), index=True
+    )
+    platform: Mapped[str]  # steam | igdb | psn | epic | gog
+    platform_id: Mapped[str]  # 2514330 / 265277 / EP9000-...
+    release_date: Mapped[Optional[str]]  # ISO date string or None
+    store_url: Mapped[Optional[str]]  # e.g. Steam store URL
+
+
 class MediaAlias(Base):
     """All known names for a media_item (original, English, Russian, AKA)."""
 
@@ -77,7 +92,7 @@ class MediaAlias(Base):
 
 
 class UserWatchItem(Base):
-    """User's watchlist entry."""
+    """User's watchlist entry. Phase 22: add tracked_platforms for multi-platform tracking."""
 
     __tablename__ = "user_watch_items"
 
@@ -88,6 +103,9 @@ class UserWatchItem(Base):
     )
     added_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.now(tz=_dt_timezone.utc)
+    )
+    tracked_platforms: Mapped[str] = mapped_column(
+        String(500), default="[]"  # JSON array: '["steam", "psn"]'
     )
 
 
