@@ -34,7 +34,7 @@ from app.providers.igdb import IGDBProvider
 from app.providers.steam import SteamProvider
 from app.providers.psn import PSNProvider
 from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state, backup_database as _backup_database
-from app.services.notes import create_or_update_note, list_notes
+from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
 from app.services.watchlist import (
@@ -1134,16 +1134,26 @@ async def main() -> None:
                 if kind == "none":
                     await message.answer("Не нашёл этот TMDb id.")
                     return
-                if kind == "pick":
+                if kind in ("pick_tmdb", "pick_anilist", "pick_igdb", "pick_all_three"):
                     await message.answer(
-                        "Этот TMDb id совпадает с фильмом и сериалом. "
+                        "Этот TMDb id совпадает с элементами из разных источников. "
                         "Сначала добавьте его через /add, выбрав нужное произведение."
                     )
                     return
+                if kind != "item":
+                    await message.answer("Не удалось разрешить TMDb id.")
+                    return
                 item = result[1]
-                create_or_update_note(s, user.id, item.id, note_text)
-                title = item.canonical_title_en or "item"
-                await message.answer(f"📝 Заметка для {title}: {note_text}")
+                if note_text is not None:
+                    create_or_update_note(s, user.id, item.id, note_text)
+                    title = item.canonical_title_en or "item"
+                    await message.answer(f"📝 Заметка для {title}: {note_text}")
+                else:
+                    existing = get_note(s, user.id, item.id)
+                    if existing:
+                        await message.answer(f"📝 {existing.note_text}")
+                    else:
+                        await message.answer("Заметка не найдена.")
 
         @dp.message(Command("notes"))
         async def notes_handler(message: Message):
