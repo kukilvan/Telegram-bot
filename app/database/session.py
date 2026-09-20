@@ -34,7 +34,7 @@ def get_session_factory(engine=None):
 
 def init_db():
     """Create tables (dev only; prod uses Alembic migrations)."""
-    from app.database.models import User  # noqa — ensure models are imported
+    from app.database.models import User, GamePlatform  # noqa — ensure all models registered with Base
 
     engine = get_engine()
     Base.metadata.create_all(engine)
