@@ -179,18 +179,85 @@ project/
 - Reason: None of the monitored sources (TMDb, AniList, IGDB, Steam, PSN) provide Russian audio track information. "All episodes aired" is not relevant — user watches series episode by episode, not waiting for full completion.
 - No implementation done.
 
+## 7. KNOWN BUGS & ISSUES
+
+All bugs discovered during Docker testing (2026-09-20). Do NOT fix until user gives explicit permission.
+
+### BUG-1: TMDb ID collision — wrong item added when same ID exists as both movie and series
+**Symptom:** User searches "Breaking Bad", sees "📺 Во все тяжкие (2008) [tmdb=1396]", runs `/add 1396`. Bot responds "✅ Добавлено: Зеркало (1975)" — completely wrong item.
+**Root cause:** TMDb API returns same ID for different media types (movie vs TV series). The `/add` handler picks the first match without respecting the user's selection from the search results. The `resolve_media_for_add` function doesn't filter by media_type when multiple items share the same external_id.
+**Files:** `app/bot/main.py` (add_handler), `app/services/media_resolve.py` (resolve_media_for_add)
+**Repro:** `/search Breaking Bad` → `/add 1396` → wrong item added
+
+### BUG-2: Notes not persisting in database
+**Symptom:** User runs `/note 693134 рандомный комент` → bot shows "📝 Заметка для Дюна: Часть вторая: рандомный комент". Next run `/note 693134` → bot shows "📝 Заметка для Дюна: Часть вторая: None".
+**Root cause:** Notes appear to display correctly on save but `get_note()` returns None on retrieval. Likely the note is not being committed to the database session, or the session is closed before commit.
+**Files:** `app/services/notes.py`, `app/bot/main.py` (note_handler)
+**Repro:** `/note <id> <text>` → `/note <id>` → shows "None"
+
+### BUG-3: No inline delete/edit buttons for notes
+**Symptom:** No way to edit or delete notes through the UI. Only `/note <id>` to view. No inline keyboard with delete/edit buttons next to the note message.
+**Status:** Feature not implemented. Needs inline keyboard with callback queries for edit/delete.
+**Files:** `app/bot/main.py` (note handlers)
+
+### BUG-4: No inline delete button in /watchlist
+**Symptom:** Cannot delete items from watchlist via inline button. Must use `/remove <id>` command. No delete button shown next to each item in `/watchlist` output.
+**Status:** Feature not implemented. Needs inline keyboard with callback queries for each watchlist item.
+**Files:** `app/bot/main.py` (watchlist_handler)
+
+### BUG-5: Steam game add crashes bot (KeyError on None year)
+**Symptom:** User runs `/add 1962700` (Subnautica 2 Steam ID). Bot crashes with:
+```
+KeyError: slice(None, 4, None)
+  File "/app/app/bot/main.py", line 813, in add_handler
+    year = (details.get("first_air_date") or details.get("release_date") or details.get("released") or "")[:4]
+```
+**Root cause:** `details.get("released")` returns `None` (not a string). Code tries to slice `None[:4]` which raises KeyError. The `or ""` fallback is not reached because `details.get("released")` returns None which is falsy but the `or` chain short-circuits incorrectly — actually the issue is that `details.get("released")` returns None and `None[:4]` raises TypeError, not KeyError. The error message says KeyError which suggests a dict key access issue elsewhere. Need to investigate exact line.
+**Files:** `app/bot/main.py` (add_handler, line ~813)
+**Repro:** `/search subnautica 2` → `/add 1962700` → crash
+
+### BUG-6: AniList not shown in "which service" picker
+**Symptom:** User runs `/add 20789` (AniList ID for "Nanatsu no Taizai"). Bot responds "Найдено в 4 сервисах. Какой добавить?" but AniList is NOT in the list of options. Same for `/add 20850` (Tokyo Ghoul √A) — "Найдено в 3 сервисах" but AniList missing.
+**Root cause:** The `resolve_media_for_add` function or the picker display logic does not include AniList results when building the service selection prompt. AniList items are found but filtered out before display.
+**Files:** `app/bot/main.py` (add_handler), `app/services/media_resolve.py`
+**Repro:** `/add 20789` → AniList option missing from picker
+
+### BUG-7: PSN results lack clear addable ID
+**Symptom:** User searches "last of us", sees "🎮 The Last of Us™ Part II Remastered 199.00₪ [psn=EP9000-CUSA00557_00-DLC5WEPSCROSSBOW]". Tries `/add EP9000-CUSA10249_00-THELASTOFUSPART2` → bot says "Нужно число TMDb, AniList, IGDB, Steam или PSN id, например: /add 841". Tries `/add 07642` → wrong result.
+**Root cause:** PSN IDs are long alphanumeric strings (e.g., `EP9000-CUSA10249_00-THELASTOFUSPART2`), not numeric. The `/add` handler expects numeric IDs and rejects PSN format. Need to either: (a) accept full PSN ID strings, or (b) map PSN results to numeric IDs that can be used with /add.
+**Files:** `app/bot/main.py` (add_handler), `app/providers/psn.py`
+**Repro:** `/search last of us` → `/add <psn-id-from-result>` → rejected
+
+### BUG-8: PSN search too strict (deferred fix)
+**Symptom:** User searches "last of us 2" → no PSN results. PSN API requires exact title "The Last of Us Part II".
+**Root cause:** PSN GraphQL search does fuzzy/exact matching that doesn't handle partial/misspelled queries. TMDb/IGDB/Steam search handles this better.
+**Status:** DEFERRED — requires separate design decision on search strategy per provider. Do NOT fix in current phase.
+**Files:** `app/providers/psn.py`
+
+### BUG-9: Cannot verify notification system works
+**Symptom:** No manual way to trigger or test notifications. Notifications are fired automatically by the event engine during polling, but there's no test command or debug mode to verify the full pipeline (event detection → rule matching → message send → dedup mark).
+**Status:** Missing test/verification mechanism. Consider adding `/notify-test <id>` command for debugging.
+**Files:** `app/domain/events.py`, `app/services/notifications.py`, `app/scheduler/polling.py`
+
+### BUG-10: Backup scheduled at 3 AM — unreliable if bot not running 24/7
+**Symptom:** Backup job runs at 3 AM daily via APScheduler cron. If bot is not running at 3 AM (e.g., user's computer sleeps, VPS reboots), backup is skipped until next day.
+**Root cause:** `scheduler.add_job(_backup_database, "cron", hour=3, minute=0)` in `app/bot/main.py`.
+**Fix needed:** Run backup on every startup (at least once) in addition to scheduled runs. Or use "interval" based backup (e.g., every 24 hours from last run) instead of fixed cron.
+**Files:** `app/bot/main.py` (line ~1217)
+
+
 ## 6. CURRENT STATE
 
-Current phase: Phase 15 DONE — Tests, backups, logging. Phases 12-13 abandoned.
+Current phase: Phase 16 DONE — Docker support. 10 bugs discovered during Docker testing, documented in Section 7.
 
 Last successful steps:
-- All 42 tests pass (34 existing + 8 new integration tests)
-- py_compile OK for all modified files
-- Structured logging with file rotation configured
-- Automatic daily database backups at 3 AM
+- Docker image builds and runs successfully
+- Bot starts, connects to Telegram, scheduler runs, backup job scheduled
+- All 42 tests pass
+- 10 bugs found during manual testing (see Section 7)
 
 Expected next action:
-1. User chooses next phase from remaining roadmap items (Phase 14, 16-18 or new feature).
+1. User gives permission to fix bugs from Section 7 (one by one).
 
 ## 15. NEXT STEPS
 
@@ -595,13 +662,13 @@ This rule exists because: the project is small enough that one well-maintained c
 
 ## 16. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-19 (Phase 15 DONE)
+Last checkpoint: 2026-09-20 (Phase 16 DONE, 10 bugs found)
 
-Current state: Phase 11 DONE — PSN Store integration. Phase 15 DONE — Tests, backups, logging. Phases 12-13 abandoned. All 42 tests pass.
+Current state: Phase 16 DONE — Docker support. Docker image builds, runs, bot connects to Telegram. 10 bugs discovered during manual testing (Section 7).
 
-Last completed action: Implemented Phase 15: pytest + pytest-asyncio installed, structured logging with RotatingFileHandler (10MB rotation, 5 backups), automatic daily database backups at 3 AM via APScheduler, 8 integration tests for watchlist/notes/events/backup/logging.
+Last completed action: Built and tested Docker image. Verified bot starts, scheduler runs, backup job scheduled. Manual testing revealed 10 bugs in /add resolution, notes persistence, PSN/Steam handling, AniList picker, backup timing.
 
-Next exact action: User chooses next phase from remaining roadmap items.
+Next exact action: User gives permission to fix bugs from Section 7 (one by one).
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 
