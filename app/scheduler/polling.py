@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone as _tz
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from app.database.models import ExternalId, MediaItem, SourceState, UserWatchItem
+from app.database.models import ExternalId, GamePlatform, MediaItem, SourceState, UserWatchItem
 from app.domain.events import compare_anilist_states, compare_igdb_states, compare_steam_states, compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
 
@@ -310,6 +310,34 @@ def _normalize_psn_details(details: dict) -> dict:
     }
 
 
+async def _fetch_game_platform_state(session: Session, provider, platform: str, platform_id: str) -> dict:
+    """Fetch current normalized state for a GamePlatform entry.
+
+    Uses the provider's get_game_details with the platform-specific ID.
+    """
+    try:
+        pid = int(platform_id)
+    except (ValueError, TypeError):
+        return {}
+
+    if platform == "igdb":
+        details = await provider.get_game_details(pid)
+        if details is None:
+            return {}
+        return _normalize_igdb_details(details)
+    elif platform == "steam":
+        details = await provider.get_game_details(pid)
+        if details is None:
+            return {}
+        return _normalize_steam_details(details)
+    elif platform == "psn":
+        details = await provider.get_game_details(pid)
+        if details is None:
+            return {}
+        return _normalize_psn_details(details)
+    return {}
+
+
 async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
     """Run one polling cycle for a watch item.
 
@@ -362,45 +390,44 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
             if anilist_state:
                 _store_state(session, item.id, "anilist", anilist_state)
 
-    # IGDB poll (games only)
+    # Game platform poll (games only) — uses GamePlatform table
     if item.media_type == "game" and igdb_provider is not None:
-        igdb_state = await _fetch_igdb_state(session, igdb_provider, item)
-        old_igdb = _load_state(session, item.id, "igdb")
-        if old_igdb is not None:
-            for ev in compare_igdb_states(old_igdb, igdb_state):
-                ev = _replace(ev, media_item_id=item.id)
-                fp = ev.fingerprint()
-                if has_been_sent(session, fp):
-                    continue
-                enabled_rules = get_enabled_rules(session, user_id, item.id)
-                if not any(r.event_type == ev.event_type for r in enabled_rules):
-                    continue
-                mark_sent(session, fp, item.id)
-                to_send.append(ev)
-            _store_state(session, item.id, "igdb", igdb_state)
-        else:
-            if igdb_state:
-                _store_state(session, item.id, "igdb", igdb_state)
+        # Get tracked platforms from watch item
+        tracked = json.loads(w.tracked_platforms) if w.tracked_platforms else []
+        if tracked:
+            # Get GamePlatform records for tracked platforms
+            platforms = session.query(GamePlatform).filter(
+                GamePlatform.media_item_id == item.id,
+                GamePlatform.platform.in_(tracked),
+            ).all()
+            for gp in platforms:
+                state = await _fetch_game_platform_state(session, igdb_provider, gp.platform, gp.platform_id)
+                old = _load_state(session, item.id, f"gp_{gp.platform}")
+                if old is not None:
+                    # Determine which compare function to use
+                    if gp.platform == "igdb":
+                        compare_fn = compare_igdb_states
+                    elif gp.platform == "steam":
+                        compare_fn = compare_steam_states
+                    elif gp.platform == "psn":
+                        compare_fn = compare_steam_states  # PSN uses same comparison
+                    else:
+                        compare_fn = compare_states
 
-    # Steam poll (games only)
-    if item.media_type == "game" and igdb_provider is not None:
-        steam_state = await _fetch_steam_state(session, igdb_provider, item)
-        old_steam = _load_state(session, item.id, "steam")
-        if old_steam is not None:
-            for ev in compare_steam_states(old_steam, steam_state):
-                ev = _replace(ev, media_item_id=item.id)
-                fp = ev.fingerprint()
-                if has_been_sent(session, fp):
-                    continue
-                enabled_rules = get_enabled_rules(session, user_id, item.id)
-                if not any(r.event_type == ev.event_type for r in enabled_rules):
-                    continue
-                mark_sent(session, fp, item.id)
-                to_send.append(ev)
-            _store_state(session, item.id, "steam", steam_state)
-        else:
-            if steam_state:
-                _store_state(session, item.id, "steam", steam_state)
+                    for ev in compare_fn(old, state):
+                        ev = _replace(ev, media_item_id=item.id)
+                        fp = ev.fingerprint()
+                        if has_been_sent(session, fp):
+                            continue
+                        enabled_rules = get_enabled_rules(session, user_id, item.id)
+                        if not any(r.event_type == ev.event_type for r in enabled_rules):
+                            continue
+                        mark_sent(session, fp, item.id)
+                        to_send.append(ev)
+                    _store_state(session, item.id, f"gp_{gp.platform}", state)
+                else:
+                    if state:
+                        _store_state(session, item.id, f"gp_{gp.platform}", state)
 
     return to_send
 
@@ -455,6 +482,13 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
             continue
         events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)
         state_now = _load_state(session, item.id, "tmdb") or {}
+        # For games, check game platform states for tier calculation
+        if item.media_type == "game" and not state_now:
+            for gp_platform in ["igdb", "steam", "psn"]:
+                gp_state = _load_state(session, item.id, f"gp_{gp_platform}")
+                if gp_state:
+                    state_now = gp_state
+                    break
         interval = tier_interval(state_now, item.media_type)
         jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
         extra = RATE_LIMIT_EXTRA_DELAY if getattr(tmdb_provider, "hit_429", False) else 0.0
