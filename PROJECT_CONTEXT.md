@@ -1,4 +1,4 @@
-# PROJECT_CONTEXT.md
+﻿# PROJECT_CONTEXT.md
 
 ## ⚠️ GOLDEN RULE: NO COMMITS WITHOUT VERIFICATION ⚠️
 
@@ -95,8 +95,8 @@ project/
 - [DONE] Phase 19 — Bot response optimization (parallel requests + search cache)
 - [FAILED] Phase 20 — Fuzzy search for typos: tried generating typo candidates (deletions, swaps, suffixes), but results were consistently irrelevant. API fuzzy matching doesn't align with user intent. Need different approach.
 - [DONE] Phase 21 — Inline autocomplete search (@botname query returns results)
-- [TODO] Phase 22 — Unified Game Entity (platform-agnostic media items with multi-platform tracking)
-
+- [DONE] Phase 22 - Unified Game Entity (platform-agnostic media items with multi-platform tracking)
+- [TODO] Phase 23 - Unified search by type + redesigned watchlist with details
 ## 5. COMPLETED WORK
 
 ### Phase 0 (research)
@@ -789,15 +789,190 @@ ALTER TABLE watch_items ADD COLUMN tracked_platforms TEXT DEFAULT '[]';
 5. /events becomes redundant — all info in watchlist
 6. Works for movies/TV too (TMDb is the "platform" for them)
 
-## 17. LAST CHECKPOINT
+## 17. PHASE 23 — UNIFIED SEARCH BY TYPE + REDESIGNED WATCHLIST
 
-Last checkpoint: 2026-09-20 (Phase 22 — Unified Game Entity planned)
+### Problem
+Current search requires separate commands: `/search` for movies/TV/anime and `/searchgame` for games. User has to remember which command to use. Watchlist shows all items in one flat list with emoji prefixes, no grouping by type, no season/episode progress, no release dates.
 
-Current state: Phase 16 DONE — Docker support. BUG-1 (TMDb collision) through BUG-5 (Steam KeyError) fixed. Phase 22 planned but not started.
+### Goal
+1. Unified search: user types any text → bot asks "What are we looking for?" with 4 buttons (Movie/TV Series/Anime/Game) → shows results in buttons
+2. Redesigned watchlist: grouped by type (Сериалы/Фильмы/Аниме/Игры), compact format with season/episode progress, release dates, platform info
+3. Details on demand: each watchlist item has [Подробнее] [Удалить] buttons
 
-Last completed action: Fixed BUG-5 (Steam add crashes with KeyError on dict release_date). User added 2 games via IGDB and Steam. Verified /add works for all platforms. User requested unified game entity system (Phase 22).
+### UI Flow
 
-Next exact action: Implement Phase 22 — Unified Game Entity (detailed plan in Section 16).
+**Search:**
+```
+User: убежище
+Bot: Что ищем?
+  [🎬 Фильм] [📺 Сериал] [🎌 Аниме] [🎮 Игра]
+User clicks [📺 Сериал]
+Bot: 📅 2023.03.15
+Убежище
+[🎬 Убежище (2023) — TMDb]
+[📺 Убежище: Season 2 (2024) — TMDb]
+```
+
+**Watchlist:**
+```
+Сериалы:
+• Фонари (2026) — 1 сезон 6/8
+  [Подробнее] [Удалить]
+• Убежище (2023) — 3 сезон 10/10
+  [Подробнее] [Удалить]
+
+Фильмы:
+• Дюна 3 (2026)
+  [Подробнее] [Удалить]
+
+Аниме:
+• One Piece (1999) — 13 сезон 18/24
+  [Подробнее] [Удалить]
+
+Игры:
+• The Witcher 3 — Steam, PSN, IGDB
+  [Подробнее] [Удалить]
+```
+
+**Details (on [Подробнее] click):**
+```
+Фонари (2026)
+Сериал, 2 сезон
+1 сезон: 8 серий — 6 просмотрено
+2 сезон: не анонсирован
+
+Даты:
+- Премьера: 15 марта 2026
+- Цифровой релиз: не обьявлен
+
+Платформы:
+- TMDb: 12345
+```
+
+### API Data Mapping
+
+**TMDb Movies:**
+- title, release_date, poster_url, overview, genres
+- release_dates endpoint → theatrical_date, digital_date
+
+**TMDb TV Series:**
+- name, first_air_date, backdrop_url, overview
+- /tv/{id}/aggregate_season_details → seasons with episode counts
+- /tv/{id}/next_episode_to_air → next episode date
+- status: "Returning Series" / "Ended" / "Canceled" / "Planning"
+
+**AniList:**
+- title.romaji, episodes, status, nextAiringEpisode {episode, airingAt}
+- format: "TV" / "MOVIE" / "ONA" / "OVA"
+
+**Games (IGDB/Steam/PSN):**
+- name, first_release_date, platforms (from GamePlatform table)
+
+### Implementation Steps
+
+1. **Add message handler for text messages (non-commands)**
+   - In main.py, add `@dp.message()` handler that catches all text messages
+   - Check if message starts with "/" — if yes, let existing command handlers process it
+   - If not a command, check if bot is in "search mode" for this user
+   - If not in search mode → save query, send "Что ищем?" with 4 buttons, set search mode
+   - If in search mode → process as search query with selected type
+
+2. **Add search type selection handler**
+   - Callback handler for 4 buttons: `search_type:movie`, `search_type:tv`, `search_type:anime`, `search_type:game`
+   - Look up saved query for this user
+   - Call appropriate search function (tmdb.search_movie/tv, anilist.search_anime, media_resolve.search_games)
+   - Show results as inline keyboard buttons
+   - Clear search mode
+
+3. **Create unified search result display**
+   - For movies: button text = `Title (YYYY)` or `Title (DD.MM.YYYY)` if date available
+   - For TV: button text = `Name (YYYY)` 
+   - For anime: button text = `Name (YYYY)`
+   - For games: use existing searchgame button format
+   - Each button callback: `add_watch:{type}:{id}` where type=movie/tv/anime/game and id=external_id
+   - No truncation if possible, max 60 chars
+
+4. **Update add_watch callback handler**
+   - Parse type and id from callback
+   - Create/fetch MediaItem based on type
+   - Add to watchlist
+   - Show confirmation message
+
+5. **Redesign watchlist_handler**
+   - Query all watch items grouped by media_type
+   - For each type, show header (Сериалы:/Фильмы:/Аниме:/Игры:)
+   - For each item, show compact format:
+     - Movies: `• Title (year)`
+     - TV: `• Name (year) — S{season} {aired}/{total}`
+     - Anime: `• Name (year) — {format} {aired}/{total}`
+     - Games: `• Name — Platform1, Platform2, Platform3`
+   - Add [Подробнее] [Удалить] buttons under each item
+   - Button callbacks: `details:{media_item_id}`, `remove:{media_item_id}`
+
+6. **Add details handler**
+   - For movies: show title, year, release dates (theatrical, digital), genres, overview
+   - For TV: show name, year, status, seasons with episode counts, next episode date
+   - For anime: show name, year, format, episodes, next airing date
+   - For games: show name, platforms with dates
+
+7. **Add remove handler**
+   - Remove item from watchlist
+   - Show confirmation
+
+8. **Update TV status logic**
+   - If status == "Returning Series" and no next_episode_date → "следующий сезон не анонсирован"
+   - If status == "Ended" → "сериал завершён"
+   - If status == "Canceled" → "сериал отменён"
+
+9. **Update polling for TV/anime**
+   - Already works for TMDb movies/TV and AniList
+   - Need to ensure next_episode_date is tracked
+
+10. **Remove old /search and /searchgame commands**
+    - After new search is working, remove /search and /searchgame
+    - Keep inline search (@botname query) as is
+
+### Files to modify
+- `app/bot/main.py` — add text message handler, search type callback, redesigned watchlist, details handler
+- `app/bot/main.py` — update add_watch callback
+- `app/services/media_resolve.py` — no changes needed (already has search_games)
+- `app/providers/tmdb.py` — no changes needed (already has search_movie, search_tv)
+- `app/providers/anilist.py` — no changes needed (already has search_anime)
+
+### Edge cases
+- Long titles: truncate at 60 chars with "..."
+- No release date: show year only, or omit date section in details
+- No episode data: show "информация отсутствует"
+- Multiple results: split into multiple messages if >12 buttons
+- Game with no platforms: show "нет платформ"
+
+### Testing
+1. Test search for each type (movie/tv/anime/game)
+2. Test adding each type to watchlist
+3. Test watchlist display for each type
+4. Test details button for each type
+5. Test remove button
+6. Test long titles
+7. Test items with no dates/episode data
+8. Test TV status display (Returning, Ended, Canceled)
+
+### Why this approach
+1. Single search flow for all types — no command memorization
+2. Compact watchlist — easy to scan
+3. Details on demand — no clutter
+4. Grouped by type — logical organization
+5. Uses existing APIs — no new integrations needed
+6. Backward compatible — old /search and /searchgame can coexist during transition
+
+## 18. LAST CHECKPOINT
+
+Last checkpoint: 2026-09-21 (Phase 23 planned)
+
+Current state: Phase 22 DONE — Unified Game Entity with search, watchlist, polling. Phase 23 planned — unified search by type + redesigned watchlist.
+
+Last completed action: Implemented Phase 22 (game entity, searchgame, watchlist with platforms, polling for GamePlatform). User requested Phase 23: unified search without commands + redesigned watchlist with details.
+
+Next exact action: Implement Phase 23 — unified search by type + redesigned watchlist (detailed plan in Section 17).
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 
