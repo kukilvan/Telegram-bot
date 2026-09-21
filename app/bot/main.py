@@ -633,11 +633,15 @@ async def main() -> None:
         @dp.message(Command("searchgame"))
         async def searchgame_handler(message: Message):
             """Phase 22: Search games across platforms, grouped by title+year."""
+            from datetime import datetime, timezone
+
             parts = message.text.split(maxsplit=1)
             if len(parts) < 2:
                 await message.answer("Использование: /searchgame <название игры>")
                 return
             query = parts[1]
+            query_lower = query.lower().strip()
+            query_words = [w for w in query_lower.split() if len(w) > 2]  # ignore short words
 
             results = await media_resolve.search_games(query, limit=10)
 
@@ -645,38 +649,109 @@ async def main() -> None:
                 await message.answer("Игры не найдены.")
                 return
 
-            # Platform icons
-            platform_icons = {"steam": "🏪", "igdb": "🎮", "psn": "🎯"}
+            # Filter results: keep only games where all query words appear in title
+            def relevance_score(title, query_words):
+                title_lower = title.lower()
+                if not query_words:
+                    return 1
+                score = sum(1 for w in query_words if w in title_lower)
+                return score / len(query_words)
 
-            kb_rows = []
+            # Filter: keep results with score >= 0.5 (at least half query words match)
+            filtered = []
             for r in results:
-                name = r["title"]
-                for p in r["platforms"]:
-                    icon = platform_icons.get(p["source"], "🕹️")
-                    platform_name = p["source"].upper()
-                    rd = p.get("release_date")
-                    if rd:
-                        # Handle Unix timestamp or ISO date
-                        if isinstance(rd, int) and rd > 1000000000:
-                            from datetime import datetime, timezone
-                            rd = datetime.fromtimestamp(rd, tz=timezone.utc).strftime("%d.%m.%Y")
-                        elif isinstance(rd, str) and len(rd) >= 10:
-                            # ISO date "2026-09-21" -> "21.09.2026"
-                            parts_d = rd.split("-")
-                            if len(parts_d) == 3:
-                                rd = f"{parts_d[2]}.{parts_d[1]}.{parts_d[0]}"
-                        else:
-                            rd = None
-                    date_str = f" ({rd})" if rd else ""
-                    # Use | as separator to avoid issues with colons in names
-                    callback_data = f"add_platform|{name}|{p['source']}|{p['id']}|"
-                    kb_rows.append([InlineKeyboardButton(text=f"{icon} {name}{date_str} — {platform_name}", callback_data=callback_data)])
+                score = relevance_score(r["title"], query_words)
+                if score >= 0.5:
+                    r["_score"] = score
+                    filtered.append(r)
 
-            if kb_rows:
-                kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
-                await message.answer("Выберите платформу для добавления:", reply_markup=kb)
-            else:
-                await message.answer("Нет платформ для добавления.")
+            # Sort by relevance score descending
+            filtered.sort(key=lambda x: x["_score"], reverse=True)
+
+            def fmt_date(rd):
+                if not rd:
+                    return None
+                if isinstance(rd, int) and rd > 1000000000:
+                    return datetime.fromtimestamp(rd, tz=timezone.utc).strftime("%d.%m.%Y")
+                if isinstance(rd, str) and len(rd) >= 10:
+                    parts_d = rd[:10].split("-")
+                    if len(parts_d) == 3 and parts_d[0].isdigit() and len(parts_d[0]) == 4:
+                        return f"{parts_d[2]}.{parts_d[1]}.{parts_d[0]}"
+                return None
+
+            def truncate(text, max_len=55):
+                if len(text) <= max_len:
+                    return text
+                # Try to truncate at word boundary
+                truncated = text[:max_len - 3]
+                space = truncated.rfind(" ")
+                if space > 20:
+                    truncated = truncated[:space] + "..."
+                else:
+                    truncated += "..."
+                return truncated
+
+            # Platform emoji icons
+            platform_icons = {"steam": "⌨️", "igdb": "🕹️", "psn": "🎮"}
+
+            # Build all message groups
+            MAX_BUTTONS_PER_MSG = 12
+            message_groups = []
+            current_group = {"header": None, "kb_rows": []}
+
+            for r in filtered:
+                name = r["title"]
+                # Collect all release dates for this game
+                all_dates = {}
+                for p in r["platforms"]:
+                    fd = fmt_date(p.get("release_date"))
+                    if fd:
+                        all_dates[p["source"]] = fd
+
+                # Build header for this specific game
+                if len(all_dates) == 1:
+                    date_val = next(iter(all_dates.values()))
+                    header = f"📅 {date_val}\n{name}"
+                elif all_dates:
+                    date_parts = [f"{k.upper()}: {v}" for k, v in all_dates.items()]
+                    header = f"📅 {' | '.join(date_parts)}\n{name}"
+                else:
+                    header = name
+
+                # Add buttons for this game
+                game_kb_rows = []
+                for p in r["platforms"]:
+                    icon = platform_icons.get(p["source"], "◈")
+                    btn_text = f"{icon} {truncate(name, 58)}"
+                    cb_name = truncate(name, 30)
+                    callback_data = f"add_platform|{cb_name}|{p['source']}|{p['id']}|"
+                    game_kb_rows.append([InlineKeyboardButton(text=btn_text, callback_data=callback_data)])
+
+                # Check if adding this game exceeds button limit
+                if len(current_group["kb_rows"]) + len(game_kb_rows) > MAX_BUTTONS_PER_MSG:
+                    message_groups.append(current_group)
+                    current_group = {"header": header, "kb_rows": game_kb_rows}
+                else:
+                    if not current_group["header"]:
+                        current_group["header"] = header
+                    current_group["kb_rows"].extend(game_kb_rows)
+
+            if current_group["kb_rows"]:
+                message_groups.append(current_group)
+
+            # Send messages — first message has header (query or game info), others only page number
+            for i, group in enumerate(message_groups):
+                kb = InlineKeyboardMarkup(inline_keyboard=group["kb_rows"])
+                if i == 0:
+                    # First message: use query in CAPS if no date, otherwise game info
+                    header_text = group["header"]
+                    if "📅" not in header_text:
+                        header_text = query_upper = query_lower.upper()
+                    suffix = f" ({i+1}/{len(message_groups)})" if len(message_groups) > 1 else ""
+                    await message.answer(f"{header_text}{suffix}", reply_markup=kb)
+                else:
+                    # Subsequent messages: only page number
+                    await message.answer(f"({i+1}/{len(message_groups)})", reply_markup=kb)
 
         @dp.inline_query()
         async def inline_search_handler(inline_query: InlineQuery):
@@ -1110,11 +1185,22 @@ async def main() -> None:
                         if len(parts) != 4:
                             await cb.message.answer(f"Неизвестная кнопка (parts={len(parts)})")
                             return
-                        title, source, platform_id, year_str = parts
+                        cb_name, source, platform_id, year_str = parts
+                        # Look up full name from GamePlatform by platform_id
+                        full_name = None
+                        gp = s.query(GamePlatform).filter(
+                            GamePlatform.platform == source,
+                            GamePlatform.platform_id == platform_id,
+                        ).first()
+                        if gp:
+                            mi = s.get(MediaItem, gp.media_item_id)
+                            full_name = mi.canonical_title_en if mi else cb_name
+                        else:
+                            full_name = cb_name
                         year = int(year_str) if year_str and year_str.isdigit() else None
                         platforms = [{"source": source, "platform_id": platform_id, "release_date": "", "store_url": ""}]
-                        item, _ = media_resolve.add_game_to_watchlist(s, user.id, title, year, platforms)
-                        title_display = item.canonical_title_en or title
+                        item, _ = media_resolve.add_game_to_watchlist(s, user.id, full_name, year, platforms)
+                        title_display = item.canonical_title_en or full_name
                         await cb.message.answer(f"✅ Добавлено: {title_display} [{source.upper()}]")
                     except Exception as e:
                         logging.error(f"add_platform callback failed: {e}")

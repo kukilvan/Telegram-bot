@@ -107,7 +107,7 @@ async def search_games(query: str, limit: int = 10) -> list[dict]:
             "store_url": item.get("url", ""),
         })
 
-    # Group by (title, year)
+    # Group by (title, year) — prefer non-None year for grouping
     groups: dict[tuple[str, Optional[int]], dict] = {}
     for item in all_items:
         key = (item["title"], item["year"])
@@ -125,7 +125,24 @@ async def search_games(query: str, limit: int = 10) -> list[dict]:
             "store_url": item["store_url"],
         })
 
-    return list(groups.values())
+    # Merge groups with same title: if one has a date, use it for all
+    title_groups: dict[str, dict] = {}
+    for key, group in groups.items():
+        title = group["title"]
+        if title not in title_groups:
+            title_groups[title] = group
+        else:
+            existing = title_groups[title]
+            # Merge platforms
+            existing_platforms_ids = {p["id"] for p in existing["platforms"]}
+            for p in group["platforms"]:
+                if p["id"] not in existing_platforms_ids:
+                    existing["platforms"].append(p)
+            # Prefer non-None year
+            if existing["year"] is None and group["year"] is not None:
+                existing["year"] = group["year"]
+
+    return list(title_groups.values())
 
 
 def _extract_year_from_date(date_value) -> Optional[int]:
