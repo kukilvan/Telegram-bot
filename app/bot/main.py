@@ -1190,7 +1190,22 @@ async def main() -> None:
                     m = s.get(MediaItem, w.media_item_id)
                     title = m.canonical_title_en or "item"
                     year = f" ({m.year})" if m.year else ""
-                    lines.append(f"• {title}{year}")
+                    if m.media_type == "game":
+                        lines.append(f"• {title}{year}")
+                        # Show platforms
+                        platforms = media_resolve.get_game_platforms(s, w.media_item_id)
+                        tracked = media_resolve.get_user_tracked_platforms(s, user.id, w.media_item_id)
+                        for i, gp in enumerate(platforms):
+                            marker = "├─" if i < len(platforms) - 1 else "└─"
+                            status = "✅" if gp.platform in tracked else "⬜"
+                            rd = gp.release_date
+                            if rd and len(rd) >= 10:
+                                parts_d = rd.split("-")
+                                rd = f"{parts_d[2]}.{parts_d[1]}.{parts_d[0]}"
+                            rd_str = f" ({rd})" if rd else ""
+                            lines.append(f"  {marker} {gp.platform.upper()}{rd_str} {status}")
+                    else:
+                        lines.append(f"• {title}{year}")
                 await message.answer("\n".join(lines))
 
         @dp.message(Command("note"))

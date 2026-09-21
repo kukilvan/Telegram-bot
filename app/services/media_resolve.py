@@ -215,9 +215,16 @@ def add_game_to_watchlist(
         session.flush()
         logger.info(f"Created new MediaItem {existing.id} for '{title}' ({year})")
 
-    # Add GamePlatform records
+    # Add GamePlatform records (skip duplicates)
     game_platforms = []
     for p in platforms:
+        existing_gp = session.query(GamePlatform).filter(
+            GamePlatform.media_item_id == existing.id,
+            GamePlatform.platform == p["source"],
+            GamePlatform.platform_id == p["platform_id"],
+        ).first()
+        if existing_gp:
+            continue
         gp = GamePlatform(
             media_item_id=existing.id,
             platform=p["source"],
@@ -248,15 +255,25 @@ def add_game_to_watchlist(
         existing_platforms = get_user_tracked_platforms(session, user_id, existing.id)
         for p in platforms:
             if p["source"] not in existing_platforms:
-                existing_platforms.append(p["source"])
-                gp = GamePlatform(
-                    media_item_id=existing.id,
-                    platform=p["source"],
-                    platform_id=p["platform_id"],
-                    release_date=p.get("release_date") or None,
-                    store_url=p.get("store_url") or None,
-                )
-                session.add(gp)
+                # Check if GamePlatform already exists
+                existing_gp = session.query(GamePlatform).filter(
+                    GamePlatform.media_item_id == existing.id,
+                    GamePlatform.platform == p["source"],
+                    GamePlatform.platform_id == p["platform_id"],
+                ).first()
+                if existing_gp:
+                    if p["source"] not in existing_platforms:
+                        existing_platforms.append(p["source"])
+                else:
+                    existing_platforms.append(p["source"])
+                    gp = GamePlatform(
+                        media_item_id=existing.id,
+                        platform=p["source"],
+                        platform_id=p["platform_id"],
+                        release_date=p.get("release_date") or None,
+                        store_url=p.get("store_url") or None,
+                    )
+                    session.add(gp)
         existing_watch.tracked_platforms = json.dumps(existing_platforms)
 
     return existing, game_platforms

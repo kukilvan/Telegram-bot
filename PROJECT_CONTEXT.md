@@ -95,6 +95,7 @@ project/
 - [DONE] Phase 19 — Bot response optimization (parallel requests + search cache)
 - [FAILED] Phase 20 — Fuzzy search for typos: tried generating typo candidates (deletions, swaps, suffixes), but results were consistently irrelevant. API fuzzy matching doesn't align with user intent. Need different approach.
 - [DONE] Phase 21 — Inline autocomplete search (@botname query returns results)
+- [TODO] Phase 22 — Unified Game Entity (platform-agnostic media items with multi-platform tracking)
 
 ## 5. COMPLETED WORK
 
@@ -221,16 +222,19 @@ All bugs discovered during Docker testing (2026-09-20). Do NOT fix until user gi
 **Status:** Feature not implemented. Needs inline keyboard with callback queries for each watchlist item.
 **Files:** `app/bot/main.py` (watchlist_handler)
 
-### BUG-5: Steam game add crashes bot (KeyError on None year)
-**Symptom:** User runs `/add 1962700` (Subnautica 2 Steam ID). Bot crashes with:
+### BUG-5: Steam game add crashes bot (KeyError on dict release_date)
+**Status:** FIXED (2026-09-20)
+**Commit:** `to be committed after user approval`
+**Symptom:** User runs `/add 2636430` (Soggy Beans Steam ID). Bot crashes with:
 ```
 KeyError: slice(None, 4, None)
-  File "/app/app/bot/main.py", line 813, in add_handler
+  File "/app/app/bot/main.py", line 827, in add_handler
     year = (details.get("first_air_date") or details.get("release_date") or details.get("released") or "")[:4]
 ```
-**Root cause:** `details.get("released")` returns `None` (not a string). Code tries to slice `None[:4]` which raises KeyError. The `or ""` fallback is not reached because `details.get("released")` returns None which is falsy but the `or` chain short-circuits incorrectly — actually the issue is that `details.get("released")` returns None and `None[:4]` raises TypeError, not KeyError. The error message says KeyError which suggests a dict key access issue elsewhere. Need to investigate exact line.
-**Files:** `app/bot/main.py` (add_handler, line ~813)
-**Repro:** `/search subnautica 2` → `/add 1962700` → crash
+**Root cause:** Steam API returns `release_date` as a dict `{"date": "Sep 21, 2026", "coming_soon": true}`, not a string. Code tries to slice dict with `[:4]`.
+**Fix:** Check if `release_date` is a dict, extract `date` field first, convert to string before slicing.
+**Files:** `app/bot/main.py` (add_handler, line 827)
+**Repro:** `/add 2636430` → crash (before fix), works after fix
 
 ### BUG-6: AniList not shown in "which service" picker
 **Symptom:** User runs `/add 20789` (AniList ID for "Nanatsu no Taizai"). Bot responds "Найдено в 4 сервисах. Какой добавить?" but AniList is NOT in the list of options. Same for `/add 20850` (Tokyo Ghoul √A) — "Найдено в 3 сервисах" but AniList missing.
@@ -251,8 +255,9 @@ KeyError: slice(None, 4, None)
 **Files:** `app/providers/psn.py`
 
 ### BUG-9: Cannot verify notification system works
+**Status:** IN PROGRESS (2026-09-20)
 **Symptom:** No manual way to trigger or test notifications. Notifications are fired automatically by the event engine during polling, but there's no test command or debug mode to verify the full pipeline (event detection → rule matching → message send → dedup mark).
-**Status:** Missing test/verification mechanism. Consider adding `/notify-test <id>` command for debugging.
+**Current approach:** Adding games with imminent release dates (IGDB The Rabbit Haul 265277 releases 2026-09-21) to test via polling.
 **Files:** `app/domain/events.py`, `app/services/notifications.py`, `app/scheduler/polling.py`
 
 ### BUG-10: Backup scheduled at 3 AM — unreliable if bot not running 24/7
@@ -264,7 +269,7 @@ KeyError: slice(None, 4, None)
 
 ## 6. CURRENT STATE
 
-Current phase: Phase 16 DONE — Docker support. 10 bugs discovered during Docker testing, documented in Section 7.
+Current phase: Phase 22 — Unified Game Entity (platform-agnostic media items with multi-platform tracking). BUG-1 through BUG-5 fixed.
 
 Last successful steps:
 - Docker image builds and runs successfully
@@ -676,15 +681,123 @@ All project data, plans, decisions, and state are updated and appended ONLY in t
 
 This rule exists because: the project is small enough that one well-maintained context file is sufficient; splitting across multiple files risks confusion when reading PROJECT_CONTEXT.md but missing PLAN.md or other files.
 
-## 16. LAST CHECKPOINT
+## 16. PHASE 22 — UNIFIED GAME ENTITY (PLATFORM-AGNOSTIC)
 
-Last checkpoint: 2026-09-20 (Phase 16 DONE, 10 bugs found)
+### Problem
+Currently, "The Rabbit Haul" on IGDB (id=265277) and "The Rabbit Haul" on Steam (id=2514330) are stored as TWO separate MediaItem records. The bot doesn't know they're the same game. User sees them as separate entries in /watchlist. /events command only works with TMDb IDs.
 
-Current state: Phase 16 DONE — Docker support. Docker image builds, runs, bot connects to Telegram. 10 bugs discovered during manual testing (Section 7).
+### Goal
+- One MediaItem per game/title (not per platform)
+- Platforms stored as separate records linked to MediaItem
+- User sees game name + year, not IDs
+- /watchlist shows all tracked platforms with release dates
+- /events removed — all info in watchlist
+- Platform selection UI when adding a game
 
-Last completed action: Built and tested Docker image. Verified bot starts, scheduler runs, backup job scheduled. Manual testing revealed 10 bugs in /add resolution, notes persistence, PSN/Steam handling, AniList picker, backup timing.
+### New Schema
 
-Next exact action: User gives permission to fix bugs from Section 7 (one by one).
+```sql
+-- New table: GamePlatform
+CREATE TABLE game_platforms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    media_item_id TEXT NOT NULL,           -- FK → media_items.id
+    platform TEXT NOT NULL,                -- steam | igdb | psn | epic
+    platform_id TEXT NOT NULL,             -- 2514330 / 265277 / EP9000-...
+    release_date TEXT,                     -- ISO date or NULL
+    store_url TEXT,                        -- Steam store URL, etc.
+    FOREIGN KEY (media_item_id) REFERENCES media_items(id)
+);
+
+-- Existing ExternalId table stays (for TMDb/AniList mapping)
+-- Existing MediaItem table stays (no changes)
+-- Existing WatchItem table: add `tracked_platforms` JSON column
+ALTER TABLE watch_items ADD COLUMN tracked_platforms TEXT DEFAULT '[]';
+-- tracked_platforms example: '["steam", "psn"]'
+```
+
+### UI Flow
+
+**Search:**
+```
+/search The Rabbit Haul
+→ 🎮 The Rabbit Haul (2026) [igdb=265277, steam=2514330]
+```
+
+**Add:**
+```
+/add 265277
+→ The Rabbit Haul (2026) — где отслеживать?
+  [✓] Steam — 21 Sep 2026
+  [✓] IGDB — 21 Sep 2026
+  [ ] PSN — не найдена
+  [Confirm]
+```
+
+**Watchlist:**
+```
+📚 Отслеживаю:
+• The Rabbit Haul (2026)
+  ├─ Steam: 21 Sep 2026 [ON]
+  ├─ IGDB: 21 Sep 2026 [ON]
+  └─ PSN: не найдена
+• Soggy Beans (2026)
+  └─ Steam: 21 Sep 2026 [ON]
+```
+
+### Implementation Steps
+
+1. **[DONE]** Create `app/database/models.py` — add `GamePlatform` model
+2. **[DONE]** Create migration / init_db update
+3. **[DONE]** Steam/IGDB/PSN search methods — already exist
+4. **[DONE]** Create `app/services/media_resolve.py` — unified resolver
+5. **[DONE]** Add `/searchgame` command with platform buttons
+6. **[DONE]** Add `add_platform` callback handler
+7. **[DONE]** Fix DB commit in `db()` context manager
+8. **[DONE]** Update `watchlist_handler` — show platforms for games
+9. **[TODO]** Show release date in search header (instead of "Выберите платформу...")
+   - If all platforms share same date → show "📅 21.09.2026 — The Rabbit Haul"
+   - If different dates → show "📅 Steam: 21.09.2026, IGDB: 21.09.2026"
+   - Clean button labels: remove dates, keep only game name + version tags (Demo, Complete Edition) + platform
+10. **[TODO]** Replace emoji platform icons with custom icons
+    - Steam: 🏪 → Steam logo (Unicode or custom emoji)
+    - PSN: 🎯 → PlayStation logo
+    - IGDB: 🎮 → keep gamepad
+11. **[TODO]** Fix PSN search — currently returns 400 (graphql_hash issue)
+12. **[TODO]** Update `app/scheduler/polling.py` — game polling for GamePlatform
+13. **[TODO]** Remove `/events` command
+14. **[TODO]** Update `_ensure_*_item` functions — merge into single `_ensure_game_item`
+15. **[TODO]** Update `add_source` callback — use unified resolver
+
+### Files to modify
+- `app/database/models.py` — add GamePlatform model
+- `app/database/session.py` — update init_db
+- `app/bot/main.py` — add_handler, watchlist_handler, remove events_handler
+- `app/scheduler/polling.py` — update game polling logic
+- `app/services/notes.py` — no changes needed
+- `app/domain/events.py` — no changes needed (still used by polling)
+
+### Migration strategy
+- New tables don't affect existing data
+- Existing MediaItems without GamePlatform entries will show as "no platforms tracked"
+- Need migration script to backfill GamePlatform from existing ExternalId records (igdb/steam/psn sources)
+
+### Why this is the best approach
+1. Correct data model — game is entity, platforms are attributes
+2. No duplicate entries in watchlist
+3. User never sees internal IDs
+4. Easily extensible (add Epic/GOG/Xbox = one new table row)
+5. /events becomes redundant — all info in watchlist
+6. Works for movies/TV too (TMDb is the "platform" for them)
+
+## 17. LAST CHECKPOINT
+
+Last checkpoint: 2026-09-20 (Phase 22 — Unified Game Entity planned)
+
+Current state: Phase 16 DONE — Docker support. BUG-1 (TMDb collision) through BUG-5 (Steam KeyError) fixed. Phase 22 planned but not started.
+
+Last completed action: Fixed BUG-5 (Steam add crashes with KeyError on dict release_date). User added 2 games via IGDB and Steam. Verified /add works for all platforms. User requested unified game entity system (Phase 22).
+
+Next exact action: Implement Phase 22 — Unified Game Entity (detailed plan in Section 16).
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 
