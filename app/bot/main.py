@@ -17,6 +17,7 @@ from app.domain.events import pre_add_check
 from app.config import get_settings
 from app.database.models import (
     ExternalId,
+    GamePlatform,
     MediaItem,
     NotificationRule,
     ReleaseEvent,
@@ -508,7 +509,7 @@ async def main() -> None:
     anilist = AniListProvider()
     igdb = IGDBProvider()
     steam = SteamProvider(country_code=settings.steam_country_code)
-    psn = PSNProvider(rawg_api_key=settings.rawg_api_key, graphql_hash=settings.psn_graphql_hash)
+    psn = PSNProvider(rawg_api_key=settings.rawg_api_key)
     ensure_data_dir()
     init_db()
     session_factory = get_session_factory()  # sessionmaker; call it to create a Session
@@ -643,7 +644,7 @@ async def main() -> None:
             query_lower = query.lower().strip()
             query_words = [w for w in query_lower.split() if len(w) > 2]  # ignore short words
 
-            results = await media_resolve.search_games(query, limit=10)
+            results = await media_resolve.search_games(query, limit=10, rawg_api_key=settings.rawg_api_key)
 
             if not results:
                 await message.answer("Игры не найдены.")
@@ -723,8 +724,9 @@ async def main() -> None:
                 for p in r["platforms"]:
                     icon = platform_icons.get(p["source"], "◈")
                     btn_text = f"{icon} {truncate(name, 58)}"
-                    cb_name = truncate(name, 30)
-                    callback_data = f"add_platform|{cb_name}|{p['source']}|{p['id']}|"
+                    # Truncate name for callback to fit 64 byte limit
+                    cb_name = truncate(name, 40)
+                    callback_data = f"ap|{cb_name}|{p['source']}|{p['id']}|"
                     game_kb_rows.append([InlineKeyboardButton(text=btn_text, callback_data=callback_data)])
 
                 # Check if adding this game exceeds button limit
@@ -1176,12 +1178,12 @@ async def main() -> None:
                             pass
                         return
 
-                if action == "add_platform":
+                if action == "ap":
                     await cb.answer()
-                    logging.info(f"add_platform callback: arg={arg!r}")
+                    logging.info(f"ap callback: arg={arg!r}")
                     try:
                         parts = arg.split("|", 3)
-                        logging.info(f"add_platform parts: {parts}")
+                        logging.info(f"ap parts: {parts}")
                         if len(parts) != 4:
                             await cb.message.answer(f"Неизвестная кнопка (parts={len(parts)})")
                             return
@@ -1196,14 +1198,22 @@ async def main() -> None:
                             mi = s.get(MediaItem, gp.media_item_id)
                             full_name = mi.canonical_title_en if mi else cb_name
                         else:
-                            full_name = cb_name
+                            # First time adding — search for game by truncated name
+                            matching = s.query(MediaItem).filter(
+                                MediaItem.media_type == "game",
+                                MediaItem.canonical_title_en.ilike(f"%{cb_name}%"),
+                            ).limit(1).all()
+                            if matching:
+                                full_name = matching[0].canonical_title_en
+                            else:
+                                full_name = cb_name
                         year = int(year_str) if year_str and year_str.isdigit() else None
                         platforms = [{"source": source, "platform_id": platform_id, "release_date": "", "store_url": ""}]
                         item, _ = media_resolve.add_game_to_watchlist(s, user.id, full_name, year, platforms)
                         title_display = item.canonical_title_en or full_name
                         await cb.message.answer(f"✅ Добавлено: {title_display} [{source.upper()}]")
                     except Exception as e:
-                        logging.error(f"add_platform callback failed: {e}")
+                        logging.error(f"ap callback failed: {e}")
                         await cb.message.answer("Ошибка при добавлении.")
                     return
 
@@ -1278,11 +1288,18 @@ async def main() -> None:
                     year = f" ({m.year})" if m.year else ""
                     if m.media_type == "game":
                         lines.append(f"• {title}{year}")
-                        # Show platforms
+                        # Show unique platforms (group by platform+id to avoid duplicates)
                         platforms = media_resolve.get_game_platforms(s, w.media_item_id)
                         tracked = media_resolve.get_user_tracked_platforms(s, user.id, w.media_item_id)
-                        for i, gp in enumerate(platforms):
-                            marker = "├─" if i < len(platforms) - 1 else "└─"
+                        seen = set()
+                        unique_platforms = []
+                        for gp in platforms:
+                            key = (gp.platform, gp.platform_id)
+                            if key not in seen:
+                                seen.add(key)
+                                unique_platforms.append(gp)
+                        for i, gp in enumerate(unique_platforms):
+                            marker = "├─" if i < len(unique_platforms) - 1 else "└─"
                             status = "✅" if gp.platform in tracked else "⬜"
                             rd = gp.release_date
                             if rd and len(rd) >= 10:

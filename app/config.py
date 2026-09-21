@@ -34,11 +34,7 @@ class Settings(BaseSettings):
     # RAWG API (for PSN game search)
     rawg_api_key: str = ""
 
-    # PSN GraphQL search hash (auto-updates if broken)
-    psn_graphql_hash: str = "4df6284f982e57bec70f23c77e2c219dc792eb19af7fb3d3a81767aa3f1958aa"
-    psn_hash_last_update: str = ""  # ISO timestamp of last hash update attempt
-
-    # PlayStation Store (scraping, no API key needed)
+    # PlayStation Store region
     ps_store_region: str = "il"
 
     # Steam Store region

@@ -19,7 +19,7 @@ from app.database.models import GamePlatform, MediaAlias, MediaItem, UserWatchIt
 logger = logging.getLogger(__name__)
 
 
-async def search_games(query: str, limit: int = 10) -> list[dict]:
+async def search_games(query: str, limit: int = 10, rawg_api_key: str = "") -> list[dict]:
     """Search games across all platforms. Returns unified results grouped by title+year.
 
     Returns:
@@ -39,7 +39,7 @@ async def search_games(query: str, limit: int = 10) -> list[dict]:
 
     steam = SteamProvider()
     igdb = IGDBProvider()
-    psn = PSNProvider()
+    psn = PSNProvider(rawg_api_key=rawg_api_key)
 
     try:
         results = await asyncio.gather(
