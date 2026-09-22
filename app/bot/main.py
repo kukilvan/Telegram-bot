@@ -539,6 +539,70 @@ async def main() -> None:
         async def start_handler(message: Message):
             await message.answer("👋 Бот запущен. Phase 4: watchlist + notes ready.")
 
+        # Phase 23: unified search state storage
+        _search_state: dict[int, dict] = {}
+
+        class _NotCommand:
+            """Filter that matches messages that are NOT commands."""
+            def __call__(self, message: Message) -> bool:
+                text = message.text or ""
+                if text.startswith("/"):
+                    return False
+                if "@" in text:
+                    first_part = text.split("@")[0]
+                    if first_part.startswith("/"):
+                        return False
+                return True
+
+        @dp.message(_NotCommand())
+        async def text_message_handler(message: Message):
+            """Phase 23: unified search — catch non-command text messages."""
+            if not _is_allowed(message):
+                return
+            # Skip if not private chat
+            if message.chat.type != "private":
+                return
+            logging.info(f"text_handler: processing message '{(message.text or '')[:50]}'")
+            user_id = message.from_user.id
+            text = message.text or ""
+            # If bot is waiting for type selection, this is the query
+            if user_id in _search_state and _search_state[user_id].get("waiting_for_type"):
+                query = text.strip()
+                if len(query) < 2:
+                    await message.answer("Введите название (минимум 2 символа).")
+                    return
+                _search_state[user_id]["query"] = query
+                _search_state[user_id]["waiting_for_type"] = False
+                # Send type selection buttons
+                kb = InlineKeyboardMarkup(inline_keyboard=[
+                    [
+                        InlineKeyboardButton(text="🎬 Фильм", callback_data="search_type:movie"),
+                        InlineKeyboardButton(text="📺 Сериал", callback_data="search_type:tv"),
+                    ],
+                    [
+                        InlineKeyboardButton(text="🎌 Аниме", callback_data="search_type:anime"),
+                        InlineKeyboardButton(text="🎮 Игра", callback_data="search_type:game"),
+                    ],
+                ])
+                await message.answer("Что ищем?", reply_markup=kb)
+                return
+            # If not waiting for type, check if this is a search query
+            query = text.strip()
+            if len(query) < 2:
+                return
+            _search_state[user_id] = {"query": query, "waiting_for_type": True}
+            kb = InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="🎬 Фильм", callback_data="search_type:movie"),
+                    InlineKeyboardButton(text="📺 Сериал", callback_data="search_type:tv"),
+                ],
+                [
+                    InlineKeyboardButton(text="🎌 Аниме", callback_data="search_type:anime"),
+                    InlineKeyboardButton(text="🎮 Игра", callback_data="search_type:game"),
+                ],
+            ])
+            await message.answer("Что ищем?", reply_markup=kb)
+
         @dp.message(Command("search"))
         async def search_handler(message: Message):
             parts = message.text.split(maxsplit=1)
@@ -1112,6 +1176,168 @@ async def main() -> None:
                             pass
                         return
 
+                if action == "search_type":
+                    await cb.answer()
+                    try:
+                        user_id = cb.from_user.id
+                        if user_id not in _search_state:
+                            await cb.message.answer("Сначала введите название для поиска.")
+                            return
+                        state = _search_state[user_id]
+                        query = state.get("query", "")
+                        if not query:
+                            await cb.message.answer("Сначала введите название для поиска.")
+                            return
+                        media_type = arg  # movie, tv, anime, game
+                        # Clear state
+                        del _search_state[user_id]
+                        # Perform search based on type
+                        if media_type == "movie":
+                            results = await tmdb.search_movie(query)
+                            if not results:
+                                await cb.message.answer("Ничего не найдено.")
+                                return
+                            kb_rows = []
+                            for r in results[:10]:
+                                name = r.get("title", "Unknown")
+                                year = (r.get("release_date") or "")[:4]
+                                display = f"{name} ({year})" if year else name
+                                kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:movie:{r['id']}:tmdb")])
+                            await cb.message.answer(f"Результаты поиска ({len(results)}):", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb_rows))
+                        elif media_type == "tv":
+                            results = await tmdb.search_tv(query)
+                            if not results:
+                                await cb.message.answer("Ничего не найдено.")
+                                return
+                            kb_rows = []
+                            for r in results[:10]:
+                                name = r.get("name", "Unknown")
+                                year = (r.get("first_air_date") or "")[:4]
+                                display = f"{name} ({year})" if year else name
+                                kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:tv:{r['id']}:tmdb")])
+                            await cb.message.answer(f"Результаты поиска ({len(results)}):", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb_rows))
+                        elif media_type == "anime":
+                            results = await anilist.search_anime(query)
+                            if not results:
+                                await cb.message.answer("Ничего не найдено.")
+                                return
+                            kb_rows = []
+                            for r in results[:10]:
+                                name = r.get("title", {}).get("romaji") or r.get("title", {}).get("english") or "Unknown"
+                                year = str(r.get("seasonYear") or "")
+                                display = f"{name} ({year})" if year else name
+                                kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:anime:{r['id']}:anilist")])
+                            await cb.message.answer(f"Результаты поиска ({len(results)}):", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb_rows))
+                        elif media_type == "game":
+                            from datetime import datetime, timezone as _tz
+                            results = await media_resolve.search_games(query, limit=10, rawg_api_key=settings.rawg_api_key)
+                            if not results:
+                                await cb.message.answer("Игры не найдены.")
+                                return
+
+                            # Filter results: keep only games where all query words appear in title
+                            query_lower = query.lower().strip()
+                            query_words = [w for w in query_lower.split() if len(w) > 2]
+
+                            def relevance_score(title, query_words):
+                                title_lower = title.lower()
+                                if not query_words:
+                                    return 1
+                                score = sum(1 for w in query_words if w in title_lower)
+                                return score / len(query_words)
+
+                            filtered = []
+                            for r in results:
+                                score = relevance_score(r["title"], query_words)
+                                if score >= 0.5:
+                                    r["_score"] = score
+                                    filtered.append(r)
+
+                            filtered.sort(key=lambda x: x["_score"], reverse=True)
+
+                            def fmt_date(rd):
+                                if not rd:
+                                    return None
+                                if isinstance(rd, int) and rd > 1000000000:
+                                    return datetime.fromtimestamp(rd, tz=_tz.utc).strftime("%d.%m.%Y")
+                                if isinstance(rd, str) and len(rd) >= 10:
+                                    parts_d = rd[:10].split("-")
+                                    if len(parts_d) == 3 and parts_d[0].isdigit() and len(parts_d[0]) == 4:
+                                        return f"{parts_d[2]}.{parts_d[1]}.{parts_d[0]}"
+                                return None
+
+                            def truncate(text, max_len=55):
+                                if len(text) <= max_len:
+                                    return text
+                                truncated = text[:max_len - 3]
+                                space = truncated.rfind(" ")
+                                if space > 20:
+                                    truncated = truncated[:space] + "..."
+                                else:
+                                    truncated += "..."
+                                return truncated
+
+                            platform_icons = {"steam": "⌨️", "igdb": "🕹️", "psn": "🎮"}
+
+                            MAX_BUTTONS_PER_MSG = 12
+                            message_groups = []
+                            current_group = {"header": None, "kb_rows": []}
+
+                            for r in filtered:
+                                name = r["title"]
+                                all_dates = {}
+                                for p in r["platforms"]:
+                                    fd = fmt_date(p.get("release_date"))
+                                    if fd:
+                                        all_dates[p["source"]] = fd
+
+                                if len(all_dates) == 1:
+                                    date_val = next(iter(all_dates.values()))
+                                    header = f"📅 {date_val}\n{name}"
+                                elif all_dates:
+                                    date_parts = [f"{k.upper()}: {v}" for k, v in all_dates.items()]
+                                    header = f"📅 {' | '.join(date_parts)}\n{name}"
+                                else:
+                                    header = name
+
+                                game_kb_rows = []
+                                for p in r["platforms"]:
+                                    icon = platform_icons.get(p["source"], "◈")
+                                    btn_text = f"{icon} {truncate(name, 58)}"
+                                    cb_name = truncate(name, 40)
+                                    callback_data = f"ap|{cb_name}|{p['source']}|{p['id']}|"
+                                    game_kb_rows.append([InlineKeyboardButton(text=btn_text, callback_data=callback_data)])
+
+                                if len(current_group["kb_rows"]) + len(game_kb_rows) > MAX_BUTTONS_PER_MSG:
+                                    message_groups.append(current_group)
+                                    current_group = {"header": header, "kb_rows": game_kb_rows}
+                                else:
+                                    if not current_group["header"]:
+                                        current_group["header"] = header
+                                    current_group["kb_rows"].extend(game_kb_rows)
+
+                            if current_group["kb_rows"]:
+                                message_groups.append(current_group)
+
+                            for i, group in enumerate(message_groups):
+                                kb = InlineKeyboardMarkup(inline_keyboard=group["kb_rows"])
+                                if i == 0:
+                                    header_text = group["header"]
+                                    if "📅" not in header_text:
+                                        header_text = query_lower.upper()
+                                    suffix = f" ({i+1}/{len(message_groups)})" if len(message_groups) > 1 else ""
+                                    await cb.message.answer(f"{header_text}{suffix}", reply_markup=kb)
+                                else:
+                                    await cb.message.answer(f"({i+1}/{len(message_groups)})", reply_markup=kb)
+                        return
+                    except Exception as e:
+                        logging.error(f"search_type handler error: {e}", exc_info=True)
+                        try:
+                            await cb.message.answer(f"Ошибка при обработке: {e}")
+                        except Exception:
+                            pass
+                        return
+
                 if action == "add_source":
                     await cb.answer()
                     try:
@@ -1174,6 +1400,72 @@ async def main() -> None:
                         logging.error(f"add_source handler error: {e}", exc_info=True)
                         try:
                             await cb.message.answer(f"Ошибка при обработке: {e}")
+                        except Exception:
+                            pass
+                        return
+
+                if action == "search_add":
+                    await cb.answer()
+                    try:
+                        parts = arg.split(":")
+                        if len(parts) < 3:
+                            await cb.message.answer("Неизвестная кнопка")
+                            return
+                        media_type = parts[0]  # movie, tv, anime, game
+                        platform = parts[-1]  # last part is platform
+                        external_id = ":".join(parts[1:-1])  # everything in between
+
+                        if media_type == "movie":
+                            details = await tmdb.get_movie_details(int(external_id))
+                            if not details:
+                                await cb.message.answer(f"TMDb не вернул данные.")
+                                return
+                            item = _ensure_media_item(s, int(external_id), details, "movie")
+                        elif media_type == "tv":
+                            details = await tmdb.get_tv_details(int(external_id))
+                            if not details:
+                                await cb.message.answer(f"TMDb не вернул данные.")
+                                return
+                            item = _ensure_media_item(s, int(external_id), details, "tv")
+                        elif media_type == "anime":
+                            details = await anilist.get_anime_details(int(external_id))
+                            if not details:
+                                await cb.message.answer(f"AniList не вернул данные.")
+                                return
+                            item = _ensure_anilist_item(s, int(external_id), details)
+                        elif media_type == "game":
+                            if platform == "igdb":
+                                details = await igdb.get_game_details(int(external_id))
+                                if not details:
+                                    await cb.message.answer(f"IGDB не вернул данные.")
+                                    return
+                                item = _ensure_igdb_item(s, int(external_id), details)
+                            elif platform == "steam":
+                                details = await steam.get_game_details(int(external_id))
+                                if not details:
+                                    await cb.message.answer(f"Steam не вернул данные.")
+                                    return
+                                item = _ensure_steam_item(s, int(external_id), details)
+                            elif platform == "psn":
+                                details = await psn.get_game_details(external_id)
+                                if not details:
+                                    await cb.message.answer(f"PSN не вернул данные.")
+                                    return
+                                item = _ensure_psn_item(s, external_id, details)
+                            else:
+                                await cb.message.answer("Неизвестная платформа.")
+                                return
+                        else:
+                            await cb.message.answer("Неизвестный тип.")
+                            return
+
+                        add_watch_item(s, user.id, item.id)
+                        await cb.message.answer(f"✅ {item.canonical_title_en or 'Неизвестное название'} добавлено в отслеживание.")
+                        return
+                    except Exception as e:
+                        logging.error(f"search_add handler error: {e}", exc_info=True)
+                        try:
+                            await cb.message.answer(f"Ошибка при добавлении: {e}")
                         except Exception:
                             pass
                         return
@@ -1273,6 +1565,7 @@ async def main() -> None:
 
         @dp.message(Command("watchlist"))
         async def watchlist_handler(message: Message):
+            logging.info(f"watchlist_handler: called by user {message.from_user.id}")
             with db() as s:
                 if not _is_allowed(message):
                     return
