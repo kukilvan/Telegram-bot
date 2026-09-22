@@ -542,6 +542,24 @@ async def main() -> None:
         # Phase 23: unified search state storage
         _search_state: dict[int, dict] = {}
 
+        async def _send_with_pagination(msg, kb_rows, header=None):
+            """Send inline keyboard buttons with pagination (12 per message)."""
+            MAX_BUTTONS = 12
+            groups = [kb_rows[i:i+MAX_BUTTONS] for i in range(0, len(kb_rows), MAX_BUTTONS)]
+            for j, group in enumerate(groups):
+                kb = InlineKeyboardMarkup(inline_keyboard=group)
+                if len(groups) > 1:
+                    suffix = f" ({j+1}/{len(groups)})"
+                    if j == 0 and header:
+                        await msg.answer(f"{header}{suffix}", reply_markup=kb)
+                    else:
+                        await msg.answer(suffix, reply_markup=kb)
+                else:
+                    if header:
+                        await msg.answer(header, reply_markup=kb)
+                    else:
+                        await msg.answer(reply_markup=kb)
+
         class _NotCommand:
             """Filter that matches messages that are NOT commands."""
             def __call__(self, message: Message) -> bool:
@@ -1200,10 +1218,13 @@ async def main() -> None:
                             kb_rows = []
                             for r in results[:10]:
                                 name = r.get("title", "Unknown")
-                                year = (r.get("release_date") or "")[:4]
+                                rd = r.get("release_date") or ""
+                                year = rd[:4] if rd else ""
                                 display = f"{name} ({year})" if year else name
+                                if len(display) > 60:
+                                    display = display[:57] + "..."
                                 kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:movie:{r['id']}:tmdb")])
-                            await cb.message.answer(f"Результаты поиска ({len(results)}):", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb_rows))
+                            await _send_with_pagination(cb.message, kb_rows, query.upper())
                         elif media_type == "tv":
                             results = await tmdb.search_tv(query)
                             if not results:
@@ -1212,10 +1233,13 @@ async def main() -> None:
                             kb_rows = []
                             for r in results[:10]:
                                 name = r.get("name", "Unknown")
-                                year = (r.get("first_air_date") or "")[:4]
+                                rd = r.get("first_air_date") or ""
+                                year = rd[:4] if rd else ""
                                 display = f"{name} ({year})" if year else name
+                                if len(display) > 60:
+                                    display = display[:57] + "..."
                                 kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:tv:{r['id']}:tmdb")])
-                            await cb.message.answer(f"Результаты поиска ({len(results)}):", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb_rows))
+                            await _send_with_pagination(cb.message, kb_rows, query.upper())
                         elif media_type == "anime":
                             results = await anilist.search_anime(query)
                             if not results:
@@ -1226,8 +1250,10 @@ async def main() -> None:
                                 name = r.get("title", {}).get("romaji") or r.get("title", {}).get("english") or "Unknown"
                                 year = str(r.get("seasonYear") or "")
                                 display = f"{name} ({year})" if year else name
+                                if len(display) > 60:
+                                    display = display[:57] + "..."
                                 kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:anime:{r['id']}:anilist")])
-                            await cb.message.answer(f"Результаты поиска ({len(results)}):", reply_markup=InlineKeyboardMarkup(inline_keyboard=kb_rows))
+                            await _send_with_pagination(cb.message, kb_rows, query.upper())
                         elif media_type == "game":
                             from datetime import datetime, timezone as _tz
                             results = await media_resolve.search_games(query, limit=10, rawg_api_key=settings.rawg_api_key)
