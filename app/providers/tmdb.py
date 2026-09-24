@@ -243,6 +243,19 @@ class TMDbProvider:
         data = resp.json()
         return data.get("seasons") or []
 
+    async def get_tv_credits(self, tv_id: int) -> dict | None:
+        """Return TV series credits (cast and crew).
+
+        Endpoint: GET /tv/{id}/credits?language=ru
+        Returns: {cast: [...], crew: [...]}
+        """
+        params = {"api_key": self._api_key, "language": "ru"}
+        resp = await self._get(f"/tv/{tv_id}/credits", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb get_tv_credits failed (HTTP %s)", resp.status_code if resp else 429)
+            return None
+        return resp.json()
+
     async def get_tv_season_episodes(self, tv_id: int, season_number: int) -> list[dict]:
         """Return the raw TMDb episodes array for one TV season.
 

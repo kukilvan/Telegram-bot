@@ -5,7 +5,7 @@ import json
 import logging
 import sys
 from contextlib import contextmanager
-from datetime import date, datetime, timezone
+from datetime import date, datetime as dt, timezone
 
 from sqlalchemy import delete, select
 
@@ -1553,29 +1553,66 @@ async def main() -> None:
                                     lines.append("  - Цифровой релиз: не обьявлена")
 
                         elif m.media_type == "tv":
-                            lines.append("Сериал")
-                            state = s.query(SourceState).filter(
-                                SourceState.media_item_id == m.id,
-                                SourceState.source_name == "tmdb",
+                            ext = s.query(ExternalId).filter(
+                                ExternalId.media_item_id == m.id,
+                                ExternalId.source == "tmdb",
                             ).first()
-                            if state and state.state_data:
-                                sd = json.loads(state.state_data) if isinstance(state.state_data, str) else state.state_data
-                                first_air = sd.get("first_air_date")
-                                next_air = sd.get("next_air_date")
-                                status = sd.get("status")
-                                current_season = sd.get("current_season")
-                                total_seasons = sd.get("total_seasons")
-                                if first_air:
-                                    lines.append(f"  Премьера: {first_air}")
-                                if status:
+                            if ext:
+                                tv_details = await tmdb.get_tv_details(int(ext.external_id))
+                                if tv_details:
+                                    original_name = tv_details.get("original_name")
+                                    if original_name and original_name != tv_details.get("name"):
+                                        lines.append(original_name)
+                            lines.append("Сериал")
+                            if ext:
+                                tv_details = await tmdb.get_tv_details(int(ext.external_id))
+                                if tv_details:
+                                    first_air = tv_details.get("first_air_date")
+                                    status = tv_details.get("status")
                                     status_map = {"Returning Series": "Идёт", "Ended": "Завершён", "Canceled": "Отменён", "Planning": "В разработке"}
-                                    lines.append(f"  Статус: {status_map.get(status, status)}")
-                                if current_season:
-                                    lines.append(f"  Текущий сезон: {current_season}" + (f" из {total_seasons}" if total_seasons else ""))
-                                if next_air:
-                                    lines.append(f"  Следующий выпуск: {next_air}")
-                                elif status == "Returning Series" and not next_air:
-                                    lines.append("  Следующий сезон: не анонсирован")
+                                    seasons = await tmdb.get_tv_seasons(int(ext.external_id))
+                                    if seasons:
+                                        latest_season = None
+                                        for s in seasons:
+                                            if s.get("season_number") > 0:
+                                                if latest_season is None or s.get("season_number") > latest_season.get("season_number"):
+                                                    latest_season = s
+                                        if latest_season:
+                                            current_season = latest_season.get("season_number")
+                                            total_seasons = len([s for s in seasons if s.get("season_number") > 0])
+                                            lines.append(f"  Статус: {status_map.get(status, status)}")
+                                            lines.append(f"  Текущий сезон: {current_season}" + (f" из {total_seasons}" if total_seasons else ""))
+                                            episodes = await tmdb.get_tv_season_episodes(int(ext.external_id), current_season)
+                                            aired = len([e for e in episodes if e.get("air_date") and e.get("air_date") <= dt.now().strftime("%Y-%m-%d")])
+                                            total = len(episodes)
+                                            if aired or total:
+                                                lines.append(f"  Выпущено: {aired} из {total}")
+                                    if first_air:
+                                        lines.append(f"  Премьера: {first_air}")
+                                    # Next episode
+                                    if status == "Returning Series":
+                                        next_ep_date = None
+                                        if seasons:
+                                            latest_season = None
+                                            for s in seasons:
+                                                if s.get("season_number") > 0:
+                                                    if latest_season is None or s.get("season_number") > latest_season.get("season_number"):
+                                                        latest_season = s
+                                            if latest_season:
+                                                current_season = latest_season.get("season_number")
+                                                episodes = await tmdb.get_tv_season_episodes(int(ext.external_id), current_season)
+                                                for e in episodes:
+                                                    air_date = e.get("air_date")
+                                                    if air_date and air_date >= dt.now().strftime("%Y-%m-%d"):
+                                                        next_ep_date = air_date
+                                                        break
+                                        if next_ep_date:
+                                            next_date = dt.strptime(next_ep_date, "%Y-%m-%d")
+                                            days = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"]
+                                            day_name = days[next_date.weekday()]
+                                            lines.append(f"  Следующая серия: {next_ep_date} ({day_name})")
+                                        else:
+                                            lines.append("  Следующий сезон: не анонсирован")
 
                         elif m.media_type == "anime":
                             lines.append("Аниме")
