@@ -1496,6 +1496,65 @@ async def main() -> None:
                             pass
                         return
 
+                if action == "details":
+                    await cb.answer()
+                    try:
+                        media_item_id = int(arg)
+                        m = s.get(MediaItem, media_item_id)
+                        if not m:
+                            await cb.message.answer("Элемент не найден.")
+                            return
+                        lines = []
+                        title = m.canonical_title_en or "Unknown"
+                        year = f" ({m.year})" if m.year else ""
+                        lines.append(f"{title}{year}")
+                        if m.media_type == "movie":
+                            lines.append("Фильм")
+                        elif m.media_type == "tv":
+                            lines.append("Сериал")
+                        elif m.media_type == "anime":
+                            lines.append("Аниме")
+                        elif m.media_type == "game":
+                            lines.append("Игра")
+                            platforms = media_resolve.get_game_platforms(s, m.id)
+                            tracked = media_resolve.get_user_tracked_platforms(s, user.id, m.id)
+                            if platforms:
+                                lines.append("")
+                                lines.append("Платформы:")
+                                for gp in platforms:
+                                    st = "✅" if gp.platform in tracked else "⬜"
+                                    rd = gp.release_date
+                                    rd_str = f" ({rd})" if rd else ""
+                                    lines.append(f"  {gp.platform.upper()}{rd_str} {st}")
+                        await cb.message.answer("\n".join(lines))
+                        return
+                    except Exception as e:
+                        logging.error(f"details handler error: {e}", exc_info=True)
+                        try:
+                            await cb.message.answer(f"Ошибка: {e}")
+                        except Exception:
+                            pass
+                        return
+
+                if action == "remove":
+                    await cb.answer()
+                    try:
+                        media_item_id = int(arg)
+                        m = s.get(MediaItem, media_item_id)
+                        if not m:
+                            await cb.message.answer("Элемент не найден.")
+                            return
+                        remove_watch_item(s, user.id, m.id)
+                        await cb.message.answer(f"🗑 Удалено: {m.canonical_title_en or 'Unknown'}")
+                        return
+                    except Exception as e:
+                        logging.error(f"remove handler error: {e}", exc_info=True)
+                        try:
+                            await cb.message.answer(f"Ошибка при удалении: {e}")
+                        except Exception:
+                            pass
+                        return
+
                 if action == "ap":
                     await cb.answer()
                     logging.info(f"ap callback: arg={arg!r}")
@@ -1600,35 +1659,73 @@ async def main() -> None:
                 if not items:
                     await message.answer("Список отслеживания пуст.")
                     return
-                lines = ["📚 Отслеживаю:"]
-                for w in items[:20]:
+
+                groups = {"tv": [], "movie": [], "anime": [], "game": []}
+                for w in items:
                     m = s.get(MediaItem, w.media_item_id)
-                    title = m.canonical_title_en or "item"
-                    year = f" ({m.year})" if m.year else ""
-                    if m.media_type == "game":
-                        lines.append(f"• {title}{year}")
-                        # Show unique platforms (group by platform+id to avoid duplicates)
-                        platforms = media_resolve.get_game_platforms(s, w.media_item_id)
-                        tracked = media_resolve.get_user_tracked_platforms(s, user.id, w.media_item_id)
-                        seen = set()
-                        unique_platforms = []
+                    logging.info(f"watchlist: item {w.media_item_id} -> media_type={m.media_type if m else 'None'}")
+                    if m and m.media_type in groups:
+                        groups[m.media_type].append((w, m))
+                logging.info(f"watchlist: groups={ {k: len(v) for k, v in groups.items()} }")
+
+                kb_rows = []
+
+                if groups["tv"]:
+                    await message.answer("─── 📺 Сериалы ───")
+                    for w, m in groups["tv"]:
+                        title = m.canonical_title_en or "Unknown"
+                        year = f" ({m.year})" if m.year else ""
+                        kb_rows = [[
+                            InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
+                            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"remove:{m.id}"),
+                        ]]
+                        kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
+                        await message.answer(f"• {title}{year}", reply_markup=kb)
+
+                if groups["movie"]:
+                    await message.answer("─── 🎬 Фильмы ───")
+                    for w, m in groups["movie"]:
+                        title = m.canonical_title_en or "Unknown"
+                        year = f" ({m.year})" if m.year else ""
+                        kb_rows = [[
+                            InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
+                            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"remove:{m.id}"),
+                        ]]
+                        kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
+                        await message.answer(f"• {title}{year}", reply_markup=kb)
+
+                if groups["anime"]:
+                    await message.answer("─── 🎌 Аниме ───")
+                    for w, m in groups["anime"]:
+                        title = m.canonical_title_en or "Unknown"
+                        year = f" ({m.year})" if m.year else ""
+                        kb_rows = [[
+                            InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
+                            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"remove:{m.id}"),
+                        ]]
+                        kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
+                        await message.answer(f"• {title}{year}", reply_markup=kb)
+
+                if groups["game"]:
+                    await message.answer("─── 🎮 Игры ───")
+                    game_icons = {"steam": "⌨️", "igdb": "🕹️", "psn": "🎮"}
+                    for w, m in groups["game"]:
+                        title = m.canonical_title_en or "Unknown"
+                        year = f" ({m.year})" if m.year else ""
+                        platforms = media_resolve.get_game_platforms(s, m.id)
+                        tracked = media_resolve.get_user_tracked_platforms(s, user.id, m.id)
+                        icons = []
                         for gp in platforms:
-                            key = (gp.platform, gp.platform_id)
-                            if key not in seen:
-                                seen.add(key)
-                                unique_platforms.append(gp)
-                        for i, gp in enumerate(unique_platforms):
-                            marker = "├─" if i < len(unique_platforms) - 1 else "└─"
-                            status = "✅" if gp.platform in tracked else "⬜"
-                            rd = gp.release_date
-                            if rd and len(rd) >= 10:
-                                parts_d = rd.split("-")
-                                rd = f"{parts_d[2]}.{parts_d[1]}.{parts_d[0]}"
-                            rd_str = f" ({rd})" if rd else ""
-                            lines.append(f"  {marker} {gp.platform.upper()}{rd_str} {status}")
-                    else:
-                        lines.append(f"• {title}{year}")
-                await message.answer("\n".join(lines))
+                            if gp.platform in tracked:
+                                icons.append(game_icons.get(gp.platform, "◈"))
+                        icon_str = " ".join(icons) if icons else ""
+                        prefix = f"{icon_str} " if icon_str else ""
+                        kb_rows = [[
+                            InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
+                            InlineKeyboardButton(text="🗑 Удалить", callback_data=f"remove:{m.id}"),
+                        ]]
+                        kb = InlineKeyboardMarkup(inline_keyboard=kb_rows)
+                        await message.answer(f"• {prefix}{title}{year}", reply_markup=kb)
 
         @dp.message(Command("note"))
         async def note_handler(message: Message):
