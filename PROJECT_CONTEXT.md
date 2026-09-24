@@ -966,13 +966,173 @@ Bot: 📅 2023.03.15
 
 ## 18. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-21 (Phase 23 planned)
+Last checkpoint: 2026-09-24 (Phase 23 Step 5 DONE - watchlist redesign)
 
-Current state: Phase 22 DONE — Unified Game Entity with search, watchlist, polling. Phase 23 planned — unified search by type + redesigned watchlist.
+Current state: Phase 22 DONE — Unified Game Entity. Phase 23 Steps 1-5 DONE — unified search by type, watchlist redesign with grouped categories. Step 6 in progress — details handler needs full information display.
 
-Last completed action: Implemented Phase 22 (game entity, searchgame, watchlist with platforms, polling for GamePlatform). User requested Phase 23: unified search without commands + redesigned watchlist with details.
+Last completed action: Redesigned watchlist with grouped categories (Сериалы/Фильмы/Аниме/Игры), buttons [Подробнее] [Удалить] working. Database persisted with volume mount.
 
-Next exact action: Implement Phase 23 — unified search by type + redesigned watchlist (detailed plan in Section 17).
+Next exact action: Implement Step 6 sub-tasks for full details display (detailed below).
+
+## 19. PHASE 23 STEP 6 — DETAILS HANDLER SUB-TASKS
+
+### API Data Availability
+
+**TMDb (movies/TV):**
+- ✅ `runtime` — movie details
+- ✅ `release_dates` — theatrical, digital dates
+- ✅ `seasons` — TV season list
+- ✅ `season_episodes` — episodes per season
+- ✅ `next_episode_to_air` — TV next air date
+- ✅ `status` — TV series status
+- ✅ `first_air_date` — TV premiere
+- ❌ `credits` — NOT IMPLEMENTED (need `/movie/{id}/credits`, `/tv/{id}/credits`)
+- ❌ `watch/providers` — NOT IMPLEMENTED (need `/movie/{id}/watch/providers`)
+- ❌ `similar` — NOT IMPLEMENTED
+
+**AniList (anime):**
+- ✅ `episodes` — total episodes
+- ✅ `status` — RELEASING, FINISHED, etc.
+- ✅ `nextAiringEpisode` — episode number + airingAt timestamp
+- ✅ `seasonYear` — year only
+- ✅ `format` — TV, MOVIE, ONA, etc.
+- ❌ Current season number — NOT available (only seasonYear)
+- ❌ Season status — NOT available
+- ❌ Staff/credits — NOT available in basic query
+
+**IGDB/Steam/PSN (games):**
+- ✅ `first_release_date` — IGDB
+- ✅ `release_date` — Steam
+- ✅ `released` — PSN/RAWG
+- ✅ Platform names from GamePlatform table
+- ✅ Full title from MediaItem.canonical_title_en
+
+### Sub-task 6.1: Movies (DONE)
+**Implementation:**
+- Added `get_movie_credits()` to TMDbProvider → calls `/movie/{id}/credits`
+- Added `get_movie_watch_providers()` to TMDbProvider → calls `/movie/{id}/watch/providers`
+- Dates fetched directly from API in details handler (not from SourceState cache)
+- Uses `_earliest_theatrical_date()` and `_earliest_digital_date()` from polling.py
+- Theatrical: type 3 (Theatrical) or type 2 (Theatrical limited), picks earliest
+- Digital: type 4 (Digital), picks earliest
+- All dates fetched on-demand when user clicks [Подробнее] — no waiting for polling
+- English title from `original_title` field, shown before "Фильм"
+- Streaming services removed (unstable, not helpful)
+
+**Final output:**
+```
+Название на русском (Year)
+Title in English
+Фильм
+  Длительность: 120 мин
+  Режиссёр: Name
+  В ролях: Actor1, Actor2, Actor3
+
+Даты:
+  - Премьера в кинотеатрах: 2026-03-15
+  - Цифровой релиз: не обьявлена
+```
+
+**Key implementation details:**
+- Release dates fetched via `tmdb.get_movie_release_dates(movie_id)` which calls `/movie/{id}/release_dates`
+- Returns per-region data: `[{iso_3166_1: "US", release_dates: [{type: 3, release_date: "2026-03-15T00:00:00.000Z"}]}]`
+- `_earliest_theatrical_date()` filters type 3 and 2, picks earliest date
+- `_earliest_digital_date()` filters type 4, picks earliest date
+- Dates displayed as ISO format (YYYY-MM-DD)
+- If no dates found: shows "не обьявлена"
+- No region filtering — checks all regions, picks earliest across all
+
+### Sub-task 6.2: TV Series (TODO after 6.1)
+**Target output:**
+```
+Название сериала (Year)
+Series Name in English
+Сериал
+  Премьера: 2023-03-10
+  Статус: Идёт
+  Текущий сезон: 3
+  Последняя серия: 5 из 8
+  Следующая серия: 18.10.2026 (чт)
+```
+
+**Requirements:**
+- Show English title on second line (from `original_name` in TMDb TV details)
+- Show premiere date from TV details (`first_air_date`)
+- Show status: "Идёт" / "Завершён" / "Отменён"
+- Show current season number (latest season from seasons data)
+- Show episode progress: "Последняя серия: X из Y" (aired vs total in current season)
+- Show next episode date with day of week: "18.10.2026 (чт)"
+- If next season not announced: show "Следующий сезон: не анонсирован"
+- Use same date fetching approach as movies (direct API call in details handler)
+
+**What's available NOW:**
+- `first_air_date` from TV details
+- `status` from TV details
+- `seasons` from `/tv/{id}/seasons`
+- `episodes` from `/tv/{id}/season/{number}`
+- `next_episode_to_air` from `/tv/{id}/aggregate_season_details`
+- Day of week can be calculated from air_date
+
+**What NEEDS new API methods:**
+- Director + top 3 actors — need `get_tv_credits()` calling `/tv/{id}/credits`
+
+### Sub-task 6.3: Anime (TODO after 6.2)
+**Target output:**
+```
+Title (year)
+Аниме
+  Эпизодов: 1100
+  Статус: RELEASING
+  Следующий эпизод: #1101
+  Дата выхода: 2026-10-11
+```
+
+**What's available NOW:**
+- `episodes` from AniList
+- `status` from AniList
+- `nextAiringEpisode.episode` from AniList
+- `nextAiringEpisode.airingAt` — can convert to date
+
+**What's NOT available:**
+- Current season number — AniList only returns `seasonYear` (year)
+- Season status — not in AniList API
+- Staff/credits — not in AniList basic query
+
+### Sub-task 6.4: Games (TODO after 6.3)
+**Target output:**
+```
+Full Game Title Here (even if very long, wraps to multiple lines)
+Игра
+
+Платформы:
+  IGDB (2015-05-19) ✅
+  STEAM (2015-05-19) ✅
+  PSN (2015-05-19) ✅
+```
+
+**What's available NOW:**
+- Full title from MediaItem.canonical_title_en (already stored)
+- Release dates from all platforms (IGDB, Steam, PSN/RAWG)
+- Platform names from GamePlatform table
+
+**Implementation:**
+1. Verify PSN release dates are stored in GamePlatform.release_date
+2. Ensure full title is preserved (not truncated) when creating MediaItem
+3. Update details handler to show all platform dates
+
+### Implementation order
+1. **6.1 Movies** — runtime (available now) + credits + watch/providers (need new API methods)
+2. **6.2 TV Series** — season/episode progress + day of week (all available now)
+3. **6.3 Anime** — basic info (all available now, limited data)
+4. **6.4 Games** — PSN dates + full titles (all available now)
+
+### Testing per sub-task
+For each category:
+1. Add item to watchlist
+2. Click [Подробнее]
+3. Verify all available data displays correctly
+4. Verify missing data is handled gracefully (no errors, no empty fields)
+5. Verify formatting (dates, day of week, etc.)
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 

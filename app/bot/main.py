@@ -1,6 +1,7 @@
 """Minimal aiogram bot entry point. Phase 4: watchlist + notes. Phase 19: speed optimization. Phase 21: autocomplete."""
 
 import asyncio
+import json
 import logging
 import sys
 from contextlib import contextmanager
@@ -34,7 +35,7 @@ from app.providers.anilist import AniListProvider
 from app.providers.igdb import IGDBProvider
 from app.providers.steam import SteamProvider
 from app.providers.psn import PSNProvider
-from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state, backup_database as _backup_database
+from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state, backup_database as _backup_database, _earliest_digital_date, _earliest_theatrical_date
 from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
@@ -1499,7 +1500,7 @@ async def main() -> None:
                 if action == "details":
                     await cb.answer()
                     try:
-                        media_item_id = int(arg)
+                        media_item_id = arg
                         m = s.get(MediaItem, media_item_id)
                         if not m:
                             await cb.message.answer("Элемент не найден.")
@@ -1508,12 +1509,92 @@ async def main() -> None:
                         title = m.canonical_title_en or "Unknown"
                         year = f" ({m.year})" if m.year else ""
                         lines.append(f"{title}{year}")
+
                         if m.media_type == "movie":
+                            ext = s.query(ExternalId).filter(
+                                ExternalId.media_item_id == m.id,
+                                ExternalId.source == "tmdb",
+                            ).first()
+                            if ext:
+                                details = await tmdb.get_movie_details(int(ext.external_id))
+                                if details:
+                                    original_title = details.get("original_title")
+                                    if original_title and original_title != details.get("title"):
+                                        lines.append(original_title)
                             lines.append("Фильм")
+                            if ext:
+                                details = await tmdb.get_movie_details(int(ext.external_id))
+                                if details and details.get("runtime"):
+                                    lines.append(f"  Длительность: {details['runtime']} мин")
+                                credits = await tmdb.get_movie_credits(int(ext.external_id))
+                                if credits:
+                                    crew = credits.get("crew", [])
+                                    director = next((p["name"] for p in crew if p["job"] == "Director"), None)
+                                    if director:
+                                        lines.append(f"  Режиссёр: {director}")
+                                    cast = credits.get("cast", [])[:3]
+                                    if cast:
+                                        actors = ", ".join(p["name"] for p in cast)
+                                        lines.append(f"  В ролях: {actors}")
+                            # Get release dates directly from API
+                            if ext:
+                                release_dates = await tmdb.get_movie_release_dates(int(ext.external_id))
+                                thea = _earliest_theatrical_date(release_dates) if release_dates else None
+                                digital = _earliest_digital_date(release_dates) if release_dates else None
+                                lines.append("")
+                                lines.append("Даты:")
+                                if thea:
+                                    lines.append(f"  - Премьера в кинотеатрах: {thea}")
+                                else:
+                                    lines.append("  - Премьера в кинотеатрах: не обьявлена")
+                                if digital:
+                                    lines.append(f"  - Цифровой релиз: {digital}")
+                                else:
+                                    lines.append("  - Цифровой релиз: не обьявлена")
+
                         elif m.media_type == "tv":
                             lines.append("Сериал")
+                            state = s.query(SourceState).filter(
+                                SourceState.media_item_id == m.id,
+                                SourceState.source_name == "tmdb",
+                            ).first()
+                            if state and state.state_data:
+                                sd = json.loads(state.state_data) if isinstance(state.state_data, str) else state.state_data
+                                first_air = sd.get("first_air_date")
+                                next_air = sd.get("next_air_date")
+                                status = sd.get("status")
+                                current_season = sd.get("current_season")
+                                total_seasons = sd.get("total_seasons")
+                                if first_air:
+                                    lines.append(f"  Премьера: {first_air}")
+                                if status:
+                                    status_map = {"Returning Series": "Идёт", "Ended": "Завершён", "Canceled": "Отменён", "Planning": "В разработке"}
+                                    lines.append(f"  Статус: {status_map.get(status, status)}")
+                                if current_season:
+                                    lines.append(f"  Текущий сезон: {current_season}" + (f" из {total_seasons}" if total_seasons else ""))
+                                if next_air:
+                                    lines.append(f"  Следующий выпуск: {next_air}")
+                                elif status == "Returning Series" and not next_air:
+                                    lines.append("  Следующий сезон: не анонсирован")
+
                         elif m.media_type == "anime":
                             lines.append("Аниме")
+                            state = s.query(SourceState).filter(
+                                SourceState.media_item_id == m.id,
+                                SourceState.source_name == "anilist",
+                            ).first()
+                            if state and state.state_data:
+                                sd = json.loads(state.state_data) if isinstance(state.state_data, str) else state.state_data
+                                episodes = sd.get("episodes")
+                                status = sd.get("status")
+                                next_ep = sd.get("next_airing_episode")
+                                if episodes:
+                                    lines.append(f"  Эпизодов: {episodes}")
+                                if status:
+                                    lines.append(f"  Статус: {status}")
+                                if next_ep:
+                                    lines.append(f"  Следующий эпизод: #{next_ep}")
+
                         elif m.media_type == "game":
                             lines.append("Игра")
                             platforms = media_resolve.get_game_platforms(s, m.id)
@@ -1526,6 +1607,7 @@ async def main() -> None:
                                     rd = gp.release_date
                                     rd_str = f" ({rd})" if rd else ""
                                     lines.append(f"  {gp.platform.upper()}{rd_str} {st}")
+
                         await cb.message.answer("\n".join(lines))
                         return
                     except Exception as e:
@@ -1539,7 +1621,7 @@ async def main() -> None:
                 if action == "remove":
                     await cb.answer()
                     try:
-                        media_item_id = int(arg)
+                        media_item_id = arg
                         m = s.get(MediaItem, media_item_id)
                         if not m:
                             await cb.message.answer("Элемент не найден.")

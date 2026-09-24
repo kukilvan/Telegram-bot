@@ -54,6 +54,8 @@ def _store_state(session: Session, media_item_id: str, source_name: str, state: 
 # TMDb movie release_dates `type` codes (official):
 #   1=Premiere, 2=Theatrical(limited), 3=Theatrical, 4=Digital, 5=Physical, 6=TV
 _DIGITAL_RELEASE_TYPE = 4
+_THEATRICAL_RELEASE_TYPE = 3
+_LIMITED_THEATRICAL_RELEASE_TYPE = 2
 
 
 def _earliest_digital_date(regions: list[dict]) -> str | None:
@@ -70,6 +72,17 @@ def _earliest_digital_date(regions: list[dict]) -> str | None:
         if rd.get("type") == _DIGITAL_RELEASE_TYPE and rd.get("release_date")
     ]
     return min(digital) if digital else None
+
+
+def _earliest_theatrical_date(regions: list[dict]) -> str | None:
+    """Return the earliest 'Theatrical' (type 3 or 6) release date across regions."""
+    theatrical = [
+        rd.get("release_date")[:10]
+        for r in regions or []
+        for rd in (r.get("release_dates") or [])
+        if rd.get("type") in (_THEATRICAL_RELEASE_TYPE, _LIMITED_THEATRICAL_RELEASE_TYPE) and rd.get("release_date")
+    ]
+    return min(theatrical) if theatrical else None
 
 
 def _tv_state_from_seasons(seasons: list[dict], today: str) -> dict:
@@ -141,7 +154,10 @@ async def _fetch_tmdb_state(session: Session, provider, item: MediaItem) -> dict
             today=date.today().isoformat(),
         )
     release_dates = await provider.get_movie_release_dates(int(ext.external_id))
-    return {"digital_release": _earliest_digital_date(release_dates)}
+    return {
+        "theatrical_release_date": _earliest_theatrical_date(release_dates),
+        "digital_release": _earliest_digital_date(release_dates),
+    }
 
 
 async def _fetch_anilist_state(session: Session, provider, item: MediaItem) -> dict:
@@ -393,7 +409,11 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
     # Game platform poll (games only) — uses GamePlatform table
     if item.media_type == "game" and igdb_provider is not None:
         # Get tracked platforms from watch item
-        tracked = json.loads(w.tracked_platforms) if w.tracked_platforms else []
+        w = session.query(UserWatchItem).filter(
+            UserWatchItem.user_id == user_id,
+            UserWatchItem.media_item_id == item.id,
+        ).first()
+        tracked = _json.loads(w.tracked_platforms) if w and w.tracked_platforms else []
         if tracked:
             # Get GamePlatform records for tracked platforms
             platforms = session.query(GamePlatform).filter(

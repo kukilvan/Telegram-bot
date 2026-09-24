@@ -197,6 +197,35 @@ class TMDbProvider:
         data = resp.json()
         return data.get("results", [])
 
+    async def get_movie_credits(self, movie_id: int) -> dict | None:
+        """Return movie credits (cast and crew).
+
+        Endpoint: GET /movie/{id}/credits?language=ru
+        Returns: {cast: [...], crew: [...]}
+        """
+        params = {"api_key": self._api_key, "language": "ru"}
+        resp = await self._get(f"/movie/{movie_id}/credits", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb get_movie_credits failed (HTTP %s)", resp.status_code if resp else 429)
+            return None
+        return resp.json()
+
+    async def get_movie_watch_providers(self, movie_id: int, region: str = "RU") -> list[dict]:
+        """Return watch/provider info for a movie.
+
+        Endpoint: GET /movie/{id}/watch/providers?language=ru&region={region}
+        Returns: {results: {RU: {flatrate: [...]}, US: {flatrate: [...]}, ...}}
+        """
+        params = {"api_key": self._api_key, "language": "ru", "region": region}
+        resp = await self._get(f"/movie/{movie_id}/watch/providers", params)
+        if resp is None or resp.status_code != 200:
+            logging.error("TMDb get_movie_watch_providers failed (HTTP %s)", resp.status_code if resp else 429)
+            return []
+        data = resp.json()
+        results = data.get("results", {})
+        region_data = results.get(region) or {}
+        return region_data.get("flatrate", [])
+
     async def get_tv_seasons(self, tv_id: int) -> list[dict]:
         """Return the raw TMDb seasons array for a TV series.
 
