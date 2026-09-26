@@ -1079,23 +1079,24 @@ Series Name in English
 ### Sub-task 6.3: Anime (TODO after 6.2)
 **Target output:**
 ```
-Title (year)
+Магическая битва (2020)
+Jujutsu Kaisen
 Аниме
-  Эпизодов: 1100
-  Статус: RELEASING
-  Следующий эпизод: #1101
-  Дата выхода: 2026-10-11
+  Сезон: 2
+  Выпущено: 18 из 24
+  Следующий эпизод: 18.10.2026 (чт)
+  Следующий сезон: 09.04.2027 (сб)
 ```
 
-**What's available NOW:**
-- `episodes` from AniList
-- `status` from AniList
-- `nextAiringEpisode.episode` from AniList
-- `nextAiringEpisode.airingAt` — can convert to date
-
-**What's NOT available:**
-- Current season number — AniList only returns `seasonYear` (year)
-- Season status — not in AniList API
+**Requirements:**
+- Show English title on second line (from `title.english`)
+- Show premiere year from `startDate.year`
+- Current season number from `media.season` or `seasons` array
+- Progress: aired vs total episodes in current season
+- Next episode date with day of week (пн/вт/ср/чт/пт/сб/вс)
+- If current season completed: show next season first episode date
+- Use AniList GraphQL API (already integrated in project)
+- Episode airing dates from `nextAiringEpisode` and `episodes` array
 - Staff/credits — not in AniList basic query
 
 ### Sub-task 6.4: Games (TODO after 6.3)

@@ -56,6 +56,7 @@ class AniListProvider:
     query ($id: Int) {
       Media(id: $id, type: ANIME) {
         id
+        idMal
         title {
           romaji
           english
@@ -64,6 +65,7 @@ class AniListProvider:
         format
         status
         episodes
+        season
         seasonYear
         coverImage {
           large
@@ -72,6 +74,26 @@ class AniListProvider:
           airingAt
           timeUntilAiring
           episode
+        }
+      }
+    }
+    """
+
+    BY_MAL_QUERY = """
+    query ($idMal: Int) {
+      Media(idMal: $idMal, type: ANIME) {
+        id
+        idMal
+        status
+        episodes
+        nextAiringEpisode {
+          episode
+          airingAt
+          timeUntilAiring
+        }
+        title {
+          romaji
+          english
         }
       }
     }
@@ -179,3 +201,10 @@ class AniListProvider:
         if details is None:
             return None
         return details.get("nextAiringEpisode")
+
+    async def get_anime_by_mal(self, mal_id: int) -> dict | None:
+        """Get anime details from AniList using MAL ID."""
+        data = await self._post(self.BY_MAL_QUERY, {"idMal": mal_id})
+        if data is None:
+            return None
+        return data.get("Media")

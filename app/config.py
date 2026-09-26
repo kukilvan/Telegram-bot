@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # Steam Store region
     steam_country_code: str = "IL"
 
+    # Shikimori
+    shikimori_base_url: str = "https://shikimori.io"
+    shikimori_user_agent: str = "Telegram-Bot"
+
     @property
     def allowed_telegram_user_ids(self) -> list[int]:
         if not self.allowed_telegram_user_ids_raw:
