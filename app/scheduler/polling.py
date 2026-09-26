@@ -17,6 +17,9 @@ from app.database.models import ExternalId, GamePlatform, MediaItem, SourceState
 from app.domain.events import compare_anilist_states, compare_igdb_states, compare_steam_states, compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
 
+# Primary source for each media type (determines which SourceState to use for scheduling)
+PRIMARY_SOURCE = {"movie": "tmdb", "tv": "tmdb", "anime": "anilist", "game": "igdb"}
+
 
 def _load_state(session: Session, media_item_id: str, source_name: str) -> dict | None:
     """Load the last stored normalized state for (item, source)."""
@@ -174,7 +177,7 @@ async def _fetch_anilist_state(session: Session, provider, item: MediaItem) -> d
             (ExternalId.source == "anilist") &
             (ExternalId.media_item_id == item.id)
         )
-    ).scalar_one_or_none()
+    ).scalars().first()
     if ext is None:
         return {}
     anilist_id = int(ext.external_id)
@@ -354,6 +357,103 @@ async def _fetch_game_platform_state(session: Session, provider, platform: str, 
     return {}
 
 
+async def _refresh_anime_season(session: Session, shikimori_provider, anilist_provider, item: MediaItem, franchise_key: str) -> list:
+    """Refresh anime season info from Shikimori and AniList.
+    
+    Runs only if needed (every 12-24 hours) to avoid rate limits.
+    Returns events if season changed or new season announced.
+    """
+    if not shikimori_provider or not anilist_provider:
+        return []
+    
+    # Check if refresh is needed
+    shiki_state = _load_state(session, item.id, "shikimori")
+    if shiki_state:
+        synced_at = shiki_state.get("synced_at")
+        if synced_at:
+            synced_dt = datetime.fromisoformat(synced_at.replace("Z", "+00:00")) if "Z" in synced_at else datetime.fromisoformat(str(synced_at))
+            from datetime import timezone as tz
+            if synced_dt.tzinfo is None:
+                synced_dt = synced_dt.replace(tzinfo=tz.utc)
+            hours_since_sync = (datetime.now(tz=tz.utc) - synced_dt).total_seconds() / 3600
+            
+            # Refresh every 24 hours, or every 12 hours if status is FINISHED
+            current_status = shiki_state.get("current_status", "")
+            if current_status == "released" and hours_since_sync < 12:
+                return []
+            elif hours_since_sync < 24:
+                return []
+    
+    # Build franchise summary
+    summary = await shikimori_provider.build_franchise_summary(franchise_key)
+    if not summary:
+        return []
+    
+    current = summary.current
+    old_shiki_state = shiki_state or {}
+    old_shiki_id = old_shiki_state.get("current_shiki_id")
+    
+    events = []
+    
+    # Check if season changed
+    if old_shiki_id and str(current.get("id")) != str(old_shiki_id):
+        # Season changed - get AniList data for new season
+        mal_id = current.get("malId")
+        if mal_id:
+            anilist_details = await anilist_provider.get_anime_by_mal(int(mal_id))
+            if anilist_details:
+                # Update ExternalIds
+                existing_shiki = session.query(ExternalId).filter(
+                    ExternalId.media_item_id == item.id,
+                    ExternalId.source == "shikimori",
+                ).first()
+                if existing_shiki:
+                    existing_shiki.external_id = str(current.get("id"))
+                else:
+                    session.add(ExternalId(media_item_id=item.id, source="shikimori", external_id=str(current.get("id"))))
+                
+                existing_anilist = session.query(ExternalId).filter(
+                    ExternalId.media_item_id == item.id,
+                    ExternalId.source == "anilist",
+                ).first()
+                if existing_anilist:
+                    existing_anilist.external_id = str(anilist_details["id"])
+                else:
+                    session.add(ExternalId(media_item_id=item.id, source="anilist", external_id=str(anilist_details["id"])))
+                
+                session.commit()
+                
+                # Create event for new season
+                event_type = "NEW_SEASON_STARTED" if current.get("status") == "ongoing" else "NEW_SEASON_ANNOUNCED"
+                events.append(DomainEvent(
+                    event_type=event_type,
+                    source="shikimori",
+                    payload={
+                        "season_index": summary.current_index,
+                        "shiki_id": current.get("id"),
+                        "status": current.get("status"),
+                    },
+                ))
+    
+    # Save Shikimori state
+    new_shiki_state = {
+        "franchise_key": franchise_key,
+        "current_shiki_id": current.get("id"),
+        "current_mal_id": current.get("malId"),
+        "anilist_id": None,  # Will be updated when we get AniList data
+        "season_index": summary.current_index,
+        "total_seasons": summary.total_seasons,
+        "current_status": current.get("status"),
+        "synced_at": datetime.now(tz=_tz.utc).isoformat(),
+    }
+    _store_state(session, item.id, "shikimori", new_shiki_state)
+    
+    return events
+
+
+from app.domain.events import DomainEvent
+
+
 async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
     """Run one polling cycle for a watch item.
 
@@ -452,25 +552,25 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
     return to_send
 
 
+def _get_primary_source(item: MediaItem) -> str:
+    """Get the primary source name for a media item."""
+    return PRIMARY_SOURCE.get(item.media_type, "tmdb")
+
+
 def _due_rows_query(session):
-    """All watch rows joined with their tmdb source-state row (outer join).
+    """All watch rows joined with their primary source-state row (outer join).
 
     A watch row without any stored state yet is due immediately (it still needs a baseline fetch).
     """
+    # We need to join on the correct source based on media_type
+    # Since we can't use a dynamic value in the join condition directly, we'll handle this in poll_due_items
     return (
-        select(UserWatchItem, SourceState)
+        select(UserWatchItem, MediaItem)
         .join(MediaItem, UserWatchItem.media_item_id == MediaItem.id)
-        .outerjoin(
-            SourceState,
-            and_(
-                SourceState.media_item_id == MediaItem.id,
-                SourceState.source_name == "tmdb",
-            ),
-        )
     )
 
 
-async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, igdb_provider=None, now=None) -> list[tuple[int, MediaItem, list]]:
+async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, igdb_provider=None, shikimori_provider=None, now=None) -> list[tuple[int, MediaItem, list]]:
     """Process only watch items whose tier deadline has arrived (Phase 7.5).
 
     Staggering happens inside TMDbProvider (~1.5 s between calls + per-minute cap), so even many due items are never fired as a burst.
@@ -487,21 +587,73 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
 
     now = now or datetime.now(tz=_tz.utc).replace(tzinfo=None)
     rows = session.execute(_due_rows_query(session)).all()
-    due_rows = [
-        (w, st)
-        for w, st in rows
-        if st is None or (st.next_check_at is not None and st.next_check_at <= now)
-    ]
-    # Oldest deadlines first; items without a deadline go out right away.
-    due_rows.sort(key=lambda pair: due_sort_key(pair[1].next_check_at if pair[1] else None))
-
+    
     results = []
-    for w, st in due_rows:
-        item = session.get(MediaItem, w.media_item_id)
-        if item is None:
+    for w, item in rows:
+        primary_source = _get_primary_source(item)
+        st_row = session.execute(
+            select(SourceState).where(
+                (SourceState.media_item_id == item.id)
+                &
+                (SourceState.source_name == primary_source)
+            )
+        ).scalar_one_or_none()
+        st = _json.loads(st_row.state_data) if st_row and st_row.state_data else None
+        
+        # Skip if not due
+        if st_row and st_row.next_check_at and st_row.next_check_at > now:
             continue
+            
+        # For anime with shikimori_franchise, disable TMDb poll
+        if item.media_type == "anime":
+            shiki_franchise_ext = session.query(ExternalId).filter(
+                ExternalId.media_item_id == item.id,
+                ExternalId.source == "shikimori_franchise",
+            ).first()
+            if shiki_franchise_ext:
+                # Run anime-specific refresh before polling
+                events = await _refresh_anime_season(session, shikimori_provider, anilist_provider, item, shiki_franchise_ext.external_id)
+                if events:
+                    # Process events
+                    for ev in events:
+                        ev = _replace(ev, media_item_id=item.id)
+                        fp = ev.fingerprint()
+                        if has_been_sent(session, fp):
+                            continue
+                        enabled_rules = get_enabled_rules(session, w.user_id, item.id)
+                        if not any(r.event_type == ev.event_type for r in enabled_rules):
+                            continue
+                        mark_sent(session, fp, item.id)
+                        results.append((w.user_id, item, [ev]))
+                # Skip TMDb poll for anime franchises
+                state = {}
+                old = _load_state(session, item.id, "tmdb")
+                if old is not None:
+                    _store_state(session, item.id, "tmdb", state)
+            else:
+                # No shikimori_franchise, run normal poll
+                events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)
+                state_now = _load_state(session, item.id, primary_source) or {}
+                interval = tier_interval(state_now, item.media_type)
+                jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
+                extra = RATE_LIMIT_EXTRA_DELAY if (getattr(tmdb_provider, "hit_429", False) or getattr(anilist_provider, "hit_429", False)) else 0.0
+                deadline = now + timedelta(seconds=interval + jitter + extra)
+                st_row = session.execute(
+                    select(SourceState).where(
+                        (SourceState.media_item_id == item.id)
+                        &
+                        (SourceState.source_name == primary_source)
+                    )
+                ).scalar_one_or_none()
+                if st_row is not None:
+                    st_row.next_check_at = deadline
+                    session.commit()
+                results.append((w.user_id, item, events))
+                continue
+        
+        # Normal poll for non-anime
         events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)
-        state_now = _load_state(session, item.id, "tmdb") or {}
+        state_now = _load_state(session, item.id, primary_source) or {}
         # For games, check game platform states for tier calculation
         if item.media_type == "game" and not state_now:
             for gp_platform in ["igdb", "steam", "psn"]:
@@ -513,12 +665,11 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
         jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
         extra = RATE_LIMIT_EXTRA_DELAY if getattr(tmdb_provider, "hit_429", False) else 0.0
         deadline = now + timedelta(seconds=interval + jitter + extra)
-        # Use scalar_one_or_none: game items may not have a tmdb SourceState row
         st_row = session.execute(
             select(SourceState).where(
                 (SourceState.media_item_id == item.id)
                 &
-                (SourceState.source_name == "tmdb")
+                (SourceState.source_name == primary_source)
             )
         ).scalar_one_or_none()
         if st_row is not None:

@@ -2045,7 +2045,7 @@ async def main() -> None:
             """
             before = tmdb.call_count
             with db() as s:
-                results = await poll_due_items(s, tmdb, anilist, igdb)
+                results = await poll_due_items(s, tmdb, anilist, igdb, shikimori)
                 for user_id, item, events in results:
                     if not events:
                         continue
