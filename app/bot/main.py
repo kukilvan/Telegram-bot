@@ -1,4 +1,4 @@
-"""Minimal aiogram bot entry point. Phase 4: watchlist + notes. Phase 19: speed optimization. Phase 21: autocomplete."""
+﻿"""Minimal aiogram bot entry point. Phase 4: watchlist + notes. Phase 19: speed optimization. Phase 21: autocomplete."""
 
 import asyncio
 import json
@@ -474,7 +474,7 @@ def _default_rules_for(media_type: str) -> tuple[str, ...]:
     if media_type == "tv":
         return ("NEW_SEASON_ANNOUNCED", "ALL_EPISODES_OUT")
     if media_type == "anime":
-        return ("NEXT_EPISODE_AIRING", "ALL_EPISODES_OUT")
+        return ("NEXT_EPISODE_AIRING", "ALL_EPISODES_OUT", "NEW_SEASON_ANNOUNCED", "NEW_SEASON_STARTED", "SEASON_START_DATE")
     if media_type == "game":
         return ("DIGITAL_DATE_ANNOUNCED",)
     return ("DIGITAL_DATE_ANNOUNCED", "RUSSIAN_AUDIO_AVAILABLE")
@@ -1538,6 +1538,9 @@ async def main() -> None:
                             return
 
                         add_watch_item(s, user.id, item.id)
+                        # Create default notification rules
+                        for ev_type in _default_rules_for(item.media_type):
+                            set_rule(s, user.id, item.id, ev_type, enabled=True)
                         await cb.message.answer(f"✅ {item.canonical_title_en or 'Неизвестное название'} добавлено в отслеживание.")
                         return
                     except Exception as e:
@@ -2081,11 +2084,14 @@ async def main() -> None:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
         scheduler = AsyncIOScheduler()
         scheduler.add_job(
-            _poll_due_items, "interval", seconds=settings.poll_scan_interval_seconds
+            _poll_due_items, "interval",
+            seconds=settings.poll_scan_interval_seconds,
+            misfire_grace_time=90, coalesce=True, max_instances=1,
         )
         # Phase 15: daily database backup at 3 AM
         scheduler.add_job(
-            _backup_database, "cron", hour=3, minute=0
+            _backup_database, "cron", hour=3, minute=0,
+            misfire_grace_time=90,
         )
         scheduler.start()
 
