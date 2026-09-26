@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     shikimori_base_url: str = "https://shikimori.io"
     shikimori_user_agent: str = "Telegram-Bot"
 
+    # Bot timezone for notifications
+    bot_timezone: str = "Asia/Jerusalem"
+
     @property
     def allowed_telegram_user_ids(self) -> list[int]:
         if not self.allowed_telegram_user_ids_raw:

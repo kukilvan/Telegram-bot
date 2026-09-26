@@ -9,6 +9,7 @@ import asyncio
 import logging
 import time
 from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timezone
 
 import httpx
@@ -18,15 +19,38 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 SEASON_KINDS = {"tv", "ona"}
+MIN_SEASON_DURATION = 15  # minutes; filters out chibi ONAs and short specials
+
+
+@dataclass
+class FranchiseSummary:
+    """Summary of a Shikimori franchise."""
+    franchise_key: str
+    title_ru: str | None
+    title_romaji: str | None
+    seasons: list[dict]  # sorted TV/ONA seasons
+    current: dict  # current season
+    current_index: int  # 1-based
+    total_seasons: int
+    total_episodes_aired: int  # sum across all seasons
+
+
+def get_seasons(items: list[dict]) -> list[dict]:
+    """Filter and sort seasons from franchise items."""
+    seasons = [
+        a for a in items
+        if a.get("kind") in SEASON_KINDS
+        and (a.get("duration") or 24) >= MIN_SEASON_DURATION
+    ]
+    if not seasons:
+        seasons = list(items)
+    far = datetime.max.replace(tzinfo=timezone.utc)
+    return sorted(seasons, key=lambda a: _aired_date(a) or far)
 
 
 def pick_current_season(items: list[dict]) -> dict | None:
     """Pick the current/latest season from a franchise list."""
-    if not items:
-        return None
-    seasons = [a for a in items if a.get("kind") in SEASON_KINDS]
-    if not seasons:
-        seasons = items
+    seasons = get_seasons(items)
     if not seasons:
         return None
     ongoing = [a for a in seasons if a.get("status") == "ongoing"]
@@ -40,7 +64,29 @@ def pick_current_season(items: list[dict]) -> dict | None:
 
 def get_total_seasons(items: list[dict]) -> int:
     """Count total TV/ONA seasons in a franchise."""
-    return len([a for a in items if a.get("kind") in SEASON_KINDS])
+    return len(get_seasons(items))
+
+
+def _aired_date(item: dict) -> datetime | None:
+    """Extract aired date from Shikimori anime item."""
+    aired_on = item.get("airedOn")
+    if aired_on and isinstance(aired_on, dict):
+        date_str = aired_on.get("date")
+        if date_str:
+            try:
+                return datetime.fromisoformat(str(date_str)).replace(tzinfo=timezone.utc)
+            except (ValueError, TypeError):
+                pass
+    next_ep = item.get("nextEpisodeAt")
+    if next_ep:
+        try:
+            # Handle both ISO string and timestamp
+            if isinstance(next_ep, str):
+                return datetime.fromisoformat(next_ep).replace(tzinfo=timezone.utc)
+            return datetime.fromtimestamp(int(next_ep), tz=timezone.utc)
+        except (ValueError, TypeError, OSError):
+            pass
+    return None
 
 
 class ShikimoriClient:
@@ -146,11 +192,11 @@ class ShikimoriClient:
         logger.debug(f"Shikimori search results: {len(items)} items, first: {items[0] if items else 'none'}")
         return items
 
-    async def get_franchise(self, franchise: str) -> list[dict]:
-        """Get all anime in a franchise."""
-        franchise_query = """
-        query Franchise($franchise: String!) {
-          animes(franchise: $franchise, limit: 50) {
+    async def get_by_id(self, shiki_id: str) -> dict | None:
+        """Get a single anime by Shikimori ID."""
+        query = """
+        query ById($ids: String!) {
+          animes(ids: $ids, limit: 1) {
             id
             malId
             name
@@ -158,33 +204,96 @@ class ShikimoriClient:
             english
             kind
             status
+            duration
+            episodes
+            episodesAired
+            nextEpisodeAt
+            airedOn { date year }
+            franchise
+          }
+        }
+        """
+        data = await self._post(query, {"ids": shiki_id})
+        if data is None:
+            return None
+        items = data.get("data", {}).get("animes", [])
+        return items[0] if items else None
+
+    async def get_franchise(self, franchise: str, page: int = 1) -> list[dict]:
+        """Get all anime in a franchise with pagination."""
+        query = """
+        query Franchise($franchise: String!, $page: Int) {
+          animes(franchise: $franchise, page: $page, limit: 50) {
+            id
+            malId
+            name
+            russian
+            english
+            kind
+            status
+            duration
             episodes
             episodesAired
             nextEpisodeAt
             airedOn { date }
+            franchise
           }
         }
         """
-        data = await self._post(franchise_query, {"franchise": franchise})
-        if data is None:
-            return []
-        return data.get("data", {}).get("animes", [])
+        all_items = []
+        current_page = page
+        while True:
+            data = await self._post(query, {"franchise": franchise, "page": current_page})
+            if data is None:
+                break
+            items = data.get("data", {}).get("animes", [])
+            if not items:
+                break
+            all_items.extend(items)
+            logger.debug(f"Shikimori franchise '{franchise}' page {current_page}: {len(items)} items (total: {len(all_items)})")
+            if len(items) < 50:
+                break
+            current_page += 1
+        return all_items
 
+    async def build_franchise_summary(self, franchise_key: str) -> FranchiseSummary | None:
+        """Build a franchise summary from franchise key."""
+        if franchise_key.startswith("single:"):
+            shiki_id = franchise_key.replace("single:", "")
+            item = await self.get_by_id(shiki_id)
+            if not item:
+                return None
+            franchise_key = item.get("franchise") or f"single:{shiki_id}"
+            items = [item]
+        else:
+            items = await self.get_franchise(franchise_key)
+            if not items:
+                return None
 
-def _aired_date(item: dict) -> datetime | None:
-    """Extract aired date from Shikimori anime item."""
-    aired_on = item.get("airedOn")
-    if aired_on and isinstance(aired_on, dict):
-        date_str = aired_on.get("date")
-        if date_str:
-            try:
-                return datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-            except (ValueError, TypeError):
-                pass
-    next_ep = item.get("nextEpisodeAt")
-    if next_ep:
-        try:
-            return datetime.fromtimestamp(int(next_ep), tz=timezone.utc)
-        except (ValueError, TypeError, OSError):
-            pass
-    return None
+        seasons = get_seasons(items)
+        if not seasons:
+            seasons = items
+
+        current = pick_current_season(items)
+        if not current:
+            return None
+
+        title_ru = seasons[0].get("russian") or seasons[0].get("name")
+        title_romaji = seasons[0].get("name")
+
+        total_episodes_aired = sum(
+            s.get("episodesAired") or s.get("episodes") or 0
+            for s in seasons
+            if s.get("status") == "released"
+        )
+
+        return FranchiseSummary(
+            franchise_key=franchise_key,
+            title_ru=title_ru,
+            title_romaji=title_romaji,
+            seasons=seasons,
+            current=current,
+            current_index=next((i+1 for i, s in enumerate(seasons) if s.get("id") == current.get("id")), 1),
+            total_seasons=len(seasons),
+            total_episodes_aired=total_episodes_aired,
+        )

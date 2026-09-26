@@ -1261,9 +1261,9 @@ async def main() -> None:
                                 display = f"{name} ({year})" if year else name
                                 if len(display) > 60:
                                     display = display[:57] + "..."
-                                mal_id = r.get("malId") or r.get("mal_id") or ""
-                                logging.info(f"Shikimori search result: id={r.get('id')}, malId={mal_id}, franchise={franchise}")
-                                kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:anime:{r['id']}:{franchise}:{mal_id}")])
+                                # Store franchise and MAL ID in a way that fits 64 bytes
+                                # Use Shikimori ID as key, compute franchise in handler
+                                kb_rows.append([InlineKeyboardButton(text=display, callback_data=f"search_add:anime:{r['id']}")])
                             await _send_with_pagination(cb.message, kb_rows, query.upper())
                         elif media_type == "game":
                             from datetime import datetime, timezone as _tz
@@ -1445,12 +1445,16 @@ async def main() -> None:
                     await cb.answer()
                     try:
                         parts = arg.split(":")
-                        if len(parts) < 3:
+                        if len(parts) < 2:
                             await cb.message.answer("Неизвестная кнопка")
                             return
                         media_type = parts[0]  # movie, tv, anime, game
-                        platform = parts[-1]  # last part is platform
-                        external_id = ":".join(parts[1:-1])  # everything in between
+                        if media_type == "anime":
+                            external_id = parts[1] if len(parts) > 1 else ""
+                            platform = ""
+                        else:
+                            platform = parts[-1]  # last part is platform
+                            external_id = ":".join(parts[1:-1])  # everything in between
 
                         if media_type == "movie":
                             details = await tmdb.get_movie_details(int(external_id))
@@ -1465,23 +1469,47 @@ async def main() -> None:
                                 return
                             item = _ensure_media_item(s, int(external_id), details, "tv")
                         elif media_type == "anime":
-                            # Anime callback format: anime:shiki_id:franchise:mal_id
-                            anime_parts = arg.split(":")
-                            shiki_id = anime_parts[1] if len(anime_parts) > 1 else None
-                            franchise = anime_parts[2] if len(anime_parts) > 2 else None
-                            mal_id = anime_parts[3] if len(anime_parts) > 3 else None
-                            logging.info(f"Anime search_add: anime_parts={anime_parts}, shiki_id={shiki_id}, franchise={franchise}, mal_id={mal_id}")
+                            shiki_id = external_id
+                            # Get Shikimori item to find franchise
+                            shiki_item = await shikimori.get_by_id(shiki_id)
+                            if not shiki_item:
+                                await cb.message.answer(f"Shikimori не нашёл тайтл.")
+                                return
+                            franchise_key = shiki_item.get("franchise") or f"single:{shiki_id}"
+                            # Build franchise summary
+                            summary = await shikimori.build_franchise_summary(franchise_key)
+                            if not summary:
+                                await cb.message.answer(f"Не удалось построить сводку франшизы.")
+                                return
+                            current = summary.current
+                            mal_id = current.get("malId")
                             if not mal_id:
-                                await cb.message.answer(f"Нет MAL ID. Попробуйте добавить заново.")
+                                await cb.message.answer(f"Нет MAL ID в Shikimori.")
                                 return
                             anilist_details = await anilist.get_anime_by_mal(int(mal_id))
                             if not anilist_details:
                                 await cb.message.answer(f"AniList не вернул данные по MAL ID {mal_id}.")
                                 return
+                            # Check for existing item by shikimori_franchise
+                            existing_franchise_ext = s.query(ExternalId).filter(
+                                ExternalId.media_item_id == MediaItem.id,
+                                ExternalId.source == "shikimori_franchise",
+                                ExternalId.external_id == franchise_key,
+                            ).first()
+                            if existing_franchise_ext:
+                                existing_item = s.get(MediaItem, existing_franchise_ext.media_item_id)
+                                if existing_item:
+                                    await cb.message.answer(f"Уже в списке: {summary.title_ru or summary.title_romaji}")
+                                    return
                             item = _ensure_anilist_item(s, int(anilist_details["id"]), anilist_details)
-                            # Store Shikimori ID
-                            ext_shiki = ExternalId(media_item_id=item.id, source="shikimori", external_id=shiki_id)
-                            s.add(ext_shiki)
+                            # Update title_ru if available
+                            if summary.title_ru:
+                                item.title_ru = summary.title_ru
+                            # Store ExternalIds
+                            ext_franchise = ExternalId(media_item_id=item.id, source="shikimori_franchise", external_id=franchise_key)
+                            ext_shiki = ExternalId(media_item_id=item.id, source="shikimori", external_id=str(current.get("id")))
+                            ext_anilist = ExternalId(media_item_id=item.id, source="anilist", external_id=str(anilist_details["id"]))
+                            s.add_all([ext_franchise, ext_shiki, ext_anilist])
                             s.flush()
                         elif media_type == "game":
                             if platform == "igdb":
@@ -1631,7 +1659,7 @@ async def main() -> None:
                                                         break
                                         if next_ep_date:
                                             next_date = dt.strptime(next_ep_date, "%Y-%m-%d")
-                                            days = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"]
+                                            days = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
                                             day_name = days[next_date.weekday()]
                                             lines.append(f"  Следующая серия: {next_ep_date} ({day_name})")
                                         else:
@@ -1641,6 +1669,10 @@ async def main() -> None:
                             ext = s.query(ExternalId).filter(
                                 ExternalId.media_item_id == m.id,
                                 ExternalId.source == "anilist",
+                            ).first()
+                            shiki_franchise_ext = s.query(ExternalId).filter(
+                                ExternalId.media_item_id == m.id,
+                                ExternalId.source == "shikimori_franchise",
                             ).first()
                             shiki_ext = s.query(ExternalId).filter(
                                 ExternalId.media_item_id == m.id,
@@ -1654,35 +1686,57 @@ async def main() -> None:
                                     if english_title and english_title != romaji_title:
                                         lines.append(english_title)
                             lines.append("Аниме")
-                            if ext:
-                                anilist_details = await anilist.get_anime_details(int(ext.external_id))
-                                if anilist_details:
-                                    status = anilist_details.get("status")
-                                    total_episodes = anilist_details.get("episodes")
-                                    next_ep = anilist_details.get("nextAiringEpisode")
-                                    status_map = {
-                                        "RELEASING": "Идёт",
-                                        "FINISHED": "Завершён",
-                                        "NOT_YET_RELEASED": "Анонсирован",
-                                        "CANCELLED": "Отменён",
-                                        "HIATUS": "Перерыв",
-                                    }
-                                    if status:
-                                        lines.append(f"  Статус: {status_map.get(status, status)}")
+                            # Try to build franchise summary
+                            summary = None
+                            if shiki_franchise_ext:
+                                summary = await shikimori.build_franchise_summary(shiki_franchise_ext.external_id)
+                            elif shiki_ext:
+                                # Fallback: try to get franchise from shiki_id
+                                shiki_item = await shikimori.get_by_id(shiki_ext.external_id)
+                                if shiki_item:
+                                    franchise_key = shiki_item.get("franchise") or f"single:{shiki_ext.external_id}"
+                                    summary = await shikimori.build_franchise_summary(franchise_key)
+                            if summary:
+                                lines.append(f"  сезонов: {summary.total_seasons}")
+                                # Get current season AniList details
+                                current_anilist = await anilist.get_anime_by_mal(int(summary.current.get("malId")))
+                                status_map = {
+                                    "ongoing": "Выходит",
+                                    "anons": "Анонсирован",
+                                    "released": "Завершён",
+                                }
+                                status_str = status_map.get(summary.current.get("status"), "Неизвестно")
+                                if summary.current.get("status") == "ongoing":
+                                    status_str += f" сезон {summary.current_index}" + (f" из {summary.total_seasons}" if summary.total_seasons > 1 else "")
+                                elif summary.current.get("status") == "anons":
+                                    status_str += f" сезон {summary.current_index}"
+                                else:
+                                    status_str += " (продолжение не анонсировано)"
+                                lines.append(f"  Статус: {status_str}")
+                                if current_anilist:
+                                    total_episodes = current_anilist.get("episodes")
+                                    next_ep = current_anilist.get("nextAiringEpisode")
                                     if next_ep:
                                         airing_at = next_ep.get("airingAt")
                                         if airing_at:
                                             next_date = dt.fromtimestamp(airing_at)
-                                            days = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"]
+                                            days = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
                                             day_name = days[next_date.weekday()]
-                                            lines.append(f"  Следующий эпизод: {next_date.strftime('%Y-%m-%d')} ({day_name})")
+                                            lines.append(f"  Следующая серия: {next_date.strftime('%Y-%m-%d')} ({day_name})")
                                         current_ep = next_ep.get("episode", 1) - 1
                                         if total_episodes:
-                                            lines.append(f"  Выпущено: {current_ep} из {total_episodes}")
+                                            lines.append(f"  Серии сезона: {current_ep} из {total_episodes}")
                                         else:
-                                            lines.append(f"  Выпущено: {current_ep} из ?")
+                                            lines.append(f"  Серии сезона: {current_ep} из ?")
                                     elif not next_ep and total_episodes:
-                                        lines.append(f"  Выпущено: {total_episodes} из {total_episodes}")
+                                        lines.append(f"  Серии сезона: {total_episodes} из {total_episodes}")
+                                else:
+                                    # No AniList data (fresh announcement), use Shikimori
+                                    if summary.current.get("status") == "ongoing":
+                                        aired = summary.current.get("episodesAired")
+                                        total = summary.current.get("episodes")
+                                        if aired is not None and total:
+                                            lines.append(f"  Серии сезона: {aired} из {total}")
 
                         elif m.media_type == "game":
                             lines.append("Игра")

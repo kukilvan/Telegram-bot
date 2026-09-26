@@ -86,6 +86,9 @@ class AniListProvider:
         idMal
         status
         episodes
+        seasonYear
+        startDate { year month day }
+        coverImage { large }
         nextAiringEpisode {
           episode
           airingAt
