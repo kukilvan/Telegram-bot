@@ -1,4 +1,4 @@
-﻿"""Minimal aiogram bot entry point. Phase 4: watchlist + notes. Phase 19: speed optimization. Phase 21: autocomplete."""
+"""Minimal aiogram bot entry point. Phase 4: watchlist + notes. Phase 19: speed optimization. Phase 21: autocomplete."""
 
 import asyncio
 import json
@@ -60,6 +60,15 @@ def _get_or_create_user(session, telegram_user_id: int):
         session.add(user)
         session.commit()
     return user
+
+
+def display_title(item) -> str:
+    """Return the best Russian or English title for display."""
+    if hasattr(item, 'title_ru') and item.title_ru:
+        return item.title_ru
+    if hasattr(item, 'canonical_title_en') and item.canonical_title_en:
+        return item.canonical_title_en
+    return "Unknown"
 
 
 def _make_media_item(details: dict, media_type: str) -> MediaItem:
@@ -400,7 +409,7 @@ async def _perform_add_flow(s, tmdb, anilist, igdb, steam, psn, item: MediaItem,
     `sender` is any aiogram object with .answer() (Message for both /add and
     inline-button callbacks).
     """
-    title = item.canonical_title_en or "item"
+    title = display_title(item)
     year = f" ({item.year})" if item.year else ""
 
     watch_row = s.execute(
@@ -1499,7 +1508,7 @@ async def main() -> None:
                             if existing_franchise_ext:
                                 existing_item = s.get(MediaItem, existing_franchise_ext.media_item_id)
                                 if existing_item:
-                                    await cb.message.answer(f"Уже в списке: {summary.title_ru or summary.title_romaji}")
+                                    await cb.message.answer(f"Уже в списке: {display_title(existing_item)}")
                                     return
                             item = _ensure_anilist_item(s, int(anilist_details["id"]), anilist_details)
                             # Update title_ru if available
@@ -1541,7 +1550,7 @@ async def main() -> None:
                         # Create default notification rules
                         for ev_type in _default_rules_for(item.media_type):
                             set_rule(s, user.id, item.id, ev_type, enabled=True)
-                        await cb.message.answer(f"✅ {item.canonical_title_en or 'Неизвестное название'} добавлено в отслеживание.")
+                        await cb.message.answer(f"✅ {display_title(item)} добавлено в отслеживание.")
                         return
                     except Exception as e:
                         logging.error(f"search_add handler error: {e}", exc_info=True)
@@ -1560,7 +1569,7 @@ async def main() -> None:
                             await cb.message.answer("Элемент не найден.")
                             return
                         lines = []
-                        title = m.canonical_title_en or "Unknown"
+                        title = display_title(m)
                         year = f" ({m.year})" if m.year else ""
                         lines.append(f"{title}{year}")
 
@@ -1773,7 +1782,7 @@ async def main() -> None:
                             await cb.message.answer("Элемент не найден.")
                             return
                         remove_watch_item(s, user.id, m.id)
-                        await cb.message.answer(f"🗑 Удалено: {m.canonical_title_en or 'Unknown'}")
+                        await cb.message.answer(f"🗑 Удалено: {display_title(m)}")
                         return
                     except Exception as e:
                         logging.error(f"remove handler error: {e}", exc_info=True)
@@ -1801,7 +1810,7 @@ async def main() -> None:
                         ).first()
                         if gp:
                             mi = s.get(MediaItem, gp.media_item_id)
-                            full_name = mi.canonical_title_en if mi else cb_name
+                            full_name = display_title(mi) if mi else cb_name
                         else:
                             # First time adding — search for game by truncated name
                             matching = s.query(MediaItem).filter(
@@ -1809,13 +1818,13 @@ async def main() -> None:
                                 MediaItem.canonical_title_en.ilike(f"%{cb_name}%"),
                             ).limit(1).all()
                             if matching:
-                                full_name = matching[0].canonical_title_en
+                                full_name = display_title(matching[0])
                             else:
                                 full_name = cb_name
                         year = int(year_str) if year_str and year_str.isdigit() else None
                         platforms = [{"source": source, "platform_id": platform_id, "release_date": "", "store_url": ""}]
                         item, _ = media_resolve.add_game_to_watchlist(s, user.id, full_name, year, platforms)
-                        title_display = item.canonical_title_en or full_name
+                        title_display = display_title(item)
                         await cb.message.answer(f"✅ Добавлено: {title_display} [{source.upper()}]")
                     except Exception as e:
                         logging.error(f"ap callback failed: {e}")
@@ -1826,7 +1835,7 @@ async def main() -> None:
                 if item is None or action not in ("ca_yes", "ca_no", "wt_keep", "wt_stop"):
                     await cb.answer("Неизвестная кнопка")
                     return
-                title = item.canonical_title_en or "item"
+                title = display_title(item)
                 if action == "ca_yes":
                     add_watch_item(s, user.id, item.id)
                     for ev_type in _default_rules_for(item.media_type):
@@ -1870,7 +1879,7 @@ async def main() -> None:
                     await message.answer("Этот TMDb id ещё не добавлялся.")
                     return
                 removed = remove_watch_item(s, user.id, item.id)
-                title = item.canonical_title_en or "item"
+                title = display_title(item)
                 if not removed:
                     await message.answer(f"Уже не в списке: {title}")
                 else:
@@ -1901,7 +1910,7 @@ async def main() -> None:
                 if groups["tv"]:
                     await message.answer("─── 📺 Сериалы ───")
                     for w, m in groups["tv"]:
-                        title = m.canonical_title_en or "Unknown"
+                        title = display_title(m)
                         year = f" ({m.year})" if m.year else ""
                         kb_rows = [[
                             InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
@@ -1913,7 +1922,7 @@ async def main() -> None:
                 if groups["movie"]:
                     await message.answer("─── 🎬 Фильмы ───")
                     for w, m in groups["movie"]:
-                        title = m.canonical_title_en or "Unknown"
+                        title = display_title(m)
                         year = f" ({m.year})" if m.year else ""
                         kb_rows = [[
                             InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
@@ -1925,7 +1934,7 @@ async def main() -> None:
                 if groups["anime"]:
                     await message.answer("─── 🎌 Аниме ───")
                     for w, m in groups["anime"]:
-                        title = m.canonical_title_en or "Unknown"
+                        title = display_title(m)
                         year = f" ({m.year})" if m.year else ""
                         kb_rows = [[
                             InlineKeyboardButton(text="📖 Подробнее", callback_data=f"details:{m.id}"),
@@ -1938,7 +1947,7 @@ async def main() -> None:
                     await message.answer("─── 🎮 Игры ───")
                     game_icons = {"steam": "⌨️", "igdb": "🕹️", "psn": "🎮"}
                     for w, m in groups["game"]:
-                        title = m.canonical_title_en or "Unknown"
+                        title = display_title(m)
                         year = f" ({m.year})" if m.year else ""
                         platforms = media_resolve.get_game_platforms(s, m.id)
                         tracked = media_resolve.get_user_tracked_platforms(s, user.id, m.id)
@@ -1988,7 +1997,7 @@ async def main() -> None:
                 item = result[1]
                 if note_text is not None:
                     create_or_update_note(s, user.id, item.id, note_text)
-                    title = item.canonical_title_en or "item"
+                    title = display_title(item)
                     await message.answer(f"📝 Заметка для {title}: {note_text}")
                 else:
                     existing = get_note(s, user.id, item.id)
@@ -2010,7 +2019,7 @@ async def main() -> None:
                 lines = ["📝 Заметки:"]
                 for media_item_id, note_text in rows[:20]:
                     m = s.get(MediaItem, media_item_id)
-                    title = m.canonical_title_en or "item"
+                    title = display_title(m)
                     lines.append(f"• {title}: {note_text}")
                 await message.answer("\n".join(lines))
 
@@ -2055,7 +2064,7 @@ async def main() -> None:
                     u = s.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
                     if u is None:
                         continue
-                    title = item.canonical_title_en or "item"
+                    title = display_title(item)
                     for ev in events:
                         date = ev.payload.get("date")
                         season = ev.payload.get("season")

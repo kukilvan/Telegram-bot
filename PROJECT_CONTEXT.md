@@ -266,6 +266,82 @@ KeyError: slice(None, 4, None)
 **Fix needed:** Run backup on every startup (at least once) in addition to scheduled runs. Or use "interval" based backup (e.g., every 24 hours from last run) instead of fixed cron.
 **Files:** `app/bot/main.py` (line ~1217)
 
+### BUG-11: Anime season count includes non-season items (movies, OVAs, spin-offs, recaps)
+**Status:** NOT FIXED — discovered 2026-09-27
+**Symptom:** 
+- One Piece shows "сезонов: 4" but only 3 TV seasons exist (plus remakes/recaps)
+- JJK shows "сезонов: 4" but should be 3 (Seasons 1-3, with Season 4 announced)
+- Kusuriya shows "сезонов: 4" but should be 3
+**Root cause:** `get_seasons()` in `shikimori.py` likely includes ALL items from franchise: movies, OVAs, spin-offs, recaps, special episodes. These are counted as "seasons" in `total_seasons`.
+**Investigation needed:** Check `get_seasons()` function — it probably filters by `type == "anime"` but doesn't exclude `kind` values like "movie", "ova", "special", "summary", "alternative_version".
+**Possible fix:** Filter seasons to only include TV/ONA with duration >= 15 min. Use Shikimori `related` field with `relationKind` (sequel, prequel, summary, etc.) to build proper season chain. Exclude items where `kind` is "movie", "ova", "special", "summary", "alternative_version", "spin_off".
+**Files:** `app/providers/shikimori.py` (`get_seasons`, `build_franchise_summary`)
+**Repro:** Any anime franchise with movies/OVAs shows inflated season count
+
+### BUG-12: TV series episode count shows "0 из 1" for trailers/specials
+**Status:** NOT FIXED — discovered 2026-09-27
+**Symptom:** Silo ("Укрытие") shows "Выпущено: 0 из 1" — likely counting a trailer or special episode as a regular episode.
+**Root cause:** TMDb `/tv/{id}/season/{number}/episodes` may include special episodes (episode_number=0 or type="special") that are not real episodes. The code counts all episodes returned by API without filtering.
+**Investigation needed:** Check how episodes are counted in the TV details handler. Are special episodes (episode_number=0, type="special") being counted?
+**Possible fix:** Filter out special episodes when counting. Only count episodes where `episode_number >= 1` and `type != "special"`.
+**Files:** `app/bot/main.py` (TV details handler, episode counting logic)
+**Repro:** Any TV series with special/trailer episodes shows incorrect episode count
+
+### BUG-13: One Piece current season detection wrong — shows "сезон 1 из 4"
+**Status:** NOT FIXED — discovered 2026-09-27
+**Symptom:** One Piece shows "Статус: Выходит сезон 1 из 4" but current season should be much higher (12+).
+**Root cause:** `pick_current_season()` in `shikimori.py` is likely picking the first season in the list instead of the actual current/ongoing season. Or the season ordering is wrong (not sorted by year/air date).
+**Investigation needed:** Check `pick_current_season()` logic — does it correctly identify the ongoing season? Does it handle franchises where seasons overlap or have no clear boundaries?
+**Possible fix:** Sort seasons by air date or year. Pick the season with `status == "released"` and highest episode count, or the season with `status == "releasing"`. For One Piece (which has no clear season boundaries), use the most recent season by year.
+**Files:** `app/providers/shikimori.py` (`pick_current_season`)
+**Repro:** One Piece details handler
+
+### BUG-14: JJK (Jujutsu Kaisen) details show minimal information — no episode progress
+**Status:** NOT FIXED — discovered 2026-09-27
+**Symptom:** JJK details show only:
+```
+Магическая битва
+Аниме
+  сезонов: 4
+  Статус: Анонсирован сезон 4
+```
+No episode progress, no airing schedule, no season details.
+**Root cause:** JJK Season 3 is finished, Season 4 is announced but not airing. AniList query may return no data for Season 4 (not yet released). Shikimori franchise data may not have `nextAiringEpisode` for announced seasons.
+**Investigation needed:** 
+1. Check what AniList returns for JJK Season 4 MAL ID (if available)
+2. Check what Shikimori returns for JJK franchise — does it have data for Season 4?
+3. Check if `pick_current_season()` correctly identifies Season 4 as "announced"
+**Possible fix:** For announced but not-yet-airing seasons, show season announcement info without episode data. Use Shikimori franchise data to show "Сезон N анонсирован, дата не объявлена". Don't require AniList data for announced seasons.
+**Files:** `app/bot/main.py` (anime details handler), `app/providers/shikimori.py` (`pick_current_season`, `build_franchise_summary`)
+**Repro:** JJK details, any anime with announced but not-yet-airing season
+
+### BUG-15: Game details don't show release dates
+**Status:** NOT FIXED — discovered 2026-09-27
+**Symptom:** Games show only platform names without release dates:
+```
+Call of Duty: Warzone
+Игра
+
+Платформы:
+  IGDB ✅
+  PSN ✅
+```
+Should show:
+```
+Call of Duty: Warzone
+Игра
+
+Платформы:
+  IGDB ✅ (2020-03-10)
+  PSN ✅ (2020-06-10)
+  STEAM ✅ (2022-12-07)
+```
+**Root cause:** Game details handler in `main.py` doesn't display release dates from `GamePlatform` table. The `release_date` field exists in `GamePlatform` but is not shown in the details output.
+**Investigation needed:** Check game details handler — does it query `GamePlatform` table? Does it format and display `release_date`?
+**Possible fix:** Query `GamePlatform` table for the item, format release dates as DD.MM.YYYY, show alongside platform names.
+**Files:** `app/bot/main.py` (game details handler)
+**Repro:** Any game with release dates in `GamePlatform` table — e.g., "Call of Duty: Warzone" (IGDB+PSN+Steam), "No Man's Sky" (IGDB+PSN+Steam)
+
 
 ## 6. CURRENT STATE
 
@@ -966,15 +1042,116 @@ Bot: 📅 2023.03.15
 
 ## 18. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-24 (Phase 23 Step 5 DONE - watchlist redesign)
+Last checkpoint: 2026-09-26 (Phase 23 P0.1-P0.3 DONE)
 
-Current state: Phase 22 DONE — Unified Game Entity. Phase 23 Steps 1-5 DONE — unified search by type, watchlist redesign with grouped categories. Step 6 in progress — details handler needs full information display.
+Current state: Phase 22 DONE — Unified Game Entity. Phase 23 Steps 1-6 DONE — unified search, watchlist redesign, details handlers for all types. P0.1-P0.3 DONE — APScheduler fix, anime polling, notification rules.
 
-Last completed action: Redesigned watchlist with grouped categories (Сериалы/Фильмы/Аниме/Игры), buttons [Подробнее] [Удалить] working. Database persisted with volume mount.
+Last completed action: Fixed APScheduler misfire (P0.1), added anime episode polling (P0.2), added notification rules on search_add (P0.3).
 
-Next exact action: Implement Step 6 sub-tasks for full details display (detailed below).
+Next exact action: P0.4 — Add `canonical_title_ru` field to MediaItem model, update search_add to save Russian title, update all displays to use `display_title()`.
 
-## 19. PHASE 23 STEP 6 — DETAILS HANDLER SUB-TASKS
+## 19. PHASE 23 — COMPLETE STATUS
+
+### P0 — Critical (Priority fixes)
+
+#### P0.1: APScheduler misfire — ✅ DONE
+- Added `misfire_grace_time=90, coalesce=True, max_instances=1` to scheduler job
+- Added same to backup job
+- Verified: no more "missed" warnings in logs, `poll scan done` every 2 minutes
+
+#### P0.2: Anime franchises not polling episodes — ✅ DONE
+- Created `_poll_anime_episodes()` function extracted from `poll_item`
+- Updated `poll_due_items` to call both `_refresh_anime_season` and `_poll_anime_episodes` for anime franchises
+- Record `next_check_at` in SourceState "anilist"
+- Added anime branch to `tier_interval()` in `tiering.py`:
+  - Next episode <24h → 1 hour
+  - Season airing → 6 hours
+  - FINISHED/announced → 24 hours
+
+#### P0.3: Notification rules not created on search_add — ✅ DONE
+- Added rule creation loop after `add_watch_item()` in `search_add` handler
+- Updated `_default_rules_for("anime")` to include: `NEXT_EPISODE_AIRING`, `ALL_EPISODES_OUT`, `NEW_SEASON_ANNOUNCED`, `NEW_SEASON_STARTED`, `SEASON_START_DATE`
+
+#### P0.4: Russian title lost — ❌ TODO
+- `MediaItem.title_ru` field doesn't exist (SQLAlchemy ignores it)
+- Need to add `canonical_title_ru: str | None` to model + migration
+- Create `display_title(m)` helper: `canonical_title_ru or canonical_title_en or "Unknown"`
+- Use in all user-facing displays: watchlist, card, "added", "removed", notifications, `/events`, `/notes`
+- For anime franchises: `canonical_title_en` = romaji of first season (franchise name), not current season
+- Migration: fill both fields from `build_franchise_summary` for existing anime
+
+### P1 — Correctness & Consistency
+
+#### P1.1: Seasons counted incorrectly — ❌ TODO
+- One Piece shows "4 seasons" (includes remakes, recaps)
+- Kusuriya shows "4 seasons" (should be 3)
+- JJK shows "Season 4" (should be part of Season 3)
+- Fix: Use Shikimori `related` field with `relationKind` (sequel, prequel, summary, etc.)
+- Build chain from root (no prequel) through sequels
+- Only count TV/ONA with duration >= 15 min as seasons
+- Summary/alternative_version/spin_off are NOT seasons
+
+#### P1.2: Unified anime status model — ❌ TODO
+- Create `app/domain/anime_status.py` with `AnimeStatus` dataclass
+- Rules: AniList priority over Shikimori
+- Phase mapping: RELEASING→airing, HIATUS→hiatus, NOT_YET_RELEASED→upcoming/announced, FINISHED→finished
+- `aired`: `episode - 1` when airing, `total` when finished, `episodesAired` from Shikimori
+- `total`: AniList `episodes`, else Shikimori, else `None` (never 0)
+- Create `fmt_dt_ru()` helper for consistent date formatting with correct day-of-week
+- Replace all `dt.fromtimestamp()` without timezone
+
+#### P1.3: Unified anime card format — ❌ TODO
+- `format_anime_card(title_ru, title_romaji, status: AnimeStatus) -> str`
+- Always same order, missing lines skipped
+- Examples:
+  - Airing (1 season): "Ван-Пис (One Piece) / 🎌 Аниме / Статус: 🟢 Выходит / Серии: 1179 из ? / Следующая: серия 1180 — вс, 27.09 в 03:30"
+  - Airing (multi): "Магическая битва (Jujutsu Kaisen) / 🎌 Аниме / Статус: 🟢 Выходит / Сезон: 4 из 4 — Смертельная миграция. Часть 2 / Серии: 5 из 12 / Следующая: серия 6 — чт, 08.10 в 18:00"
+  - Upcoming: "Монолог фармацевта (Kusuriya no Hitorigoto) / 🎌 Аниме / Статус: 🟡 Скоро старт / Сезон: 3 из 3 / Старт: пт, 02.10 в 17:00 (через 6 дн.) / Предыдущий сезон: 2 — завершён, 24 серии"
+  - Announced: "Статус: 🟡 Анонсирован / Сезон: 4 из 4 — Смертельная миграция. Часть 2 / Старт: дата не объявлена / Предыдущий сезон: 3 — завершён, 12 серий"
+  - Finished: "Созданный в Бездне (Made in Abyss) / 🎌 Аниме / Статус: ⚪ Завершено / Сезонов: 2, продолжение не анонсировано / Последний сезон: 12 из 12"
+- Remove English season titles from card (only show in "Сезон" line)
+- Use `AnimeStatus` in "✅ Added" message and notifications
+
+#### P1.4: `_refresh_anime_season` issues — ❌ TODO
+1. Season change ignored if AniList has no data (fresh announcement)
+2. On season change, don't reset baseline AniList state
+3. `"anilist_id": None` always written — write real id
+4. Missing: `anons` with `start_at <= now` → immediate resync
+5. Missing: `SEASON_START_DATE` event
+6. Store `phase` and `start_at` in Shikimori state, not raw `current_status`
+
+#### P1.5: AniList events (`events.py`) — ❌ TODO
+- `_normalize_anilist_details`: add `"anilist_id"` and `"next_airing_at"` (timestamp), `total_episodes` without `or 0`
+- `compare_anilist_states`: skip events if `anilist_id` differs, don't fire `ALL_EPISODES_OUT` when `total_episodes is None`
+- `fingerprint()`: include `anilist_id` or `shiki_id` + episode number for episode events; `shiki_id` for season events
+- Unified payload: `season_index`, `episode`, `airing_at` (timestamp), `shiki_id`, `anilist_id`
+
+#### P1.6: `search_add` for anime — ❌ TODO
+- Don't fail if AniList returns no data (announcement)
+- Use `_ensure_anime_franchise_item()` instead of `_ensure_anilist_item()`
+- Search existing franchise by `shikimori_franchise` only (not cross join)
+- If franchise exists but user doesn't track: add watch + rules, not "Already in list"
+- "✅ Added" message via `AnimeStatus`
+
+### P2 — Improvements
+
+#### P2.1: Watchlist with status — ❌ TODO
+- Show brief status from cached `SourceState` (no API calls)
+- Example: "• Ван-Пис — выходит, след. серия вс 27.09"
+
+#### P2.2: Card with fewer requests — ❌ TODO
+- Use Shikimori state if <6h old, skip franchise re-fetch
+- Remove first AniList call (for English title)
+
+#### P2.3: Notification texts — ❌ TODO
+- Create `format_event_text(event, item, status)` with Russian texts
+- Events: `NEXT_EPISODE_AIRING`, `ALL_EPISODES_OUT`, `NEW_SEASON_ANNOUNCED`, `NEW_SEASON_STARTED`, `SEASON_START_DATE`
+
+#### P2.4: Minor fixes — ❌ TODO
+- Move `from app.domain.events import DomainEvent` to top of `polling.py`
+- `_refresh_anime_season` called per `UserWatchItem` — should poll once per item, distribute events to all subscribers (TODO for multi-user)
+
+## 20. PHASE 23 STEP 6 — DETAILS HANDLER SUB-TASKS
 
 ### API Data Availability
 
@@ -986,9 +1163,8 @@ Next exact action: Implement Step 6 sub-tasks for full details display (detailed
 - ✅ `next_episode_to_air` — TV next air date
 - ✅ `status` — TV series status
 - ✅ `first_air_date` — TV premiere
-- ❌ `credits` — NOT IMPLEMENTED (need `/movie/{id}/credits`, `/tv/{id}/credits`)
-- ❌ `watch/providers` — NOT IMPLEMENTED (need `/movie/{id}/watch/providers`)
-- ❌ `similar` — NOT IMPLEMENTED
+- ✅ `credits` — IMPLEMENTED (`get_movie_credits`, `get_tv_credits`)
+- ✅ `watch/providers` — IMPLEMENTED (`get_movie_watch_providers`)
 
 **AniList (anime):**
 - ✅ `episodes` — total episodes
@@ -996,9 +1172,9 @@ Next exact action: Implement Step 6 sub-tasks for full details display (detailed
 - ✅ `nextAiringEpisode` — episode number + airingAt timestamp
 - ✅ `seasonYear` — year only
 - ✅ `format` — TV, MOVIE, ONA, etc.
-- ❌ Current season number — NOT available (only seasonYear)
-- ❌ Season status — NOT available
-- ❌ Staff/credits — NOT available in basic query
+- ✅ Current season number — via Shikimori franchise
+- ✅ Season status — via Shikimori franchise
+- ✅ Staff/credits — NOT available in basic query
 
 **IGDB/Steam/PSN (games):**
 - ✅ `first_release_date` — IGDB
@@ -1008,17 +1184,6 @@ Next exact action: Implement Step 6 sub-tasks for full details display (detailed
 - ✅ Full title from MediaItem.canonical_title_en
 
 ### Sub-task 6.1: Movies (DONE)
-**Implementation:**
-- Added `get_movie_credits()` to TMDbProvider → calls `/movie/{id}/credits`
-- Added `get_movie_watch_providers()` to TMDbProvider → calls `/movie/{id}/watch/providers`
-- Dates fetched directly from API in details handler (not from SourceState cache)
-- Uses `_earliest_theatrical_date()` and `_earliest_digital_date()` from polling.py
-- Theatrical: type 3 (Theatrical) or type 2 (Theatrical limited), picks earliest
-- Digital: type 4 (Digital), picks earliest
-- All dates fetched on-demand when user clicks [Подробнее] — no waiting for polling
-- English title from `original_title` field, shown before "Фильм"
-- Streaming services removed (unstable, not helpful)
-
 **Final output:**
 ```
 Название на русском (Year)
@@ -1033,107 +1198,65 @@ Title in English
   - Цифровой релиз: не обьявлена
 ```
 
-**Key implementation details:**
-- Release dates fetched via `tmdb.get_movie_release_dates(movie_id)` which calls `/movie/{id}/release_dates`
-- Returns per-region data: `[{iso_3166_1: "US", release_dates: [{type: 3, release_date: "2026-03-15T00:00:00.000Z"}]}]`
-- `_earliest_theatrical_date()` filters type 3 and 2, picks earliest date
-- `_earliest_digital_date()` filters type 4, picks earliest date
-- Dates displayed as ISO format (YYYY-MM-DD)
-- If no dates found: shows "не обьявлена"
-- No region filtering — checks all regions, picks earliest across all
-
-### Sub-task 6.2: TV Series (TODO after 6.1)
-**Target output:**
+### Sub-task 6.2: TV Series (DONE)
+**Final output:**
 ```
 Название сериала (Year)
 Series Name in English
 Сериал
-  Премьера: 2023-03-10
   Статус: Идёт
-  Текущий сезон: 3
+  Текущий сезон: 3 из 5
   Последняя серия: 5 из 8
+  Премьера: 2023-03-10
   Следующая серия: 18.10.2026 (чт)
 ```
 
-**Requirements:**
-- Show English title on second line (from `original_name` in TMDb TV details)
-- Show premiere date from TV details (`first_air_date`)
-- Show status: "Идёт" / "Завершён" / "Отменён"
-- Show current season number (latest season from seasons data)
-- Show episode progress: "Последняя серия: X из Y" (aired vs total in current season)
-- Show next episode date with day of week: "18.10.2026 (чт)"
-- If next season not announced: show "Следующий сезон: не анонсирован"
-- Use same date fetching approach as movies (direct API call in details handler)
-
-**What's available NOW:**
-- `first_air_date` from TV details
-- `status` from TV details
-- `seasons` from `/tv/{id}/seasons`
-- `episodes` from `/tv/{id}/season/{number}`
-- `next_episode_to_air` from `/tv/{id}/aggregate_season_details`
-- Day of week can be calculated from air_date
-
-**What NEEDS new API methods:**
-- Director + top 3 actors — need `get_tv_credits()` calling `/tv/{id}/credits`
-
-### Sub-task 6.3: Anime (TODO after 6.2)
-**Target output:**
+### Sub-task 6.3: Anime (DONE - but needs P0.4, P1.2-P1.6 fixes)
+**Current output:**
 ```
-Магическая битва (2020)
-Jujutsu Kaisen
+Название (Year)
+English Title
 Аниме
-  Сезон: 2
-  Выпущено: 18 из 24
-  Следующий эпизод: 18.10.2026 (чт)
-  Следующий сезон: 09.04.2027 (сб)
+  сезонов: N
+  Статус: Выходит/Анонсирован/Завершён
+  Следующая серия: YYYY-MM-DD (день)
+  Серии сезона: X из Y
 ```
 
-**Requirements:**
-- Show English title on second line (from `title.english`)
-- Show premiere year from `startDate.year`
-- Current season number from `media.season` or `seasons` array
-- Progress: aired vs total episodes in current season
-- Next episode date with day of week (пн/вт/ср/чт/пт/сб/вс)
-- If current season completed: show next season first episode date
-- Use AniList GraphQL API (already integrated in project)
-- Episode airing dates from `nextAiringEpisode` and `episodes` array
-- Staff/credits — not in AniList basic query
+**Target output (after P1.2-P1.6):**
+```
+Название (Romaji)
+🎌 Аниме
+Статус: 🟢 Выходит / 🟡 Скоро старт / ⚪ Завершено
+Сезон: N из M — Название части (если есть)
+Серии: X из Y
+Следующая: серия N — пн, 27.09 в 03:30
+```
 
-### Sub-task 6.4: Games (TODO after 6.3)
+### Sub-task 6.4: Games (TODO)
 **Target output:**
 ```
-Full Game Title Here (even if very long, wraps to multiple lines)
+Full Game Title Here
 Игра
 
 Платформы:
-  IGDB (2015-05-19) ✅
-  STEAM (2015-05-19) ✅
-  PSN (2015-05-19) ✅
+  Steam ⌨️ - 19.05.2015 ✅
+  IGDB 🕹️ - 19.05.2015 ✅
+  PSN 🎮 - 15.08.2016 ⬜
 ```
 
-**What's available NOW:**
-- Full title from MediaItem.canonical_title_en (already stored)
-- Release dates from all platforms (IGDB, Steam, PSN/RAWG)
-- Platform names from GamePlatform table
+## 21. KEY FILES
 
-**Implementation:**
-1. Verify PSN release dates are stored in GamePlatform.release_date
-2. Ensure full title is preserved (not truncated) when creating MediaItem
-3. Update details handler to show all platform dates
-
-### Implementation order
-1. **6.1 Movies** — runtime (available now) + credits + watch/providers (need new API methods)
-2. **6.2 TV Series** — season/episode progress + day of week (all available now)
-3. **6.3 Anime** — basic info (all available now, limited data)
-4. **6.4 Games** — PSN dates + full titles (all available now)
-
-### Testing per sub-task
-For each category:
-1. Add item to watchlist
-2. Click [Подробнее]
-3. Verify all available data displays correctly
-4. Verify missing data is handled gracefully (no errors, no empty fields)
-5. Verify formatting (dates, day of week, etc.)
+- `app/bot/main.py` — handlers, details, search_add, scheduler setup
+- `app/scheduler/polling.py` — poll_due_items, poll_item, _refresh_anime_season, _poll_anime_episodes
+- `app/scheduler/tiering.py` — tier_interval for anime
+- `app/providers/shikimori.py` — Shikimori GraphQL client, build_franchise_summary
+- `app/providers/anilist.py` — AniList GraphQL client, BY_MAL_QUERY
+- `app/providers/tmdb.py` — TMDb provider
+- `app/database/models.py` — MediaItem, ExternalId, SourceState
+- `app/domain/events.py` — DomainEvent, compare_anilist_states, fingerprint
+- `app/config.py` — Settings including bot_timezone, shikimori settings
+- `app/services/watchlist.py` — add_watch_item, remove_watch_item
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 
