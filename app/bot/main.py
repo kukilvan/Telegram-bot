@@ -13,6 +13,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.filters import Command, CommandStart
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, InlineQuery, InlineQueryResultArticle, InputTextMessageContent, Message, SwitchInlineQueryChosenChat
 
+from app.bot.access import AccessMiddleware
 from app.bot.error_handler import ErrorMiddleware, send_startup_error_sync
 from app.domain.events import pre_add_check
 from app.config import get_settings
@@ -513,7 +514,14 @@ async def main() -> None:
     settings = get_settings()
     logging.info("Starting bot...")
 
+    allowed_ids = settings.allowed_telegram_user_ids
+    if not allowed_ids:
+        logging.critical("ALLOWED_TELEGRAM_USER_IDS is empty: refusing to start an open bot")
+        raise SystemExit(1)
+
     dp = Dispatcher()
+    # Allowlist goes first so strangers never reach the handlers or the error reporter
+    dp.update.outer_middleware(AccessMiddleware(allowed_ids))
     # Register error reporting middleware (catches all unhandled exceptions)
     dp.update.outer_middleware(ErrorMiddleware())
     tmdb = TMDbProvider()
@@ -539,9 +547,8 @@ async def main() -> None:
             s.close()
 
     def _is_allowed(message) -> bool:
-        """Allowlist guard: empty list means dev mode (allow all)."""
-        allowed = settings.allowed_telegram_user_ids
-        return (not allowed) or (message.from_user.id in allowed)
+        """Second line of defence behind AccessMiddleware; empty list allows nobody."""
+        return getattr(message.from_user, "id", None) in allowed_ids
 
     async with Bot(token=settings.telegram_bot_token) as bot:
         me = await bot.get_me()

@@ -1,7 +1,22 @@
 """Application configuration loaded from environment variables."""
 
 from dotenv import load_dotenv
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
+
+
+def parse_user_ids(raw: str) -> list[int]:
+    """Parse "123, 456" into [123, 456]; blank items are skipped, junk raises ValueError."""
+    ids = []
+    for part in raw.split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            ids.append(int(part))
+        except ValueError:
+            raise ValueError("ALLOWED_TELEGRAM_USER_IDS must be comma-separated integers") from None
+    return ids
 
 
 class Settings(BaseSettings):
@@ -9,7 +24,11 @@ class Settings(BaseSettings):
 
     # Telegram
     telegram_bot_token: str
-    allowed_telegram_user_ids_raw: str = ""  # comma-separated ints, e.g. "123456789,987654321"
+    # comma-separated ints, e.g. "123456789,987654321"; the env name is ALLOWED_TELEGRAM_USER_IDS
+    allowed_telegram_user_ids_raw: str = Field(
+        "",
+        validation_alias=AliasChoices("ALLOWED_TELEGRAM_USER_IDS", "ALLOWED_TELEGRAM_USER_IDS_RAW"),
+    )
     owner_chat_id: str = ""  # Telegram chat ID for error notifications
 
     # TMDb
@@ -49,9 +68,7 @@ class Settings(BaseSettings):
 
     @property
     def allowed_telegram_user_ids(self) -> list[int]:
-        if not self.allowed_telegram_user_ids_raw:
-            return []
-        return [int(x.strip()) for x in self.allowed_telegram_user_ids_raw.split(",")]
+        return parse_user_ids(self.allowed_telegram_user_ids_raw)
 
 
 def get_settings() -> Settings:
