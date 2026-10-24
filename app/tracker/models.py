@@ -1,6 +1,7 @@
 """Tables of the tracker database. Timestamps are naive UTC and are always set by the core at insert time."""
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -72,6 +73,15 @@ class EpisodeRecord(TrackerBase):
     season_id: Mapped[int] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"), index=True)
     number: Mapped[int] = mapped_column(Integer)
     air_at: Mapped[datetime | None] = mapped_column(DateTime)  # None: no date yet
+
+
+class SettingRecord(TrackerBase):
+    """One setting of the owner by name; absent means the default."""
+
+    __tablename__ = "settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[Any] = mapped_column(JSON)
 
 
 class SourceSnapshot(TrackerBase):

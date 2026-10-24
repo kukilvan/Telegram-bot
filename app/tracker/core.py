@@ -27,6 +27,7 @@ from app.tracker.models import (
     Event,
     ExternalId,
     SeasonRecord,
+    SettingRecord,
     SourceSnapshot,
     Title,
 )
@@ -35,6 +36,9 @@ from app.utils.secrets_mask import mask_secrets
 Clock = Callable[[], datetime]  # returns an aware datetime
 
 PRIMARY_ROLE = "primary"
+
+PART_GAP_SETTING = "part_gap_weeks"
+DEFAULT_PART_GAP_WEEKS = season_logic.DEFAULT_PART_GAP // timedelta(weeks=1)  # the default lives in `seasons`
 
 
 class Sender(Protocol):
@@ -184,6 +188,39 @@ class Tracker:
             session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
             session.commit()
             return event.id
+
+    # --- settings -------------------------------------------------------------------------------
+
+    def part_gap_weeks(self) -> int:
+        """Weeks of break between two episodes of a season after which the season is split into parts."""
+        with self.session_factory() as session:
+            return self._part_gap_weeks(session)
+
+    @staticmethod
+    def _part_gap_weeks(session) -> int:
+        record = session.get(SettingRecord, PART_GAP_SETTING)
+        return record.value if record is not None else DEFAULT_PART_GAP_WEEKS
+
+    @classmethod
+    def _part_gap(cls, session) -> timedelta:
+        return timedelta(weeks=cls._part_gap_weeks(session))
+
+    async def set_part_gap_weeks(self, weeks: int) -> None:
+        """Change the break that splits a season into parts. Parts are worked out from the dates, so the new
+        value applies to cards and events from now on without touching the stored episodes."""
+        if weeks < 1:
+            raise ValueError("the break between parts is at least one week")
+        async with self._write_lock:
+            await asyncio.to_thread(self._set_part_gap_weeks, weeks)
+
+    def _set_part_gap_weeks(self, weeks: int) -> None:
+        with self.session_factory() as session:
+            record = session.get(SettingRecord, PART_GAP_SETTING)
+            if record is None:
+                session.add(SettingRecord(key=PART_GAP_SETTING, value=weeks))
+            else:
+                record.value = weeks
+            session.commit()
 
     # --- titles ---------------------------------------------------------------------------------
 
@@ -388,6 +425,7 @@ class Tracker:
                     (season for _, season in loaded),
                     {record.number for record, _ in loaded if record.watched},
                     _naive_utc(self.clock()),
+                    self._part_gap(session),
                 )
             return TitleCard(
                 id=title.id,
@@ -496,12 +534,13 @@ class Tracker:
             stored = self._stored_snapshot(session, due)
             observed_at = stored.observed_at
             old = series_events.ShowState.of((season for _, season in self._load_seasons(session, due.id)), stored.state)
+            gap = self._part_gap(session)
         new = series_events.ShowState.of(
             (s for s in snapshot.seasons if s.number >= 1), snapshot.state()
         ).keeping_known(old)
         found = 0
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
-        for event in series_events.detect_events(due.id, due.name, old, new, observed_at, now):
+        for event in series_events.detect_events(due.id, due.name, old, new, observed_at, now, gap):
             payload = {"text": event.text, **event.data}
             if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                 found += 1

@@ -46,13 +46,21 @@ def format_weekday_date(value: date) -> str:
     return f"{_WEEKDAYS[value.weekday()]}, {value.day} {_SHORT_MONTHS[value.month - 1]}"
 
 
+def format_day_month(value: date) -> str:
+    """«27 марта»: the day a part starts, as the card says «часть 2 — с 27 марта»."""
+    return f"{value.day} {_MONTHS[value.month - 1]}"
+
+
 def season_lines(view: SeasonsView) -> list[str]:
     lines = []
     if view.current is not None:
         current = view.current
-        line = f"Сезон {current.number}: вышло {current.released} из {current.total if current.total else '?'}"
+        label = f"Сезон {current.number}" + (f", часть {current.part}" if current.part else "")
+        line = f"{label}: вышло {current.released} из {current.total if current.total else '?'}"
         if current.status != RELEASED:
             line += f", следующая — {format_weekday_date(current.next_air_at.date()) if current.next_air_at else NOT_ANNOUNCED}"
+        elif current.next_part_at is not None:
+            line += f"; часть {current.next_part} — с {format_day_month(current.next_part_at.date())}"
         lines.append(line)
     if view.announced is not None:
         announced = view.announced
