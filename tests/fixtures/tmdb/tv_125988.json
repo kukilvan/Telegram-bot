@@ -1,0 +1,169 @@
+{
+ "adult": false,
+ "backdrop_path": "/4XccmjsOmQZw8S2iW1wvlvmb5v1.jpg",
+ "created_by": [
+  {
+   "id": 21206,
+   "credit_id": "6404e86a021cee00da36d3be",
+   "name": "Грэм Йост",
+   "original_name": "Graham Yost",
+   "gender": 2,
+   "profile_path": "/zbaUcbYdFU28bGoi6F2lJo0XUaX.jpg"
+  }
+ ],
+ "episode_run_time": [],
+ "first_air_date": "2023-05-04",
+ "genres": [
+  {
+   "id": 10765,
+   "name": "НФ и Фэнтези"
+  },
+  {
+   "id": 18,
+   "name": "драма"
+  }
+ ],
+ "homepage": "https://tv.apple.com/show/umc.cmc.3yksgc857px0k0rqe5zd4jice",
+ "id": 125988,
+ "in_production": true,
+ "languages": [
+  "en"
+ ],
+ "last_air_date": "2026-09-03",
+ "last_episode_to_air": {
+  "id": 7173966,
+  "name": "Трой",
+  "overview": "Лидер просыпается в новом мире.",
+  "vote_average": 8.73,
+  "vote_count": 63,
+  "air_date": "2026-09-03",
+  "episode_number": 10,
+  "episode_type": "finale",
+  "production_code": "",
+  "runtime": 61,
+  "season_number": 3,
+  "show_id": 125988,
+  "still_path": "/cWfqa602Kcka7zRaLMq9TRhLJkH.jpg"
+ },
+ "name": "Укрытие",
+ "next_episode_to_air": {
+  "id": 7768410,
+  "name": "Эпизод 1",
+  "overview": "",
+  "vote_average": 0.0,
+  "vote_count": 0,
+  "air_date": "2027-07-08",
+  "episode_number": 1,
+  "episode_type": "standard",
+  "production_code": "",
+  "runtime": null,
+  "season_number": 4,
+  "show_id": 125988,
+  "still_path": null
+ },
+ "networks": [
+  {
+   "id": 2552,
+   "logo_path": "/bngHRFi794mnMq34gfVcm9nDxN1.png",
+   "name": "Apple TV",
+   "origin_country": ""
+  }
+ ],
+ "number_of_episodes": 31,
+ "number_of_seasons": 4,
+ "origin_country": [
+  "US"
+ ],
+ "original_language": "en",
+ "original_name": "Silo",
+ "overview": "На отравленной гибнущей планете будущего тысячи людей ютятся в огромном подземном укрытии. Нарушение шерифом основного правила и серия загадочных смертей вынуждают инженера Джульетту заняться раскрытием тайн и поиском правды о бункере.",
+ "popularity": 128.0893,
+ "poster_path": "/gRkvq6FgiGRdtCwhVIozaUqhoDL.jpg",
+ "production_companies": [
+  {
+   "id": 23242,
+   "logo_path": "/ucE6dN6pUPfZHH5JlXkq44TDUMS.png",
+   "name": "AMC Studios",
+   "origin_country": "US"
+  },
+  {
+   "id": 65105,
+   "logo_path": null,
+   "name": "Nemofilms",
+   "origin_country": "US"
+  },
+  {
+   "id": 199363,
+   "logo_path": null,
+   "name": "Mimir Films",
+   "origin_country": "US"
+  },
+  {
+   "id": 194232,
+   "logo_path": "/oE7H93u8sy5vvW5EH3fpCp68vvB.png",
+   "name": "Apple Studios",
+   "origin_country": "US"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US",
+   "name": "United States of America"
+  }
+ ],
+ "seasons": [
+  {
+   "air_date": "2023-05-04",
+   "episode_count": 10,
+   "id": 196076,
+   "name": "Сезон 1",
+   "overview": "В мрачном антиутопическом будущем человечество цепляется за выживание глубоко под землей в пределах колоссального бункера. Джульетта, инженер, которой поручено разгадать тайну смерти коллеги, раскрывает поразительные секреты, которые угрожают самой сути их замкнутого мира.",
+   "poster_path": "/pVsPWmqscpvgv83ld138POqKM6p.jpg",
+   "season_number": 1,
+   "vote_average": 7.3
+  },
+  {
+   "air_date": "2024-11-14",
+   "episode_count": 10,
+   "id": 404198,
+   "name": "Сезон 2",
+   "overview": "Джульетта Николс, оказавшаяся за пределами бункера с отказавшим костюмом, мчится наперегонки со временем, ошеломленная тем, что рядом находится другой бункер, который может стать ее единственной надеждой на выживание. Тем временем внутри бункера назревают беспорядки, и Бернард Холланд собирает жителей, чтобы поддержать порядок на фоне растущих вопросов об их мире. По мере того как Джульетта сталкивается с неожиданными опасностями вблизи нового силоса, начинают всплывать скрытые истины о происхождении силосов и мира за их пределами, углубляя тайну.",
+   "poster_path": "/sZrBGRiZrp5KlbNfgszwryPDo2N.jpg",
+   "season_number": 2,
+   "vote_average": 6.7
+  },
+  {
+   "air_date": "2026-07-02",
+   "episode_count": 10,
+   "id": 512220,
+   "name": "Сезон 3",
+   "overview": "Третий сезон раскрывает историю происхождения, действие которой происходит на несколько столетий раньше, одновременно продолжая сагу о дистопическом обществе из 10 000 человек, живущих под землёй при загадочных обстоятельствах. В настоящем Джульетта Николс выживает после принудительной «чистки», но возвращается с потерей памяти, пока убежище оправляется от восстания и сталкивается с новой опасной угрозой. Тем временем в «прежние времена» журналистка Хелен Дрю и конгрессмен Дэниел Кин раскрывают заговор, который втягивает их в цепь событий с катастрофическими, необратимыми последствиями.",
+   "poster_path": "/gRkvq6FgiGRdtCwhVIozaUqhoDL.jpg",
+   "season_number": 3,
+   "vote_average": 7.3
+  },
+  {
+   "air_date": "2027-07-08",
+   "episode_count": 1,
+   "id": 532506,
+   "name": "Сезон 4",
+   "overview": "",
+   "poster_path": null,
+   "season_number": 4,
+   "vote_average": 0.0
+  }
+ ],
+ "softcore": false,
+ "spoken_languages": [
+  {
+   "english_name": "English",
+   "iso_639_1": "en",
+   "name": "English"
+  }
+ ],
+ "status": "Returning Series",
+ "tagline": "Правда таится в прошлом.",
+ "type": "Scripted",
+ "vote_average": 8.226,
+ "vote_count": 2833
+}

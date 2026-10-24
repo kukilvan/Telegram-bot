@@ -1,0 +1,48 @@
+{
+ "results": [
+  {
+   "adult": false,
+   "backdrop_path": "/4XccmjsOmQZw8S2iW1wvlvmb5v1.jpg",
+   "genre_ids": [
+    10765,
+    18
+   ],
+   "id": 125988,
+   "origin_country": [
+    "US"
+   ],
+   "original_language": "en",
+   "original_name": "Silo",
+   "overview": "На отравленной гибнущей планете будущего тысячи людей ютятся в огромном подземном укрытии. Нарушение шерифом основного правила и серия загадочных смертей вынуждают инженера Джульетту заняться раскрытием тайн и поиском правды о бункере.",
+   "popularity": 128.0893,
+   "poster_path": "/gRkvq6FgiGRdtCwhVIozaUqhoDL.jpg",
+   "first_air_date": "2023-05-04",
+   "softcore": false,
+   "name": "Укрытие",
+   "vote_average": 8.226,
+   "vote_count": 2833
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/jcyPbceiI59LX7JHKR7NnR6EYw1.jpg",
+   "genre_ids": [
+    18,
+    9648
+   ],
+   "id": 214993,
+   "origin_country": [
+    "KR"
+   ],
+   "original_language": "ko",
+   "original_name": "하이드",
+   "overview": "На Мунён — бывшая прокурорша, которая теперь владеет юридической фирмой вместе с мужем Чха Сончжэ. Однажды Сончжэ бесследно исчезает, и Мунён начинает его поиски. Но чем больше она погружается в прошлое ее на первый взгляд идеального супруга, тем больше страшных тайн всплывает на поверхность. Ключ к разгадке исчезновения Сончжэ может хранить их приветливая соседка Ха Енчжу, а также таинственный молодой человек То Чжину.",
+   "popularity": 5.7948,
+   "poster_path": "/9ujLp36wgaNRWDNwOpWeRgnL5IN.jpg",
+   "first_air_date": "2024-03-23",
+   "softcore": false,
+   "name": "Укрытие",
+   "vote_average": 7.9,
+   "vote_count": 9
+  }
+ ]
+}

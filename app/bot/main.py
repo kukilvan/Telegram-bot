@@ -43,6 +43,7 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
+from app.tracker.sources.tmdb_series import TmdbSeriesSource
 from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
@@ -588,7 +589,8 @@ async def main() -> None:
             create_session_factory(),
             clock=lambda: dt.now(tz=timezone.utc),
             sender=TelegramSender(bot, owner_chat_id(settings.owner_chat_id, allowed_ids)),
-            sources={"movie": TmdbMovieSource(tmdb)},  # the same throttled TMDb client as the legacy code
+            # the same throttled TMDb client as the legacy code
+            sources={"movie": TmdbMovieSource(tmdb), "series": TmdbSeriesSource(tmdb)},
             sequel_sources={"movie": TmdbSequelSource(tmdb)},
         )
         register_tracker_handlers(dp, tracker, allowed_ids)

@@ -16,15 +16,17 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker import movie_events, sequel_events
+from app.tracker import movie_events, seasons as season_logic, sequel_events
 from app.tracker.actions import Action, event_actions
 from app.tracker.cards import TitleCard
 from app.tracker.models import (
     STATUS_WANT,
     STATUS_WATCHED,
     DeliveryItem,
+    EpisodeRecord,
     Event,
     ExternalId,
+    SeasonRecord,
     SourceSnapshot,
     Title,
 )
@@ -52,6 +54,10 @@ class UnknownEvent(Exception):
     """There is no «sequel announced» event with this id."""
 
 
+class UnknownSeason(Exception):
+    """The title has no season with this number (specials, season 0, are not seasons)."""
+
+
 @dataclass(frozen=True)
 class AddResult:
     title_id: int
@@ -72,6 +78,14 @@ class TitleSummary:
     name: str
     year: int | None
     status: str
+
+
+@dataclass(frozen=True)
+class WatchableSeason:
+    """A season the owner can mark as watched: it has at least one released episode."""
+
+    number: int
+    watched: bool
 
 
 @dataclass(frozen=True)
@@ -226,10 +240,14 @@ class Tracker:
                     source=source_key,
                     state=state,
                     observed_at=now,
-                    # the snapshot taken now is the baseline; the first poll compares against it
-                    next_check_at=now + movie_events.check_interval_for_state(state, now.date()),
+                    # the snapshot taken now is the baseline; the first poll compares against it.
+                    # Series are not polled yet (their events come with the next ticket)
+                    next_check_at=(
+                        now + movie_events.check_interval_for_state(state, now.date()) if kind == "movie" else None
+                    ),
                 )
             )
+            self._store_seasons(session, title.id, getattr(snapshot, "seasons", ()))
             try:
                 session.commit()
             except IntegrityError:
@@ -240,6 +258,62 @@ class Tracker:
                     raise
                 return AddResult(existing, created=False)
             return AddResult(title.id, created=True)
+
+    @staticmethod
+    def _store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> None:
+        for season in seasons:
+            if season.number < 1:  # specials are not seasons, whatever the source adapter let through
+                continue
+            record = SeasonRecord(
+                title_id=title_id, number=season.number, name=season.name, episode_count=season.expected, watched=False
+            )
+            session.add(record)
+            session.flush()
+            session.add_all(
+                EpisodeRecord(season_id=record.id, number=e.number, air_at=e.air_at) for e in season.episodes
+            )
+
+    @staticmethod
+    def _load_seasons(session, title_id: int) -> list[tuple[SeasonRecord, season_logic.Season]]:
+        records = session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id).order_by(SeasonRecord.number))
+        loaded = []
+        for record in records:
+            episodes = session.scalars(select(EpisodeRecord).where(EpisodeRecord.season_id == record.id))
+            season = season_logic.Season(
+                number=record.number,
+                name=record.name,
+                expected=record.episode_count,
+                episodes=tuple(sorted((season_logic.Episode(e.number, e.air_at) for e in episodes), key=lambda e: e.number)),
+            )
+            loaded.append((record, season))
+        return loaded
+
+    def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
+        """Seasons that can be marked as watched, with their marks. A season with nothing released cannot."""
+        now = _naive_utc(self.clock())
+        with self.session_factory() as session:
+            return [
+                WatchableSeason(season.number, record.watched)
+                for record, season in self._load_seasons(session, title_id)
+                if season.released(now) > 0
+            ]
+
+    async def set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
+        """Mark a season as watched, or take the mark off. Marking twice changes nothing."""
+        async with self._write_lock:
+            await asyncio.to_thread(self._set_season_watched, title_id, number, watched)
+
+    def _set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
+        with self.session_factory() as session:
+            if session.get(Title, title_id) is None:
+                raise UnknownTitle(title_id)
+            record = session.scalar(
+                select(SeasonRecord).where(SeasonRecord.title_id == title_id, SeasonRecord.number == number)
+            )
+            if record is None:
+                raise UnknownSeason(f"{title_id}:{number}")
+            record.watched = watched
+            session.commit()
 
     async def mark_watched(self, title_id: int) -> WatchedResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
@@ -301,6 +375,14 @@ class Tracker:
                 )
             )
             state = snapshot.state if snapshot else {}
+            seasons_view = None
+            if title.kind == "series":
+                loaded = self._load_seasons(session, title_id)
+                seasons_view = season_logic.summarize(
+                    (season for _, season in loaded),
+                    {record.number for record, _ in loaded if record.watched},
+                    _naive_utc(self.clock()),
+                )
             return TitleCard(
                 id=title.id,
                 kind=title.kind,
@@ -311,6 +393,7 @@ class Tracker:
                 status=title.status,
                 theatrical_date=_parse_date(state.get("theatrical_date")),
                 digital_date=_parse_date(state.get("digital_date")),
+                seasons=seasons_view,
             )
 
     # --- polling --------------------------------------------------------------------------------
@@ -341,7 +424,8 @@ class Tracker:
                 )
                 .where(
                     or_(
-                        and_(own, Title.status == STATUS_WANT, Title.tracking_enabled.is_(True)),
+                        # series are not polled yet: movie rules would overwrite their data
+                        and_(own, Title.kind == "movie", Title.status == STATUS_WANT, Title.tracking_enabled.is_(True)),
                         and_(~own, Title.status == STATUS_WATCHED),
                     ),
                     (SourceSnapshot.next_check_at.is_(None)) | (SourceSnapshot.next_check_at <= now),

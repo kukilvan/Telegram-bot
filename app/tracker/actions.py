@@ -8,9 +8,11 @@ from app.tracker.models import STATUS_WANT
 
 WATCHED = "watched"  # arg: title id
 FOLLOW = "follow"  # arg: id of the «sequel announced» event
+SEASONS = "seasons"  # arg: title id; opens the choice of watched seasons
 
 _WATCHED_LABEL = "✅ Посмотрел"
 _FOLLOW_LABEL = "👀 Следить"
+_SEASONS_LABEL = "📺 Просмотренные сезоны"
 
 _MOVIE_EVENTS = frozenset(
     {movie_events.DATE_ANNOUNCED, movie_events.DATE_MOVED, movie_events.RELEASED, movie_events.DIGITAL}
@@ -20,7 +22,7 @@ _MOVIE_EVENTS = frozenset(
 @dataclass(frozen=True)
 class Action:
     label: str
-    name: str  # WATCHED | FOLLOW
+    name: str  # WATCHED | FOLLOW | SEASONS
     arg: int
 
 
@@ -34,5 +36,7 @@ def event_actions(event_type: str, event_id: int, title_id: int | None) -> list[
 
 
 def card_actions(card: TitleCard) -> list[Action]:
-    """Buttons under a title's card: «Посмотрел» until the movie is watched."""
+    """Buttons under a title's card: «Посмотрел» until the movie is watched, the watched seasons of a series."""
+    if card.kind == "series":
+        return [Action(_SEASONS_LABEL, SEASONS, card.id)]
     return [Action(_WATCHED_LABEL, WATCHED, card.id)] if card.status == STATUS_WANT else []

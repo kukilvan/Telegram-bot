@@ -1,0 +1,35 @@
+{
+ "id": 532506,
+ "_id": "6a6549235dc74d978d4b0e43",
+ "air_date": "2027-07-08",
+ "episodes": [
+  {
+   "air_date": "2027-07-08",
+   "episode_number": 1,
+   "episode_type": "standard",
+   "id": 7768410,
+   "name": "Эпизод 1",
+   "overview": "",
+   "production_code": "",
+   "runtime": null,
+   "season_number": 4,
+   "show_id": 125988,
+   "still_path": null,
+   "vote_average": 0.0,
+   "vote_count": 0
+  }
+ ],
+ "name": "Сезон 4",
+ "networks": [
+  {
+   "id": 2552,
+   "logo_path": "/bngHRFi794mnMq34gfVcm9nDxN1.png",
+   "name": "Apple TV",
+   "origin_country": ""
+  }
+ ],
+ "overview": "",
+ "poster_path": null,
+ "season_number": 4,
+ "vote_average": 0.0
+}

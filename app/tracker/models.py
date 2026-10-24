@@ -50,6 +50,30 @@ class ExternalId(TrackerBase):
     role: Mapped[str] = mapped_column(String(16))  # primary | ...
 
 
+class SeasonRecord(TrackerBase):
+    """A season of a series (number 1 and up; specials are not seasons) and the owner's mark on it."""
+
+    __tablename__ = "seasons"
+    __table_args__ = (UniqueConstraint("title_id", "number", name="uq_seasons_title_number"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_id: Mapped[int] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
+    number: Mapped[int] = mapped_column(Integer)
+    name: Mapped[str] = mapped_column(String(255))
+    episode_count: Mapped[int | None] = mapped_column(Integer)  # announced by the source; None: unknown
+    watched: Mapped[bool] = mapped_column(Boolean)  # the status of a season (announced / airing / released) is not stored: it follows the clock
+
+
+class EpisodeRecord(TrackerBase):
+    __tablename__ = "episodes"
+    __table_args__ = (UniqueConstraint("season_id", "number", name="uq_episodes_season_number"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    season_id: Mapped[int] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"), index=True)
+    number: Mapped[int] = mapped_column(Integer)
+    air_at: Mapped[datetime | None] = mapped_column(DateTime)  # None: no date yet
+
+
 class SourceSnapshot(TrackerBase):
     """Last normalized state of a title as one source reported it."""
 

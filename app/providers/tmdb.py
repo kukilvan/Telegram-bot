@@ -135,11 +135,13 @@ class TMDbProvider:
         data = resp.json()
         return data.get("results", [])
 
-    async def search_tv(self, query: str, page: int = 1) -> list[dict]:
+    async def search_tv(self, query: str, page: int = 1, strict: bool = False) -> list[dict]:
         """Search TV series by title (RU or EN). Returns raw TMDb results.
 
         Endpoint: GET /search/tv?language=ru&include_adult=false&query={query}
         Auth: api_key as query param (standard TMDb REST auth).
+        With `strict=True` a failed request raises instead of returning [], so "TMDb is down" is not
+        mistaken for "nothing found".
         """
         params = {
             "api_key": self._api_key,
@@ -151,6 +153,8 @@ class TMDbProvider:
         resp = await self._get("/search/tv", params)
         if resp is None or resp.status_code != 200:
             logging.error("TMDb search_tv failed (HTTP %s)", resp.status_code if resp else 429)
+            if strict:
+                raise RuntimeError(f"TMDb search_tv failed (HTTP {resp.status_code if resp else 429})")
             return []
         data = resp.json()
         return data.get("results", [])
@@ -216,6 +220,41 @@ class TMDbProvider:
             else:
                 logging.error("TMDb get_tv_details failed (HTTP %s)", resp.status_code if resp else 429)
             return None
+        return resp.json()
+
+    async def get_tv_show(self, tv_id: int) -> dict | None:
+        """TV series details with the list of its seasons (`seasons`: number, name, episode_count).
+
+        Endpoint: GET /tv/{id}?language=ru
+        Returns None only when there is no series at this id (404: it may be a movie). Any other failure
+        raises, so the caller can tell "no such series" from "TMDb unavailable".
+        """
+        params = {"api_key": self._api_key, "language": "ru"}
+        resp = await self._get(f"/tv/{tv_id}", params)
+        if resp is None:
+            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+        if resp.status_code == 404:
+            logging.debug("TMDb get_tv_show HTTP 404 (no TV at this id)")
+            return None
+        if resp.status_code != 200:
+            raise RuntimeError(f"TMDb get_tv_show failed (HTTP {resp.status_code})")
+        return resp.json()
+
+    async def get_tv_season(self, tv_id: int, season_number: int) -> dict | None:
+        """One season with its episodes (`episodes`: number, ISO `air_date` or null).
+
+        Endpoint: GET /tv/{id}/season/{n}?language=ru
+        Returns None only when TMDb has no such season (404). Any other failure raises.
+        """
+        params = {"api_key": self._api_key, "language": "ru"}
+        resp = await self._get(f"/tv/{tv_id}/season/{season_number}", params)
+        if resp is None:
+            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+        if resp.status_code == 404:
+            logging.debug("TMDb get_tv_season HTTP 404 (no such season)")
+            return None
+        if resp.status_code != 200:
+            raise RuntimeError(f"TMDb get_tv_season failed (HTTP {resp.status_code})")
         return resp.json()
 
     async def get_movie_release_dates(self, movie_id: int) -> list[dict]:

@@ -19,9 +19,9 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-from app.tracker.actions import FOLLOW, WATCHED, Action, card_actions
+from app.tracker.actions import FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card
-from app.tracker.core import Tracker, TitleNotFound, UnknownEvent, UnknownTitle
+from app.tracker.core import Tracker, TitleNotFound, UnknownEvent, UnknownSeason, UnknownTitle, WatchableSeason
 from app.utils.secrets_mask import mask_secrets
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
@@ -32,10 +32,19 @@ _ADD_KIND_PREFIX = "tadd:"
 _PICK_PREFIX = "tpick:"
 _CARD_PREFIX = "tcard:"
 _ACTION_PREFIX = "tact:"  # tact:<action name>:<number>, see app.tracker.actions
+_SEASON_PREFIX = "tsea:"  # tsea:<title id>:<season number> flips a mark, tsea:<title id>:done closes the choice
+_DONE = "done"
 
 MAX_SUGGESTIONS = 10
 MAX_LIST_BUTTONS = 50
-_ASK_NAME = {"movie": "Напишите название фильма (можно по-русски или по-английски)."}
+_ASK_NAME = {
+    "movie": "Напишите название фильма (можно по-русски или по-английски).",
+    "series": "Напишите название сериала (можно по-русски или по-английски).",
+}
+_ASK_SEASONS = (
+    "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
+    "повторное нажатие снимает отметку. Когда закончите, нажмите «Готово»."
+)
 
 
 def actions_markup(actions: Sequence[Action]) -> InlineKeyboardMarkup | None:
@@ -77,6 +86,20 @@ def main_keyboard() -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True,
     )
+
+
+def seasons_markup(title_id: int, seasons: Sequence[WatchableSeason]) -> InlineKeyboardMarkup:
+    rows = [
+        [
+            InlineKeyboardButton(
+                text=f"{'✅ ' if s.watched else ''}Сезон {s.number}",
+                callback_data=f"{_SEASON_PREFIX}{title_id}:{s.number}",
+            )
+        ]
+        for s in seasons
+    ]
+    rows.append([InlineKeyboardButton(text="Готово", callback_data=f"{_SEASON_PREFIX}{title_id}:{_DONE}")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def _title_button_text(name: str, year: int | None) -> str:
@@ -187,7 +210,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer(f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново.")
             return
         except TitleNotFound:
-            await callback.answer("Не нашёл такой фильм в TMDb, попробуйте поискать заново.")
+            await callback.answer("Не нашёл такой тайтл в TMDb, попробуйте поискать заново.")
             return
         except Exception as exc:
             logging.warning("adding a title failed: %s", mask_secrets(repr(exc)))
@@ -196,6 +219,16 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await callback.answer()
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"
         await send_card(callback, tracker.title_card(result.title_id), heading)
+        if result.created:
+            await ask_watched_seasons(callback, result.title_id)
+
+    async def ask_watched_seasons(callback: CallbackQuery, title_id: int) -> bool:
+        """Offer the seasons with released episodes for marking. False: a movie or nothing is out yet."""
+        seasons = tracker.watchable_seasons(title_id)
+        if not seasons or callback.message is None:
+            return False
+        await callback.message.answer(_ASK_SEASONS, reply_markup=seasons_markup(title_id, seasons))
+        return True
 
     async def send_card(callback: CallbackQuery, card: TitleCard | None, heading: str | None = None) -> None:
         if card is None or callback.message is None:
@@ -289,6 +322,52 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         heading = "✅ Продолжение добавлено в список" if result.created else "Уже в списке"
         await send_card(callback, tracker.title_card(result.title_id), heading)
 
+    async def open_seasons_choice(callback: CallbackQuery, title_id: int) -> None:
+        if not await ask_watched_seasons(callback, title_id):
+            await callback.answer("Пока нет вышедших сезонов, отмечать нечего.")
+            return
+        await callback.answer()
+
+    async def flip_season(callback: CallbackQuery) -> None:
+        if not is_owner(callback.from_user):
+            return
+        raw_id, _, raw_number = callback.data.removeprefix(_SEASON_PREFIX).partition(":")
+        if not (raw_id.isascii() and raw_id.isdigit()):
+            await callback.answer("Эта кнопка больше не работает.")
+            return
+        title_id = int(raw_id)
+        if raw_number == _DONE:
+            await drop_buttons(callback)
+            await callback.answer("Готово")
+            await send_card(callback, tracker.title_card(title_id))
+            return
+        if not (raw_number.isascii() and raw_number.isdigit()):
+            await callback.answer("Эта кнопка больше не работает.")
+            return
+        number = int(raw_number)
+        marks = {s.number: s.watched for s in tracker.watchable_seasons(title_id)}
+        try:
+            if number not in marks:
+                raise UnknownSeason(f"{title_id}:{number}")
+            await tracker.set_season_watched(title_id, number, not marks[number])
+        except UnknownTitle:
+            await callback.answer("Этого тайтла больше нет в списке.")
+            return
+        except UnknownSeason:
+            await callback.answer("Такого сезона нет или он ещё не вышел.")
+            return
+        except Exception as exc:
+            logging.warning("marking a season failed: %s", mask_secrets(repr(exc)))
+            await callback.answer("Не удалось сохранить. Попробуйте ещё раз.")
+            return
+        await callback.answer()
+        try:
+            await callback.message.edit_reply_markup(
+                reply_markup=seasons_markup(title_id, tracker.watchable_seasons(title_id))
+            )
+        except Exception as exc:  # the marks are saved; a stale message only keeps its old look
+            logging.debug("could not refresh the season buttons: %s", mask_secrets(repr(exc)))
+
     async def press_action(callback: CallbackQuery) -> None:
         if not is_owner(callback.from_user):
             return
@@ -298,6 +377,8 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await mark_watched(callback, number)
         elif number is not None and name == FOLLOW:
             await follow_sequel(callback, number)
+        elif number is not None and name == SEASONS:
+            await open_seasons_choice(callback, number)
         else:
             await callback.answer("Эта кнопка больше не работает.")
 
@@ -312,3 +393,4 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     dp.callback_query.register(add_picked, F.data.startswith(_PICK_PREFIX))
     dp.callback_query.register(show_card, F.data.startswith(_CARD_PREFIX))
     dp.callback_query.register(press_action, F.data.startswith(_ACTION_PREFIX))
+    dp.callback_query.register(flip_season, F.data.startswith(_SEASON_PREFIX))
