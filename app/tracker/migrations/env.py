@@ -23,14 +23,14 @@ target_metadata = TrackerBase.metadata
 def run_migrations_online() -> None:
     connection = config.attributes.get("connection")
     if connection is not None:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
         with context.begin_transaction():
             context.run_migrations()
         return
 
     engine = create_tracker_engine(config.get_main_option("sqlalchemy.url") or TRACKER_DATABASE_URL)
     with engine.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata, render_as_batch=True)
         with context.begin_transaction():
             context.run_migrations()
 

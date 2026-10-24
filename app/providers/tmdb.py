@@ -111,11 +111,13 @@ class TMDbProvider:
         )
         return None
 
-    async def search_movie(self, query: str, page: int = 1) -> list[dict]:
+    async def search_movie(self, query: str, page: int = 1, strict: bool = False) -> list[dict]:
         """Search movies by title (RU or EN). Returns raw TMDb results.
 
         Endpoint: GET /search/movie?language=ru&include_adult=false&query={query}
         Auth: api_key as query param (standard TMDb REST auth).
+        With `strict=True` a failed request raises instead of returning [], so "TMDb is down" is not
+        mistaken for "nothing found".
         """
         params = {
             "api_key": self._api_key,
@@ -127,6 +129,8 @@ class TMDbProvider:
         resp = await self._get("/search/movie", params)
         if resp is None or resp.status_code != 200:
             logging.error("TMDb search_movie failed (HTTP %s)", resp.status_code if resp else 429)
+            if strict:
+                raise RuntimeError(f"TMDb search_movie failed (HTTP {resp.status_code if resp else 429})")
             return []
         data = resp.json()
         return data.get("results", [])
@@ -163,6 +167,24 @@ class TMDbProvider:
             else:
                 logging.error("TMDb get_movie_details failed (HTTP %s)", resp.status_code if resp else 429)
             return None
+        return resp.json()
+
+    async def get_movie_with_release_dates(self, movie_id: int) -> dict | None:
+        """Movie details plus the nested per-region `release_dates` in one request.
+
+        Endpoint: GET /movie/{id}?language=ru&append_to_response=release_dates
+        Returns None only when there is no movie at this id (404). Any other failure raises, so the caller
+        can tell "no such movie" from "TMDb unavailable".
+        """
+        params = {"api_key": self._api_key, "language": "ru", "append_to_response": "release_dates"}
+        resp = await self._get(f"/movie/{movie_id}", params)
+        if resp is None:
+            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+        if resp.status_code == 404:
+            logging.debug("TMDb get_movie_with_release_dates HTTP 404 (no movie at this id)")
+            return None
+        if resp.status_code != 200:
+            raise RuntimeError(f"TMDb get_movie_with_release_dates failed (HTTP {resp.status_code})")
         return resp.json()
 
     async def get_tv_details(self, tv_id: int) -> dict | None:

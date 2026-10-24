@@ -41,6 +41,7 @@ from app.providers.psn import PSNProvider
 from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_item, _store_state, backup_database as _backup_database, _earliest_digital_date, _earliest_theatrical_date
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
@@ -586,7 +587,7 @@ async def main() -> None:
             create_session_factory(),
             clock=lambda: dt.now(tz=timezone.utc),
             sender=TelegramSender(bot, owner_chat_id(settings.owner_chat_id, allowed_ids)),
-            sources={},
+            sources={"movie": TmdbMovieSource(tmdb)},  # the same throttled TMDb client as the legacy code
         )
         register_tracker_handlers(dp, tracker, allowed_ids)
 

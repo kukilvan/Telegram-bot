@@ -1,0 +1,260 @@
+{
+  "results": [
+    {
+      "adult": false,
+      "backdrop_path": "/qVgZu5BTx6pu4owCvVOm4zjTfOi.jpg",
+      "genre_ids": [
+        878,
+        12
+      ],
+      "id": 438631,
+      "title": "Дюна",
+      "original_language": "en",
+      "original_title": "Dune",
+      "overview": "Наследник знаменитого дома Атрейдесов Пол отправляется вместе с семьей на одну из самых опасных планет во Вселенной — Арракис. Здесь нет ничего, кроме песка, палящего солнца, гигантских чудовищ и основной причины межгалактических конфликтов — невероятно ценного ресурса, который называется меланж. В результате захвата власти Пол вынужден бежать и скрываться, и это становится началом его эпического путешествия. Враждебный мир Арракиса приготовил для него множество тяжелых испытаний, но только тот, кто готов взглянуть в глаза своему страху, достоин стать избранным.",
+      "popularity": 48.2061,
+      "poster_path": "/3hbXNclcHaj5KiF6kK41GBMjyFr.jpg",
+      "release_date": "2021-09-15",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.8,
+      "vote_count": 15791
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/i5E9H7Ik0u61ylDDTbmUpTL3Yw.jpg",
+      "genre_ids": [
+        878,
+        12
+      ],
+      "id": 1170608,
+      "title": "Дюна: Часть третья",
+      "original_language": "en",
+      "original_title": "Dune: Part Three",
+      "overview": "Прошло 12 лет после того, как Пол Атрид занял престол императора. Он узнаёт о существовании заговора, но не спешит его разоблачить.",
+      "popularity": 102.1455,
+      "poster_path": "/x50ig6nAMNCP3ihDXKfUjnKM4Ud.jpg",
+      "release_date": "2026-12-15",
+      "softcore": false,
+      "video": false,
+      "vote_average": 0.0,
+      "vote_count": 0
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/5wJ2tckpvwcxGCAgZiccodwEJpf.jpg",
+      "genre_ids": [
+        28,
+        878,
+        12
+      ],
+      "id": 841,
+      "title": "Дюна",
+      "original_language": "en",
+      "original_title": "Dune",
+      "overview": "Планета Арракис, также известная под названием Дюна, год 10191. Арена борьбы между злом и благородством, мир тончайших и опаснейших интриг. Гигантские песчаные черви длиной в целую милю сторожат бесценное сокровище — меланжевую пряность, позволяющую путешествовать сквозь пространство и время. Тот, кто контролирует пряность, контролирует Вселенную.\r Народ Дюны ожидает пришествия Мессии, который поведет их на священную войну против династии злобных Харконненов. И Мессия является. Им становится юный Пол Атрейдес, сын герцога Лито, предательски убитого Харконненами с одобрения Императора. Полу предстоит великая миссия, которая навсегда изменит судьбу всей галактической империи.",
+      "popularity": 15.8462,
+      "poster_path": "/ushxXCt5RAXtBFGrpMxiz5n6d3L.jpg",
+      "release_date": "1984-12-14",
+      "softcore": false,
+      "video": false,
+      "vote_average": 6.197,
+      "vote_count": 3584
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/eZ239CUp1d6OryZEBPnO2n87gMG.jpg",
+      "genre_ids": [
+        878,
+        12
+      ],
+      "id": 693134,
+      "title": "Дюна: Часть вторая",
+      "original_language": "en",
+      "original_title": "Dune: Part Two",
+      "overview": "Герцог Пол Атрейдес присоединяется к фременам, чтобы стать Муад Дибом, одновременно пытаясь остановить наступление войны.",
+      "popularity": 62.0363,
+      "poster_path": "/3aLghRkuJc9cs770fxo4a6YWht3.jpg",
+      "release_date": "2024-02-27",
+      "softcore": false,
+      "video": false,
+      "vote_average": 8.143,
+      "vote_count": 8809
+    },
+    {
+      "adult": false,
+      "backdrop_path": null,
+      "genre_ids": [
+        12
+      ],
+      "id": 633787,
+      "title": "Золотая дюна",
+      "original_language": "ru",
+      "original_title": "Золотая дюна",
+      "overview": "Захватывающая история о трех подростках, нашедших в подвалах бывшего немецкого госпиталя в Калининграде (бывшем Кенигсберге) старинный медальон Тевтонского ордена. История, которая постепенно перерастает в опасное и мистическое приключение, с погонями, борьбой, постоянным риском. Ребятам предстоит разгадать тайну янтарного медальона, найти клад, спасти девушку и сделать свой выбор. И, конечно, это фильм о первой юношеской любви.",
+      "popularity": 0.9126,
+      "poster_path": "/piX74vNjTslY2aUdJXvocZSlVjv.jpg",
+      "release_date": "2021-08-28",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.8,
+      "vote_count": 4
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/xfC6hsmcsnf2MY1iXDs56gJNfQZ.jpg",
+      "genre_ids": [
+        99
+      ],
+      "id": 191720,
+      "title": "«Дюна» Ходоровского",
+      "original_language": "en",
+      "original_title": "Jodorowsky's Dune",
+      "overview": "В 1974 году чилийско-французский режиссер Алехандро Ходоровски приступил к реализации донкихотского проекта по экранизации влиятельного романа Фрэнка Герберта «Дюна» (1969). После двух лет работы и миллионных вложений этот гигантский проект закончился провалом, но художники, которых Ходоровски собрал для его реализации, продолжили совместную работу и в итоге заложили основы современного научно-фантастического кино.",
+      "popularity": 2.4701,
+      "poster_path": "/maxjevZcGbfrp55XRk4gcZGeJVd.jpg",
+      "release_date": "2013-08-30",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.82,
+      "vote_count": 786
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/3BBwgGaZmM8KqEdCqovoTwLQHBY.jpg",
+      "genre_ids": [
+        878,
+        27,
+        12
+      ],
+      "id": 881460,
+      "title": "Планета Дюна",
+      "original_language": "en",
+      "original_title": "Planet Dune",
+      "overview": "Экипаж эвакуационного корабля получает задание по спасению команды космического погрузчика, застрявшего на далёкой пустынной планете. Однако эта миссия становится практически безнадёжной, когда объявляются местные хищники - гигантские песчаные черви.",
+      "popularity": 2.4587,
+      "poster_path": "/cPSPghn6tr6fGY6hTi78SrxBcqY.jpg",
+      "release_date": "2021-10-29",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.0,
+      "vote_count": 73
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/3HpMbtAvtxn2CWlKHWi5lM8jVGC.jpg",
+      "genre_ids": [
+        18
+      ],
+      "id": 271683,
+      "title": "Дюна",
+      "original_language": "fr",
+      "original_title": "La dune",
+      "overview": "В результате нескольких несчастных случаев и случайных встреч Ханох и Рубен встретятся, и каждому из них придется открыть страницу своей личной истории, страницу, которую они оба должны перевернуть навсегда.",
+      "popularity": 1.2185,
+      "poster_path": "/qNnFzvRyXk0FkHOGuxS4jWqj1vO.jpg",
+      "release_date": "2014-08-13",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.5,
+      "vote_count": 21
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/vFU53Ue7s2RflLl7wBjTZmRpivb.jpg",
+      "genre_ids": [
+        878
+      ],
+      "id": 744738,
+      "title": "Ходящий по дюнам",
+      "original_language": "en",
+      "original_title": "Dune Drifter",
+      "overview": "После поражения в космической битве, космолёт Адлер терпит крушение на близлежащей планете. Девушке придётся искать на пустынной планете средства для починки корабля и возвращения домой перед тем, как исчерпается ресурс систем жизнеобеспечения.",
+      "popularity": 2.3316,
+      "poster_path": "/hBLJzYriF9zZAHc2Gjb3KTQGTGT.jpg",
+      "release_date": "2020-10-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 4.588,
+      "vote_count": 57
+    },
+    {
+      "adult": false,
+      "backdrop_path": null,
+      "genre_ids": [
+        10749,
+        10751,
+        10770
+      ],
+      "id": 285411,
+      "title": "Долгая дорога в дюнах",
+      "original_language": "lv",
+      "original_title": "Ilgais ceļš kāpās",
+      "overview": "Действие фильма происходит в Латвии и охватывает период с 1939 года до начала 1970-х годов. События, происходившие в стране, по-разному повлияли на судьбы героев. Но всех их вела по жизни любовь - разбрасывала и собирала, заставляла жестоко страдать и делала самыми счастливыми в мире...",
+      "popularity": 1.3871,
+      "poster_path": "/aI91wr6RWkcWJeHOgiCvsOtl0ig.jpg",
+      "release_date": "1982-06-02",
+      "softcore": false,
+      "video": false,
+      "vote_average": 5.9,
+      "vote_count": 11
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/5Mh054CU9hTBuAwpnz6nfBQsRwR.jpg",
+      "genre_ids": [
+        12,
+        10751
+      ],
+      "id": 547368,
+      "title": "Дом на дюнах",
+      "original_language": "ru",
+      "original_title": "Дом на дюнах",
+      "overview": "Телефильм по одноименной повести Роберта Стивенсона.  Уединенный дом на дюнах, стоящий на краю болотистой пустоши, привлекает внимание каких-то странных людей, похожих на разбойников. Обитатели дома и гости живут как в осаде. Какая же тайна связана с хозяином дома?",
+      "popularity": 0.9294,
+      "poster_path": "/8cItZo53lxXN4kgTOEnDFvOhzhJ.jpg",
+      "release_date": "1984-09-01",
+      "softcore": false,
+      "video": false,
+      "vote_average": 7.0,
+      "vote_count": 2
+    },
+    {
+      "adult": false,
+      "backdrop_path": null,
+      "genre_ids": [
+        18,
+        10751
+      ],
+      "id": 1531389,
+      "title": "Домик в дюнах",
+      "original_language": "lv",
+      "original_title": "Mājiņa kāpās",
+      "overview": "Бывший мастер судовых двигателей, уйдя на пенсию, решил приобрести домик у моря и поселиться там с женой и внуком Володей. Он мечтает о тихой, счастливой жизни в уютном домике. Но все мечты дедушки и Володи рушатся, когда они узнают, что хозяин домика, так же как и сам дедушка, — пенсионер, бывший рыбак, и продает свой домик только потому, что его семья попала в тяжелое положение. И дедушка с Володей решают деньги, собранные ими на покупку дома, отдать взаймы старому рыбаку.",
+      "popularity": 1.5086,
+      "poster_path": "/90D5XQtw7TbS18D9lOxsqkXB8Kj.jpg",
+      "release_date": "1963-03-01",
+      "softcore": false,
+      "video": false,
+      "vote_average": 0.0,
+      "vote_count": 0
+    },
+    {
+      "adult": false,
+      "backdrop_path": "/oADGaCHvodaLiOnmkuJrxEE7QWA.jpg",
+      "genre_ids": [],
+      "id": 1589709,
+      "title": "Путешествие к песчаным дюнам",
+      "original_language": "ru",
+      "original_title": "Путешествие к песчаным дюнам",
+      "overview": "Солнце раз за разом делает кикфлип и размывается в керамических волнах —\r свидетельствах существования песочниц слипшихся в огромные дюны.\r Маленькие лучи эхом бьются в алюминиевые поверхности оставляя\r соленеющие слезные следы.\r Одинаково ли стесываются коленки-двойники о плывущую асфальтовую жижу?\r Взросление — трюк с невозможностью ошибки,\r поставлен даже если невидим.",
+      "popularity": 0.4437,
+      "poster_path": "/8iu2E40HvL3JRadCcJ3u2i4zmVL.jpg",
+      "release_date": "2025-11-24",
+      "softcore": false,
+      "video": false,
+      "vote_average": 0.0,
+      "vote_count": 0
+    }
+  ]
+}

@@ -9,22 +9,47 @@ import logging
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, Protocol
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker.models import DeliveryItem, Event
+from app.tracker.cards import TitleCard
+from app.tracker.models import DeliveryItem, Event, ExternalId, SourceSnapshot, Title
 from app.utils.secrets_mask import mask_secrets
 
 Clock = Callable[[], datetime]  # returns an aware datetime
+
+STATUS_WANT = "want"
+PRIMARY_ROLE = "primary"
 
 
 class Sender(Protocol):
     async def send(self, message: str) -> None:
         """Deliver one message to the owner; raise on failure."""
+
+
+class TitleNotFound(Exception):
+    """The source has nothing at the chosen id (for example a series id picked as a movie)."""
+
+
+@dataclass(frozen=True)
+class AddResult:
+    title_id: int
+    created: bool  # False: the title was already in the list and is simply opened
+
+
+@dataclass(frozen=True)
+class TitleSummary:
+    """One row of the list."""
+
+    id: int
+    kind: str
+    name: str
+    year: int | None
+    status: str
 
 
 @dataclass(frozen=True)
@@ -66,6 +91,10 @@ def _naive_utc(moment: datetime) -> datetime:
     return moment.astimezone(timezone.utc).replace(tzinfo=None)
 
 
+def _parse_date(value: str | None) -> date | None:
+    return date.fromisoformat(value) if value else None
+
+
 @dataclass
 class Tracker:
     session_factory: sessionmaker
@@ -96,6 +125,90 @@ class Tracker:
             session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
             session.commit()
             return event.id
+
+    # --- titles ---------------------------------------------------------------------------------
+
+    async def search(self, kind: str, query: str) -> list[Any]:
+        """Suggestions for `query` from the source of this kind. Raises KeyError for an unknown kind."""
+        return await self.sources[kind].suggest(query)
+
+    async def add_title(self, kind: str, external_id: str) -> AddResult:
+        """Put a search result into the list with status «Хочу», or open the title that is already there."""
+        source = self.sources[kind]
+        existing = self._find_title_id(source.source_key, external_id)
+        if existing is not None:
+            return AddResult(existing, created=False)
+        snapshot = await source.snapshot(external_id)
+        if snapshot is None:
+            raise TitleNotFound(f"{source.source_key}:{external_id}")
+        return self._store_title(kind, source.source_key, snapshot)
+
+    def _find_title_id(self, source_key: str, external_id: str) -> int | None:
+        with self.session_factory() as session:
+            return session.scalar(
+                select(ExternalId.title_id).where(
+                    ExternalId.source == source_key,
+                    ExternalId.external_id == external_id,
+                    ExternalId.role == PRIMARY_ROLE,
+                )
+            )
+
+    def _store_title(self, kind: str, source_key: str, snapshot: Any) -> AddResult:
+        now = _naive_utc(self.clock())
+        with self.session_factory() as session:
+            title = Title(
+                kind=kind,
+                title=snapshot.title,
+                original_title=snapshot.original_title,
+                year=snapshot.year,
+                genres=list(snapshot.genres),
+                poster_path=snapshot.poster_path,
+                overview=snapshot.overview,
+                status=STATUS_WANT,
+                tracking_enabled=True,
+                added_at=now,
+                status_changed_at=now,
+            )
+            session.add(title)
+            session.flush()
+            session.add(
+                ExternalId(title_id=title.id, source=source_key, external_id=snapshot.external_id, role=PRIMARY_ROLE)
+            )
+            session.add(SourceSnapshot(title_id=title.id, source=source_key, state=snapshot.state(), observed_at=now))
+            try:
+                session.commit()
+            except IntegrityError:
+                # the same movie was added by a second request while this one was waiting for the source
+                session.rollback()
+                existing = self._find_title_id(source_key, snapshot.external_id)
+                if existing is None:
+                    raise
+                return AddResult(existing, created=False)
+            return AddResult(title.id, created=True)
+
+    def list_titles(self) -> list[TitleSummary]:
+        with self.session_factory() as session:
+            rows = session.scalars(select(Title).order_by(Title.id))
+            return [TitleSummary(t.id, t.kind, t.title, t.year, t.status) for t in rows]
+
+    def title_card(self, title_id: int) -> TitleCard | None:
+        with self.session_factory() as session:
+            title = session.get(Title, title_id)
+            if title is None:
+                return None
+            snapshot = session.scalar(select(SourceSnapshot).where(SourceSnapshot.title_id == title_id))
+            state = snapshot.state if snapshot else {}
+            return TitleCard(
+                id=title.id,
+                kind=title.kind,
+                title=title.title,
+                original_title=title.original_title,
+                year=title.year,
+                genres=list(title.genres),
+                status=title.status,
+                theatrical_date=_parse_date(state.get("theatrical_date")),
+                digital_date=_parse_date(state.get("digital_date")),
+            )
 
     # --- test events ----------------------------------------------------------------------------
 
