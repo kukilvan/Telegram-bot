@@ -1,0 +1,389 @@
+{
+ "data": {
+  "animes": [
+   {
+    "id": "40748",
+    "malId": "40748",
+    "name": "Jujutsu Kaisen",
+    "russian": "Магическая битва",
+    "english": "Jujutsu Kaisen",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 24,
+    "episodesAired": 24,
+    "nextEpisodeAt": null,
+    "duration": 23,
+    "airedOn": {
+     "date": "2020-10-03",
+     "year": 2020
+    },
+    "releasedOn": {
+     "date": "2021-03-27"
+    },
+    "franchise": "jujutsu_kaisen",
+    "score": 8.49,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/40748/af4f2db18f17de4d7c6491f6f92cd9d9.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Сёнен",
+      "kind": "demographic"
+     },
+     {
+      "russian": "Экшен",
+      "kind": "genre"
+     },
+     {
+      "russian": "Сверхъестественное",
+      "kind": "genre"
+     },
+     {
+      "russian": "Удостоено наград",
+      "kind": "theme"
+     },
+     {
+      "russian": "Школа",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "48561",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "51009",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "56243",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "38777",
+       "kind": "pv"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "52558",
+       "kind": "music"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "64080",
+       "kind": "pv"
+      }
+     }
+    ]
+   },
+   {
+    "id": "51009",
+    "malId": "51009",
+    "name": "Jujutsu Kaisen 2nd Season",
+    "russian": "Магическая битва 2",
+    "english": "Jujutsu Kaisen Season 2",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 23,
+    "episodesAired": 23,
+    "nextEpisodeAt": null,
+    "duration": 23,
+    "airedOn": {
+     "date": "2023-07-06",
+     "year": 2023
+    },
+    "releasedOn": {
+     "date": "2023-12-28"
+    },
+    "franchise": "jujutsu_kaisen",
+    "score": 8.69,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/51009/11ae4aeb0046c9587150e3982c8da446.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Сёнен",
+      "kind": "demographic"
+     },
+     {
+      "russian": "Экшен",
+      "kind": "genre"
+     },
+     {
+      "russian": "Сверхъестественное",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     },
+     {
+      "russian": "Школа",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "40748",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "57658",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "56243",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "59654",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "62392",
+       "kind": "movie"
+      }
+     }
+    ]
+   },
+   {
+    "id": "48561",
+    "malId": "48561",
+    "name": "Jujutsu Kaisen 0 Movie",
+    "russian": "Магическая битва 0. Фильм",
+    "english": "Jujutsu Kaisen 0",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 1,
+    "nextEpisodeAt": null,
+    "duration": 104,
+    "airedOn": {
+     "date": "2021-12-24",
+     "year": 2021
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "jujutsu_kaisen",
+    "score": 8.35,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/48561/fd8b173374561dae24fb57d27eba9ae6.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Сёнен",
+      "kind": "demographic"
+     },
+     {
+      "russian": "Экшен",
+      "kind": "genre"
+     },
+     {
+      "russian": "Сверхъестественное",
+      "kind": "genre"
+     },
+     {
+      "russian": "Школа",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "40748",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "56243",
+       "kind": "tv_special"
+      }
+     }
+    ]
+   },
+   {
+    "id": "57658",
+    "malId": "57658",
+    "name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+    "russian": "Магическая битва: Смертельная миграция",
+    "english": "Jujutsu Kaisen: The Culling Game Part 1",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 12,
+    "episodesAired": 12,
+    "nextEpisodeAt": null,
+    "duration": 23,
+    "airedOn": {
+     "date": "2026-01-09",
+     "year": 2026
+    },
+    "releasedOn": {
+     "date": "2026-03-27"
+    },
+    "franchise": "jujutsu_kaisen",
+    "score": 8.58,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/57658/7fd0d0760734513d62189ff53015546d.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Сёнен",
+      "kind": "demographic"
+     },
+     {
+      "russian": "Экшен",
+      "kind": "genre"
+     },
+     {
+      "russian": "Сверхъестественное",
+      "kind": "genre"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "51009",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "63824",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     }
+    ]
+   },
+   {
+    "id": "63824",
+    "malId": "63824",
+    "name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Kouhen",
+    "russian": "Магическая битва: Смертельная миграция. Часть 2",
+    "english": "Jujutsu Kaisen: The Culling Game Part 2",
+    "kind": "tv",
+    "status": "anons",
+    "episodes": 0,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 0,
+    "airedOn": {
+     "date": null,
+     "year": null
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "jujutsu_kaisen",
+    "score": 0.0,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/63824/c841de6fbc9534b7057911e02bc11cb6.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Сёнен",
+      "kind": "demographic"
+     },
+     {
+      "russian": "Экшен",
+      "kind": "genre"
+     },
+     {
+      "russian": "Сверхъестественное",
+      "kind": "genre"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "57658",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     }
+    ]
+   }
+  ]
+ }
+}

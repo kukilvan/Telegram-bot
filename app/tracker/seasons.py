@@ -10,6 +10,9 @@ A season that airs in portions with a long break is split into parts: a gap betw
 that is longer than the threshold (`DEFAULT_PART_GAP` unless the owner changed it) starts a new part. A gap of
 exactly the threshold does not. Parts are always worked out from the episode dates, never stored; a season
 without such a gap is one part and nothing says «part» about it.
+
+An anime season is the exception: its parts are separate entries of the source (`PartCut`), so they are given,
+not worked out, and the threshold does not apply to it (a season of one entry is one part, whatever its dates).
 """
 
 from collections.abc import Collection, Iterable
@@ -62,16 +65,28 @@ class _EpisodeRun:
 
 
 @dataclass(frozen=True)
+class PartCut:
+    """Where an anime season's part starts: the number of its first episode (counted through the whole season)
+    and how many episodes the source announces for it (None: unknown)."""
+
+    first_episode: int
+    expected: int | None
+
+
+@dataclass(frozen=True)
 class Season(_EpisodeRun):
     number: int  # 1 and up
     name: str
     expected: int | None  # episode count the source announces; None: unknown
     episodes: tuple[Episode, ...] = ()
+    cuts: tuple[PartCut, ...] = ()  # given parts, one per source entry; empty: parts follow the gaps
 
     def parts(self, gap: timedelta = DEFAULT_PART_GAP) -> tuple["Part", ...]:
         """The season cut at every break longer than `gap`; always at least one part.
 
         An episode with no date yet stays with the part before it: a break is measured between dated episodes only."""
+        if self.cuts:
+            return self._given_parts()
         groups: list[list[Episode]] = [[]]
         previous: datetime | None = None
         for episode in sorted(self.episodes, key=lambda e: e.number):
@@ -93,6 +108,18 @@ class Season(_EpisodeRun):
                 expected = self.expected - before if self.expected and self.expected > before else None
             parts.append(Part(self.number, index + 1, tuple(group), expected, split))
             before += len(group)
+        return tuple(parts)
+
+    def _given_parts(self) -> tuple["Part", ...]:
+        ordered = sorted(self.cuts, key=lambda c: c.first_episode)
+        parts = []
+        for index, cut in enumerate(ordered):
+            end = ordered[index + 1].first_episode if index + 1 < len(ordered) else None
+            group = tuple(
+                e for e in sorted(self.episodes, key=lambda e: e.number)
+                if e.number >= cut.first_episode and (end is None or e.number < end)
+            )
+            parts.append(Part(self.number, index + 1, group, cut.expected, split=len(ordered) > 1))
         return tuple(parts)
 
 

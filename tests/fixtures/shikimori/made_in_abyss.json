@@ -1,0 +1,546 @@
+{
+ "data": {
+  "animes": [
+   {
+    "id": "34599",
+    "malId": "34599",
+    "name": "Made in Abyss",
+    "russian": "Созданный в Бездне",
+    "english": "Made in Abyss",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 13,
+    "episodesAired": 13,
+    "nextEpisodeAt": null,
+    "duration": 25,
+    "airedOn": {
+     "date": "2017-07-07",
+     "year": 2017
+    },
+    "releasedOn": {
+     "date": "2017-09-29"
+    },
+    "franchise": "made_in_abyss",
+    "score": 8.62,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/34599/27feaa368ca5e9035310d8d3d972d2cd.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "36862",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "37514",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "37515",
+       "kind": "movie"
+      }
+     }
+    ]
+   },
+   {
+    "id": "36862",
+    "malId": "36862",
+    "name": "Made in Abyss Movie 3: Fukaki Tamashii no Reimei",
+    "russian": "Созданный в Бездне: Рассвет глубокой души",
+    "english": "Made in Abyss: Dawn of the Deep Soul",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 105,
+    "airedOn": {
+     "date": "2020-01-17",
+     "year": 2020
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "made_in_abyss",
+    "score": 8.6,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/36862/92663c1040b9f639f1bc7f7a2ecfb978.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "34599",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "37515",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "41084",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "40897",
+       "kind": "movie"
+      }
+     }
+    ]
+   },
+   {
+    "id": "41084",
+    "malId": "41084",
+    "name": "Made in Abyss: Retsujitsu no Ougonkyou",
+    "russian": "Созданный в Бездне: Солнце, вспыхнувшее в Золотом городе",
+    "english": "Made in Abyss: The Golden City of the Scorching Sun",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 12,
+    "episodesAired": 12,
+    "nextEpisodeAt": null,
+    "duration": 25,
+    "airedOn": {
+     "date": "2022-07-06",
+     "year": 2022
+    },
+    "releasedOn": {
+     "date": "2022-09-28"
+    },
+    "franchise": "made_in_abyss",
+    "score": 8.59,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/41084/2ab7cd332f93291322afd51b441cea5a.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "36862",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "54250",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "52149",
+       "kind": "special"
+      }
+     }
+    ]
+   },
+   {
+    "id": "37515",
+    "malId": "37515",
+    "name": "Made in Abyss Movie 2: Hourou Suru Tasogare",
+    "russian": "Созданный в Бездне: Блуждающие сумерки",
+    "english": "Made in Abyss: Wandering Twilight",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 105,
+    "airedOn": {
+     "date": "2019-01-18",
+     "year": 2019
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "made_in_abyss",
+    "score": 8.39,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/37515/9cbc7b8a5d27fde9fb8c32d979106625.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "37514",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "36862",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "full_story",
+      "relationText": "Развёрнутая история",
+      "anime": {
+       "id": "34599",
+       "kind": "tv"
+      }
+     }
+    ]
+   },
+   {
+    "id": "37514",
+    "malId": "37514",
+    "name": "Made in Abyss Movie 1: Tabidachi no Yoake",
+    "russian": "Созданный в Бездне: Начало путешествия",
+    "english": "Made in Abyss: Journey's Dawn",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 119,
+    "airedOn": {
+     "date": "2019-01-04",
+     "year": 2019
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "made_in_abyss",
+    "score": 8.19,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/37514/fd3285af3a4cf553931b9cce07da78ac.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "37515",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "full_story",
+      "relationText": "Развёрнутая история",
+      "anime": {
+       "id": "34599",
+       "kind": "tv"
+      }
+     }
+    ]
+   },
+   {
+    "id": "54250",
+    "malId": "54250",
+    "name": "Made in Abyss: Mezameru Shinpi",
+    "russian": "Созданный в Бездне: Тайна пробуждения",
+    "english": "Made in Abyss: The Golden City of the Scorching Sun (Sequel)",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 0,
+    "airedOn": {
+     "date": "2026-10-23",
+     "year": 2026
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "made_in_abyss",
+    "score": 0.0,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/54250/b659b1928c305e0f66112d83e066d277.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "41084",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "65248",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     }
+    ]
+   },
+   {
+    "id": "65248",
+    "malId": "65248",
+    "name": "Made in Abyss: Mezameru Shinpi Part 2",
+    "russian": "Созданный в бездне: Тайна пробуждения. Часть 2",
+    "english": null,
+    "kind": "movie",
+    "status": "anons",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 0,
+    "airedOn": {
+     "date": null,
+     "year": null
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": null,
+    "score": 0.0,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/65248/12e8fd3b5990c8550b931101e6716717.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фантастика",
+      "kind": "genre"
+     },
+     {
+      "russian": "Жестокость",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "54250",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,342 @@
+{
+ "data": {
+  "animes": [
+   {
+    "id": "54492",
+    "malId": "54492",
+    "name": "Kusuriya no Hitorigoto",
+    "russian": "Монолог фармацевта",
+    "english": "The Apothecary Diaries",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 24,
+    "episodesAired": 24,
+    "nextEpisodeAt": null,
+    "duration": 22,
+    "airedOn": {
+     "date": "2023-10-22",
+     "year": 2023
+    },
+    "releasedOn": {
+     "date": "2024-03-24"
+    },
+    "franchise": "maomao_no_hitorigoto",
+    "score": 8.84,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/54492/283fbef180e72bacfadc5a3d64ca4c2e.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Исторический",
+      "kind": "theme"
+     },
+     {
+      "russian": "Медицина",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "58514",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "56975",
+       "kind": "ona"
+      }
+     }
+    ]
+   },
+   {
+    "id": "58514",
+    "malId": "58514",
+    "name": "Kusuriya no Hitorigoto 2nd Season",
+    "russian": "Монолог фармацевта 2",
+    "english": "The Apothecary Diaries Season 2",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 24,
+    "episodesAired": 24,
+    "nextEpisodeAt": null,
+    "duration": 24,
+    "airedOn": {
+     "date": "2025-01-10",
+     "year": 2025
+    },
+    "releasedOn": {
+     "date": "2025-07-04"
+    },
+    "franchise": "maomao_no_hitorigoto",
+    "score": 8.9,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/58514/44699bb8ea46d3d807beb5c78da4d873.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Исторический",
+      "kind": "theme"
+     },
+     {
+      "russian": "Медицина",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "54492",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "61987",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "62844",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "60749",
+       "kind": "ona"
+      }
+     }
+    ]
+   },
+   {
+    "id": "61987",
+    "malId": "61987",
+    "name": "Kusuriya no Hitorigoto 3rd Season",
+    "russian": "Монолог фармацевта 3",
+    "english": "The Apothecary Diaries Season 3",
+    "kind": "tv",
+    "status": "ongoing",
+    "episodes": 12,
+    "episodesAired": 4,
+    "nextEpisodeAt": "2026-10-30T17:00:00+03:00",
+    "duration": 24,
+    "airedOn": {
+     "date": "2026-10-02",
+     "year": 2026
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "maomao_no_hitorigoto",
+    "score": 8.66,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/61987/813757121555133713fbaa89035d67a1.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Исторический",
+      "kind": "theme"
+     },
+     {
+      "russian": "Медицина",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "58514",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "sequel",
+      "relationText": "Продолжение",
+      "anime": {
+       "id": "62841",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "65097",
+       "kind": "music"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "65119",
+       "kind": "ona"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "65189",
+       "kind": "music"
+      }
+     }
+    ]
+   },
+   {
+    "id": "62841",
+    "malId": "62841",
+    "name": "Kusuriya no Hitorigoto 3rd Season Part 2",
+    "russian": "Монолог фармацевта 3. Часть 2",
+    "english": "The Apothecary Diaries Season 3 Part 2",
+    "kind": "tv",
+    "status": "anons",
+    "episodes": 12,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "duration": 0,
+    "airedOn": {
+     "date": "2027-04-01",
+     "year": 2027
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "maomao_no_hitorigoto",
+    "score": 0.0,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/62841/f9d40ec4b74d9d18b42b9717eada34fc.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Драма",
+      "kind": "genre"
+     },
+     {
+      "russian": "Тайна",
+      "kind": "genre"
+     },
+     {
+      "russian": "Исторический",
+      "kind": "theme"
+     },
+     {
+      "russian": "Медицина",
+      "kind": "theme"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "prequel",
+      "relationText": "Предыстория",
+      "anime": {
+       "id": "61987",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     }
+    ]
+   }
+  ]
+ }
+}

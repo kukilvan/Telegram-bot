@@ -36,7 +36,8 @@ def event_actions(event_type: str, event_id: int, title_id: int | None) -> list[
 
 
 def card_actions(card: TitleCard) -> list[Action]:
-    """Buttons under a title's card: «Посмотрел» until the movie is watched, the watched seasons of a series."""
-    if card.kind == "series":
-        return [Action(_SEASONS_LABEL, SEASONS, card.id)]
+    """Buttons under a title's card: «Посмотрел» until the movie is watched, the watched seasons of a series or an anime."""
+    if card.kind in ("series", "anime"):
+        has_seasons = card.seasons is not None and (card.seasons.current or card.seasons.announced)
+        return [Action(_SEASONS_LABEL, SEASONS, card.id)] if has_seasons else []
     return [Action(_WATCHED_LABEL, WATCHED, card.id)] if card.status == STATUS_WANT else []

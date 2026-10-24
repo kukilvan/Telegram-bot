@@ -5,8 +5,8 @@ from datetime import date
 
 from app.tracker.seasons import RELEASED, SeasonsView
 
-KIND_LABELS = {"movie": "Фильм", "series": "Сериал"}
-KIND_ICONS = {"movie": "🎬", "series": "📺"}
+KIND_LABELS = {"movie": "Фильм", "series": "Сериал", "anime": "Аниме"}
+KIND_ICONS = {"movie": "🎬", "series": "📺", "anime": "🎌"}
 STATUS_LABELS = {"want": "Хочу", "waiting": "Жду", "to_finish": "Досмотреть", "watched": "Просмотрено"}
 _WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")
 
@@ -16,6 +16,15 @@ _MONTHS = (
 )
 _SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
 NOT_ANNOUNCED = "не объявлена"
+
+
+@dataclass(frozen=True)
+class MovieLine:
+    """A film of an anime franchise, as the card lists it."""
+
+    name: str
+    aired_on: date | None
+    released: bool
 
 
 @dataclass(frozen=True)
@@ -29,7 +38,8 @@ class TitleCard:
     status: str
     theatrical_date: date | None = None
     digital_date: date | None = None
-    seasons: SeasonsView | None = None  # series only
+    seasons: SeasonsView | None = None  # series and anime
+    franchise_movies: tuple[MovieLine, ...] = ()  # anime only
 
 
 def format_date(value: date | None) -> str:
@@ -73,6 +83,22 @@ def season_lines(view: SeasonsView) -> list[str]:
     return lines
 
 
+MOVIES_SHOWN = 5  # a long list shows the latest ones
+
+
+def movie_line(movie: MovieLine) -> str:
+    """«Магическая битва 0. Фильм (2021)»; an unreleased one: «… — анонсирован»."""
+    text = movie.name + (f" ({movie.aired_on.year})" if movie.aired_on else "")
+    return text if movie.released else f"{text} — анонсирован"
+
+
+def franchise_movies_line(movies: tuple[MovieLine, ...]) -> str:
+    if len(movies) <= MOVIES_SHOWN:
+        return f"Фильмы франшизы: {', '.join(movie_line(m) for m in movies)}"
+    latest = ", ".join(movie_line(m) for m in movies[-MOVIES_SHOWN:])
+    return f"Фильмы франшизы ({len(movies)}), последние: {latest}"
+
+
 def format_card(card: TitleCard) -> str:
     icon = KIND_ICONS.get(card.kind, "🎞")
     kind = KIND_LABELS.get(card.kind, card.kind)
@@ -87,6 +113,8 @@ def format_card(card: TitleCard) -> str:
         lines.append(f"Жанры: {', '.join(card.genres)}")
     if card.seasons is not None:
         lines.extend(season_lines(card.seasons))
+        if card.franchise_movies:
+            lines.append(franchise_movies_line(card.franchise_movies))
     else:
         lines.append(f"Премьера в кино: {format_date(card.theatrical_date)}")
         lines.append(f"Цифровой релиз: {format_date(card.digital_date)}")

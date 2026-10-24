@@ -41,6 +41,7 @@ from app.providers.psn import PSNProvider
 from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_item, _store_state, backup_database as _backup_database, _earliest_digital_date, _earliest_theatrical_date
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
 from app.tracker.sources.tmdb_series import TmdbSeriesSource
@@ -589,8 +590,12 @@ async def main() -> None:
             create_session_factory(),
             clock=lambda: dt.now(tz=timezone.utc),
             sender=TelegramSender(bot, owner_chat_id(settings.owner_chat_id, allowed_ids)),
-            # the same throttled TMDb client as the legacy code
-            sources={"movie": TmdbMovieSource(tmdb), "series": TmdbSeriesSource(tmdb)},
+            # the same throttled clients as the legacy code
+            sources={
+                "movie": TmdbMovieSource(tmdb),
+                "series": TmdbSeriesSource(tmdb),
+                "anime": ShikimoriAnimeSource(shikimori, anilist),
+            },
             sequel_sources={"movie": TmdbSequelSource(tmdb)},
         )
         register_tracker_handlers(dp, tracker, allowed_ids)

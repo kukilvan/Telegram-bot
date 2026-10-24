@@ -1,0 +1,246 @@
+{
+ "data": {
+  "animes": [
+   {
+    "id": "40748",
+    "malId": "40748",
+    "name": "Jujutsu Kaisen",
+    "russian": "Магическая битва",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 24,
+    "episodesAired": 24,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2020-10-03",
+     "year": 2020
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "38777",
+    "malId": "38777",
+    "name": "Jujutsu Kaisen Official PVs",
+    "russian": "Магическая битва PV",
+    "kind": "pv",
+    "status": "released",
+    "episodes": 3,
+    "episodesAired": 1,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2018-12-03",
+     "year": 2018
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "56243",
+    "malId": "56243",
+    "name": "Jujutsu Kaisen 2nd Season Recaps",
+    "russian": "Магическая битва 2: Рекапы",
+    "kind": "tv_special",
+    "status": "released",
+    "episodes": 2,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2023-08-11",
+     "year": 2023
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "48561",
+    "malId": "48561",
+    "name": "Jujutsu Kaisen 0 Movie",
+    "russian": "Магическая битва 0. Фильм",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 1,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2021-12-24",
+     "year": 2021
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "51009",
+    "malId": "51009",
+    "name": "Jujutsu Kaisen 2nd Season",
+    "russian": "Магическая битва 2",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 23,
+    "episodesAired": 23,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2023-07-06",
+     "year": 2023
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "64080",
+    "malId": "64080",
+    "name": "Jujutsu Kaisen Modulo Saishuu Sankan Hatsubai Kinen Special PV",
+    "russian": "Магическая битва: Модуль PV",
+    "kind": "pv",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2026-04-30",
+     "year": 2026
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "62392",
+    "malId": "62392",
+    "name": "Jujutsu Kaisen Movie: Shibuya Jihen Tokubetsu Henshuu-ban x Shimetsu Kaiyuu Senkou Jouei",
+    "russian": "Магическая битва: Инцидент в Сибуе — Смертельная миграция",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2025-11-07",
+     "year": 2025
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "63824",
+    "malId": "63824",
+    "name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Kouhen",
+    "russian": "Магическая битва: Смертельная миграция. Часть 2",
+    "kind": "tv",
+    "status": "anons",
+    "episodes": 0,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": null,
+     "year": null
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "59654",
+    "malId": "59654",
+    "name": "Jujutsu Kaisen: Kaigyoku/Gyokusetsu",
+    "russian": "Магическая битва: Пагубный талант/Таланты умирают молодыми",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2025-05-30",
+     "year": 2025
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "57658",
+    "malId": "57658",
+    "name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+    "russian": "Магическая битва: Смертельная миграция",
+    "kind": "tv",
+    "status": "released",
+    "episodes": 12,
+    "episodesAired": 12,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2026-01-09",
+     "year": 2026
+    },
+    "franchise": "jujutsu_kaisen"
+   },
+   {
+    "id": "52254",
+    "malId": "52254",
+    "name": "Kaisen",
+    "russian": "Морское сражение",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "1960-11-26",
+     "year": 1960
+    },
+    "franchise": null
+   },
+   {
+    "id": "64491",
+    "malId": "64491",
+    "name": "Kishi Kaisen",
+    "russian": "Восставшие на бой",
+    "kind": "music",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2026-06-27",
+     "year": 2026
+    },
+    "franchise": "bang_dream"
+   },
+   {
+    "id": "29782",
+    "malId": "29782",
+    "name": "Malay Oki Kaisen",
+    "russian": "Битва в Малайском море",
+    "kind": "movie",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 1,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "1943-11-26",
+     "year": 1943
+    },
+    "franchise": null
+   },
+   {
+    "id": "43555",
+    "malId": "43555",
+    "name": "Dr. Stone: Stone Wars - Kaisen Zenya Special Eizou",
+    "russian": "Доктор Стоун: Каменные войны — Эпизод 0",
+    "kind": "special",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 1,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2020-10-11",
+     "year": 2020
+    },
+    "franchise": "dr_stone"
+   },
+   {
+    "id": "50098",
+    "malId": "50098",
+    "name": "Kyoukaisen",
+    "russian": "Пограничье",
+    "kind": "music",
+    "status": "released",
+    "episodes": 1,
+    "episodesAired": 0,
+    "nextEpisodeAt": null,
+    "airedOn": {
+     "date": "2021-10-10",
+     "year": 2021
+    },
+    "franchise": "86_part"
+   }
+  ]
+ }
+}

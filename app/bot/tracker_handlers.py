@@ -40,7 +40,9 @@ MAX_LIST_BUTTONS = 50
 _ASK_NAME = {
     "movie": "Напишите название фильма (можно по-русски или по-английски).",
     "series": "Напишите название сериала (можно по-русски или по-английски).",
+    "anime": "Напишите название аниме (можно по-русски или по-английски).",
 }
+_SOURCE_NAMES = {"movie": "TMDb", "series": "TMDb", "anime": "Shikimori"}  # where each kind comes from, for error texts
 _ASK_SEASONS = (
     "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
     "повторное нажатие снимает отметку. Когда закончите, нажмите «Готово»."
@@ -181,7 +183,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             suggestions = await tracker.search(kind, query)
         except Exception as exc:  # the source is a network client: tell the owner, keep the bot alive
             logging.warning("title search failed: %s", mask_secrets(repr(exc)))
-            await message.answer("Не удалось связаться с TMDb. Попробуйте чуть позже.")
+            await message.answer(f"Не удалось связаться с {_SOURCE_NAMES.get(kind, 'источником')}. Попробуйте чуть позже.")
             return
         if not suggestions:
             await message.answer(
@@ -210,11 +212,11 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer(f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново.")
             return
         except TitleNotFound:
-            await callback.answer("Не нашёл такой тайтл в TMDb, попробуйте поискать заново.")
+            await callback.answer(f"Не нашёл такой тайтл в {_SOURCE_NAMES.get(kind, 'источнике')}, попробуйте поискать заново.")
             return
         except Exception as exc:
             logging.warning("adding a title failed: %s", mask_secrets(repr(exc)))
-            await callback.answer("Не удалось получить данные из TMDb. Попробуйте чуть позже.")
+            await callback.answer(f"Не удалось получить данные из {_SOURCE_NAMES.get(kind, 'источника')}. Попробуйте чуть позже.")
             return
         await callback.answer()
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"

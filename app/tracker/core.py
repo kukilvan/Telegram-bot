@@ -18,7 +18,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.tracker import movie_events, progress, seasons as season_logic, sequel_events, series_events
 from app.tracker.actions import Action, event_actions
-from app.tracker.cards import TitleCard
+from app.tracker.cards import MovieLine, TitleCard
 from app.tracker.models import (
     STATUS_WAITING,
     STATUS_WANT,
@@ -27,6 +27,8 @@ from app.tracker.models import (
     EpisodeRecord,
     Event,
     ExternalId,
+    MovieRecord,
+    PartRecord,
     SeasonRecord,
     SettingRecord,
     SourceSnapshot,
@@ -241,6 +243,10 @@ class Tracker:
         snapshot = await source.snapshot(external_id)
         if snapshot is None:
             raise TitleNotFound(f"{source.source_key}:{external_id}")
+        if snapshot.external_id != external_id:  # the source named the title by another entry (any entry of an anime franchise)
+            existing = await asyncio.to_thread(self._find_title_id, source.source_key, snapshot.external_id)
+            if existing is not None:
+                return AddResult(existing, created=False)
         async with self._write_lock:
             return await asyncio.to_thread(self._store_title, kind, source.source_key, snapshot)
 
@@ -286,7 +292,8 @@ class Tracker:
                     next_check_at=self._first_check(kind, snapshot, state, now),
                 )
             )
-            self._store_seasons(session, title.id, getattr(snapshot, "seasons", ()))
+            records = self._store_seasons(session, title.id, getattr(snapshot, "seasons", ()))
+            self._store_anime_entries(session, title.id, records, snapshot)
             self._refresh_status(session, title)
             try:
                 session.commit()
@@ -308,7 +315,8 @@ class Tracker:
         return None
 
     @staticmethod
-    def _store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> None:
+    def _store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> dict[int, SeasonRecord]:
+        records = {}
         for season in seasons:
             if season.number < 1:  # specials are not seasons, whatever the source adapter let through
                 continue
@@ -320,6 +328,30 @@ class Tracker:
             session.add_all(
                 EpisodeRecord(season_id=record.id, number=e.number, air_at=e.air_at) for e in season.episodes
             )
+            records[season.number] = record
+        return records
+
+    @staticmethod
+    def _store_anime_entries(session, title_id: int, records: dict[int, SeasonRecord], snapshot: Any) -> None:
+        """The source entries behind an anime's seasons (one per part, with their ids) and its franchise movies."""
+        for part in getattr(snapshot, "parts", ()):
+            record = records.get(part.season)
+            if record is None:
+                continue
+            session.add(
+                PartRecord(
+                    title_id=title_id, season_id=record.id, number=part.number, first_episode=part.first_episode,
+                    episode_count=part.episode_count, shikimori_id=part.ids.shikimori, mal_id=part.ids.mal,
+                    anilist_id=part.ids.anilist,
+                )
+            )
+        for movie in getattr(snapshot, "movies", ()):
+            session.add(
+                MovieRecord(
+                    title_id=title_id, name=movie.name, aired_on=movie.aired_on, released=movie.released,
+                    shikimori_id=movie.ids.shikimori, mal_id=movie.ids.mal, anilist_id=movie.ids.anilist,
+                )
+            )
 
     @staticmethod
     def _load_seasons(session, title_id: int) -> list[tuple[SeasonRecord, season_logic.Season]]:
@@ -327,11 +359,15 @@ class Tracker:
         loaded = []
         for record in records:
             episodes = session.scalars(select(EpisodeRecord).where(EpisodeRecord.season_id == record.id))
+            parts = session.scalars(
+                select(PartRecord).where(PartRecord.season_id == record.id).order_by(PartRecord.number)
+            ).all()
             season = season_logic.Season(
                 number=record.number,
                 name=record.name,
                 expected=record.episode_count,
                 episodes=tuple(sorted((season_logic.Episode(e.number, e.air_at) for e in episodes), key=lambda e: e.number)),
+                cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count) for p in parts),
             )
             loaded.append((record, season))
         return loaded
@@ -450,7 +486,7 @@ class Tracker:
                 return None
             state = self._own_state(session, title_id)
             seasons_view = None
-            if title.kind == "series":
+            if title.kind in SEASONAL_KINDS:
                 loaded = self._load_seasons(session, title_id)
                 seasons_view = season_logic.summarize(
                     (season for _, season in loaded),
@@ -458,6 +494,9 @@ class Tracker:
                     _naive_utc(self.clock()),
                     self._part_gap(session),
                 )
+            movies = session.scalars(
+                select(MovieRecord).where(MovieRecord.title_id == title_id).order_by(MovieRecord.id)
+            )
             return TitleCard(
                 id=title.id,
                 kind=title.kind,
@@ -469,6 +508,7 @@ class Tracker:
                 theatrical_date=_parse_date(state.get("theatrical_date")),
                 digital_date=_parse_date(state.get("digital_date")),
                 seasons=seasons_view,
+                franchise_movies=tuple(MovieLine(m.name, m.aired_on, m.released) for m in movies),
             )
 
     # --- polling --------------------------------------------------------------------------------

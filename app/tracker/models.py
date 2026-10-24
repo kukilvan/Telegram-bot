@@ -1,9 +1,9 @@
 """Tables of the tracker database. Timestamps are naive UTC and are always set by the core at insert time."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, Date, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -75,6 +75,51 @@ class EpisodeRecord(TrackerBase):
     season_id: Mapped[int] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"), index=True)
     number: Mapped[int] = mapped_column(Integer)
     air_at: Mapped[datetime | None] = mapped_column(DateTime)  # None: no date yet
+
+
+class PartRecord(TrackerBase):
+    """A part of an anime season: one entry of the source with its own ids. A season of one entry has one part.
+
+    `first_episode` counts through the whole season, so the episodes of all parts live in one numbering. An id
+    appears once per title: the same entry is never stored for two parts."""
+
+    __tablename__ = "season_parts"
+    __table_args__ = (
+        UniqueConstraint("season_id", "number", name="uq_season_parts_season_number"),
+        UniqueConstraint("title_id", "shikimori_id", name="uq_season_parts_title_shikimori"),
+        UniqueConstraint("title_id", "mal_id", name="uq_season_parts_title_mal"),
+        UniqueConstraint("title_id", "anilist_id", name="uq_season_parts_title_anilist"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_id: Mapped[int] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
+    season_id: Mapped[int] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"), index=True)
+    number: Mapped[int] = mapped_column(Integer)  # 1 and up within the season
+    first_episode: Mapped[int] = mapped_column(Integer)
+    episode_count: Mapped[int | None] = mapped_column(Integer)  # announced by the source; None: unknown
+    shikimori_id: Mapped[str] = mapped_column(String(32))
+    mal_id: Mapped[str | None] = mapped_column(String(32))
+    anilist_id: Mapped[str | None] = mapped_column(String(32))  # None: AniList was not asked or does not know the entry
+
+
+class MovieRecord(TrackerBase):
+    """A movie of an anime franchise. It is not a season: the owner is told about it, not asked to mark it."""
+
+    __tablename__ = "franchise_movies"
+    __table_args__ = (
+        UniqueConstraint("title_id", "shikimori_id", name="uq_franchise_movies_title_shikimori"),
+        UniqueConstraint("title_id", "mal_id", name="uq_franchise_movies_title_mal"),
+        UniqueConstraint("title_id", "anilist_id", name="uq_franchise_movies_title_anilist"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_id: Mapped[int] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(500))  # Russian name when the source knows it
+    aired_on: Mapped[date | None] = mapped_column(Date)  # None: no date yet
+    released: Mapped[bool] = mapped_column(Boolean)
+    shikimori_id: Mapped[str] = mapped_column(String(32))
+    mal_id: Mapped[str | None] = mapped_column(String(32))
+    anilist_id: Mapped[str | None] = mapped_column(String(32))
 
 
 class SettingRecord(TrackerBase):

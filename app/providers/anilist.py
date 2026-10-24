@@ -8,6 +8,7 @@ import asyncio
 import logging
 import time
 from collections import deque
+from collections.abc import Sequence
 
 import httpx
 
@@ -101,6 +102,16 @@ class AniListProvider:
       }
     }
     """
+
+    # Page/idMal_in, not one aliased Media per id: an unknown id would make AniList answer 404 for the whole request
+    BY_MAL_IDS_QUERY = """
+    query ($ids: [Int]) {
+      Page(page: 1, perPage: 50) {
+        media(idMal_in: $ids, type: ANIME) { id idMal }
+      }
+    }
+    """
+    IDS_PAGE = 50
 
     def __init__(self) -> None:
         settings = get_settings()
@@ -211,3 +222,18 @@ class AniListProvider:
         if data is None:
             return None
         return data.get("Media")
+
+    async def get_anilist_ids(self, mal_ids: Sequence[int]) -> dict[int, int]:
+        """AniList ids by MAL id, in one request per 50 ids. A MAL id AniList does not know is missing from the result.
+
+        Raises when a request fails: «AniList is down» must not look like «AniList knows nothing»."""
+        wanted = sorted(set(mal_ids))
+        found: dict[int, int] = {}
+        for start in range(0, len(wanted), self.IDS_PAGE):
+            data = await self._post(self.BY_MAL_IDS_QUERY, {"ids": wanted[start:start + self.IDS_PAGE]})
+            if data is None:
+                raise RuntimeError("AniList request failed")
+            for media in (data.get("Page") or {}).get("media") or []:
+                if media.get("id") and media.get("idMal"):
+                    found[int(media["idMal"])] = int(media["id"])
+        return found

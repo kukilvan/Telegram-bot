@@ -1,0 +1,797 @@
+{
+ "data": {
+  "animes": [
+   {
+    "id": "21",
+    "malId": "21",
+    "name": "One Piece",
+    "russian": "Ван-Пис",
+    "english": "One Piece",
+    "kind": "tv",
+    "status": "ongoing",
+    "episodes": 0,
+    "episodesAired": 1180,
+    "nextEpisodeAt": "2026-10-25T17:15:00+03:00",
+    "duration": 24,
+    "airedOn": {
+     "date": "1999-10-20",
+     "year": 1999
+    },
+    "releasedOn": {
+     "date": null
+    },
+    "franchise": "one_piece",
+    "score": 8.72,
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/21/75a07947be55983ce14917f57e96555f.jpeg"
+    },
+    "genres": [
+     {
+      "russian": "Сёнен",
+      "kind": "demographic"
+     },
+     {
+      "russian": "Экшен",
+      "kind": "genre"
+     },
+     {
+      "russian": "Приключения",
+      "kind": "genre"
+     },
+     {
+      "russian": "Фэнтези",
+      "kind": "genre"
+     }
+    ],
+    "related": [
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "adaptation",
+      "relationText": "Адаптация",
+      "anime": null
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "466",
+       "kind": "ova"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "459",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "1094",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "460",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "2385",
+       "kind": "special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "461",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "2386",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "462",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "1237",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "1238",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "463",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "2490",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "464",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "2020",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "465",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "53878",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "5252",
+       "kind": "ova"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "4155",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "8740",
+       "kind": "ova"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "9999",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "12001",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "12859",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "16239",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "16468",
+       "kind": "ona"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "53880",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "25161",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "32051",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "33606",
+       "kind": "ona"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "33338",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "31490",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "38234",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "50410",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "60022",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "60790",
+       "kind": "special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "62233",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "64858",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "side_story",
+      "relationText": "Другая история",
+      "anime": {
+       "id": "64859",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "16143",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "51162",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "2107",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "8171",
+       "kind": "ova"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "28683",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "15323",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "19123",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "31289",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "32437",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "50385",
+       "kind": "special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "36215",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "37902",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "50696",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "52199",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "52921",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "53235",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "53890",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "55289",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "55647",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "57556",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "58015",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "58663",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "59029",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "59596",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "59908",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "61393",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "61674",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "61892",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "62394",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "62593",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "summary",
+      "relationText": "Обобщение",
+      "anime": {
+       "id": "62969",
+       "kind": "tv_special"
+      }
+     },
+     {
+      "relationKind": "alternative_version",
+      "relationText": "Альтернативная история",
+      "anime": {
+       "id": "3848",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "alternative_version",
+      "relationText": "Альтернативная история",
+      "anime": {
+       "id": "60108",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "alternative_version",
+      "relationText": "Альтернативная история",
+      "anime": {
+       "id": "57557",
+       "kind": "ona"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "813",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "23933",
+       "kind": "special"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "23935",
+       "kind": "special"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "10033",
+       "kind": "tv"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "52139",
+       "kind": "music"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "59832",
+       "kind": "pv"
+      }
+     },
+     {
+      "relationKind": "character",
+      "relationText": "Общий персонаж",
+      "anime": {
+       "id": "56055",
+       "kind": "ona"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "59959",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "59801",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "22661",
+       "kind": "special"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "59822",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "57413",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "34165",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "38419",
+       "kind": "movie"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "36239",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "40181",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "40970",
+       "kind": "music"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "51163",
+       "kind": "cm"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "56015",
+       "kind": "music"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "58307",
+       "kind": "pv"
+      }
+     },
+     {
+      "relationKind": "other",
+      "relationText": "Прочее",
+      "anime": {
+       "id": "63224",
+       "kind": "music"
+      }
+     }
+    ]
+   }
+  ]
+ }
+}

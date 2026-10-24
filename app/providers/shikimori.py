@@ -9,6 +9,7 @@ import asyncio
 import logging
 import time
 from collections import deque
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -129,6 +130,22 @@ def _aired_date(item: dict) -> datetime | None:
     return None
 
 
+class ShikimoriError(Exception):
+    """Shikimori could not answer (network, HTTP error or GraphQL error); an empty answer is not an error."""
+
+
+ENTRY_QUERY = """
+query Entries($ids: String!) {
+  animes(ids: $ids, limit: 50) {
+    id malId name russian english kind status episodes episodesAired nextEpisodeAt duration
+    airedOn { date year } releasedOn { date } franchise
+    poster { originalUrl } genres { russian kind }
+    related { relationKind relationText anime { id kind } }
+  }
+}
+"""
+
+
 class ShikimoriClient:
     """Async Shikimori GraphQL client with throttling."""
 
@@ -205,8 +222,10 @@ class ShikimoriClient:
                     return None
         return None
 
-    async def search_anime(self, query: str) -> list[dict]:
-        """Search anime by name (supports Russian, English, romaji)."""
+    async def search_anime(self, query: str, strict: bool = False) -> list[dict]:
+        """Search anime by name (supports Russian, English, romaji).
+
+        By default a failing request looks like «nothing found»; `strict` raises `ShikimoriError` instead."""
         search_query = """
         query Search($search: String!) {
           animes(search: $search, limit: 15) {
@@ -227,10 +246,20 @@ class ShikimoriClient:
         """
         data = await self._post(search_query, {"search": query})
         if data is None:
+            if strict:
+                raise ShikimoriError("search failed")
             return []
         items = data.get("data", {}).get("animes", [])
         logger.debug(f"Shikimori search results: {len(items)} items, first: {items[0] if items else 'none'}")
         return items
+
+    async def fetch_entries(self, ids: Sequence[str]) -> list[dict]:
+        """Entries with their relations by Shikimori id (at most 50). Raises `ShikimoriError` on a failed request;
+        an id Shikimori does not know is just missing from the answer."""
+        data = await self._post(ENTRY_QUERY, {"ids": ",".join(ids)})
+        if data is None:
+            raise ShikimoriError("entries request failed")
+        return data.get("data", {}).get("animes") or []
 
     async def get_by_id(self, shiki_id: str) -> dict | None:
         """Get a single anime by Shikimori ID."""
