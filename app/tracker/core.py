@@ -16,10 +16,11 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker import movie_events, seasons as season_logic, sequel_events, series_events
+from app.tracker import movie_events, progress, seasons as season_logic, sequel_events, series_events
 from app.tracker.actions import Action, event_actions
 from app.tracker.cards import TitleCard
 from app.tracker.models import (
+    STATUS_WAITING,
     STATUS_WANT,
     STATUS_WATCHED,
     DeliveryItem,
@@ -36,6 +37,9 @@ from app.utils.secrets_mask import mask_secrets
 Clock = Callable[[], datetime]  # returns an aware datetime
 
 PRIMARY_ROLE = "primary"
+
+SEASONAL_KINDS = ("series", "anime")  # titles whose status follows the owner's season marks
+POLLED_STATUSES = (STATUS_WANT, STATUS_WAITING)  # an own-release check runs for these, while tracking is on
 
 PART_GAP_SETTING = "part_gap_weeks"
 DEFAULT_PART_GAP_WEEKS = season_logic.DEFAULT_PART_GAP // timedelta(weeks=1)  # the default lives in `seasons`
@@ -283,6 +287,7 @@ class Tracker:
                 )
             )
             self._store_seasons(session, title.id, getattr(snapshot, "seasons", ()))
+            self._refresh_status(session, title)
             try:
                 session.commit()
             except IntegrityError:
@@ -356,7 +361,42 @@ class Tracker:
             if record is None:
                 raise UnknownSeason(f"{title_id}:{number}")
             record.watched = watched
+            self._refresh_status(session, session.get(Title, title_id))
             session.commit()
+
+    def _refresh_status(self, session, title: Title) -> None:
+        """Give a series the status that follows from its season marks and the state of the show."""
+        if title.kind not in SEASONAL_KINDS:
+            return
+        now = _naive_utc(self.clock())
+        loaded = self._load_seasons(session, title.id)
+        outcome = progress.series_status(
+            title.status,
+            (season for _, season in loaded),
+            {record.number for record, _ in loaded if record.watched},
+            series_events.is_closed(self._own_state(session, title.id).get("show_status")),
+            now,
+        )
+        if outcome is None:
+            return
+        if outcome.status != title.status:
+            title.status = outcome.status
+            title.status_changed_at = now
+        title.tracking_enabled = outcome.tracking
+
+    @staticmethod
+    def _own_state(session, title_id: int) -> dict[str, Any]:
+        """State from the title's own source (the archive's sequel snapshot holds no dates)."""
+        snapshot = session.scalar(
+            select(SourceSnapshot)
+            .join(ExternalId, ExternalId.title_id == SourceSnapshot.title_id)
+            .where(
+                SourceSnapshot.title_id == title_id,
+                ExternalId.role == PRIMARY_ROLE,
+                SourceSnapshot.source == ExternalId.source,
+            )
+        )
+        return snapshot.state if snapshot else {}
 
     async def mark_watched(self, title_id: int) -> WatchedResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
@@ -408,16 +448,7 @@ class Tracker:
             title = session.get(Title, title_id)
             if title is None:
                 return None
-            snapshot = session.scalar(
-                select(SourceSnapshot)
-                .join(ExternalId, ExternalId.title_id == SourceSnapshot.title_id)
-                .where(
-                    SourceSnapshot.title_id == title_id,
-                    ExternalId.role == PRIMARY_ROLE,
-                    SourceSnapshot.source == ExternalId.source,  # the archive's sequel snapshot holds no dates
-                )
-            )
-            state = snapshot.state if snapshot else {}
+            state = self._own_state(session, title_id)
             seasons_view = None
             if title.kind == "series":
                 loaded = self._load_seasons(session, title_id)
@@ -471,7 +502,7 @@ class Tracker:
                         and_(
                             own,
                             Title.kind.in_(("movie", "series")),
-                            Title.status == STATUS_WANT,
+                            Title.status.in_(POLLED_STATUSES),
                             Title.tracking_enabled.is_(True),
                         ),
                         and_(~own, Title.status == STATUS_WATCHED),
@@ -550,6 +581,7 @@ class Tracker:
             stored.state = new.to_state()
             stored.observed_at = now
             stored.next_check_at = now + series_events.check_interval(new, now)
+            self._refresh_status(session, session.get(Title, due.id))
             session.commit()
         return found
 

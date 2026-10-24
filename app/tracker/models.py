@@ -8,7 +8,9 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 STATUS_WANT = "want"  # «Хочу»
-STATUS_WATCHED = "watched"  # «Просмотрено»: the movie is in the archive
+STATUS_WAITING = "waiting"  # «Жду»: everything released is watched, a season is expected
+STATUS_TO_FINISH = "to_finish"  # «Досмотреть»: the series is closed but not every season is watched
+STATUS_WATCHED = "watched"  # «Просмотрено»: the title is in the archive
 
 
 class TrackerBase(DeclarativeBase):
@@ -28,7 +30,7 @@ class Title(TrackerBase):
     genres: Mapped[list] = mapped_column(JSON)
     poster_path: Mapped[str | None] = mapped_column(String(255))
     overview: Mapped[str | None] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(16), index=True)  # STATUS_WANT | STATUS_WATCHED
+    status: Mapped[str] = mapped_column(String(16), index=True)  # STATUS_WANT | STATUS_WAITING | STATUS_TO_FINISH | STATUS_WATCHED
     tracking_enabled: Mapped[bool] = mapped_column(Boolean)
     added_at: Mapped[datetime] = mapped_column(DateTime)
     status_changed_at: Mapped[datetime] = mapped_column(DateTime)

@@ -50,6 +50,11 @@ CANCELED_STATUS = "Canceled"
 _CLOSED_STATUSES = (ENDED_STATUS, CANCELED_STATUS)
 
 
+def is_closed(show_status: str | None) -> bool:
+    """The source says the series will get no more seasons."""
+    return show_status in _CLOSED_STATUSES
+
+
 @dataclass(frozen=True)
 class ShowState:
     """What is known about a series at one look: its seasons and the status the source gives the show."""
