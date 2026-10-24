@@ -6,6 +6,10 @@ from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Tex
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
+STATUS_WANT = "want"  # «Хочу»
+STATUS_WATCHED = "watched"  # «Просмотрено»: the movie is in the archive
+
+
 class TrackerBase(DeclarativeBase):
     """Base of the tracker schema; kept apart from the legacy `Base` so the two databases never mix."""
 
@@ -23,7 +27,7 @@ class Title(TrackerBase):
     genres: Mapped[list] = mapped_column(JSON)
     poster_path: Mapped[str | None] = mapped_column(String(255))
     overview: Mapped[str | None] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String(16), index=True)  # want | ...
+    status: Mapped[str] = mapped_column(String(16), index=True)  # STATUS_WANT | STATUS_WATCHED
     tracking_enabled: Mapped[bool] = mapped_column(Boolean)
     added_at: Mapped[datetime] = mapped_column(DateTime)
     status_changed_at: Mapped[datetime] = mapped_column(DateTime)

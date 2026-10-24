@@ -5,7 +5,7 @@ from datetime import date
 
 KIND_LABELS = {"movie": "Фильм"}
 KIND_ICONS = {"movie": "🎬"}
-STATUS_LABELS = {"want": "Хочу"}
+STATUS_LABELS = {"want": "Хочу", "watched": "Просмотрено"}
 
 _MONTHS = (
     "января", "февраля", "марта", "апреля", "мая", "июня",

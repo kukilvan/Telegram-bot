@@ -7,39 +7,60 @@ delivered only after the sender succeeded, and the dedup key guarantees one even
 import asyncio
 import logging
 import uuid
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Protocol
 
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker import movie_events
+from app.tracker import movie_events, sequel_events
+from app.tracker.actions import Action, event_actions
 from app.tracker.cards import TitleCard
-from app.tracker.models import DeliveryItem, Event, ExternalId, SourceSnapshot, Title
+from app.tracker.models import (
+    STATUS_WANT,
+    STATUS_WATCHED,
+    DeliveryItem,
+    Event,
+    ExternalId,
+    SourceSnapshot,
+    Title,
+)
 from app.utils.secrets_mask import mask_secrets
 
 Clock = Callable[[], datetime]  # returns an aware datetime
 
-STATUS_WANT = "want"
 PRIMARY_ROLE = "primary"
 
 
 class Sender(Protocol):
-    async def send(self, message: str) -> None:
-        """Deliver one message to the owner; raise on failure."""
+    async def send(self, message: str, actions: Sequence[Action] = ()) -> None:
+        """Deliver one message to the owner, with `actions` as buttons under it; raise on failure."""
 
 
 class TitleNotFound(Exception):
     """The source has nothing at the chosen id (for example a series id picked as a movie)."""
 
 
+class UnknownTitle(Exception):
+    """There is no title with this id in the list."""
+
+
+class UnknownEvent(Exception):
+    """There is no «sequel announced» event with this id."""
+
+
 @dataclass(frozen=True)
 class AddResult:
     title_id: int
     created: bool  # False: the title was already in the list and is simply opened
+
+
+@dataclass(frozen=True)
+class WatchedResult:
+    changed: bool  # False: the movie was already watched
 
 
 @dataclass(frozen=True)
@@ -90,6 +111,8 @@ class _DueTitle:
     kind: str
     name: str
     external_id: str
+    snapshot_source: str  # which of the title's snapshots is due: its release source or its sequel source
+    sequels: bool  # True: an archived movie, checked only for sequels
 
 
 def _ping_payload() -> dict[str, Any]:
@@ -117,6 +140,7 @@ class Tracker:
     clock: Clock
     sender: Sender
     sources: Mapping[str, Any] = field(default_factory=dict)
+    sequel_sources: Mapping[str, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
     _kinds: dict[str, TestEventKind] = field(init=False, default_factory=dict)
     _delivery_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
     _poll_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
@@ -124,7 +148,7 @@ class Tracker:
 
     def __post_init__(self) -> None:
         self.register_test_event_kind(TestEventKind("ping", "Проверка связи", _ping_payload))
-        for kind_id, label, text in movie_events.TEST_SAMPLES:
+        for kind_id, label, text in movie_events.TEST_SAMPLES + sequel_events.TEST_SAMPLES:
             self.register_test_event_kind(TestEventKind(kind_id, label, lambda text=text: {"text": text}))
 
     # --- events ---------------------------------------------------------------------------------
@@ -217,6 +241,46 @@ class Tracker:
                 return AddResult(existing, created=False)
             return AddResult(title.id, created=True)
 
+    async def mark_watched(self, title_id: int) -> WatchedResult:
+        """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
+        async with self._write_lock:
+            return await asyncio.to_thread(self._set_watched, title_id)
+
+    def _set_watched(self, title_id: int) -> WatchedResult:
+        now = _naive_utc(self.clock())
+        with self.session_factory() as session:
+            title = session.get(Title, title_id)
+            if title is None:
+                raise UnknownTitle(title_id)
+            if title.status == STATUS_WATCHED:
+                return WatchedResult(changed=False)
+            title.status = STATUS_WATCHED
+            title.status_changed_at = now
+            title.tracking_enabled = False  # its own release is no longer followed
+            sequel_source = self.sequel_sources.get(title.kind)
+            if sequel_source is not None:
+                # an empty state means "not looked at yet": the first check records the collection as it is,
+                # so sequels that already exist are not announced as news
+                session.add(
+                    SourceSnapshot(
+                        title_id=title.id, source=sequel_source.source_key, state={}, observed_at=now, next_check_at=now
+                    )
+                )
+            session.commit()
+            return WatchedResult(changed=True)
+
+    async def follow_sequel(self, event_id: int) -> AddResult:
+        """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it."""
+        kind, sequel_id = await asyncio.to_thread(self._announced_sequel, event_id)
+        return await self.add_title(kind, sequel_id)
+
+    def _announced_sequel(self, event_id: int) -> tuple[str, str]:
+        with self.session_factory() as session:
+            event = session.get(Event, event_id)
+            if event is None or event.type != sequel_events.SEQUEL_ANNOUNCED:
+                raise UnknownEvent(event_id)
+            return event.payload["kind"], event.payload["sequel_id"]
+
     def list_titles(self) -> list[TitleSummary]:
         with self.session_factory() as session:
             rows = session.scalars(select(Title).order_by(Title.id))
@@ -227,7 +291,15 @@ class Tracker:
             title = session.get(Title, title_id)
             if title is None:
                 return None
-            snapshot = session.scalar(select(SourceSnapshot).where(SourceSnapshot.title_id == title_id))
+            snapshot = session.scalar(
+                select(SourceSnapshot)
+                .join(ExternalId, ExternalId.title_id == SourceSnapshot.title_id)
+                .where(
+                    SourceSnapshot.title_id == title_id,
+                    ExternalId.role == PRIMARY_ROLE,
+                    SourceSnapshot.source == ExternalId.source,  # the archive's sequel snapshot holds no dates
+                )
+            )
             state = snapshot.state if snapshot else {}
             return TitleCard(
                 id=title.id,
@@ -258,15 +330,20 @@ class Tracker:
     def _due_titles(self) -> list[_DueTitle]:
         now = _naive_utc(self.clock())
         with self.session_factory() as session:
+            # a title's own source is the one of its primary id; any other snapshot is its sequel check
+            own = SourceSnapshot.source == ExternalId.source
             rows = session.execute(
-                select(Title.id, Title.kind, Title.title, ExternalId.external_id)
+                select(Title.id, Title.kind, Title.title, ExternalId.external_id, SourceSnapshot.source, ~own)
                 .join(SourceSnapshot, SourceSnapshot.title_id == Title.id)
                 .join(
                     ExternalId,
                     (ExternalId.title_id == Title.id) & (ExternalId.role == PRIMARY_ROLE),
                 )
                 .where(
-                    Title.tracking_enabled.is_(True),
+                    or_(
+                        and_(own, Title.status == STATUS_WANT, Title.tracking_enabled.is_(True)),
+                        and_(~own, Title.status == STATUS_WATCHED),
+                    ),
                     (SourceSnapshot.next_check_at.is_(None)) | (SourceSnapshot.next_check_at <= now),
                 )
                 .order_by(Title.id)
@@ -275,16 +352,17 @@ class Tracker:
 
     async def _poll_one(self, due: _DueTitle, report: PollReport) -> None:
         try:
-            source = self.sources[due.kind]
+            source = (self.sequel_sources if due.sequels else self.sources)[due.kind]
             snapshot = await source.snapshot(due.external_id)
             if snapshot is None:
                 raise LookupError(f"{due.kind}:{due.external_id} is no longer known to the source")
-            found = await asyncio.to_thread(self._apply_snapshot, due, snapshot)
+            apply = self._apply_sequels if due.sequels else self._apply_snapshot
+            found = await asyncio.to_thread(apply, due, snapshot)
         except Exception as exc:  # one broken title or source must not stop the pass
             logging.warning("polling title %s failed: %s", due.id, mask_secrets(repr(exc)))
             report.failed += 1
             try:
-                await asyncio.to_thread(self._postpone, due.id, movie_events.RETRY_AFTER_FAILURE)
+                await asyncio.to_thread(self._postpone, due, movie_events.RETRY_AFTER_FAILURE)
             except Exception as postpone_exc:  # even a failed postponement leaves the other titles to the pass
                 logging.warning("postponing title %s failed: %s", due.id, mask_secrets(repr(postpone_exc)))
             return
@@ -296,7 +374,7 @@ class Tracker:
         now = _naive_utc(self.clock())
         today = now.date()
         with self.session_factory() as session:
-            stored = self._stored_snapshot(session, due.id)
+            stored = self._stored_snapshot(session, due)
             old = movie_events.MovieDates.from_state(stored.state)
             new = movie_events.MovieDates.from_state(snapshot.state()).keeping_known(old)
             observed_on = stored.observed_at.date()
@@ -307,21 +385,52 @@ class Tracker:
             if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                 found += 1
         with self.session_factory() as session:
-            stored = self._stored_snapshot(session, due.id)
+            stored = self._stored_snapshot(session, due)
             stored.state = new.to_state()
             stored.observed_at = now
             stored.next_check_at = now + movie_events.check_interval(new, today)
             session.commit()
         return found
 
-    @staticmethod
-    def _stored_snapshot(session, title_id: int) -> SourceSnapshot:
-        return session.scalars(select(SourceSnapshot).where(SourceSnapshot.title_id == title_id)).one()
-
-    def _postpone(self, title_id: int, delay: timedelta) -> None:
+    def _apply_sequels(self, due: _DueTitle, snapshot: Any) -> int:
+        """Archived movie: announce the collection parts that were not there at the previous check."""
         now = _naive_utc(self.clock())
         with self.session_factory() as session:
-            stored = self._stored_snapshot(session, title_id)
+            stored = self._stored_snapshot(session, due)
+            first_look = "parts" not in stored.state
+            old = sequel_events.Sequels.from_state(stored.state)
+        new = sequel_events.Sequels.from_state(snapshot.state()).keeping_known(old)
+        found = 0
+        if not first_look:  # the first look only records what the collection holds now
+            listed = self._listed_ids(self.sources[due.kind].source_key)
+            for event in sequel_events.detect_sequel_events(due.name, due.kind, old, new):
+                if event.data["sequel_id"] in listed:
+                    continue  # the owner already follows it: nothing to offer
+                payload = {"text": event.text, **event.data}
+                if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+                    found += 1
+        with self.session_factory() as session:
+            stored = self._stored_snapshot(session, due)
+            stored.state = new.to_state()
+            stored.observed_at = now
+            stored.next_check_at = now + sequel_events.INTERVAL
+            session.commit()
+        return found
+
+    def _listed_ids(self, source_key: str) -> set[str]:
+        with self.session_factory() as session:
+            return set(session.scalars(select(ExternalId.external_id).where(ExternalId.source == source_key)))
+
+    @staticmethod
+    def _stored_snapshot(session, due: _DueTitle) -> SourceSnapshot:
+        return session.scalars(
+            select(SourceSnapshot).where(SourceSnapshot.title_id == due.id, SourceSnapshot.source == due.snapshot_source)
+        ).one()
+
+    def _postpone(self, due: _DueTitle, delay: timedelta) -> None:
+        now = _naive_utc(self.clock())
+        with self.session_factory() as session:
+            stored = self._stored_snapshot(session, due)
             stored.next_check_at = now + delay
             session.commit()
 
@@ -357,7 +466,8 @@ class Tracker:
         async with self._delivery_lock:
             pending = await asyncio.to_thread(self._pending_items)
             for item_id, event in pending:
-                if await self._deliver_one(item_id, format_event(event)):
+                actions = event_actions(event.type, event.id, event.title_id)
+                if await self._deliver_one(item_id, format_event(event), actions):
                     report.delivered += 1
                 else:
                     report.failed += 1
@@ -374,10 +484,10 @@ class Tracker:
                 )
             )
 
-    async def _deliver_one(self, item_id: int, message: str) -> bool:
+    async def _deliver_one(self, item_id: int, message: str, actions: Sequence[Action]) -> bool:
         error: Exception | None = None
         try:
-            await self.sender.send(message)
+            await self.sender.send(message, actions)
         except Exception as exc:  # the sender is a network client: any failure means "try again later"
             error = exc
             logging.warning("delivery of queue item %s failed: %s", item_id, mask_secrets(repr(exc)))

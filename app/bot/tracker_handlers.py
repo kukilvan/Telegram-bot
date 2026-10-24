@@ -1,10 +1,12 @@
-"""Bot side of the tracker core: «Тестовое событие», «Добавить», «Мои тайтлы» and the Telegram sender.
+"""Bot side of the tracker core: «Тестовое событие», «Добавить», «Мои тайтлы», the buttons under messages
+(«Посмотрел», «Следить») and the Telegram sender.
 
 Handlers talk to the core only through the `Tracker` facade. «Добавить» is a temporary way to fill the
 list until the web app (it is removed together with the other old bot flows).
 """
 
 import logging
+from collections.abc import Sequence
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
@@ -17,8 +19,9 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-from app.tracker.cards import KIND_ICONS, KIND_LABELS, format_card
-from app.tracker.core import Tracker, TitleNotFound
+from app.tracker.actions import FOLLOW, WATCHED, Action, card_actions
+from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card
+from app.tracker.core import Tracker, TitleNotFound, UnknownEvent, UnknownTitle
 from app.utils.secrets_mask import mask_secrets
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
@@ -28,10 +31,21 @@ _KIND_PREFIX = "tev:"
 _ADD_KIND_PREFIX = "tadd:"
 _PICK_PREFIX = "tpick:"
 _CARD_PREFIX = "tcard:"
+_ACTION_PREFIX = "tact:"  # tact:<action name>:<number>, see app.tracker.actions
 
 MAX_SUGGESTIONS = 10
 MAX_LIST_BUTTONS = 50
 _ASK_NAME = {"movie": "Напишите название фильма (можно по-русски или по-английски)."}
+
+
+def actions_markup(actions: Sequence[Action]) -> InlineKeyboardMarkup | None:
+    """One button per row under a message; None when there is nothing to press."""
+    if not actions:
+        return None
+    rows = [
+        [InlineKeyboardButton(text=a.label, callback_data=f"{_ACTION_PREFIX}{a.name}:{a.arg}")] for a in actions
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 class TelegramSender:
@@ -41,8 +55,8 @@ class TelegramSender:
         self._bot = bot
         self._chat_id = chat_id
 
-    async def send(self, message: str) -> None:
-        await self._bot.send_message(chat_id=self._chat_id, text=message)
+    async def send(self, message: str, actions: Sequence[Action] = ()) -> None:
+        await self._bot.send_message(chat_id=self._chat_id, text=message, reply_markup=actions_markup(actions))
 
 
 def owner_chat_id(configured: str, allowed_user_ids: list[int]) -> int:
@@ -181,8 +195,13 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             return
         await callback.answer()
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"
-        if callback.message is not None:
-            await callback.message.answer(f"{heading}\n\n{format_card(tracker.title_card(result.title_id))}")
+        await send_card(callback, tracker.title_card(result.title_id), heading)
+
+    async def send_card(callback: CallbackQuery, card: TitleCard | None, heading: str | None = None) -> None:
+        if card is None or callback.message is None:
+            return
+        text = format_card(card) if heading is None else f"{heading}\n\n{format_card(card)}"
+        await callback.message.answer(text, reply_markup=actions_markup(card_actions(card)))
 
     # --- «Мои тайтлы» ---------------------------------------------------------------------------
 
@@ -220,8 +239,67 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Этого тайтла больше нет в списке.")
             return
         await callback.answer()
-        if callback.message is not None:
-            await callback.message.answer(format_card(card))
+        await send_card(callback, card)
+
+    # --- buttons under messages and cards -------------------------------------------------------
+
+    async def drop_buttons(callback: CallbackQuery) -> None:
+        """A pressed button is spent: take the keyboard off its message."""
+        try:
+            await callback.message.edit_reply_markup(reply_markup=None)
+        except Exception as exc:  # an old or missing message: the answer to the press matters more
+            logging.debug("could not remove buttons: %s", mask_secrets(repr(exc)))
+
+    async def mark_watched(callback: CallbackQuery, title_id: int) -> None:
+        try:
+            result = await tracker.mark_watched(title_id)
+        except UnknownTitle:
+            await callback.answer("Этого тайтла больше нет в списке.")
+            return
+        except Exception as exc:
+            logging.warning("marking a title watched failed: %s", mask_secrets(repr(exc)))
+            await callback.answer("Не удалось сохранить. Попробуйте ещё раз.")
+            return
+        await drop_buttons(callback)
+        if not result.changed:
+            await callback.answer("Уже отмечено как просмотренное.")
+            return
+        await callback.answer("Отмечено как просмотренное")
+        card = tracker.title_card(title_id)
+        if callback.message is not None and card is not None:
+            await callback.message.answer(
+                f"✅ Просмотрено: {card.title}\nФильм в архиве. Раз в неделю я проверю, не анонсировано ли продолжение."
+            )
+
+    async def follow_sequel(callback: CallbackQuery, event_id: int) -> None:
+        try:
+            result = await tracker.follow_sequel(event_id)
+        except UnknownEvent:
+            await callback.answer("Это объявление больше недоступно.")
+            return
+        except TitleNotFound:
+            await callback.answer("Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
+            return
+        except Exception as exc:
+            logging.warning("following a sequel failed: %s", mask_secrets(repr(exc)))
+            await callback.answer("Не удалось получить данные из TMDb. Попробуйте чуть позже.")
+            return
+        await drop_buttons(callback)
+        await callback.answer()
+        heading = "✅ Продолжение добавлено в список" if result.created else "Уже в списке"
+        await send_card(callback, tracker.title_card(result.title_id), heading)
+
+    async def press_action(callback: CallbackQuery) -> None:
+        if not is_owner(callback.from_user):
+            return
+        name, _, raw = callback.data.removeprefix(_ACTION_PREFIX).partition(":")
+        number = int(raw) if raw.isascii() and raw.isdigit() else None
+        if number is not None and name == WATCHED:
+            await mark_watched(callback, number)
+        elif number is not None and name == FOLLOW:
+            await follow_sequel(callback, number)
+        else:
+            await callback.answer("Эта кнопка больше не работает.")
 
     dp.message.register(show_menu, Command("test_event"))
     dp.message.register(show_menu, F.text == TEST_EVENT_BUTTON)
@@ -233,3 +311,4 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     dp.callback_query.register(ask_name, F.data.startswith(_ADD_KIND_PREFIX))
     dp.callback_query.register(add_picked, F.data.startswith(_PICK_PREFIX))
     dp.callback_query.register(show_card, F.data.startswith(_CARD_PREFIX))
+    dp.callback_query.register(press_action, F.data.startswith(_ACTION_PREFIX))

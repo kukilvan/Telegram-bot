@@ -36,7 +36,7 @@ class FakeSender:
     def __init__(self):
         self.sent = []
 
-    async def send(self, message):
+    async def send(self, message, actions=()):
         self.sent.append(message)
 
 

@@ -28,7 +28,7 @@ class FakeClock:
 
 
 class FakeSender:
-    async def send(self, message):
+    async def send(self, message, actions=()):
         pass
 
 

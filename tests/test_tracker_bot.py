@@ -20,7 +20,7 @@ class FakeSender:
         self.sent = []
         self.failing = False
 
-    async def send(self, message):
+    async def send(self, message, actions=()):
         if self.failing:
             raise ConnectionError("down")
         self.sent.append(message)

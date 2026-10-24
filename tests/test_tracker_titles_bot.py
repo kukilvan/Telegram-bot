@@ -58,7 +58,7 @@ class FakeMovieSource:
 
 
 class FakeSender:
-    async def send(self, message):
+    async def send(self, message, actions=()):
         pass
 
 

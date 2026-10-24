@@ -30,7 +30,7 @@ class FakeSender:
         self.sent = []
         self.failing = False
 
-    async def send(self, message):
+    async def send(self, message, actions=()):
         if self.failing:
             raise ConnectionError("telegram is down")
         self.sent.append(message)
@@ -195,7 +195,7 @@ def test_one_failing_event_does_not_stop_the_others(session_factory, clock):
         def __init__(self):
             self.sent = []
 
-        async def send(self, message):
+        async def send(self, message, actions=()):
             if "bad" in message:
                 raise ConnectionError("rejected")
             self.sent.append(message)
