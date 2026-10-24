@@ -34,6 +34,7 @@ class Title(TrackerBase):
     tracking_enabled: Mapped[bool] = mapped_column(Boolean)
     added_at: Mapped[datetime] = mapped_column(DateTime)
     status_changed_at: Mapped[datetime] = mapped_column(DateTime)
+    failure_notified_at: Mapped[datetime | None] = mapped_column(DateTime)  # last «could not check» notice; None: never
 
 
 class ExternalId(TrackerBase):

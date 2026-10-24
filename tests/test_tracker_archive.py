@@ -357,7 +357,10 @@ def test_a_failing_sequel_check_is_postponed_and_the_other_movies_are_still_chec
     run(tracker.deliver_pending())
 
     assert (report.failed, report.polled) == (1, 1)
-    assert len(sender.sent) == 1
+    assert len([m for m in sender.sent if not m.startswith("⚠️")]) == 1
+    assert [m for m in sender.sent if m.startswith("⚠️")] == [
+        "⚠️ Не удалось проверить «Сбойный»: не удалось подключиться к TMDb. Повторю через 30 мин."
+    ]
     assert next_check(session_factory, bad, "tmdb_sequels") == clock().replace(tzinfo=None) + timedelta(minutes=30)
 
 

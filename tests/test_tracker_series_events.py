@@ -442,7 +442,7 @@ def test_a_failing_source_postpones_only_its_own_series(tracker, source, clock, 
     report = poll_and_deliver(tracker, clock, days=2)
 
     assert (report.polled, report.failed) == (1, 1)
-    assert [m.split("\n")[0] for m in sender.sent] == ["📺 Живой — вышла серия 8 из 10"]
+    assert [m.split("\n")[0] for m in sender.sent if not m.startswith("⚠️")] == ["📺 Живой — вышла серия 8 из 10"]
     assert next_check(session_factory, broken) == clock.now.replace(tzinfo=None) + timedelta(minutes=30)
 
     source.failing.clear()  # the broken one comes back and reports its episode

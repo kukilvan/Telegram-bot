@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
+from app.tracker.failures import TitleGone
+
 SOURCE_KEY = "tmdb_sequels"  # distinct from the movie's own source: one title keeps one snapshot per source
 
 
@@ -91,5 +93,5 @@ class TmdbSequelSource:
             return parse_sequels(movie, None)
         collection = await self._provider.get_collection(belongs_to)
         if collection is None:
-            raise LookupError(f"TMDb has no collection {belongs_to} listed for movie {external_id}")
+            raise TitleGone(f"TMDb has no collection {belongs_to} listed for movie {external_id}")
         return parse_sequels(movie, collection)

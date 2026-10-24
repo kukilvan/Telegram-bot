@@ -131,7 +131,14 @@ def _aired_date(item: dict) -> datetime | None:
 
 
 class ShikimoriError(Exception):
-    """Shikimori could not answer (network, HTTP error or GraphQL error); an empty answer is not an error."""
+    """Shikimori could not answer (network, HTTP error or GraphQL error); an empty answer is not an error.
+
+    `status` is the HTTP status of the failed answer and `cause` the network exception, when the client knows them."""
+
+    def __init__(self, message: str, status: int | None = None, cause: BaseException | None = None) -> None:
+        super().__init__(message)
+        self.status = status
+        self.cause = cause
 
 
 ENTRY_QUERY = """
@@ -159,6 +166,9 @@ class ShikimoriClient:
         self._last_call_at: float | None = None
         self._window_calls: deque[float] = deque()
         self._semaphore = asyncio.Semaphore(5)
+        # why the latest failed request failed (HTTP status, exception); with concurrent requests it may belong to a
+        # neighbour, which only makes the reason in an owner notice approximate
+        self._last_failure: tuple[int | None, BaseException | None] = (None, None)
 
         self._client = httpx.AsyncClient(
             base_url=self.base_url,
@@ -193,6 +203,7 @@ class ShikimoriClient:
         self._window_calls.append(stamp)
 
     async def _post(self, query: str, variables: dict, retries: int = 3) -> dict | None:
+        self._last_failure = (None, None)
         for attempt in range(retries):
             async with self._semaphore:
                 await self._throttle()
@@ -202,11 +213,13 @@ class ShikimoriClient:
                         json={"query": query, "variables": variables},
                     )
                     if resp.status_code == 429:
+                        self._last_failure = (429, None)
                         retry_after = int(resp.headers.get("Retry-After", 2))
                         logger.warning(f"Shikimori 429, retry after {retry_after}s")
                         await asyncio.sleep(retry_after)
                         continue
                     if resp.status_code != 200:
+                        self._last_failure = (resp.status_code, None)
                         logger.error(f"Shikimori request failed (HTTP {resp.status_code})")
                         return None
                     data = resp.json()
@@ -215,6 +228,7 @@ class ShikimoriClient:
                         return None
                     return data
                 except Exception as e:
+                    self._last_failure = (None, e)
                     if attempt < retries - 1:
                         await asyncio.sleep(2 ** attempt)
                         continue
@@ -247,7 +261,8 @@ class ShikimoriClient:
         data = await self._post(search_query, {"search": query})
         if data is None:
             if strict:
-                raise ShikimoriError("search failed")
+                status, cause = self._last_failure
+                raise ShikimoriError("search failed", status, cause)
             return []
         items = data.get("data", {}).get("animes", [])
         logger.debug(f"Shikimori search results: {len(items)} items, first: {items[0] if items else 'none'}")
@@ -258,7 +273,8 @@ class ShikimoriClient:
         an id Shikimori does not know is just missing from the answer."""
         data = await self._post(ENTRY_QUERY, {"ids": ",".join(ids)})
         if data is None:
-            raise ShikimoriError("entries request failed")
+            status, cause = self._last_failure
+            raise ShikimoriError("entries request failed", status, cause)
         return data.get("data", {}).get("animes") or []
 
     async def get_by_id(self, shiki_id: str) -> dict | None:

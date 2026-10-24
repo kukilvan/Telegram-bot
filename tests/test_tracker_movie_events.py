@@ -349,7 +349,7 @@ def test_a_failed_title_is_not_retried_until_it_is_due_and_recovers(tracker, sou
     assert source.calls == []
 
     poll_and_deliver(tracker, clock, minutes=31)
-    assert len(sender.sent) == 1
+    assert len([m for m in sender.sent if not m.startswith("⚠️")]) == 1
 
 
 def test_a_failed_poll_keeps_the_stored_state(tracker, source, clock, sender, session_factory):

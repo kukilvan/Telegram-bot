@@ -2,6 +2,7 @@
 
 import asyncio
 
+import httpx
 import pytest
 
 from app.providers.anilist import AniListProvider
@@ -101,3 +102,37 @@ def test_no_mal_ids_means_no_request():
 
     assert run(client.get_anilist_ids([])) == {}
     assert client.sent == []
+
+
+def _shikimori_over(handler):
+    client = ShikimoriClient()
+    client.min_call_interval = 0
+    client._client = httpx.AsyncClient(base_url="https://shikimori.test", transport=httpx.MockTransport(handler))
+    return client
+
+
+def test_a_failed_entries_request_tells_the_http_status():
+    client = _shikimori_over(lambda request: httpx.Response(503))
+
+    with pytest.raises(ShikimoriError) as caught:
+        run(client.fetch_entries(["1"]))
+
+    assert caught.value.status == 503
+
+
+def test_a_failed_entries_request_tells_the_network_error(monkeypatch):
+    async def no_wait(_seconds):
+        return None
+
+    monkeypatch.setattr("app.providers.shikimori.asyncio.sleep", no_wait)
+
+    def refuse(request):
+        raise httpx.ConnectError("no route", request=request)
+
+    client = _shikimori_over(refuse)
+
+    with pytest.raises(ShikimoriError) as caught:
+        run(client.fetch_entries(["1"]))
+
+    assert isinstance(caught.value.cause, httpx.ConnectError)
+    assert caught.value.status is None

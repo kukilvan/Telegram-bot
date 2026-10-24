@@ -10,6 +10,14 @@ import httpx
 from app.config import get_settings
 
 
+class TmdbHttpError(RuntimeError):
+    """TMDb answered with an HTTP error (429 after the retries included); `status` tells the owner why."""
+
+    def __init__(self, message: str, status: int) -> None:
+        super().__init__(message)
+        self.status = status
+
+
 class TMDbProvider:
     """Async TMDb API client with staggered, capped request pacing (Phase 7.5).
 
@@ -183,12 +191,12 @@ class TMDbProvider:
         params = {"api_key": self._api_key, "language": "ru", "append_to_response": "release_dates"}
         resp = await self._get(f"/movie/{movie_id}", params)
         if resp is None:
-            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+            raise TmdbHttpError("TMDb is rate-limiting requests (HTTP 429)", 429)
         if resp.status_code == 404:
             logging.debug("TMDb get_movie_with_release_dates HTTP 404 (no movie at this id)")
             return None
         if resp.status_code != 200:
-            raise RuntimeError(f"TMDb get_movie_with_release_dates failed (HTTP {resp.status_code})")
+            raise TmdbHttpError(f"TMDb get_movie_with_release_dates failed (HTTP {resp.status_code})", resp.status_code)
         return resp.json()
 
     async def get_collection(self, collection_id: int) -> dict | None:
@@ -201,12 +209,12 @@ class TMDbProvider:
         params = {"api_key": self._api_key, "language": "ru"}
         resp = await self._get(f"/collection/{collection_id}", params)
         if resp is None:
-            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+            raise TmdbHttpError("TMDb is rate-limiting requests (HTTP 429)", 429)
         if resp.status_code == 404:
             logging.debug("TMDb get_collection HTTP 404 (no collection at this id)")
             return None
         if resp.status_code != 200:
-            raise RuntimeError(f"TMDb get_collection failed (HTTP {resp.status_code})")
+            raise TmdbHttpError(f"TMDb get_collection failed (HTTP {resp.status_code})", resp.status_code)
         return resp.json()
 
     async def get_tv_details(self, tv_id: int) -> dict | None:
@@ -232,12 +240,12 @@ class TMDbProvider:
         params = {"api_key": self._api_key, "language": "ru"}
         resp = await self._get(f"/tv/{tv_id}", params)
         if resp is None:
-            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+            raise TmdbHttpError("TMDb is rate-limiting requests (HTTP 429)", 429)
         if resp.status_code == 404:
             logging.debug("TMDb get_tv_show HTTP 404 (no TV at this id)")
             return None
         if resp.status_code != 200:
-            raise RuntimeError(f"TMDb get_tv_show failed (HTTP {resp.status_code})")
+            raise TmdbHttpError(f"TMDb get_tv_show failed (HTTP {resp.status_code})", resp.status_code)
         return resp.json()
 
     async def get_tv_season(self, tv_id: int, season_number: int) -> dict | None:
@@ -249,12 +257,12 @@ class TMDbProvider:
         params = {"api_key": self._api_key, "language": "ru"}
         resp = await self._get(f"/tv/{tv_id}/season/{season_number}", params)
         if resp is None:
-            raise RuntimeError("TMDb is rate-limiting requests (HTTP 429)")
+            raise TmdbHttpError("TMDb is rate-limiting requests (HTTP 429)", 429)
         if resp.status_code == 404:
             logging.debug("TMDb get_tv_season HTTP 404 (no such season)")
             return None
         if resp.status_code != 200:
-            raise RuntimeError(f"TMDb get_tv_season failed (HTTP {resp.status_code})")
+            raise TmdbHttpError(f"TMDb get_tv_season failed (HTTP {resp.status_code})", resp.status_code)
         return resp.json()
 
     async def get_movie_release_dates(self, movie_id: int) -> list[dict]:

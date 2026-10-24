@@ -21,6 +21,7 @@ from sqlalchemy.orm import sessionmaker
 from app.tracker import (
     anime_events,
     delivery,
+    failures,
     movie_events,
     progress,
     seasons as season_logic,
@@ -159,6 +160,7 @@ class PollReport:
     polled: int = 0
     failed: int = 0
     events: int = 0  # new events found (already queued for delivery)
+    notices: int = 0  # «could not check» messages queued for the owner
 
 
 @dataclass(frozen=True)
@@ -210,6 +212,7 @@ class Tracker:
             + sequel_events.TEST_SAMPLES
             + series_events.TEST_SAMPLES
             + anime_events.TEST_SAMPLES
+            + failures.TEST_SAMPLES
         )
         for kind_id, label, text in samples:
             self.register_test_event_kind(TestEventKind(kind_id, label, lambda text=text: {"text": text}))
@@ -648,9 +651,12 @@ class Tracker:
         in a worker thread, so a slow disk never freezes the bot.
         """
         report = PollReport()
+        broken: list[tuple[_DueTitle, Exception]] = []
         async with self._poll_lock:
             for due in await asyncio.to_thread(self._due_titles):
-                await self._poll_one(due, report)
+                await self._poll_one(due, report, broken)
+            if broken:
+                await self._tell_owner_about(broken, report)
         return report
 
     def _due_titles(self) -> list[_DueTitle]:
@@ -681,17 +687,18 @@ class Tracker:
             )
             return [_DueTitle(*row) for row in rows]
 
-    async def _poll_one(self, due: _DueTitle, report: PollReport) -> None:
+    async def _poll_one(self, due: _DueTitle, report: PollReport, broken: list[tuple[_DueTitle, Exception]]) -> None:
         try:
             source = (self.sequel_sources if due.sequels else self.sources)[due.kind]
             snapshot = await source.snapshot(due.external_id)
             if snapshot is None:
-                raise LookupError(f"{due.kind}:{due.external_id} is no longer known to the source")
+                raise failures.TitleGone(f"{due.kind}:{due.external_id} is no longer known to the source")
             apply = self._apply_sequels if due.sequels else self._applier(due.kind)
             found = await asyncio.to_thread(apply, due, snapshot)
         except Exception as exc:  # one broken title or source must not stop the pass
             logging.warning("polling title %s failed: %s", due.id, mask_secrets(repr(exc)))
             report.failed += 1
+            broken.append((due, exc))
             try:
                 await asyncio.to_thread(self._postpone, due, movie_events.RETRY_AFTER_FAILURE)
             except Exception as postpone_exc:  # even a failed postponement leaves the other titles to the pass
@@ -699,6 +706,61 @@ class Tracker:
             return
         report.polled += 1
         report.events += found
+
+    async def _tell_owner_about(self, broken: list[tuple[_DueTitle, Exception]], report: PollReport) -> None:
+        try:
+            report.notices = await asyncio.to_thread(self._queue_failure_notices, broken)
+        except Exception as exc:  # a notice that cannot be stored must not hide the pass; the next failure tries again
+            logging.warning("queueing failure notices failed: %s", mask_secrets(repr(exc)))
+
+    def _queue_failure_notices(self, broken: list[tuple[_DueTitle, Exception]]) -> int:
+        """Queue the «could not check» messages of one pass: one per source, and none for a title the owner was told
+        about in the last 24 hours. The notice and the time it was sent are stored together, so a restart
+        neither repeats a notice nor loses one."""
+        now = _naive_utc(self.clock())
+        queued = 0
+        with self.session_factory() as session:
+            by_source: dict[str, list[tuple[Title, str]]] = {}
+            seen: set[int] = set()
+            for due, exc in broken:
+                if due.id in seen:  # two broken sources of one title are one failure
+                    continue
+                seen.add(due.id)
+                title = session.get(Title, due.id)
+                if title is None or (
+                    title.failure_notified_at is not None and now - title.failure_notified_at < failures.COOLDOWN
+                ):
+                    continue
+                by_source.setdefault(failures.source_name(due.snapshot_source), []).append(
+                    (title, failures.reason_of(exc))
+                )
+            stamp = now.strftime("%Y%m%dT%H%M%S")  # the moment of the notice opens its 24-hour window
+            for source, items in by_source.items():
+                if len(items) == 1:
+                    title, reason = items[0]
+                    text = failures.message_one(title.title, source, reason)
+                    key = f"failure:{title.id}:{stamp}"
+                    payload = {"text": text, "source": source, "reason": reason}
+                    title_id = title.id
+                else:
+                    names = [t.title for t, _ in items]
+                    text = failures.message_many(source, names)
+                    key = f"failure:{source}:{stamp}:{','.join(str(t.id) for t, _ in items)}"
+                    payload = {"text": text, "source": source, "titles": names}
+                    title_id = None
+                for title, _ in items:
+                    title.failure_notified_at = now
+                if session.scalar(select(Event.id).where(Event.dedup_key == key)) is not None:
+                    continue
+                event = Event(
+                    type=failures.SOURCE_FAILED, title_id=title_id, payload=payload, dedup_key=key, detected_at=now
+                )
+                session.add(event)
+                session.flush()
+                session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
+                queued += 1
+            session.commit()
+        return queued
 
     def _applier(self, kind: str) -> Callable[[_DueTitle, Any], int]:
         if kind == "anime":

@@ -443,7 +443,7 @@ def test_a_failing_shikimori_postpones_the_title_and_loses_nothing(tracker, shik
     anilist.next_episode(AL_K3, 6, datetime(2026, 11, 6, 14, 0))
     poll_and_deliver(tracker, clock, days=6)
 
-    assert [m.split("\n")[0] for m in sender.sent] == [f"🎌 {KUSURIYA_NAME} — вышла серия 5"]
+    assert [m.split("\n")[0] for m in sender.sent if not m.startswith("⚠️")] == [f"🎌 {KUSURIYA_NAME} — вышла серия 5"]
 
 
 # --- фильмы франшизы ---------------------------------------------------------------------------------
