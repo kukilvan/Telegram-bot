@@ -11,6 +11,7 @@ _MONTHS = (
     "января", "февраля", "марта", "апреля", "мая", "июня",
     "июля", "августа", "сентября", "октября", "ноября", "декабря",
 )
+_SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
 NOT_ANNOUNCED = "не объявлена"
 
 
@@ -29,6 +30,11 @@ class TitleCard:
 
 def format_date(value: date | None) -> str:
     return f"{value.day} {_MONTHS[value.month - 1]} {value.year}" if value else NOT_ANNOUNCED
+
+
+def format_short_date(value: date) -> str:
+    """«15 дек 2026»: the form used when two dates stand side by side."""
+    return f"{value.day} {_SHORT_MONTHS[value.month - 1]} {value.year}"
 
 
 def format_card(card: TitleCard) -> str:

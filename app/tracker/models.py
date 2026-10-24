@@ -57,6 +57,7 @@ class SourceSnapshot(TrackerBase):
     source: Mapped[str] = mapped_column(String(32))
     state: Mapped[dict] = mapped_column(JSON)
     observed_at: Mapped[datetime] = mapped_column(DateTime)
+    next_check_at: Mapped[datetime | None] = mapped_column(DateTime, index=True)  # None: due now
 
 
 class Event(TrackerBase):

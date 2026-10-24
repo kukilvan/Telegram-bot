@@ -76,7 +76,7 @@ def display_title(item) -> str:
     return "Unknown"
 
 
-DELIVERY_RETRY_SECONDS = 60  # how often the tracker retries events that could not be sent
+TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles and, separately, sends the queue (retrying failed sends)
 INLINE_MAX_RESULTS = 50  # Telegram rejects more than 50 results in one answerInlineQuery
 
 
@@ -2107,10 +2107,16 @@ async def main() -> None:
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
         scheduler = AsyncIOScheduler()
         # The legacy poll scan and its notifications are switched off; the tracker core replaces them.
-        # Events whose send failed stay queued, so retry the queue regularly.
+        # Two independent jobs: a slow source must never hold back delivery of events already in the queue.
+        # The queue send also retries events whose earlier send failed.
+        scheduler.add_job(
+            tracker.poll_due, "interval",
+            seconds=TRACKER_BEAT_SECONDS,
+            misfire_grace_time=30, coalesce=True, max_instances=1,
+        )
         scheduler.add_job(
             tracker.deliver_pending, "interval",
-            seconds=DELIVERY_RETRY_SECONDS,
+            seconds=TRACKER_BEAT_SECONDS,
             misfire_grace_time=30, coalesce=True, max_instances=1,
         )
         # Phase 15: daily database backup at 3 AM
