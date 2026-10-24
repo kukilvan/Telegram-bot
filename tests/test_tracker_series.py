@@ -302,7 +302,7 @@ def test_marking_does_not_change_the_status(tracker):
     assert tracker.list_titles()[0].status == "want"  # automatic statuses come with the next tickets
 
 
-# --- buttons and polling ------------------------------------------------------------------------
+# --- buttons ------------------------------------------------------------------------------------
 
 
 def test_series_card_offers_the_seasons_button_and_not_watched(tracker):
@@ -313,15 +313,3 @@ def test_series_card_offers_the_seasons_button_and_not_watched(tracker):
     assert [a.name for a in actions] == [SEASONS]
     assert actions[0].arg == result.title_id
     assert WATCHED not in [a.name for a in actions]
-
-
-def test_a_series_is_not_polled_yet_and_its_data_is_left_alone(tracker, clock, series, session_factory):
-    run(tracker.add_title("series", "125988"))
-    clock.now = T0 + timedelta(days=30)
-
-    report = run(tracker.poll_due())
-
-    assert (report.polled, report.failed) == (0, 0)
-    assert series.snapshot_calls == 1
-    with session_factory() as s:
-        assert list(s.scalars(select(SourceSnapshot)))[0].state == {}

@@ -33,10 +33,11 @@ class SeriesSnapshot:
     poster_path: str | None = None
     overview: str | None = None
     seasons: list[Season] = field(default_factory=list)
+    status: str | None = None  # TMDb's status of the show: "Returning Series", "Ended", "Canceled", ...
 
     def state(self) -> dict[str, Any]:
-        """The seasons and episodes live in their own tables, so the snapshot row has nothing to add."""
-        return {}
+        """The seasons and episodes live in their own tables; the snapshot row keeps only the show's status."""
+        return {"show_status": self.status}
 
 
 def _parse_date(value: str | None) -> date | None:
@@ -98,6 +99,7 @@ def parse_show(raw: dict[str, Any], season_details: dict[int, dict[str, Any] | N
         poster_path=raw.get("poster_path"),
         overview=raw.get("overview") or None,
         seasons=sorted(seasons, key=lambda s: s.number),
+        status=raw.get("status") or None,
     )
 
 

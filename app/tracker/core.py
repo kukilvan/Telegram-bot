@@ -16,7 +16,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker import movie_events, seasons as season_logic, sequel_events
+from app.tracker import movie_events, seasons as season_logic, sequel_events, series_events
 from app.tracker.actions import Action, event_actions
 from app.tracker.cards import TitleCard
 from app.tracker.models import (
@@ -162,7 +162,8 @@ class Tracker:
 
     def __post_init__(self) -> None:
         self.register_test_event_kind(TestEventKind("ping", "Проверка связи", _ping_payload))
-        for kind_id, label, text in movie_events.TEST_SAMPLES + sequel_events.TEST_SAMPLES:
+        samples = movie_events.TEST_SAMPLES + sequel_events.TEST_SAMPLES + series_events.TEST_SAMPLES
+        for kind_id, label, text in samples:
             self.register_test_event_kind(TestEventKind(kind_id, label, lambda text=text: {"text": text}))
 
     # --- events ---------------------------------------------------------------------------------
@@ -240,11 +241,8 @@ class Tracker:
                     source=source_key,
                     state=state,
                     observed_at=now,
-                    # the snapshot taken now is the baseline; the first poll compares against it.
-                    # Series are not polled yet (their events come with the next ticket)
-                    next_check_at=(
-                        now + movie_events.check_interval_for_state(state, now.date()) if kind == "movie" else None
-                    ),
+                    # the snapshot taken now is the baseline; the first poll compares against it
+                    next_check_at=self._first_check(kind, snapshot, state, now),
                 )
             )
             self._store_seasons(session, title.id, getattr(snapshot, "seasons", ()))
@@ -258,6 +256,14 @@ class Tracker:
                     raise
                 return AddResult(existing, created=False)
             return AddResult(title.id, created=True)
+
+    @staticmethod
+    def _first_check(kind: str, snapshot: Any, state: dict[str, Any], now: datetime) -> datetime | None:
+        if kind == "movie":
+            return now + movie_events.check_interval_for_state(state, now.date())
+        if kind == "series":
+            return now + series_events.check_interval(series_events.ShowState.of(snapshot.seasons, state), now)
+        return None
 
     @staticmethod
     def _store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> None:
@@ -424,8 +430,12 @@ class Tracker:
                 )
                 .where(
                     or_(
-                        # series are not polled yet: movie rules would overwrite their data
-                        and_(own, Title.kind == "movie", Title.status == STATUS_WANT, Title.tracking_enabled.is_(True)),
+                        and_(
+                            own,
+                            Title.kind.in_(("movie", "series")),
+                            Title.status == STATUS_WANT,
+                            Title.tracking_enabled.is_(True),
+                        ),
                         and_(~own, Title.status == STATUS_WATCHED),
                     ),
                     (SourceSnapshot.next_check_at.is_(None)) | (SourceSnapshot.next_check_at <= now),
@@ -440,7 +450,7 @@ class Tracker:
             snapshot = await source.snapshot(due.external_id)
             if snapshot is None:
                 raise LookupError(f"{due.kind}:{due.external_id} is no longer known to the source")
-            apply = self._apply_sequels if due.sequels else self._apply_snapshot
+            apply = self._apply_sequels if due.sequels else self._applier(due.kind)
             found = await asyncio.to_thread(apply, due, snapshot)
         except Exception as exc:  # one broken title or source must not stop the pass
             logging.warning("polling title %s failed: %s", due.id, mask_secrets(repr(exc)))
@@ -452,6 +462,9 @@ class Tracker:
             return
         report.polled += 1
         report.events += found
+
+    def _applier(self, kind: str) -> Callable[[_DueTitle, Any], int]:
+        return self._apply_series if kind == "series" else self._apply_snapshot
 
     def _apply_snapshot(self, due: _DueTitle, snapshot: Any) -> int:
         """Compare the fresh snapshot with the stored one, queue events, store the new state."""
@@ -475,6 +488,55 @@ class Tracker:
             stored.next_check_at = now + movie_events.check_interval(new, today)
             session.commit()
         return found
+
+    def _apply_series(self, due: _DueTitle, snapshot: Any) -> int:
+        """Compare the fresh seasons with the stored ones, queue events, store the new seasons."""
+        now = _naive_utc(self.clock())
+        with self.session_factory() as session:
+            stored = self._stored_snapshot(session, due)
+            observed_at = stored.observed_at
+            old = series_events.ShowState.of((season for _, season in self._load_seasons(session, due.id)), stored.state)
+        new = series_events.ShowState.of(
+            (s for s in snapshot.seasons if s.number >= 1), snapshot.state()
+        ).keeping_known(old)
+        found = 0
+        # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
+        for event in series_events.detect_events(due.id, due.name, old, new, observed_at, now):
+            payload = {"text": event.text, **event.data}
+            if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+                found += 1
+        with self.session_factory() as session:
+            self._sync_seasons(session, due.id, new.seasons)
+            stored = self._stored_snapshot(session, due)
+            stored.state = new.to_state()
+            stored.observed_at = now
+            stored.next_check_at = now + series_events.check_interval(new, now)
+            session.commit()
+        return found
+
+    @staticmethod
+    def _sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> None:
+        """Bring the stored seasons and episodes to the given ones; the owner's «watched» marks stay."""
+        records = {r.number: r for r in session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id))}
+        for season in seasons:
+            record = records.get(season.number)
+            if record is None:
+                record = SeasonRecord(title_id=title_id, number=season.number, name=season.name,
+                                      episode_count=season.expected, watched=False)
+                session.add(record)
+                session.flush()
+            record.name = season.name
+            record.episode_count = season.expected
+            stored = {e.number: e for e in session.scalars(select(EpisodeRecord).where(EpisodeRecord.season_id == record.id))}
+            for episode in season.episodes:
+                if episode.number in stored:
+                    stored[episode.number].air_at = episode.air_at
+                else:
+                    session.add(EpisodeRecord(season_id=record.id, number=episode.number, air_at=episode.air_at))
+            listed = {e.number for e in season.episodes}
+            for number, row in stored.items():
+                if number not in listed:
+                    session.delete(row)
 
     def _apply_sequels(self, due: _DueTitle, snapshot: Any) -> int:
         """Archived movie: announce the collection parts that were not there at the previous check."""
