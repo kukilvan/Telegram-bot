@@ -15,6 +15,7 @@ from typing import Any
 import httpx
 
 from app.config import get_settings
+from app.utils.secrets_mask import mask_secrets
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def _format_error_for_telegram(exc: Exception) -> str:
     - Truncates to ~3500 chars to stay under Telegram's 4096 limit
     """
     tb_text = traceback.format_exception(type(exc), exc, exc.__traceback__)
-    full_text = "".join(tb_text)
+    full_text = mask_secrets("".join(tb_text))
 
     # HTML-escape
     escaped = html.escape(full_text)
@@ -49,7 +50,7 @@ def _save_error_to_file(exc: Exception) -> None:
         os.makedirs(os.path.dirname(ERROR_LOG_FILE), exist_ok=True)
         tb_text = traceback.format_exception(type(exc), exc, exc.__traceback__)
         with open(ERROR_LOG_FILE, "w", encoding="utf-8") as f:
-            f.writelines(tb_text)
+            f.write(mask_secrets("".join(tb_text)))
     except Exception:
         pass  # Best effort
 

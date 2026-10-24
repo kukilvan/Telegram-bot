@@ -3,11 +3,25 @@ import sys
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from app.utils.secrets_mask import mask_secrets
+
 LOG_DIR = Path(__file__).parent.parent / "logs"
 MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 BACKUP_COUNT = 5
 
-_formatter = logging.Formatter(
+
+class MaskingFormatter(logging.Formatter):
+    """Formatter that masks secrets in the whole line, tracebacks included.
+
+    Third-party loggers (httpx logs full URLs with api_key=..., aiogram logs tracebacks)
+    propagate to the root handlers, so masking at the formatter covers them all.
+    """
+
+    def format(self, record: logging.LogRecord) -> str:
+        return mask_secrets(super().format(record))
+
+
+_formatter = MaskingFormatter(
     "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
