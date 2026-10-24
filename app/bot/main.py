@@ -1505,11 +1505,19 @@ async def main() -> None:
                                 ExternalId.source == "shikimori_franchise",
                                 ExternalId.external_id == franchise_key,
                             ).first()
+                            # Check if user already tracks this franchise
                             if existing_franchise_ext:
-                                existing_item = s.get(MediaItem, existing_franchise_ext.media_item_id)
-                                if existing_item:
-                                    await cb.message.answer(f"Уже в списке: {display_title(existing_item)}")
-                                    return
+                                existing_watch = s.execute(
+                                    select(UserWatchItem).where(
+                                        (UserWatchItem.user_id == user.id) &
+                                        (UserWatchItem.media_item_id == existing_franchise_ext.media_item_id)
+                                    )
+                                ).scalar_one_or_none()
+                                if existing_watch:
+                                    existing_item = s.get(MediaItem, existing_franchise_ext.media_item_id)
+                                    if existing_item:
+                                        await cb.message.answer(f"Уже в списке: {display_title(existing_item)}")
+                                        return
                             item = _ensure_anilist_item(s, int(anilist_details["id"]), anilist_details)
                             # Update title_ru if available
                             if summary.title_ru:

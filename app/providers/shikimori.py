@@ -35,17 +35,57 @@ class FranchiseSummary:
     total_episodes_aired: int  # sum across all seasons
 
 
+def _extract_base_title(items: list[dict]) -> str | None:
+    """Extract base title from the first TV/ONA item (main series)."""
+    for item in items:
+        if item.get("kind") in SEASON_KINDS:
+            name = item.get("name", "")
+            if name:
+                return name
+    return None
+
+
+def _name_matches_base(name: str, base_title: str) -> bool:
+    """Check if a name matches the base title (for season filtering)."""
+    if not name or not base_title:
+        return False
+    name_lower = name.lower().strip()
+    base_lower = base_title.lower().strip()
+    # Direct match or starts with base title
+    if name_lower == base_lower:
+        return True
+    if name_lower.startswith(base_lower + ":") or name_lower.startswith(base_lower + " "):
+        return True
+    # Check for "Season N", "Part N", "2", "3" etc. at the end
+    # e.g., "Jujutsu Kaisen Season 4", "Jujutsu Kaisen 2", "Jujutsu Kaisen Part 2"
+    for suffix in [" season ", " season", " part ", " part", " 2", " 3", " 4", " 5"]:
+        if name_lower.endswith(suffix) and name_lower[:-len(suffix)].strip() == base_lower.strip():
+            return True
+    return False
+
+
 def get_seasons(items: list[dict]) -> list[dict]:
     """Filter and sort seasons from franchise items."""
-    seasons = [
+    # First filter by kind and duration
+    candidates = [
         a for a in items
         if a.get("kind") in SEASON_KINDS
         and (a.get("duration") or 24) >= MIN_SEASON_DURATION
     ]
-    if not seasons:
-        seasons = list(items)
+    if not candidates:
+        return list(items)
+    
+    # Extract base title from the first TV/ONA item (main series)
+    base_title = _extract_base_title(candidates)
+    
+    # Filter by name matching base title (excludes crossovers, unrelated entries)
+    if base_title:
+        seasons = [a for a in candidates if _name_matches_base(a.get("name", ""), base_title)]
+        if seasons:
+            candidates = seasons
+    
     far = datetime.max.replace(tzinfo=timezone.utc)
-    return sorted(seasons, key=lambda a: _aired_date(a) or far)
+    return sorted(candidates, key=lambda a: _aired_date(a) or far)
 
 
 def pick_current_season(items: list[dict]) -> dict | None:

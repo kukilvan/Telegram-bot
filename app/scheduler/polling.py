@@ -454,6 +454,54 @@ async def _refresh_anime_season(session: Session, shikimori_provider, anilist_pr
 from app.domain.events import DomainEvent
 
 
+async def _poll_anime_episodes(session: Session, anilist_provider, item: MediaItem, user_id: int) -> list:
+    """Poll anime episodes from AniList and generate events.
+    
+    This is the AniList portion of poll_item, extracted for reuse.
+    """
+    if not anilist_provider:
+        return []
+    
+    anilist_state = await _fetch_anilist_state(session, anilist_provider, item)
+    if not anilist_state:
+        # No AniList data (fresh announcement), create empty state
+        _store_state(session, item.id, "anilist", {})
+        st_row = session.execute(
+            select(SourceState).where(
+                (SourceState.media_item_id == item.id)
+                &
+                (SourceState.source_name == "anilist")
+            )
+        ).scalar_one_or_none()
+        if st_row:
+            from datetime import timezone as tz
+            st_row.next_check_at = datetime.now(tz=tz.utc).replace(tzinfo=None) + timedelta(hours=24)
+            session.commit()
+        return []
+    
+    old_al = _load_state(session, item.id, "anilist")
+    if old_al is None:
+        # First poll, just store state
+        _store_state(session, item.id, "anilist", anilist_state)
+        return []
+    
+    # Compare states and generate events
+    events = []
+    for ev in compare_anilist_states(old_al, anilist_state):
+        ev = _replace(ev, media_item_id=item.id)
+        fp = ev.fingerprint()
+        if has_been_sent(session, fp):
+            continue
+        enabled_rules = get_enabled_rules(session, user_id, item.id)
+        if not any(r.event_type == ev.event_type for r in enabled_rules):
+            continue
+        mark_sent(session, fp, item.id)
+        events.append(ev)
+    _store_state(session, item.id, "anilist", anilist_state)
+    
+    return events
+
+
 async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
     """Run one polling cycle for a watch item.
 
@@ -611,11 +659,12 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
                 ExternalId.source == "shikimori_franchise",
             ).first()
             if shiki_franchise_ext:
+                all_events = []
+                
                 # Run anime-specific refresh before polling
-                events = await _refresh_anime_season(session, shikimori_provider, anilist_provider, item, shiki_franchise_ext.external_id)
-                if events:
-                    # Process events
-                    for ev in events:
+                season_events = await _refresh_anime_season(session, shikimori_provider, anilist_provider, item, shiki_franchise_ext.external_id)
+                if season_events:
+                    for ev in season_events:
                         ev = _replace(ev, media_item_id=item.id)
                         fp = ev.fingerprint()
                         if has_been_sent(session, fp):
@@ -624,12 +673,45 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
                         if not any(r.event_type == ev.event_type for r in enabled_rules):
                             continue
                         mark_sent(session, fp, item.id)
-                        results.append((w.user_id, item, [ev]))
-                # Skip TMDb poll for anime franchises
-                state = {}
-                old = _load_state(session, item.id, "tmdb")
-                if old is not None:
-                    _store_state(session, item.id, "tmdb", state)
+                        all_events.append(ev)
+                
+                # Poll anime episodes from AniList
+                episode_events = await _poll_anime_episodes(session, anilist_provider, item, w.user_id)
+                all_events.extend(episode_events)
+                
+                # Set next_check_at in SourceState "anilist"
+                state_now = _load_state(session, item.id, "anilist") or {}
+                interval = tier_interval(state_now, "anime")
+                jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
+                extra = RATE_LIMIT_EXTRA_DELAY if getattr(anilist_provider, "hit_429", False) else 0.0
+                deadline = now + timedelta(seconds=interval + jitter + extra)
+                st_row = session.execute(
+                    select(SourceState).where(
+                        (SourceState.media_item_id == item.id)
+                        &
+                        (SourceState.source_name == "anilist")
+                    )
+                ).scalar_one_or_none()
+                if st_row is not None:
+                    st_row.next_check_at = deadline
+                    session.commit()
+                elif all_events:
+                    # Create SourceState row if it doesn't exist
+                    _store_state(session, item.id, "anilist", state_now)
+                    st_row = session.execute(
+                        select(SourceState).where(
+                            (SourceState.media_item_id == item.id)
+                            &
+                            (SourceState.source_name == "anilist")
+                        )
+                    ).scalar_one_or_none()
+                    if st_row:
+                        st_row.next_check_at = deadline
+                        session.commit()
+                
+                if all_events:
+                    results.append((w.user_id, item, all_events))
+                continue
             else:
                 # No shikimori_franchise, run normal poll
                 events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)

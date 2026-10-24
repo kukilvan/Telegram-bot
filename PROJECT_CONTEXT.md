@@ -1042,13 +1042,13 @@ Bot: 📅 2023.03.15
 
 ## 18. LAST CHECKPOINT
 
-Last checkpoint: 2026-09-26 (Phase 23 P0.1-P0.3 DONE)
+Last checkpoint: 2026-09-27 (Phase 23 P0.1-P0.4 DONE, P1.1 IN PROGRESS)
 
-Current state: Phase 22 DONE — Unified Game Entity. Phase 23 Steps 1-6 DONE — unified search, watchlist redesign, details handlers for all types. P0.1-P0.3 DONE — APScheduler fix, anime polling, notification rules.
+Current state: Phase 22 DONE — Unified Game Entity. Phase 23 Steps 1-6 DONE — unified search, watchlist redesign, details handlers for all types. P0.1-P0.4 DONE. P1.1 IN PROGRESS — fixing anime season counting.
 
-Last completed action: Fixed APScheduler misfire (P0.1), added anime episode polling (P0.2), added notification rules on search_add (P0.3).
+Last completed action: P0.4 DONE — added `display_title()` helper, updated all user-facing displays to use `title_ru` when available. Fixed "Already in list" bug — now checks UserWatchItem instead of just checking if item exists in DB.
 
-Next exact action: P0.4 — Add `canonical_title_ru` field to MediaItem model, update search_add to save Russian title, update all displays to use `display_title()`.
+Next exact action: P1.1 — Fix anime season counting. Currently filtering by name prefix to exclude crossovers/unrelated entries incorrectly grouped in Shikimori franchise. `relationKind` field doesn't exist in Shikimori API — need alternative approach.
 
 ## 19. PHASE 23 — COMPLETE STATUS
 
@@ -1072,24 +1072,60 @@ Next exact action: P0.4 — Add `canonical_title_ru` field to MediaItem model, u
 - Added rule creation loop after `add_watch_item()` in `search_add` handler
 - Updated `_default_rules_for("anime")` to include: `NEXT_EPISODE_AIRING`, `ALL_EPISODES_OUT`, `NEW_SEASON_ANNOUNCED`, `NEW_SEASON_STARTED`, `SEASON_START_DATE`
 
-#### P0.4: Russian title lost — ❌ TODO
-- `MediaItem.title_ru` field doesn't exist (SQLAlchemy ignores it)
-- Need to add `canonical_title_ru: str | None` to model + migration
-- Create `display_title(m)` helper: `canonical_title_ru or canonical_title_en or "Unknown"`
-- Use in all user-facing displays: watchlist, card, "added", "removed", notifications, `/events`, `/notes`
-- For anime franchises: `canonical_title_en` = romaji of first season (franchise name), not current season
-- Migration: fill both fields from `build_franchise_summary` for existing anime
+#### P0.4: Russian title display — ✅ DONE
+- `MediaItem.title_ru` field already exists in model and DB (from initial migration)
+- For anime, `title_ru` is populated from Shikimori `build_franchise_summary()` (Russian title of first season)
+- Created `display_title(item)` helper in `app/bot/main.py:65-70`: returns `title_ru` if available, else `canonical_title_en`, else "Unknown"
+- Updated ALL user-facing displays to use `display_title()`:
+  - "✅ Добавлено" (search_add, ap callback)
+  - "🗑 Удалено" (remove callback, /remove command)
+  - "Уже в списке" (search_add anime)
+  - Watchlist (tv, movie, anime, game categories)
+  - Details handler (all types)
+  - Notes handler
+  - Events handler
+  - Notification messages (polling loop)
+  - /remove command
+- For movies/TV/games: `title_ru` is NOT populated — shows English title (fallback)
+- For anime: `title_ru` populated from Shikimori — shows Russian title
 
-### P1 — Correctness & Consistency
+#### P0.5: "Already in list" bug after delete — ✅ DONE
+- Bug: After deleting anime from watchlist, trying to re-add showed "Уже в списке"
+- Root cause: Code checked `ExternalId` table (item exists in DB) instead of `UserWatchItem` (user tracks it)
+- Fix: Changed check to query `UserWatchItem` table — only shows "Already in list" if user actually has it in watchlist
+- File: `app/bot/main.py` (search_add anime branch, ~line 1508)
 
-#### P1.1: Seasons counted incorrectly — ❌ TODO
-- One Piece shows "4 seasons" (includes remakes, recaps)
-- Kusuriya shows "4 seasons" (should be 3)
-- JJK shows "Season 4" (should be part of Season 3)
-- Fix: Use Shikimori `related` field with `relationKind` (sequel, prequel, summary, etc.)
-- Build chain from root (no prequel) through sequels
-- Only count TV/ONA with duration >= 15 min as seasons
-- Summary/alternative_version/spin_off are NOT seasons
+### P1 — Correctness & Consistency (IN PROGRESS)
+
+#### P1.1: Seasons counted incorrectly — 🔄 IN PROGRESS
+**Symptoms:**
+- One Piece showed "4 seasons" (should be 1 continuous series)
+- JJK showed "4 seasons" (actually correct: 3 released + 1 announced)
+- Kusuriya showed "4 seasons" (should be 3)
+
+**Root cause:** Shikimori groups ALL items into a single `franchise` field, including:
+- Crossovers/unrelated anime (e.g., "Monsters: Ippyaku Sanjou Hiryuu Jigoku" incorrectly in One Piece franchise)
+- TV specials (kind="tv_special")
+- OVAs (kind="ova")
+- Movies (kind="movie")
+- Arcs treated as separate entries (e.g., "One Piece: Gyojin Tou-hen")
+
+**Investigation:** Tested Shikimori GraphQL API — `relationKind` field does NOT exist on `Anime` type. Cannot use it for filtering.
+
+**Solution implemented:**
+1. Added `_extract_base_title()` — extracts base title from first TV/ONA item (main series)
+2. Added `_name_matches_base()` — checks if item name starts with base title (handles "Season N", "Part N", "2", "3" suffixes)
+3. Updated `get_seasons()` to filter by name prefix — excludes crossovers and unrelated entries
+4. Still filters by `kind in {"tv", "ona"}` and `duration >= 15`
+
+**Results after fix:**
+- One Piece: 2 seasons (main series + Gyojin Tou-hen arc) — improved from 4, but Gyojin Tou-hen is an arc not a separate season
+- JJK: 4 seasons — correct (Seasons 1-3 released, Season 4 announced)
+- Kusuriya: 3 seasons — correct
+
+**Remaining issue:** One Piece has no clear season divisions — it's one continuous TV series since 1999. "Gyojin Tou-hen" is an arc within the main series, not a separate season. Shikimori's data model doesn't support season divisions for One Piece. This is a known limitation.
+
+**Files modified:** `app/providers/shikimori.py` (`get_seasons`, `_extract_base_title`, `_name_matches_base`)
 
 #### P1.2: Unified anime status model — ❌ TODO
 - Create `app/domain/anime_status.py` with `AnimeStatus` dataclass
@@ -1126,11 +1162,11 @@ Next exact action: P0.4 — Add `canonical_title_ru` field to MediaItem model, u
 - `fingerprint()`: include `anilist_id` or `shiki_id` + episode number for episode events; `shiki_id` for season events
 - Unified payload: `season_index`, `episode`, `airing_at` (timestamp), `shiki_id`, `anilist_id`
 
-#### P1.6: `search_add` for anime — ❌ TODO
+#### P1.6: `search_add` for anime — ❌ TODO (partially done: P0.5 fixed "Already in list")
 - Don't fail if AniList returns no data (announcement)
 - Use `_ensure_anime_franchise_item()` instead of `_ensure_anilist_item()`
 - Search existing franchise by `shikimori_franchise` only (not cross join)
-- If franchise exists but user doesn't track: add watch + rules, not "Already in list"
+- If franchise exists but user doesn't track: add watch + rules, not "Already in list" ✅ (P0.5)
 - "✅ Added" message via `AnimeStatus`
 
 ### P2 — Improvements
@@ -1140,6 +1176,21 @@ Next exact action: P0.4 — Add `canonical_title_ru` field to MediaItem model, u
 - Example: "• Ван-Пис — выходит, след. серия вс 27.09"
 
 #### P2.2: Card with fewer requests — ❌ TODO
+- Use Shikimori state if <6h old, skip franchise re-fetch
+- Remove first AniList call (for English title)
+
+#### P2.3: Notification texts — ❌ TODO
+- Create `format_event_text(event, item, status)` with Russian texts
+- Events: `NEXT_EPISODE_AIRING`, `ALL_EPISODES_OUT`, `NEW_SEASON_ANNOUNCED`, `NEW_SEASON_STARTED`, `SEASON_START_DATE`
+
+#### P2.4: Game release dates in details — ❌ TODO (BUG-15)
+- Game details handler doesn't show release dates from `GamePlatform` table
+- Should show: "IGDB ✅ (2020-03-10)", "STEAM ✅ (2022-12-07)", etc.
+- Files: `app/bot/main.py` (game details handler)
+
+#### P2.5: TV series episode count — ❌ TODO (BUG-12)
+- TV series shows "Выпущено: 0 из 1" for trailers/specials
+- Need to filter out special episodes (episode_number=0, type="special")
 - Use Shikimori state if <6h old, skip franchise re-fetch
 - Remove first AniList call (for English title)
 
@@ -1245,18 +1296,155 @@ Full Game Title Here
   PSN 🎮 - 15.08.2016 ⬜
 ```
 
-## 21. KEY FILES
+## 21. KEY FILES (Detailed)
 
-- `app/bot/main.py` — handlers, details, search_add, scheduler setup
-- `app/scheduler/polling.py` — poll_due_items, poll_item, _refresh_anime_season, _poll_anime_episodes
-- `app/scheduler/tiering.py` — tier_interval for anime
-- `app/providers/shikimori.py` — Shikimori GraphQL client, build_franchise_summary
-- `app/providers/anilist.py` — AniList GraphQL client, BY_MAL_QUERY
-- `app/providers/tmdb.py` — TMDb provider
-- `app/database/models.py` — MediaItem, ExternalId, SourceState
-- `app/domain/events.py` — DomainEvent, compare_anilist_states, fingerprint
-- `app/config.py` — Settings including bot_timezone, shikimori settings
-- `app/services/watchlist.py` — add_watch_item, remove_watch_item
+### `app/bot/main.py` (~2122 lines)
+**Purpose:** Main Telegram bot handlers, keyboard definitions, scheduler setup, details handlers.
+
+**Key sections:**
+- Lines 1-60: Imports, `display_title()` helper (new), `db()` session manager
+- Lines 65-250: `_ensure_*_item()` functions — create MediaItem from API responses (movie, tv, anime, game)
+- Lines 250-400: `_resolve_media_for_add()` — resolve TMDb/AniList/IGDB/Steam/PSN IDs to MediaItem
+- Lines 405-550: `_perform_add_flow()` — shared /add flow (duplicate check, release confirmation)
+- Lines 550-800: `/add` handler — main add flow with service picker
+- Lines 800-1000: Inline search handlers (`/search` text, type selection, add from search)
+- Lines 1000-1400: Watchlist handlers (`/watchlist`, remove callback, details callback)
+- Lines 1400-1600: `search_add` handler — add from inline search results (movie/tv/anime/game branches)
+- Lines 1600-1800: Details handler — show full info for movie/tv/anime/game
+- Lines 1800-2000: Notes handlers (`/note`, `/notes`), events handler (`/events`)
+- Lines 2000-2122: `_poll_due_items()` — adaptive polling loop, notification dispatch
+
+**Recent changes (Phase 23):**
+- Added `display_title()` helper (line 65-70)
+- Updated all title displays to use `display_title()`
+- Fixed "Already in list" bug in anime search_add (line ~1508) — now checks UserWatchItem
+
+### `app/providers/shikimori.py` (~303 lines)
+**Purpose:** Shikimori GraphQL API client for anime search, franchise grouping, season selection.
+
+**Key sections:**
+- Lines 1-30: Imports, constants (`SEASON_KINDS`, `MIN_SEASON_DURATION`)
+- Lines 35-40: `FranchiseSummary` dataclass
+- Lines 42-90: `get_seasons()`, `_extract_base_title()`, `_name_matches_base()` — season filtering (NEW)
+- Lines 92-110: `pick_current_season()` — select current/ongoing season from franchise
+- Lines 112-130: `get_total_seasons()` — count seasons
+- Lines 132-150: `_aired_date()` — extract aired date from item
+- Lines 152-260: `ShikimoriClient` class — GraphQL client with throttling
+- Lines 260-290: `search_anime()` — search by name
+- Lines 292-310: `get_by_id()` — get single anime by ID
+- Lines 312-350: `get_franchise()` — get all items in franchise
+- Lines 352-380: `build_franchise_summary()` — build summary from franchise data
+
+**Recent changes (Phase 23 P1.1):**
+- Added `_extract_base_title()` and `_name_matches_base()` for name-based filtering
+- Updated `get_seasons()` to filter by name prefix — excludes crossovers
+
+**GraphQL queries:**
+- Search: `animes(search: $search)` — returns id, name, russian, english, kind, status, episodes, episodesAired, nextEpisodeAt, airedOn, franchise
+- By ID: `animes(ids: $ids)` — same fields + duration
+- Franchise: `animes(franchise: $franchise)` — same fields, paginated
+
+**Important:** Shikimori API does NOT have `relationKind` field. Cannot filter by relation type.
+
+### `app/providers/anilist.py`
+**Purpose:** AniList GraphQL API client for anime airing schedules.
+
+**Key queries:**
+- `BY_MAL_QUERY` — fetch anime by MAL ID (used with Shikimori MAL ID)
+- Returns: title, status, episodes, nextAiringEpisode, seasonYear, coverImage
+
+### `app/scheduler/polling.py`
+**Purpose:** Adaptive polling — checks watchlist items at per-item intervals.
+
+**Key functions:**
+- `poll_due_items()` — scan due items, distribute TMDb calls
+- `poll_item()` — poll single item, detect state changes, fire events
+- `_refresh_anime_season()` — refresh anime season from Shikimori + AniList
+- `_poll_anime_episodes()` — poll anime episodes from AniList (NEW, P0.2)
+- `_earliest_theatrical_date()`, `_earliest_digital_date()` — helper for movie dates
+
+### `app/scheduler/tiering.py`
+**Purpose:** Compute polling interval per item based on state.
+
+**Key function:**
+- `tier_interval(item_type, state)` — returns seconds until next check
+- Anime branch: next episode <24h → 1h, airing → 6h, finished/announced → 24h
+
+### `app/database/models.py` (~210 lines)
+**Purpose:** SQLAlchemy ORM models.
+
+**Key models:**
+- `User` — Telegram user (id, telegram_user_id, username, timezone)
+- `MediaItem` — core entity (id, media_type, canonical_title_en, title_ru, year, description, poster_url, backdrop_url)
+- `ExternalId` — external IDs per item (media_item_id, source, external_id)
+- `SourceState` — cached state per item (media_item_id, source, state, details, next_check_at)
+- `UserWatchItem` — user's watchlist (user_id, media_item_id, added_at)
+- `NotificationRule` — notification preferences (user_id, media_item_id, event_type, enabled)
+- `ReleaseEvent` — detected events (media_item_id, event_type, payload, created_at)
+- `Note` — user notes (user_id, media_item_id, note_text, updated_at)
+- `Tag` — tags (id, name)
+- `UserTag` — user-tagged items (user_id, media_item_id, tag_id)
+- `GamePlatform` — platform release info (media_item_id, platform, platform_id, release_date, store_url)
+
+### `app/services/watchlist.py`
+**Purpose:** Watchlist CRUD operations.
+
+**Key functions:**
+- `add_watch_item(session, user_id, media_item_id)` — add to watchlist
+- `remove_watch_item(session, user_id, media_item_id)` — remove from watchlist
+- `list_watch_items(session, user_id)` — list with pagination
+- `get_watch_item(session, user_id, media_item_id)` — get single item
+
+### `app/domain/events.py`
+**Purpose:** Domain event detection — compares states, fires events.
+
+**Key functions:**
+- `DomainEvent` — event dataclass (event_type, payload, timestamp)
+- `compare_tmdb_states()` — detect movie/TV events
+- `compare_anilist_states()` — detect anime events
+- `compare_igdb_states()` — detect game events
+- `fingerprint()` — dedup key for events
+
+### `app/services/media_resolve.py`
+**Purpose:** Resolve titles to MediaItems — search, dedup, title matching.
+
+**Key functions:**
+- `add_game_to_watchlist()` — add game from platforms
+- `get_game_platforms()` — get platforms for item
+- `get_user_tracked_platforms()` — get user's tracked platforms
+- `search_and_resolve()` — search across all providers
+
+### `migrations/versions/`
+**Purpose:** Alembic database migrations.
+
+**Current migrations:**
+- `11f3f12cf425_initial_schema.py` — initial schema (all tables)
+- `a7c3e91f2d48_phase_75_source_states_next_check_at.py` — added next_check_at to source_states
+
+**Migration command:** `alembic upgrade head` (run inside Docker container)
+
+### `Dockerfile`
+**Purpose:** Docker image for bot.
+
+**Base:** python:3.12-slim
+**Dependencies:** installs from pyproject.toml
+**Entry:** `python -m app.bot.main`
+**Volume:** `/app/data` — persists SQLite database
+
+### `.env`
+**Purpose:** Environment variables.
+
+**Key vars:**
+- `BOT_TOKEN` — Telegram bot token
+- `TMDb_BASE_URL`, `TMDb_KEY` — TMDb API
+- `ANILIST_GRAPHQL_URL` — AniList GraphQL endpoint
+- `SHIKIMORI_BASE_URL`, `SHIKIMORI_USER_AGENT` — Shikimori API
+- `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET` — IGDB API
+- `STEAM_API_KEY` — Steam API
+- `PSN_CLIENT_ID`, `PSN_CLIENT_SECRET` — PSN API
+- `DATABASE_URL` — SQLite file path
+- `BOT_TIMEZONE` — user timezone (default: Asia/Jerusalem)
+- `ALLOWED_USER_IDS` — comma-separated Telegram user IDs
 
 ## 17. END-OF-SESSION VERIFICATION PROCEDURE
 
