@@ -26,7 +26,8 @@ ADR на сегодня: 0001 один экземпляр — один влад�
 - Работает **старый** бот на aiogram (Phase 23): поиск по типу, список, карточки, опрос TMDb / AniList / Shikimori / IGDB / Steam / PSN, уведомления. Он остаётся рабочим, пока идёт переписывание по дорожной карте.
 - Кусок 0 дорожной карты («срочное») сделан: закрыт белый список, секреты маскируются в логах, исправлены `NameError`, опрос изолирует ошибки. Подробности и коммиты — в разделе 3.
 - Ветка: `audit-fixes`. Основная: `master`. `CLAUDE.md`, `CONTEXT.md` и `docs/` закоммичены (`df63fae`).
-- Тесты: 78, из них 77 проходят. Не проходит `tests/test_tiering.py::test_tv_airing_or_stubbed_announced_season_is_daily`: тест ждёт сутки для аниме без данных, а код после P0.2 даёт 6 часов (нужно решить, что править: тест или код).
+- Новое ядро трекера (тикет 01 `release-tracker-v2`): `app/tracker/`, отдельная база `data/tracker.db`, кнопка «🧪 Тестовое событие» в боте. Старый опрос и его уведомления выключены (старые поиск и список работают).
+- Тесты: 97, из них 96 проходят. Не проходит `tests/test_tiering.py::test_tv_airing_or_stubbed_announced_season_is_daily`: тест ждёт сутки для аниме без данных, а код после P0.2 даёт 6 часов (нужно решить, что править: тест или код).
 - В корне репозитория лежит мусор (отладочные `test_psn_*.py`, `test_steam*.py`, картинки, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`). Чистка — кусок 8.
 - Ключи (токен бота, ключ TMDb) засвечены в переписке и консоли; решено заменить все ключи один раз в конце, перед публикацией.
 
@@ -81,7 +82,7 @@ cd E:\LocalAI\Bionic\Telegram-bot
 ```powershell
 .venv\Scripts\python.exe -m pytest tests/ -v
 ```
-Миграции: `alembic upgrade head`. Docker: `docker build -t telegram-bot .` и `docker run --env-file .env -v ${PWD}/data:/app/data telegram-bot` (образ собирался и запускался; каталог `/app/data` хранит базу).
+Миграции старой базы: `alembic upgrade head`. Новая база трекера мигрируется сама при старте бота; вручную: `alembic -c alembic_tracker.ini upgrade head`. Docker: `docker build -t telegram-bot .` и `docker run --env-file .env -v ${PWD}/data:/app/data telegram-bot` (образ собирался и запускался; каталог `/app/data` хранит базу).
 
 **Проверка после изменений:** остановить бота, запустить, 10–15 секунд смотреть консоль (красного текста быть не должно, через минуту появляется строка `poll scan done: … failed, …`), затем владелец отправляет сообщения, относящиеся к изменённому (инструкции — в `CLAUDE.md`, раздел «Как писать инструкции владельцу»). Сессия считается успешной, если в консоли нет ошибок и в Telegram не пришло сообщение об ошибке.
 
@@ -103,6 +104,8 @@ Telegram (aiogram 3.x) → Handlers → Services → Domain/Event Engine → Pro
 | `app/config.py` | `Settings` из окружения, разбор `ALLOWED_TELEGRAM_USER_IDS` |
 | `app/providers/` | `tmdb.py`, `anilist.py`, `shikimori.py`, `igdb.py`, `steam.py`, `psn.py`: клиенты внешних API с ограничением частоты |
 | `app/domain/events.py` | События (`DomainEvent`, fingerprint для дедупликации), `compare_*_states`, `pre_add_check` |
+| `app/tracker/` | Ядро трекера v2: `core.py` (фасад `Tracker`: часы, отправитель и источники передаются снаружи; события, очередь доставки, тестовые события), `models.py`, `db.py` (SQLite в режиме WAL, миграции), `migrations/` (отдельный Alembic, `alembic_tracker.ini`) |
+| `app/bot/tracker_handlers.py` | Бот ↔ ядро: «Тестовое событие» (только владелец), `TelegramSender` |
 | `app/scheduler/polling.py` | Адаптивный опрос: `poll_due_items`, `poll_item`, изоляция ошибок, отсрочка сбойных |
 | `app/scheduler/tiering.py` | Интервал опроса по состоянию тайтла (аниме: серия < 24 ч → 1 ч, идёт → 6 ч, иначе 24 ч) |
 | `app/scheduler/failures.py` | Уведомления владельцу о сбоях опроса (раз в сутки на тайтл) |
@@ -241,4 +244,5 @@ SQLite (`data/bot.db`), SQLAlchemy 2, Alembic. Таблицы (старая сх
 | `test_scheduler_polling`, `test_tiering`, `test_release_state`, `test_anilist` | Цикл опроса и интервалы, состояние фильмов, сериалов и аниме |
 | `test_domain_events`, `test_pre_add_check`, `test_notifications` | События, проверка «уже вышло», правила и дедупликация |
 | `test_media_resolve`, `test_watchlist_notes`, `test_integration` | Разрешение id, список и заметки, бэкап, логирование |
+| `test_tracker_core`, `test_tracker_bot` | Ядро трекера: доставка ровно один раз, повтор после сбоя, дедупликация, метки времени от часов, миграция и WAL; меню «Тестовое событие» через настоящий `Dispatcher` |
 | `test_tmdb_search` | Ручной тест с сетью, в обычный прогон не входит |

@@ -15,6 +15,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 
 from app.bot.access import AccessMiddleware
 from app.bot.error_handler import ErrorMiddleware, send_startup_error_sync
+from app.bot.tracker_handlers import TelegramSender, main_keyboard, owner_chat_id, register_tracker_handlers
 from app.domain.events import pre_add_check
 from app.config import get_settings
 from app.database.models import (
@@ -37,8 +38,9 @@ from app.providers.shikimori import ShikimoriClient, pick_current_season, get_to
 from app.providers.igdb import IGDBProvider
 from app.providers.steam import SteamProvider
 from app.providers.psn import PSNProvider
-from app.scheduler.failures import format_failure_notice, new_failure_notices
-from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state, backup_database as _backup_database, _earliest_digital_date, _earliest_theatrical_date
+from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_item, _store_state, backup_database as _backup_database, _earliest_digital_date, _earliest_theatrical_date
+from app.tracker.core import Tracker
+from app.tracker.db import create_session_factory
 from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
 from app.services.search_cache import search_cache
@@ -73,6 +75,7 @@ def display_title(item) -> str:
     return "Unknown"
 
 
+DELIVERY_RETRY_SECONDS = 60  # how often the tracker retries events that could not be sent
 INLINE_MAX_RESULTS = 50  # Telegram rejects more than 50 results in one answerInlineQuery
 
 
@@ -577,9 +580,19 @@ async def main() -> None:
         me = await bot.get_me()
         logging.info(f"Bot started as @{me.username}")
 
+        # Release tracker v2: new core with its own database, running beside the legacy handlers.
+        # Registered before them, so «Тестовое событие» is not swallowed by the catch-all text handler.
+        tracker = Tracker(
+            create_session_factory(),
+            clock=lambda: dt.now(tz=timezone.utc),
+            sender=TelegramSender(bot, owner_chat_id(settings.owner_chat_id, allowed_ids)),
+            sources={},
+        )
+        register_tracker_handlers(dp, tracker, allowed_ids)
+
         @dp.message(CommandStart())
         async def start_handler(message: Message):
-            await message.answer("👋 Бот запущен. Phase 4: watchlist + notes ready.")
+            await message.answer("👋 Бот запущен. Phase 4: watchlist + notes ready.", reply_markup=main_keyboard())
 
         # Phase 23: unified search state storage
         _search_state: dict[int, dict] = {}
@@ -2090,82 +2103,14 @@ async def main() -> None:
                     lines.append(f"• {r.event_type}")
                 await message.answer("\n".join(lines))
 
-        _owner_told: dict[str, dt] = {}  # item id -> when the owner was last told it fails
-
-        async def _poll_due_items():
-            """Never raises: a failed scan is logged and retried on the next tick. It also runs
-            once at startup, where an exception would stop the bot from starting at all."""
-            try:
-                await _poll_scan()
-            except Exception:
-                logging.exception("poll scan failed")
-
-        async def _poll_scan():
-            """Phase 7.5 adaptive scan: process only watch items whose tier
-            deadline has arrived (staggered TMDb calls, per-item intervals).
-            """
-            before = tmdb.call_count
-            failures = []  # (item_id, title, source, error_name) collected from poll_due_items
-
-            def _on_poll_error(item, source, exc):
-                failures.append((item.id, display_title(item), source, type(exc).__name__))
-
-            results = []
-            with db() as s:
-                results = await poll_due_items(s, tmdb, anilist, igdb, shikimori, on_error=_on_poll_error)
-                for user_id, item, events in results:
-                    if not events:
-                        continue
-                    u = s.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
-                    if u is None:
-                        continue
-                    title = display_title(item)
-                    for ev in events:
-                        # One bad event or failed send must not drop the rest
-                        try:
-                            date = ev.payload.get("date")
-                            season = ev.payload.get("season")
-                            episode = ev.payload.get("episode")
-                            if date:
-                                text = f"\U0001F514 {ev.event_type} → {title} ({date})"
-                            elif season is not None:
-                                text = f"\U0001F4FA {ev.event_type} → {title}, сезон {season}"
-                            elif episode is not None:
-                                text = f"\U0001F3AC {ev.event_type} → {title}, серия {episode}"
-                            else:
-                                text = f"\U0001F514 {ev.event_type} → {title}"
-                            await bot.send_message(
-                                chat_id=u.telegram_user_id,
-                                text=text,
-                            )
-                        except Exception:
-                            logging.exception("could not send %s notification for %s", ev.event_type, title)
-
-            if settings.owner_chat_id:
-                for title, source, error_name in new_failure_notices(failures, _owner_told, dt.now(tz=timezone.utc)):
-                    try:
-                        await bot.send_message(
-                            chat_id=settings.owner_chat_id,
-                            text=format_failure_notice(title, source, error_name),
-                        )
-                    except Exception:
-                        logging.exception("could not tell the owner that %s fails", title)
-
-            logging.info(
-                "poll scan done: %d due items, %d failed, %d TMDb calls (total %d)",
-                len(results), len(failures), tmdb.call_count - before, tmdb.call_count,
-            )
-
-        # Phase 7.5: one due-item scan at startup (all items are due on the first
-        # run because next_check_at is NULL) + recurring scan of only due items.
-        await _poll_due_items()
-
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
         scheduler = AsyncIOScheduler()
+        # The legacy poll scan and its notifications are switched off; the tracker core replaces them.
+        # Events whose send failed stay queued, so retry the queue regularly.
         scheduler.add_job(
-            _poll_due_items, "interval",
-            seconds=settings.poll_scan_interval_seconds,
-            misfire_grace_time=90, coalesce=True, max_instances=1,
+            tracker.deliver_pending, "interval",
+            seconds=DELIVERY_RETRY_SECONDS,
+            misfire_grace_time=30, coalesce=True, max_instances=1,
         )
         # Phase 15: daily database backup at 3 AM
         scheduler.add_job(
