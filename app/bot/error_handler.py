@@ -34,8 +34,9 @@ def _format_error_for_telegram(exc: Exception) -> str:
     tb_text = traceback.format_exception(type(exc), exc, exc.__traceback__)
     full_text = mask_secrets("".join(tb_text))
 
-    # HTML-escape
-    escaped = html.escape(full_text)
+    # HTML-escape only & < > : inside <pre> quotes need no escaping, and html.escape's
+    # default turns ' into &#x27;, which Telegram may reject as unparseable (HTTP 400)
+    escaped = html.escape(full_text, quote=False)
 
     # Keep the end (most important part) and truncate
     if len(escaped) > MAX_ERROR_MSG_SIZE:
@@ -73,7 +74,11 @@ async def _send_error_via_http(token: str, chat_id: str, text: str) -> bool:
             )
             if resp.status_code == 200:
                 return True
-            logger.error("Failed to send error to Telegram: HTTP %s", resp.status_code)
+            try:
+                reason = resp.json().get("description", "")
+            except Exception:
+                reason = ""
+            logger.error("Failed to send error to Telegram: HTTP %s %s", resp.status_code, reason)
             return False
     except Exception as send_err:
         logger.error("Failed to send error to Telegram: %s", send_err)

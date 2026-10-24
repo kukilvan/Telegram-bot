@@ -37,6 +37,7 @@ from app.providers.shikimori import ShikimoriClient, pick_current_season, get_to
 from app.providers.igdb import IGDBProvider
 from app.providers.steam import SteamProvider
 from app.providers.psn import PSNProvider
+from app.scheduler.failures import format_failure_notice, new_failure_notices
 from app.scheduler.polling import _fetch_tmdb_state, _fetch_igdb_state, poll_due_items, poll_item, _store_state, backup_database as _backup_database, _earliest_digital_date, _earliest_theatrical_date
 from app.services.notes import create_or_update_note, get_note, list_notes
 from app.services.notifications import get_enabled_rules, set_rule
@@ -2089,13 +2090,29 @@ async def main() -> None:
                     lines.append(f"• {r.event_type}")
                 await message.answer("\n".join(lines))
 
+        _owner_told: dict[str, dt] = {}  # item id -> when the owner was last told it fails
+
         async def _poll_due_items():
+            """Never raises: a failed scan is logged and retried on the next tick. It also runs
+            once at startup, where an exception would stop the bot from starting at all."""
+            try:
+                await _poll_scan()
+            except Exception:
+                logging.exception("poll scan failed")
+
+        async def _poll_scan():
             """Phase 7.5 adaptive scan: process only watch items whose tier
             deadline has arrived (staggered TMDb calls, per-item intervals).
             """
             before = tmdb.call_count
+            failures = []  # (item_id, title, source, error_name) collected from poll_due_items
+
+            def _on_poll_error(item, source, exc):
+                failures.append((item.id, display_title(item), source, type(exc).__name__))
+
+            results = []
             with db() as s:
-                results = await poll_due_items(s, tmdb, anilist, igdb, shikimori)
+                results = await poll_due_items(s, tmdb, anilist, igdb, shikimori, on_error=_on_poll_error)
                 for user_id, item, events in results:
                     if not events:
                         continue
@@ -2104,24 +2121,39 @@ async def main() -> None:
                         continue
                     title = display_title(item)
                     for ev in events:
-                        date = ev.payload.get("date")
-                        season = ev.payload.get("season")
-                        episode = ev.payload.get("episode")
-                        if date:
-                            text = f"\U0001F514 {ev.event_type} \u2192 {title} ({date})"
-                        elif season is not None:
-                            text = f"\U0001F4FA {ev.event_type} \u2192 {title}, сезон {season}"
-                        elif episode is not None:
-                            text = f"\U0001F3AC {ev.event_type} \u2192 {title}, серия {episode}"
-                        else:
-                            text = f"\U0001F514 {ev.event_type} \u2192 {title}"
+                        # One bad event or failed send must not drop the rest
+                        try:
+                            date = ev.payload.get("date")
+                            season = ev.payload.get("season")
+                            episode = ev.payload.get("episode")
+                            if date:
+                                text = f"\U0001F514 {ev.event_type} → {title} ({date})"
+                            elif season is not None:
+                                text = f"\U0001F4FA {ev.event_type} → {title}, сезон {season}"
+                            elif episode is not None:
+                                text = f"\U0001F3AC {ev.event_type} → {title}, серия {episode}"
+                            else:
+                                text = f"\U0001F514 {ev.event_type} → {title}"
+                            await bot.send_message(
+                                chat_id=u.telegram_user_id,
+                                text=text,
+                            )
+                        except Exception:
+                            logging.exception("could not send %s notification for %s", ev.event_type, title)
+
+            if settings.owner_chat_id:
+                for title, source, error_name in new_failure_notices(failures, _owner_told, dt.now(tz=timezone.utc)):
+                    try:
                         await bot.send_message(
-                            chat_id=u.telegram_user_id,
-                            text=text,
+                            chat_id=settings.owner_chat_id,
+                            text=format_failure_notice(title, source, error_name),
                         )
+                    except Exception:
+                        logging.exception("could not tell the owner that %s fails", title)
+
             logging.info(
-                "poll scan done: %d due items, %d TMDb calls (total %d)",
-                len(results), tmdb.call_count - before, tmdb.call_count,
+                "poll scan done: %d due items, %d failed, %d TMDb calls (total %d)",
+                len(results), len(failures), tmdb.call_count - before, tmdb.call_count,
             )
 
         # Phase 7.5: one due-item scan at startup (all items are due on the first

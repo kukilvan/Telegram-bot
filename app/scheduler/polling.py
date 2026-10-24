@@ -6,6 +6,7 @@ from the observed state, and TMDb calls are staggered/capped inside TMDbProvider
 """
 
 import json as _json
+import logging
 import random
 from dataclasses import replace as _replace
 from datetime import date, datetime, timedelta, timezone as _tz
@@ -16,6 +17,8 @@ from sqlalchemy.orm import Session
 from app.database.models import ExternalId, GamePlatform, MediaItem, SourceState, UserWatchItem
 from app.domain.events import compare_anilist_states, compare_igdb_states, compare_steam_states, compare_states
 from app.services.notifications import get_enabled_rules, has_been_sent, mark_sent
+
+logger = logging.getLogger(__name__)
 
 # Primary source for each media type (determines which SourceState to use for scheduling)
 PRIMARY_SOURCE = {"movie": "tmdb", "tv": "tmdb", "anime": "anilist", "game": "igdb"}
@@ -502,7 +505,17 @@ async def _poll_anime_episodes(session: Session, anilist_provider, item: MediaIt
     return events
 
 
-async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None):
+def _record_failure(session: Session, errors: list, item: MediaItem, source: str, exc: Exception) -> None:
+    """Log a failed source/item, remember it in `errors`, and leave the session usable."""
+    try:
+        session.rollback()
+    except Exception:
+        logger.exception("rollback after failed poll of %s also failed", item.id)
+    logger.error("poll of %s failed for item %s (%s)", source, item.id, item.media_type, exc_info=exc)
+    errors.append((source, exc))
+
+
+async def poll_item(session: Session, tmdb_provider, anilist_provider, item: MediaItem, user_id: int, igdb_provider=None, errors: list | None = None):
     """Run one polling cycle for a watch item.
 
     Fetches the current normalized state from the provider(s), compares it with
@@ -512,34 +525,20 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
 
     Anime items are polled from BOTH TMDb and AniList (two independent sources).
     Game items are polled from IGDB.
+
+    Every source is polled in isolation: if one fails it is logged and appended to `errors`
+    as (source, exception), and the events found by the other sources are still returned
+    (they are already marked as sent, so dropping them would lose them for good).
     """
     to_send = []
+    errors = errors if errors is not None else []
 
     # TMDb poll (movies, TV, anime)
-    state = await _fetch_tmdb_state(session, tmdb_provider, item)
-    old = _load_state(session, item.id, "tmdb")
-    if old is not None:
-        for ev in compare_states(old, state):
-            ev = _replace(ev, media_item_id=item.id)
-            fp = ev.fingerprint()
-            if has_been_sent(session, fp):
-                continue
-            enabled_rules = get_enabled_rules(session, user_id, item.id)
-            if not any(r.event_type == ev.event_type for r in enabled_rules):
-                continue
-            mark_sent(session, fp, item.id)
-            to_send.append(ev)
-        _store_state(session, item.id, "tmdb", state)
-    else:
-        if state:
-            _store_state(session, item.id, "tmdb", state)
-
-    # AniList poll (anime only)
-    if item.media_type == "anime" and anilist_provider is not None:
-        anilist_state = await _fetch_anilist_state(session, anilist_provider, item)
-        old_al = _load_state(session, item.id, "anilist")
-        if old_al is not None:
-            for ev in compare_anilist_states(old_al, anilist_state):
+    try:
+        state = await _fetch_tmdb_state(session, tmdb_provider, item)
+        old = _load_state(session, item.id, "tmdb")
+        if old is not None:
+            for ev in compare_states(old, state):
                 ev = _replace(ev, media_item_id=item.id)
                 fp = ev.fingerprint()
                 if has_been_sent(session, fp):
@@ -549,35 +548,67 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
                     continue
                 mark_sent(session, fp, item.id)
                 to_send.append(ev)
-            _store_state(session, item.id, "anilist", anilist_state)
+            _store_state(session, item.id, "tmdb", state)
         else:
-            if anilist_state:
+            if state:
+                _store_state(session, item.id, "tmdb", state)
+    except Exception as exc:
+        _record_failure(session, errors, item, "tmdb", exc)
+
+    # AniList poll (anime only)
+    if item.media_type == "anime" and anilist_provider is not None:
+        try:
+            anilist_state = await _fetch_anilist_state(session, anilist_provider, item)
+            old_al = _load_state(session, item.id, "anilist")
+            if old_al is not None:
+                for ev in compare_anilist_states(old_al, anilist_state):
+                    ev = _replace(ev, media_item_id=item.id)
+                    fp = ev.fingerprint()
+                    if has_been_sent(session, fp):
+                        continue
+                    enabled_rules = get_enabled_rules(session, user_id, item.id)
+                    if not any(r.event_type == ev.event_type for r in enabled_rules):
+                        continue
+                    mark_sent(session, fp, item.id)
+                    to_send.append(ev)
                 _store_state(session, item.id, "anilist", anilist_state)
+            else:
+                if anilist_state:
+                    _store_state(session, item.id, "anilist", anilist_state)
+        except Exception as exc:
+            _record_failure(session, errors, item, "anilist", exc)
 
     # Game platform poll (games only) — uses GamePlatform table
     if item.media_type == "game" and igdb_provider is not None:
-        # Get tracked platforms from watch item
-        w = session.query(UserWatchItem).filter(
-            UserWatchItem.user_id == user_id,
-            UserWatchItem.media_item_id == item.id,
-        ).first()
-        tracked = _json.loads(w.tracked_platforms) if w and w.tracked_platforms else []
-        if tracked:
-            # Get GamePlatform records for tracked platforms
-            platforms = session.query(GamePlatform).filter(
-                GamePlatform.media_item_id == item.id,
-                GamePlatform.platform.in_(tracked),
-            ).all()
-            for gp in platforms:
-                state = await _fetch_game_platform_state(session, igdb_provider, gp.platform, gp.platform_id)
-                old = _load_state(session, item.id, f"gp_{gp.platform}")
+        try:
+            # Get tracked platforms from watch item
+            w = session.query(UserWatchItem).filter(
+                UserWatchItem.user_id == user_id,
+                UserWatchItem.media_item_id == item.id,
+            ).first()
+            tracked = _json.loads(w.tracked_platforms) if w and w.tracked_platforms else []
+            platforms = []
+            if tracked:
+                # Get GamePlatform records for tracked platforms
+                platforms = session.query(GamePlatform).filter(
+                    GamePlatform.media_item_id == item.id,
+                    GamePlatform.platform.in_(tracked),
+                ).all()
+        except Exception as exc:
+            _record_failure(session, errors, item, "games", exc)
+            platforms = []
+        for gp in platforms:
+            platform, platform_id = gp.platform, gp.platform_id
+            try:
+                state = await _fetch_game_platform_state(session, igdb_provider, platform, platform_id)
+                old = _load_state(session, item.id, f"gp_{platform}")
                 if old is not None:
                     # Determine which compare function to use
-                    if gp.platform == "igdb":
+                    if platform == "igdb":
                         compare_fn = compare_igdb_states
-                    elif gp.platform == "steam":
+                    elif platform == "steam":
                         compare_fn = compare_steam_states
-                    elif gp.platform == "psn":
+                    elif platform == "psn":
                         compare_fn = compare_steam_states  # PSN uses same comparison
                     else:
                         compare_fn = compare_states
@@ -592,10 +623,12 @@ async def poll_item(session: Session, tmdb_provider, anilist_provider, item: Med
                             continue
                         mark_sent(session, fp, item.id)
                         to_send.append(ev)
-                    _store_state(session, item.id, f"gp_{gp.platform}", state)
+                    _store_state(session, item.id, f"gp_{platform}", state)
                 else:
                     if state:
-                        _store_state(session, item.id, f"gp_{gp.platform}", state)
+                        _store_state(session, item.id, f"gp_{platform}", state)
+            except Exception as exc:
+                _record_failure(session, errors, item, platform, exc)
 
     return to_send
 
@@ -618,73 +651,108 @@ def _due_rows_query(session):
     )
 
 
-async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, igdb_provider=None, shikimori_provider=None, now=None) -> list[tuple[int, MediaItem, list]]:
-    """Process only watch items whose tier deadline has arrived (Phase 7.5).
+# A failing item is skipped for this long, so it neither blocks the rest of the scan
+# nor gets hammered every scan. Kept in memory: a restart simply retries sooner.
+RETRY_AFTER_FAILURE_SECONDS = 1800
+_failed_until: dict[str, datetime] = {}
 
-    Staggering happens inside TMDbProvider (~1.5 s between calls + per-minute cap), so even many due items are never fired as a burst.
-    Each processed item gets a fresh deadline: now + tier_interval(new state) + up to JITTER_MAX_SECONDS of spread, plus RATE_LIMIT_EXTRA_DELAY if the fetch hit HTTP 429 (the item moves to its next slot).
 
-    Returns (user_id, MediaItem, events) per processed item so callers can send notifications. Timestamps are stored/compared as naive-UTC for safe SQLite comparison.
-    """
-    from app.scheduler.tiering import (
-        JITTER_MAX_SECONDS,
-        RATE_LIMIT_EXTRA_DELAY,
-        due_sort_key,
-        tier_interval,
-    )
-
-    now = now or datetime.now(tz=_tz.utc).replace(tzinfo=None)
-    rows = session.execute(_due_rows_query(session)).all()
-    
-    results = []
-    for w, item in rows:
-        primary_source = _get_primary_source(item)
+def _defer_after_failure(session: Session, item: MediaItem, now: datetime) -> None:
+    """Push the item's next attempt RETRY_AFTER_FAILURE_SECONDS ahead (never raises)."""
+    until = now + timedelta(seconds=RETRY_AFTER_FAILURE_SECONDS)
+    _failed_until[item.id] = until
+    try:
         st_row = session.execute(
             select(SourceState).where(
                 (SourceState.media_item_id == item.id)
                 &
-                (SourceState.source_name == primary_source)
+                (SourceState.source_name == _get_primary_source(item))
             )
         ).scalar_one_or_none()
-        st = _json.loads(st_row.state_data) if st_row and st_row.state_data else None
-        
-        # Skip if not due
-        if st_row and st_row.next_check_at and st_row.next_check_at > now:
-            continue
-            
-        # For anime with shikimori_franchise, disable TMDb poll
-        if item.media_type == "anime":
-            shiki_franchise_ext = session.query(ExternalId).filter(
-                ExternalId.media_item_id == item.id,
-                ExternalId.source == "shikimori_franchise",
-            ).first()
-            if shiki_franchise_ext:
-                all_events = []
-                
-                # Run anime-specific refresh before polling
+        if st_row is not None:
+            st_row.next_check_at = until
+            session.commit()
+    except Exception:
+        logger.exception("could not defer item %s after a failed poll", item.id)
+        session.rollback()
+
+
+async def _poll_row(session, w, item, now, tmdb_provider, anilist_provider, igdb_provider, shikimori_provider, errors):
+    """Poll one watch row if it is due. Returns (user_id, item, events) or None."""
+    from app.scheduler.tiering import (
+        JITTER_MAX_SECONDS,
+        RATE_LIMIT_EXTRA_DELAY,
+        tier_interval,
+    )
+
+    primary_source = _get_primary_source(item)
+    st_row = session.execute(
+        select(SourceState).where(
+            (SourceState.media_item_id == item.id)
+            &
+            (SourceState.source_name == primary_source)
+        )
+    ).scalar_one_or_none()
+    st = _json.loads(st_row.state_data) if st_row and st_row.state_data else None
+
+    # Skip if not due
+    if st_row and st_row.next_check_at and st_row.next_check_at > now:
+        return None
+
+    # For anime with shikimori_franchise, disable TMDb poll
+    if item.media_type == "anime":
+        shiki_franchise_ext = session.query(ExternalId).filter(
+            ExternalId.media_item_id == item.id,
+            ExternalId.source == "shikimori_franchise",
+        ).first()
+        if shiki_franchise_ext:
+            all_events = []
+
+            # Run anime-specific refresh before polling
+            try:
                 season_events = await _refresh_anime_season(session, shikimori_provider, anilist_provider, item, shiki_franchise_ext.external_id)
-                if season_events:
-                    for ev in season_events:
-                        ev = _replace(ev, media_item_id=item.id)
-                        fp = ev.fingerprint()
-                        if has_been_sent(session, fp):
-                            continue
-                        enabled_rules = get_enabled_rules(session, w.user_id, item.id)
-                        if not any(r.event_type == ev.event_type for r in enabled_rules):
-                            continue
-                        mark_sent(session, fp, item.id)
-                        all_events.append(ev)
-                
-                # Poll anime episodes from AniList
+            except Exception as exc:
+                _record_failure(session, errors, item, "shikimori", exc)
+                season_events = []
+            if season_events:
+                for ev in season_events:
+                    ev = _replace(ev, media_item_id=item.id)
+                    fp = ev.fingerprint()
+                    if has_been_sent(session, fp):
+                        continue
+                    enabled_rules = get_enabled_rules(session, w.user_id, item.id)
+                    if not any(r.event_type == ev.event_type for r in enabled_rules):
+                        continue
+                    mark_sent(session, fp, item.id)
+                    all_events.append(ev)
+
+            # Poll anime episodes from AniList
+            try:
                 episode_events = await _poll_anime_episodes(session, anilist_provider, item, w.user_id)
-                all_events.extend(episode_events)
-                
-                # Set next_check_at in SourceState "anilist"
-                state_now = _load_state(session, item.id, "anilist") or {}
-                interval = tier_interval(state_now, "anime")
-                jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
-                extra = RATE_LIMIT_EXTRA_DELAY if getattr(anilist_provider, "hit_429", False) else 0.0
-                deadline = now + timedelta(seconds=interval + jitter + extra)
+            except Exception as exc:
+                _record_failure(session, errors, item, "anilist", exc)
+                episode_events = []
+            all_events.extend(episode_events)
+
+            # Set next_check_at in SourceState "anilist"
+            state_now = _load_state(session, item.id, "anilist") or {}
+            interval = tier_interval(state_now, "anime")
+            jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
+            extra = RATE_LIMIT_EXTRA_DELAY if getattr(anilist_provider, "hit_429", False) else 0.0
+            deadline = now + timedelta(seconds=interval + jitter + extra)
+            st_row = session.execute(
+                select(SourceState).where(
+                    (SourceState.media_item_id == item.id)
+                    &
+                    (SourceState.source_name == "anilist")
+                )
+            ).scalar_one_or_none()
+            if st_row is not None:
+                st_row.next_check_at = deadline
+                session.commit()
+            elif all_events:
+                # Create SourceState row if it doesn't exist
+                _store_state(session, item.id, "anilist", state_now)
                 st_row = session.execute(
                     select(SourceState).where(
                         (SourceState.media_item_id == item.id)
@@ -692,72 +760,101 @@ async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None,
                         (SourceState.source_name == "anilist")
                     )
                 ).scalar_one_or_none()
-                if st_row is not None:
+                if st_row:
                     st_row.next_check_at = deadline
                     session.commit()
-                elif all_events:
-                    # Create SourceState row if it doesn't exist
-                    _store_state(session, item.id, "anilist", state_now)
-                    st_row = session.execute(
-                        select(SourceState).where(
-                            (SourceState.media_item_id == item.id)
-                            &
-                            (SourceState.source_name == "anilist")
-                        )
-                    ).scalar_one_or_none()
-                    if st_row:
-                        st_row.next_check_at = deadline
-                        session.commit()
-                
-                if all_events:
-                    results.append((w.user_id, item, all_events))
-                continue
-            else:
-                # No shikimori_franchise, run normal poll
-                events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)
-                state_now = _load_state(session, item.id, primary_source) or {}
-                interval = tier_interval(state_now, item.media_type)
-                jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
-                extra = RATE_LIMIT_EXTRA_DELAY if (getattr(tmdb_provider, "hit_429", False) or getattr(anilist_provider, "hit_429", False)) else 0.0
-                deadline = now + timedelta(seconds=interval + jitter + extra)
-                st_row = session.execute(
-                    select(SourceState).where(
-                        (SourceState.media_item_id == item.id)
-                        &
-                        (SourceState.source_name == primary_source)
-                    )
-                ).scalar_one_or_none()
-                if st_row is not None:
-                    st_row.next_check_at = deadline
-                    session.commit()
-                results.append((w.user_id, item, events))
-                continue
-        
-        # Normal poll for non-anime
-        events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider)
-        state_now = _load_state(session, item.id, primary_source) or {}
-        # For games, check game platform states for tier calculation
-        if item.media_type == "game" and not state_now:
-            for gp_platform in ["igdb", "steam", "psn"]:
-                gp_state = _load_state(session, item.id, f"gp_{gp_platform}")
-                if gp_state:
-                    state_now = gp_state
-                    break
-        interval = tier_interval(state_now, item.media_type)
-        jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
-        extra = RATE_LIMIT_EXTRA_DELAY if getattr(tmdb_provider, "hit_429", False) else 0.0
-        deadline = now + timedelta(seconds=interval + jitter + extra)
-        st_row = session.execute(
-            select(SourceState).where(
-                (SourceState.media_item_id == item.id)
-                &
-                (SourceState.source_name == primary_source)
-            )
-        ).scalar_one_or_none()
-        if st_row is not None:
-            st_row.next_check_at = deadline
-            session.commit()
-        results.append((w.user_id, item, events))
+
+            if all_events:
+                return (w.user_id, item, all_events)
+            return None
+        else:
+            # No shikimori_franchise, run normal poll
+            events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider, errors=errors)
+            state_now = _load_state(session, item.id, primary_source) or {}
+            interval = tier_interval(state_now, item.media_type)
+            jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
+            extra = RATE_LIMIT_EXTRA_DELAY if (getattr(tmdb_provider, "hit_429", False) or getattr(anilist_provider, "hit_429", False)) else 0.0
+            deadline = now + timedelta(seconds=interval + jitter + extra)
+            st_row = session.execute(
+                select(SourceState).where(
+                    (SourceState.media_item_id == item.id)
+                    &
+                    (SourceState.source_name == primary_source)
+                )
+            ).scalar_one_or_none()
+            if st_row is not None:
+                st_row.next_check_at = deadline
+                session.commit()
+            return (w.user_id, item, events)
+
+    # Normal poll for non-anime
+    events = await poll_item(session, tmdb_provider, anilist_provider, item, user_id=w.user_id, igdb_provider=igdb_provider, errors=errors)
+    state_now = _load_state(session, item.id, primary_source) or {}
+    # For games, check game platform states for tier calculation
+    if item.media_type == "game" and not state_now:
+        for gp_platform in ["igdb", "steam", "psn"]:
+            gp_state = _load_state(session, item.id, f"gp_{gp_platform}")
+            if gp_state:
+                state_now = gp_state
+                break
+    interval = tier_interval(state_now, item.media_type)
+    jitter = random.uniform(0.0, JITTER_MAX_SECONDS)
+    extra = RATE_LIMIT_EXTRA_DELAY if getattr(tmdb_provider, "hit_429", False) else 0.0
+    deadline = now + timedelta(seconds=interval + jitter + extra)
+    st_row = session.execute(
+        select(SourceState).where(
+            (SourceState.media_item_id == item.id)
+            &
+            (SourceState.source_name == primary_source)
+        )
+    ).scalar_one_or_none()
+    if st_row is not None:
+        st_row.next_check_at = deadline
+        session.commit()
+    return (w.user_id, item, events)
+
+
+async def poll_due_items(session: Session, tmdb_provider, anilist_provider=None, igdb_provider=None, shikimori_provider=None, now=None, on_error=None) -> list[tuple[int, MediaItem, list]]:
+    """Process only watch items whose tier deadline has arrived (Phase 7.5).
+
+    Staggering happens inside TMDbProvider (~1.5 s between calls + per-minute cap), so even many due items are never fired as a burst.
+    Each processed item gets a fresh deadline: now + tier_interval(new state) + up to JITTER_MAX_SECONDS of spread, plus RATE_LIMIT_EXTRA_DELAY if the fetch hit HTTP 429 (the item moves to its next slot).
+
+    Items are isolated from each other: a failure is logged, reported through
+    `on_error(item, source, exception)` and the item is retried after RETRY_AFTER_FAILURE_SECONDS;
+    the rest of the scan carries on.
+
+    Returns (user_id, MediaItem, events) per processed item so callers can send notifications. Timestamps are stored/compared as naive-UTC for safe SQLite comparison.
+    """
+    now = now or datetime.now(tz=_tz.utc).replace(tzinfo=None)
+    rows = session.execute(_due_rows_query(session)).all()
+
+    results = []
+    for w, item in rows:
+        retry_at = _failed_until.get(item.id)
+        if retry_at is not None and retry_at > now:
+            continue
+
+        errors: list = []
+        try:
+            result = await _poll_row(session, w, item, now, tmdb_provider, anilist_provider, igdb_provider, shikimori_provider, errors)
+        except Exception as exc:
+            _record_failure(session, errors, item, "poll", exc)
+            result = None
+
+        if errors:
+            _defer_after_failure(session, item, now)
+            if on_error is not None:
+                for source, exc in errors:
+                    try:
+                        on_error(item, source, exc)
+                    except Exception:
+                        logger.exception("on_error callback failed for item %s", item.id)
+        else:
+            _failed_until.pop(item.id, None)
+
+        if result is not None:
+            results.append(result)
     return results
 
 
