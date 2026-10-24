@@ -72,6 +72,28 @@ def display_title(item) -> str:
     return "Unknown"
 
 
+INLINE_MAX_RESULTS = 50  # Telegram rejects more than 50 results in one answerInlineQuery
+
+
+def _balance_inline(articles: list, limit: int = INLINE_MAX_RESULTS) -> list:
+    """Cap inline results at `limit`, taking them round-robin from each source (grouped by
+    description) so a chatty source cannot crowd out the rest, and make ids unique."""
+    groups: dict[str, list] = {}
+    for a in articles:
+        groups.setdefault(a.description, []).append(a)
+    queues = list(groups.values())
+    balanced, seen = [], set()
+    for rank in range(max((len(q) for q in queues), default=0)):
+        for q in queues:
+            if rank < len(q) and len(balanced) < limit:
+                a = q[rank]
+                if a.id in seen:  # e.g. a TMDb movie and series share one numeric id
+                    a = a.model_copy(update={"id": f"{a.id}-{len(balanced)}"})
+                seen.add(a.id)
+                balanced.append(a)
+    return balanced
+
+
 def _make_media_item(details: dict, media_type: str) -> MediaItem:
     """Build a MediaItem from raw TMDb details (pure function)."""
     if media_type == "tv":
@@ -162,7 +184,7 @@ def _ensure_igdb_item(session, igdb_id: int, details: dict) -> MediaItem:
     year = None
     if frd:
         if isinstance(frd, (int, float)):
-            year = datetime.fromtimestamp(frd).year
+            year = dt.fromtimestamp(frd, tz=timezone.utc).year
         elif isinstance(frd, str):
             try:
                 year = int(frd[:4])
@@ -695,7 +717,7 @@ async def main() -> None:
                     try:
                         frd_str = str(frd)
                         if frd_str.isdigit() and int(frd_str) > 1000000000:
-                            year = str(datetime.fromtimestamp(int(frd_str), tz=timezone.utc).year)
+                            year = str(dt.fromtimestamp(int(frd_str), tz=timezone.utc).year)
                         else:
                             year = frd_str[:4]
                     except (ValueError, TypeError, OSError):
@@ -932,7 +954,7 @@ async def main() -> None:
                     try:
                         frd_str = str(frd)
                         if frd_str.isdigit() and int(frd_str) > 1000000000:
-                            year = str(datetime.fromtimestamp(int(frd_str), tz=timezone.utc).year)
+                            year = str(dt.fromtimestamp(int(frd_str), tz=timezone.utc).year)
                         else:
                             year = frd_str[:4]
                     except (ValueError, TypeError, OSError):
@@ -987,6 +1009,7 @@ async def main() -> None:
                     )
                     articles.append(article)
 
+            articles = _balance_inline(articles)
             # Cache the result
             search_cache.set(cache_key, articles)
             await inline_query.answer(articles, cache_time=0)
