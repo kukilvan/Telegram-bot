@@ -1,8 +1,8 @@
-"""Bot side of the tracker core: «Тестовое событие», «Добавить», «Мои тайтлы», the buttons under messages
-(«Посмотрел», «Следить») and the Telegram sender.
+"""Bot side of the tracker core: the menu («Добавить», «Мои тайтлы», «Сводка сейчас», «Тестовое событие»,
+«Окна доставки»), the buttons under messages («Посмотрел», «Следить», «Карточка») and the Telegram sender.
 
 Handlers talk to the core only through the `Tracker` facade. «Добавить» is a temporary way to fill the
-list until the web app (it is removed together with the other old bot flows).
+list until the web app (it goes away when the web app arrives).
 """
 
 import logging
@@ -10,7 +10,7 @@ from collections.abc import Sequence
 from datetime import timezone
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandStart
 from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
@@ -21,7 +21,7 @@ from aiogram.types import (
 )
 
 from app.tracker import delivery
-from app.tracker.actions import FOLLOW, SEASONS, WATCHED, Action, card_actions
+from app.tracker.actions import CARD, FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card, format_when
 from app.tracker.core import Tracker, TitleNotFound, UnknownEvent, UnknownSeason, UnknownTitle, WatchableSeason
 from app.tracker.series_events import SAMPLE_EPISODES_ID
@@ -49,6 +49,10 @@ _ASK_NAME = {
     "anime": "Напишите название аниме (можно по-русски или по-английски).",
 }
 _SOURCE_NAMES = {"movie": "TMDb", "series": "TMDb", "anime": "Shikimori"}  # where each kind comes from, for error texts
+START_TEXT = (
+    "👋 Бот работает. Кнопки меню внизу: «Добавить» и «Мои тайтлы» ведут список, «Сводка сейчас» присылает "
+    "накопленные события, «Тестовое событие» и «Окна доставки» показывают, как выглядят сообщения."
+)
 _ASK_SEASONS = (
     "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
     "повторное нажатие снимает отметку. Когда закончите, нажмите «Готово»."
@@ -125,6 +129,12 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
 
     def forget_pending(user) -> None:
         awaiting_name.pop(getattr(user, "id", None), None)
+
+    async def start(message: Message) -> None:
+        if not is_owner(message.from_user):
+            return
+        forget_pending(message.from_user)
+        await message.answer(START_TEXT, reply_markup=main_keyboard())
 
     async def show_menu(message: Message) -> None:
         if not is_owner(message.from_user):
@@ -332,6 +342,14 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             header += f"\nПоказаны первые {MAX_LIST_BUTTONS} из {len(titles)}."
         await message.answer(header, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
 
+    async def show_card_of(callback: CallbackQuery, title_id: int) -> None:
+        card = tracker.title_card(title_id)
+        if card is None:
+            await callback.answer("Этого тайтла больше нет в списке.")
+            return
+        await callback.answer()
+        await send_card(callback, card)
+
     async def show_card(callback: CallbackQuery) -> None:
         if not is_owner(callback.from_user):
             return
@@ -339,12 +357,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             title_id = int(callback.data.removeprefix(_CARD_PREFIX))
         except ValueError:
             title_id = -1
-        card = tracker.title_card(title_id)
-        if card is None:
-            await callback.answer("Этого тайтла больше нет в списке.")
-            return
-        await callback.answer()
-        await send_card(callback, card)
+        await show_card_of(callback, title_id)
 
     # --- buttons under messages and cards -------------------------------------------------------
 
@@ -451,9 +464,12 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await follow_sequel(callback, number)
         elif number is not None and name == SEASONS:
             await open_seasons_choice(callback, number)
+        elif number is not None and name == CARD:
+            await show_card_of(callback, number)
         else:
             await callback.answer("Эта кнопка больше не работает.")
 
+    dp.message.register(start, CommandStart())
     dp.message.register(show_menu, Command("test_event"))
     dp.message.register(show_menu, F.text == TEST_EVENT_BUTTON)
     dp.callback_query.register(send_test_event, F.data.startswith(_KIND_PREFIX))

@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
-from app.tracker.actions import FOLLOW, WATCHED, card_actions
+from app.tracker.actions import CARD, FOLLOW, WATCHED, card_actions
 from app.tracker.core import Tracker, UnknownEvent, UnknownTitle
 from app.tracker.db import create_session_factory
 from app.tracker.models import Event, SourceSnapshot, Title
@@ -302,7 +302,7 @@ def test_the_announcement_offers_to_follow_the_sequel_and_not_to_mark_watched(tr
     assert [a.name for a in actions] == [FOLLOW]
 
 
-def test_movie_event_messages_offer_watched_for_their_movie(tracker, source, clock, sender):
+def test_movie_event_messages_offer_watched_and_the_card_for_their_movie(tracker, source, clock, sender):
     title_id = add(tracker, source, movie(DUNE))
     source.update(movie(DUNE, theatrical=date(2027, 5, 5)))
 
@@ -311,7 +311,7 @@ def test_movie_event_messages_offer_watched_for_their_movie(tracker, source, clo
     run(tracker.deliver_pending())
 
     [actions] = sender.actions
-    assert [(a.name, a.arg) for a in actions] == [(WATCHED, title_id)]
+    assert [(a.name, a.arg) for a in actions] == [(WATCHED, title_id), (CARD, title_id)]
 
 
 def test_test_events_have_no_buttons(tracker, sender):

@@ -9,10 +9,12 @@ from app.tracker.models import STATUS_WANT
 WATCHED = "watched"  # arg: title id
 FOLLOW = "follow"  # arg: id of the «sequel announced» event
 SEASONS = "seasons"  # arg: title id; opens the choice of watched seasons
+CARD = "card"  # arg: title id; shows the title's card (stands in for «Открыть» until there is a web app)
 
 _WATCHED_LABEL = "✅ Посмотрел"
 _FOLLOW_LABEL = "👀 Следить"
 _SEASONS_LABEL = "📺 Просмотренные сезоны"
+_CARD_LABEL = "📄 Карточка"
 
 _MOVIE_EVENTS = frozenset(
     {movie_events.DATE_ANNOUNCED, movie_events.DATE_MOVED, movie_events.RELEASED, movie_events.DIGITAL}
@@ -22,17 +24,19 @@ _MOVIE_EVENTS = frozenset(
 @dataclass(frozen=True)
 class Action:
     label: str
-    name: str  # WATCHED | FOLLOW | SEASONS
+    name: str  # WATCHED | FOLLOW | SEASONS | CARD
     arg: int
 
 
 def event_actions(event_type: str, event_id: int, title_id: int | None) -> list[Action]:
-    """Buttons under the message of an event. Test events have none."""
-    if event_type in _MOVIE_EVENTS and title_id is not None:
-        return [Action(_WATCHED_LABEL, WATCHED, title_id)]
+    """Buttons under the message of an event. Test events have none. A sequel announcement offers «Следить» only:
+    its title is the film already watched, whose card says nothing new."""
     if event_type == sequel_events.SEQUEL_ANNOUNCED:
         return [Action(_FOLLOW_LABEL, FOLLOW, event_id)]
-    return []
+    if title_id is None:
+        return []
+    actions = [Action(_WATCHED_LABEL, WATCHED, title_id)] if event_type in _MOVIE_EVENTS else []
+    return [*actions, Action(_CARD_LABEL, CARD, title_id)]
 
 
 def card_actions(card: TitleCard) -> list[Action]:

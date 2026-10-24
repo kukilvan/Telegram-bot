@@ -258,10 +258,39 @@ def test_a_movie_event_arrives_with_a_watched_button_that_works(tracker, movies,
 
     [(chat_id, text, buttons)] = telegram.sent
     assert chat_id == OWNER and "Дюна: Часть третья" in text
-    assert [b.text for b in buttons] == ["✅ Посмотрел"]
+    assert [b.text for b in buttons] == ["✅ Посмотрел", "📄 Карточка"]
 
     Chat_(tracker).press(buttons[0].callback_data)
     assert tracker.title_card(title_id).status == "watched"
+
+
+def test_the_card_button_under_an_event_opens_the_card_of_its_title(tracker, movies, clock, telegram, replies):
+    add(tracker, DUNE_3)
+    movies.by_id[DUNE_3] = movie(DUNE_3, "Дюна: Часть третья", date(2027, 5, 5))
+    clock.now += timedelta(days=2)
+    run(tracker.poll_due())
+    run(tracker.deliver_pending())
+    [(_, _, buttons)] = telegram.sent
+
+    Chat_(tracker).press(buttons[1].callback_data)
+
+    [(_, text, card_buttons)] = messages(replies)
+    assert "Дюна: Часть третья" in text and "Хочу" in text
+    assert [b.text for b in card_buttons] == ["✅ Посмотрел"]
+
+
+def test_the_card_button_of_a_title_that_is_gone_says_so(tracker, replies):
+    Chat_(tracker).press("tact:card:999")
+
+    assert replies == [("callback", "Этого тайтла больше нет в списке.", None)]
+
+
+def test_a_stranger_cannot_open_a_card_through_the_button(tracker, replies):
+    title_id = add(tracker)
+
+    Chat_(tracker, uid=STRANGER).press(f"tact:card:{title_id}")
+
+    assert replies == []
 
 
 def test_a_plain_message_goes_out_without_a_keyboard(tracker, telegram):

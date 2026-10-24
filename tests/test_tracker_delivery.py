@@ -451,8 +451,31 @@ def test_a_summary_keeps_the_buttons_of_its_events_and_names_the_title(session_f
 
     [(message, actions)] = sender.sent
     assert message.startswith("📋 Сводка")
-    assert [a.label for a in actions] == ["✅ Посмотрел: Дюна: Часть третья"]
-    assert actions[0].arg == title_id
+    assert [a.label for a in actions] == ["✅ Посмотрел: Дюна: Часть третья", "📄 Карточка: Дюна: Часть третья"]
+    assert [a.arg for a in actions] == [title_id, title_id]
+
+
+def test_a_summary_offers_one_card_button_per_title(session_factory, clock, sender):
+    class Source:
+        source_key = "tmdb_movie"
+
+        async def suggest(self, query):
+            return []
+
+        async def snapshot(self, external_id):
+            return MovieSnapshot(external_id, "Дюна: Часть третья", "Dune", 2026, [], None, None)
+
+    tracker = Tracker(session_factory, clock=clock, sender=sender, sources={"movie": Source()})
+    set_rules(tracker)
+    title_id = run(tracker.add_title("movie", "1")).title_id
+    clock.at(SUN, 10)
+    tracker.record_event(movie_events.DATE_ANNOUNCED, {"text": "🎬 Дюна — дата объявлена"}, "k1", title_id=title_id)
+    tracker.record_event(movie_events.RELEASED, {"text": "🎬 Дюна — вышел в кино"}, "k2", title_id=title_id)
+
+    deliver(tracker, clock, SUN, 15, 0)
+
+    [(_, actions)] = sender.sent
+    assert [a.label.split(":")[0] for a in actions].count("📄 Карточка") == 1
 
 
 # --- settings: the time zone, working days, summary hour, quiet hours ------------------------------

@@ -1043,6 +1043,7 @@ class Tracker:
     def _summary_actions(units: list[delivery.Unit], names: dict[int, str]) -> list[Action]:
         """The buttons of the events inside a summary, each saying which title it is for."""
         actions: list[Action] = []
+        shown: set[tuple[str, int]] = set()  # one button per action and title, however many events of it the summary holds
         for unit in units:
             single = unit.single
             if single is None:
@@ -1051,6 +1052,9 @@ class Tracker:
             if len(name) > BUTTON_NAME_LIMIT:
                 name = name[: BUTTON_NAME_LIMIT - 1] + "…"
             for action in event_actions(single.type, single.event_id, single.title_id):
+                if (action.name, action.arg) in shown:
+                    continue
+                shown.add((action.name, action.arg))
                 actions.append(replace(action, label=f"{action.label}: {name}") if name else action)
         return actions[:MAX_DIGEST_BUTTONS]
 
