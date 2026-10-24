@@ -10,6 +10,9 @@ instead of a second «вышла серия» message about the same fact.
 
 TMDb gives the day of an episode, not the hour, so an episode counts as out from 00:00 UTC of its day.
 
+An anime goes through the same code with its own `Flavor`: its icon, its key prefix and the owner's time zone, so
+that its messages give the hour of an episode (TMDb knows only the day, and a series keeps the plain form).
+
 Every dedup key holds the season (and the episode where there is one): the end of season 2 is not the end
 of season 1, even when both have the same number of episodes.
 
@@ -20,10 +23,10 @@ such a season carry the part (`s3:p1:ended`); a season without a break keeps the
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, tzinfo
 from typing import Any
 
-from app.tracker.cards import NOT_ANNOUNCED, format_date, format_day_month, format_short_date, format_weekday_date
+from app.tracker.cards import NOT_ANNOUNCED, format_date, format_day_month, format_short_date, format_when, local_moment
 from app.tracker.movie_events import (
     INTERVAL_NEAR,
     INTERVAL_QUIET,
@@ -48,6 +51,22 @@ CLOSED = "series_closed"
 ENDED_STATUS = "Ended"
 CANCELED_STATUS = "Canceled"
 _CLOSED_STATUSES = (ENDED_STATUS, CANCELED_STATUS)
+
+
+@dataclass(frozen=True)
+class Flavor:
+    """What differs between the kinds of title that share these events: the icon, the prefix of the dedup keys and
+    whether the hour is told (and in which time zone)."""
+
+    icon: str = ICON
+    key_prefix: str = "series"
+    tz: tzinfo | None = None  # None: the source knows only the day, so no hour is shown
+
+    def day(self, moment: datetime) -> date:
+        return local_moment(moment, self.tz).date()
+
+
+SERIES = Flavor()
 
 
 def is_closed(show_status: str | None) -> bool:
@@ -84,11 +103,12 @@ class ShowState:
 
 
 def _keep_season(new: Season, old: Season) -> Season:
+    cuts = new.cuts or old.cuts  # the parts of an anime season are given, not worked out: they must not be lost
     if not new.episodes:
-        return Season(new.number, new.name, new.expected or old.expected, old.episodes)
+        return Season(new.number, new.name, new.expected or old.expected, old.episodes, cuts)
     known = {e.number: e.air_at for e in old.episodes}
     episodes = tuple(Episode(e.number, e.air_at or known.get(e.number)) for e in new.episodes)
-    return Season(new.number, new.name, new.expected or old.expected, episodes)
+    return Season(new.number, new.name, new.expected or old.expected, episodes, cuts)
 
 
 def _episode(season: Season, number: int) -> Episode | None:
@@ -100,72 +120,79 @@ def _total_text(season: Season | Part) -> str:
     return str(total) if total else "?"
 
 
-def _next_line(season: Season | Part, now: datetime) -> str:
+def _next_line(season: Season | Part, now: datetime, flavor: Flavor = SERIES) -> str:
     coming = season.next_air_at(now)
-    return f"следующая: {format_weekday_date(coming.date()) if coming else NOT_ANNOUNCED}"
+    return f"следующая: {format_when(coming, flavor.tz) if coming else NOT_ANNOUNCED}"
 
 
-def message_announced(name: str, season: int, premiere: datetime, part: int | None = None) -> str:
+def message_announced(name: str, season: int, premiere: datetime, part: int | None = None, flavor: Flavor = SERIES) -> str:
     what = f"сезона {season}" if part is None else f"части {part} сезона {season}"
-    return f"{ICON} {name} — объявлена дата {what}\nПремьера: {format_date(premiere.date())}"
+    return f"{flavor.icon} {name} — объявлена дата {what}\nПремьера: {format_date(flavor.day(premiere))}"
 
 
-def message_started(name: str, season: Season, episode: int, next_line: str | None) -> str:
+def message_started(name: str, season: Season, episode: int, next_line: str | None, flavor: Flavor = SERIES) -> str:
     tail = f" · {next_line}" if next_line else ""
-    return f"{ICON} {name} — начался сезон {season.number}\nВышла серия {episode} из {_total_text(season)}{tail}"
+    return f"{flavor.icon} {name} — начался сезон {season.number}\nВышла серия {episode} из {_total_text(season)}{tail}"
 
 
-def message_episode(name: str, season: Season, episode: int, next_line: str | None) -> str:
+def message_episode(name: str, season: Season, episode: int, next_line: str | None, flavor: Flavor = SERIES) -> str:
     tail = f" · {next_line}" if next_line else ""
-    return f"{ICON} {name} — вышла серия {episode} из {_total_text(season)}\nСезон {season.number}{tail}"
+    return f"{flavor.icon} {name} — вышла серия {episode} из {_total_text(season)}\nСезон {season.number}{tail}"
 
 
-def message_ended(name: str, season: Season, episode: int) -> str:
-    return f"{ICON} {name} — сезон {season.number} закончился\nВышла последняя серия — {episode} из {_total_text(season)}"
+def message_ended(name: str, season: Season, episode: int, flavor: Flavor = SERIES) -> str:
+    return f"{flavor.icon} {name} — сезон {season.number} закончился\nВышла последняя серия — {episode} из {_total_text(season)}"
 
 
-def message_part_started(name: str, part: Part, episode: int, next_line: str | None) -> str:
+def message_part_started(name: str, part: Part, episode: int, next_line: str | None, flavor: Flavor = SERIES) -> str:
     tail = f" · {next_line}" if next_line else ""
-    return f"{ICON} {name} — началась часть {part.number} сезона {part.season}\nВышла серия {episode}{tail}"
+    return f"{flavor.icon} {name} — началась часть {part.number} сезона {part.season}\nВышла серия {episode}{tail}"
 
 
-def message_part_episode(name: str, part: Part, episode: int, now: datetime, next_line: str | None) -> str:
+def message_part_episode(
+    name: str, part: Part, episode: int, now: datetime, next_line: str | None, flavor: Flavor = SERIES
+) -> str:
     tail = f" · {next_line}" if next_line else ""
     return (
-        f"{ICON} {name} — вышла серия {episode}\n"
+        f"{flavor.icon} {name} — вышла серия {episode}\n"
         f"Сезон {part.season}, часть {part.number}: вышло {part.released_through(episode, now)} из {_total_text(part)}{tail}"
     )
 
 
-def message_part_ended(name: str, part: Part, episode: int, following: Part | None) -> str:
-    head = f"{ICON} {name} — закончилась часть {part.number} сезона {part.season}\n"
+def message_part_ended(name: str, part: Part, episode: int, following: Part | None, flavor: Flavor = SERIES) -> str:
+    head = f"{flavor.icon} {name} — закончилась часть {part.number} сезона {part.season}\n"
     if following is None:
         return f"{head}Вышла последняя серия — {episode}"
     start = following.first_air_at()
-    when = f"с {format_day_month(start.date())}" if start else NOT_ANNOUNCED
+    when = f"с {format_day_month(flavor.day(start))}" if start else NOT_ANNOUNCED
     return f"{head}Вышла последняя серия части — {episode}; часть {following.number} — {when}"
 
 
 def message_moved(
-    name: str, season: int, episode: int, old: datetime, new: datetime, premiere: bool, part: int | None = None
+    name: str,
+    season: int,
+    episode: int,
+    old: datetime,
+    new: datetime,
+    premiere: bool,
+    part: int | None = None,
+    flavor: Flavor = SERIES,
 ) -> str:
+    days = f"{format_short_date(flavor.day(old))} → {format_short_date(flavor.day(new))}"
     if premiere and part:
-        return (
-            f"{ICON} {name} — премьера части {part} сезона {season} перенесена\n"
-            f"{format_short_date(old.date())} → {format_short_date(new.date())}"
-        )
+        return f"{flavor.icon} {name} — премьера части {part} сезона {season} перенесена\n{days}"
     if premiere:
-        return f"{ICON} {name} — премьера сезона {season} перенесена\n{format_short_date(old.date())} → {format_short_date(new.date())}"
+        return f"{flavor.icon} {name} — премьера сезона {season} перенесена\n{days}"
     return (
-        f"{ICON} {name} — дата серии {episode} сдвинулась\n"
-        f"Сезон {season} · {format_weekday_date(old.date())} → {format_weekday_date(new.date())}"
+        f"{flavor.icon} {name} — дата серии {episode} сдвинулась\n"
+        f"Сезон {season} · {format_when(old, flavor.tz)} → {format_when(new, flavor.tz)}"
     )
 
 
-def message_closed(name: str, status: str | None, last_season: int | None) -> str:
+def message_closed(name: str, status: str | None, last_season: int | None, flavor: Flavor = SERIES) -> str:
     verb = "отменён" if status == CANCELED_STATUS else "закрыт"
     tail = f"\nПоследний сезон — {last_season}" if last_season else ""
-    return f"{ICON} {name} — сериал {verb}{tail}"
+    return f"{flavor.icon} {name} — сериал {verb}{tail}"
 
 
 def _newly_out(old: Season | None, new: Season, observed_at: datetime, now: datetime) -> list[int]:
@@ -216,7 +243,14 @@ def _ended_unseen(
 
 
 def _season_events(
-    prefix: str, name: str, old: Season | None, new: Season, observed_at: datetime, now: datetime, gap: timedelta
+    prefix: str,
+    name: str,
+    old: Season | None,
+    new: Season,
+    observed_at: datetime,
+    now: datetime,
+    gap: timedelta,
+    flavor: Flavor,
 ):
     events: list[DetectedEvent] = []
     number = new.number
@@ -237,7 +271,7 @@ def _season_events(
                     DetectedEvent(
                         DATE_ANNOUNCED,
                         f"{season_key}:date_announced",
-                        message_announced(name, number, premiere),
+                        message_announced(name, number, premiere, None, flavor),
                         {"season": number, "date": premiere.date().isoformat()},
                     )
                 )
@@ -253,7 +287,7 @@ def _season_events(
                     DetectedEvent(
                         DATE_ANNOUNCED,
                         f"{season_key}:p{part.number}:date_announced",
-                        message_announced(name, number, premiere, part.number),
+                        message_announced(name, number, premiere, part.number, flavor),
                         {"season": number, "part": part.number, "date": premiere.date().isoformat()},
                     )
                 )
@@ -266,21 +300,25 @@ def _season_events(
         events.append(
             DetectedEvent(
                 DATE_MOVED,
-                f"{season_key}:e{episode}:moved:{new_at.date().isoformat()}",  # the new date is part of the key
-                message_moved(name, number, episode, old_at, new_at, premiere, part.number if part.split else None),
+                f"{season_key}:e{episode}:moved:{_moment_key(new_at)}",  # the new date is part of the key
+                message_moved(
+                    name, number, episode, old_at, new_at, premiere, part.number if part.split else None, flavor
+                ),
                 {"season": number, "episode": episode, "old": old_at.date().isoformat(), "new": new_at.date().isoformat()},
             )
         )
 
     for part in parts:
-        events.extend(_part_events(season_key, name, new, part, parts, old_parts.get(part.number), came, observed_at, now))
+        events.extend(
+            _part_events(season_key, name, new, part, parts, old_parts.get(part.number), came, observed_at, now, flavor)
+        )
         if part.number in unseen_ends:
             last = max(part.numbers)
             events.append(
                 DetectedEvent(
                     SEASON_ENDED,
                     f"{season_key}:p{part.number}:ended",
-                    message_part_ended(name, part, last, parts[part.number]),
+                    message_part_ended(name, part, last, parts[part.number], flavor),
                     {"season": number, "episode": last, "part": part.number},
                 )
             )
@@ -297,6 +335,7 @@ def _part_events(
     came: list[int],
     observed_at: datetime,
     now: datetime,
+    flavor: Flavor,
 ):
     """Started, episode out and ended for one part (for the whole season when it has no break)."""
     events: list[DetectedEvent] = []
@@ -314,29 +353,42 @@ def _part_events(
             data["part"] = part.number
         opens = episode == first_number and nothing_out_before
         closes = latest and part_over and not was_over
-        next_line = _next_line(part, now) if latest and not closes else None
+        next_line = _next_line(part, now, flavor) if latest and not closes else None
         if opens:
             text = (
-                message_part_started(name, part, episode, next_line)
+                message_part_started(name, part, episode, next_line, flavor)
                 if part.split
-                else message_started(name, season, episode, next_line)
+                else message_started(name, season, episode, next_line, flavor)
             )
             events.append(DetectedEvent(SEASON_STARTED, f"{key}:started", text, data))
         if closes:
             text = (
-                message_part_ended(name, part, episode, following)
+                message_part_ended(name, part, episode, following, flavor)
                 if part.split
-                else message_ended(name, season, episode)
+                else message_ended(name, season, episode, flavor)
             )
             events.append(DetectedEvent(SEASON_ENDED, f"{key}:ended", text, data))
         elif not opens:
             text = (
-                message_part_episode(name, part, episode, now, next_line)
+                message_part_episode(name, part, episode, now, next_line, flavor)
                 if part.split
-                else message_episode(name, season, episode, next_line)
+                else message_episode(name, season, episode, next_line, flavor)
             )
             events.append(DetectedEvent(EPISODE_OUT, f"{season_key}:e{episode}:out", text, data))
     return events
+
+
+def _moment_key(moment: datetime) -> str:
+    """The day for a source that knows only the day (midnight), the day and the minute for one that knows the hour,
+    so that a second move of an episode within the same day is a new fact."""
+    if moment.time() == datetime.min.time():
+        return moment.date().isoformat()
+    return moment.strftime("%Y-%m-%dT%H%M")
+
+
+def _only_the_hour_learned(before: datetime, after: datetime) -> bool:
+    """A day-only date (midnight) that a finer source has now given an hour on the same day: nothing was moved."""
+    return before.time() == datetime.min.time() and before.date() == after.date()
 
 
 def _moved(
@@ -352,7 +404,9 @@ def _moved(
         current = _episode(new, before.number)
         if current is None or current.air_at is None or current.air_at <= now:
             continue
-        return (before.number, before.air_at, current.air_at) if current.air_at != before.air_at else None
+        if current.air_at == before.air_at or _only_the_hour_learned(before.air_at, current.air_at):
+            return None
+        return before.number, before.air_at, current.air_at
     return None
 
 
@@ -364,17 +418,18 @@ def detect_events(
     observed_at: datetime,
     now: datetime,
     gap: timedelta = DEFAULT_PART_GAP,
+    flavor: Flavor = SERIES,
 ) -> list[DetectedEvent]:
     """Events between the previous look (taken at `observed_at`) and the new one (taken at `now`).
 
     `new` must already keep what the source dropped (`ShowState.keeping_known`). `gap` is the owner's break
-    between two episodes after which a season counts as two parts.
+    between two episodes after which a season counts as two parts; `flavor` says whose events these are.
     """
-    prefix = f"series:{title_id}"
+    prefix = f"{flavor.key_prefix}:{title_id}"
     before = {s.number: s for s in old.seasons}
     events: list[DetectedEvent] = []
     for season in new.seasons:
-        events.extend(_season_events(prefix, name, before.get(season.number), season, observed_at, now, gap))
+        events.extend(_season_events(prefix, name, before.get(season.number), season, observed_at, now, gap, flavor))
 
     if new.status in _CLOSED_STATUSES and old.status is not None and old.status not in _CLOSED_STATUSES:
         last = max((s.number for s in new.seasons), default=None)
@@ -382,7 +437,7 @@ def detect_events(
             DetectedEvent(
                 CLOSED,
                 f"{prefix}:closed:{new.status.lower()}:s{last}",
-                message_closed(name, new.status, last),
+                message_closed(name, new.status, last, flavor),
                 {"status": new.status, "season": last},
             )
         )

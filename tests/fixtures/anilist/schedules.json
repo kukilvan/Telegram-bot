@@ -1,0 +1,62 @@
+{
+    "data": {
+        "Page": {
+            "media": [
+                {
+                    "id": 21,
+                    "status": "RELEASING",
+                    "episodes": null,
+                    "nextAiringEpisode": {
+                        "episode": 1181,
+                        "airingAt": 1798985760
+                    }
+                },
+                {
+                    "id": 97986,
+                    "status": "FINISHED",
+                    "episodes": 13,
+                    "nextAiringEpisode": null
+                },
+                {
+                    "id": 113415,
+                    "status": "FINISHED",
+                    "episodes": 24,
+                    "nextAiringEpisode": null
+                },
+                {
+                    "id": 161645,
+                    "status": "FINISHED",
+                    "episodes": 24,
+                    "nextAiringEpisode": null
+                },
+                {
+                    "id": 176301,
+                    "status": "FINISHED",
+                    "episodes": 24,
+                    "nextAiringEpisode": null
+                },
+                {
+                    "id": 195516,
+                    "status": "RELEASING",
+                    "episodes": 12,
+                    "nextAiringEpisode": {
+                        "episode": 5,
+                        "airingAt": 1793368800
+                    }
+                },
+                {
+                    "id": 200927,
+                    "status": "NOT_YET_RELEASED",
+                    "episodes": 12,
+                    "nextAiringEpisode": null
+                },
+                {
+                    "id": 209895,
+                    "status": "NOT_YET_RELEASED",
+                    "episodes": null,
+                    "nextAiringEpisode": null
+                }
+            ]
+        }
+    }
+}

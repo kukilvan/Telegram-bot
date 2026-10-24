@@ -113,6 +113,20 @@ class AniListProvider:
     """
     IDS_PAGE = 50
 
+    # The airing schedule of several entries at once; an id AniList does not know is simply missing
+    SCHEDULES_QUERY = """
+    query ($ids: [Int]) {
+      Page(page: 1, perPage: 50) {
+        media(id_in: $ids, type: ANIME) {
+          id
+          status
+          episodes
+          nextAiringEpisode { episode airingAt }
+        }
+      }
+    }
+    """
+
     def __init__(self) -> None:
         settings = get_settings()
         self.min_call_interval = float(settings.tmdb_min_call_interval)
@@ -237,3 +251,16 @@ class AniListProvider:
                 if media.get("id") and media.get("idMal"):
                     found[int(media["idMal"])] = int(media["id"])
         return found
+
+    async def get_schedules(self, anilist_ids: Sequence[int]) -> list[dict]:
+        """Raw AniList records (status, episode count, next airing episode) of the given entries, 50 ids per request.
+
+        Raises when a request fails: «AniList is down» must not look like «AniList has no schedule»."""
+        wanted = sorted(set(anilist_ids))
+        media: list[dict] = []
+        for start in range(0, len(wanted), self.IDS_PAGE):
+            data = await self._post(self.SCHEDULES_QUERY, {"ids": wanted[start:start + self.IDS_PAGE]})
+            if data is None:
+                raise RuntimeError("AniList request failed")
+            media.extend((data.get("Page") or {}).get("media") or [])
+        return media

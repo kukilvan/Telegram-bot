@@ -74,6 +74,28 @@ def test_anilist_failure_raises_instead_of_looking_like_no_ids():
         run(StubAniList([None]).get_anilist_ids([1]))
 
 
+def test_schedules_are_asked_for_by_anilist_id_in_one_request():
+    media = [{"id": 195516, "status": "RELEASING", "episodes": 12, "nextAiringEpisode": {"episode": 5, "airingAt": 1793368800}}]
+    client = StubAniList([{"Page": {"media": media}}])
+
+    assert run(client.get_schedules([200927, 195516, 195516])) == media
+    assert client.sent == [{"ids": [195516, 200927]}]
+    assert "nextAiringEpisode" in client.SCHEDULES_QUERY
+
+
+def test_an_empty_schedule_answer_is_a_list_but_a_failed_one_raises():
+    assert run(StubAniList([{"Page": {"media": []}}]).get_schedules([1])) == []
+    with pytest.raises(RuntimeError):
+        run(StubAniList([None]).get_schedules([1]))
+
+
+def test_no_ids_means_no_schedule_request():
+    client = StubAniList([])
+
+    assert run(client.get_schedules([])) == []
+    assert client.sent == []
+
+
 def test_no_mal_ids_means_no_request():
     client = StubAniList([])
 

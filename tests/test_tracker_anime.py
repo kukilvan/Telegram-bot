@@ -317,16 +317,3 @@ def test_the_mark_belongs_to_the_season_and_covers_its_parts(tracker):
     run(tracker.set_season_watched(title, 3, True))
 
     assert [(s.number, s.watched) for s in tracker.watchable_seasons(title)] == [(1, False), (2, False), (3, True)]
-
-
-# --- polling is not switched on for anime yet ----------------------------------------------------
-
-
-def test_anime_is_not_polled_before_its_events_exist(tracker, shikimori):
-    add(tracker, JJK)
-    asked = len(shikimori.fetched)
-
-    report = run(tracker.poll_due())
-
-    assert (report.polled, report.failed) == (0, 0)
-    assert len(shikimori.fetched) == asked

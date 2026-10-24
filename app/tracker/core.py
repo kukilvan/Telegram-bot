@@ -9,14 +9,14 @@ import logging
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone, tzinfo
 from typing import Any, Protocol
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker import movie_events, progress, seasons as season_logic, sequel_events, series_events
+from app.tracker import anime_events, movie_events, progress, seasons as season_logic, sequel_events, series_events
 from app.tracker.actions import Action, event_actions
 from app.tracker.cards import MovieLine, TitleCard
 from app.tracker.models import (
@@ -165,6 +165,7 @@ class Tracker:
     sender: Sender
     sources: Mapping[str, Any] = field(default_factory=dict)
     sequel_sources: Mapping[str, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
+    local_tz: tzinfo | None = None  # the owner's time zone: anime messages and cards give the hour of an episode in it
     _kinds: dict[str, TestEventKind] = field(init=False, default_factory=dict)
     _delivery_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
     _poll_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
@@ -172,7 +173,12 @@ class Tracker:
 
     def __post_init__(self) -> None:
         self.register_test_event_kind(TestEventKind("ping", "Проверка связи", _ping_payload))
-        samples = movie_events.TEST_SAMPLES + sequel_events.TEST_SAMPLES + series_events.TEST_SAMPLES
+        samples = (
+            movie_events.TEST_SAMPLES
+            + sequel_events.TEST_SAMPLES
+            + series_events.TEST_SAMPLES
+            + anime_events.TEST_SAMPLES
+        )
         for kind_id, label, text in samples:
             self.register_test_event_kind(TestEventKind(kind_id, label, lambda text=text: {"text": text}))
 
@@ -282,6 +288,7 @@ class Tracker:
                 ExternalId(title_id=title.id, source=source_key, external_id=snapshot.external_id, role=PRIMARY_ROLE)
             )
             state = snapshot.state()
+            seasons = self._first_seasons(kind, snapshot, now)
             session.add(
                 SourceSnapshot(
                     title_id=title.id,
@@ -289,10 +296,10 @@ class Tracker:
                     state=state,
                     observed_at=now,
                     # the snapshot taken now is the baseline; the first poll compares against it
-                    next_check_at=self._first_check(kind, snapshot, state, now),
+                    next_check_at=self._first_check(kind, seasons, state, now),
                 )
             )
-            records = self._store_seasons(session, title.id, getattr(snapshot, "seasons", ()))
+            records = self._store_seasons(session, title.id, seasons)
             self._store_anime_entries(session, title.id, records, snapshot)
             self._refresh_status(session, title)
             try:
@@ -307,11 +314,20 @@ class Tracker:
             return AddResult(title.id, created=True)
 
     @staticmethod
-    def _first_check(kind: str, snapshot: Any, state: dict[str, Any], now: datetime) -> datetime | None:
+    def _first_seasons(kind: str, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
+        """The seasons to store with a new title; an anime's episodes are put together from both its sources."""
+        if kind == "anime":
+            return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now)
+        return getattr(snapshot, "seasons", ())
+
+    @staticmethod
+    def _first_check(
+        kind: str, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime
+    ) -> datetime | None:
         if kind == "movie":
             return now + movie_events.check_interval_for_state(state, now.date())
-        if kind == "series":
-            return now + series_events.check_interval(series_events.ShowState.of(snapshot.seasons, state), now)
+        if kind in SEASONAL_KINDS:
+            return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
         return None
 
     @staticmethod
@@ -509,6 +525,7 @@ class Tracker:
                 digital_date=_parse_date(state.get("digital_date")),
                 seasons=seasons_view,
                 franchise_movies=tuple(MovieLine(m.name, m.aired_on, m.released) for m in movies),
+                tz=self.local_tz if title.kind == "anime" else None,
             )
 
     # --- polling --------------------------------------------------------------------------------
@@ -541,7 +558,7 @@ class Tracker:
                     or_(
                         and_(
                             own,
-                            Title.kind.in_(("movie", "series")),
+                            Title.kind.in_(("movie", *SEASONAL_KINDS)),
                             Title.status.in_(POLLED_STATUSES),
                             Title.tracking_enabled.is_(True),
                         ),
@@ -573,6 +590,8 @@ class Tracker:
         report.events += found
 
     def _applier(self, kind: str) -> Callable[[_DueTitle, Any], int]:
+        if kind == "anime":
+            return self._apply_anime
         return self._apply_series if kind == "series" else self._apply_snapshot
 
     def _apply_snapshot(self, due: _DueTitle, snapshot: Any) -> int:
@@ -648,6 +667,97 @@ class Tracker:
             for number, row in stored.items():
                 if number not in listed:
                     session.delete(row)
+
+    def _apply_anime(self, due: _DueTitle, snapshot: Any) -> int:
+        """Put the anime's two sources together, compare with the stored seasons, queue events, store what is new."""
+        now = _naive_utc(self.clock())
+        with self.session_factory() as session:
+            stored = self._stored_snapshot(session, due)
+            observed_at = stored.observed_at
+            previous = tuple(season for _, season in self._load_seasons(session, due.id))
+            gap = self._part_gap(session)
+            title = session.get(Title, due.id)
+            name = title.title if title.original_title in ("", title.title) else f"{title.title} ({title.original_title})"
+            known = set(
+                session.scalars(
+                    select(PartRecord.shikimori_id).where(PartRecord.title_id == due.id, PartRecord.anilist_id.is_not(None))
+                )
+            )
+            films = {
+                m.shikimori_id: m.released
+                for m in session.scalars(select(MovieRecord).where(MovieRecord.title_id == due.id))
+            }
+        known.update(p.ids.shikimori for p in snapshot.parts if p.ids.anilist)
+        old = series_events.ShowState.of(previous, {})
+        assembled = anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, previous, now, known)
+        new = series_events.ShowState.of(assembled, {}).keeping_known(old)
+        detected = series_events.detect_events(
+            due.id, name, old, new, observed_at, now, gap, anime_events.flavor(self.local_tz)
+        )
+        detected += anime_events.detect_movie_events(due.id, name, films, snapshot.movies, observed_at.date())
+        found = 0
+        # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
+        for event in detected:
+            payload = {"text": event.text, **event.data}
+            if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+                found += 1
+        with self.session_factory() as session:
+            self._sync_seasons(session, due.id, new.seasons)
+            session.flush()
+            self._sync_anime_entries(session, due.id, snapshot)
+            stored = self._stored_snapshot(session, due)
+            stored.state = {**stored.state, **{k: v for k, v in snapshot.state().items() if v is not None}}
+            stored.observed_at = now
+            stored.next_check_at = now + series_events.check_interval(new, now)
+            self._refresh_status(session, session.get(Title, due.id))
+            session.commit()
+        return found
+
+    @staticmethod
+    def _sync_anime_entries(session, title_id: int, snapshot: Any) -> None:
+        """The source entries behind the seasons and the franchise films: new ones are stored, known ones learn the
+        counts and the AniList ids found since. What is stored is never emptied by a source that stays silent."""
+        seasons = {r.number: r.id for r in session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id))}
+        rows = {p.shikimori_id: p for p in session.scalars(select(PartRecord).where(PartRecord.title_id == title_id))}
+        taken_anilist = {p.anilist_id for p in rows.values() if p.anilist_id}
+        taken_slots = {(p.season_id, p.number) for p in rows.values()}
+        for part in snapshot.parts:
+            row = rows.get(part.ids.shikimori)
+            if row is None:
+                season_id = seasons.get(part.season)
+                if season_id is None or (season_id, part.number) in taken_slots:
+                    continue
+                row = PartRecord(
+                    title_id=title_id, season_id=season_id, number=part.number, first_episode=part.first_episode,
+                    episode_count=part.episode_count, shikimori_id=part.ids.shikimori, mal_id=part.ids.mal,
+                    anilist_id=None,
+                )
+                session.add(row)
+                taken_slots.add((season_id, part.number))
+            else:
+                row.first_episode = part.first_episode
+                row.episode_count = part.episode_count
+            if row.anilist_id is None and part.ids.anilist and part.ids.anilist not in taken_anilist:
+                row.anilist_id = part.ids.anilist
+                taken_anilist.add(part.ids.anilist)
+
+        films = {m.shikimori_id: m for m in session.scalars(select(MovieRecord).where(MovieRecord.title_id == title_id))}
+        taken_anilist = {m.anilist_id for m in films.values() if m.anilist_id}
+        for film in snapshot.movies:
+            row = films.get(film.ids.shikimori)
+            if row is None:
+                row = MovieRecord(
+                    title_id=title_id, name=film.name, aired_on=film.aired_on, released=film.released,
+                    shikimori_id=film.ids.shikimori, mal_id=film.ids.mal, anilist_id=None,
+                )
+                session.add(row)
+            else:
+                row.name = film.name
+                row.aired_on = film.aired_on or row.aired_on
+                row.released = row.released or film.released  # a film does not become «announced» again
+            if row.anilist_id is None and film.ids.anilist and film.ids.anilist not in taken_anilist:
+                row.anilist_id = film.ids.anilist
+                taken_anilist.add(film.ids.anilist)
 
     def _apply_sequels(self, due: _DueTitle, snapshot: Any) -> int:
         """Archived movie: announce the collection parts that were not there at the previous check."""

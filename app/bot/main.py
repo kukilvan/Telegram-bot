@@ -6,6 +6,7 @@ import logging
 import sys
 from contextlib import contextmanager
 from datetime import date, datetime as dt, timezone
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import delete, select
 
@@ -597,6 +598,7 @@ async def main() -> None:
                 "anime": ShikimoriAnimeSource(shikimori, anilist),
             },
             sequel_sources={"movie": TmdbSequelSource(tmdb)},
+            local_tz=ZoneInfo(settings.bot_timezone),
         )
         register_tracker_handlers(dp, tracker, allowed_ids)
 

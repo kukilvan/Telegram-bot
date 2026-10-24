@@ -1,7 +1,7 @@
 """Text card of a title: what the owner reads in the bot. Pure formatting, no database."""
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone, tzinfo
 
 from app.tracker.seasons import RELEASED, SeasonsView
 
@@ -40,6 +40,7 @@ class TitleCard:
     digital_date: date | None = None
     seasons: SeasonsView | None = None  # series and anime
     franchise_movies: tuple[MovieLine, ...] = ()  # anime only
+    tz: tzinfo | None = None  # the owner's time zone, where the source gives the hour of an episode (anime)
 
 
 def format_date(value: date | None) -> str:
@@ -56,25 +57,43 @@ def format_weekday_date(value: date) -> str:
     return f"{_WEEKDAYS[value.weekday()]}, {value.day} {_SHORT_MONTHS[value.month - 1]}"
 
 
+def local_moment(moment: datetime, tz: tzinfo | None) -> datetime:
+    """A naive UTC moment as the owner's clock shows it (naive); without a time zone it stays as it is."""
+    if tz is None:
+        return moment
+    return moment.replace(tzinfo=timezone.utc).astimezone(tz).replace(tzinfo=None)
+
+
+def format_when(moment: datetime, tz: tzinfo | None = None) -> str:
+    """«пн, 12 окт»; given the owner's time zone, with the hour: «пн, 12 окт в 18:00»."""
+    local = local_moment(moment, tz)
+    text = format_weekday_date(local.date())
+    return text if tz is None else f"{text} в {local:%H:%M}"
+
+
 def format_day_month(value: date) -> str:
     """«27 марта»: the day a part starts, as the card says «часть 2 — с 27 марта»."""
     return f"{value.day} {_MONTHS[value.month - 1]}"
 
 
-def season_lines(view: SeasonsView) -> list[str]:
+def season_lines(view: SeasonsView, tz: tzinfo | None = None) -> list[str]:
     lines = []
     if view.current is not None:
         current = view.current
         label = f"Сезон {current.number}" + (f", часть {current.part}" if current.part else "")
         line = f"{label}: вышло {current.released} из {current.total if current.total else '?'}"
         if current.status != RELEASED:
-            line += f", следующая — {format_weekday_date(current.next_air_at.date()) if current.next_air_at else NOT_ANNOUNCED}"
+            line += f", следующая — {format_when(current.next_air_at, tz) if current.next_air_at else NOT_ANNOUNCED}"
         elif current.next_part_at is not None:
-            line += f"; часть {current.next_part} — с {format_day_month(current.next_part_at.date())}"
+            line += f"; часть {current.next_part} — с {format_day_month(local_moment(current.next_part_at, tz).date())}"
         lines.append(line)
     if view.announced is not None:
         announced = view.announced
-        when = f"премьера {format_date(announced.first_air_at.date())}" if announced.first_air_at else "дата не объявлена"
+        when = (
+            f"премьера {format_date(local_moment(announced.first_air_at, tz).date())}"
+            if announced.first_air_at
+            else "дата не объявлена"
+        )
         lines.append(f"Сезон {announced.number} анонсирован, {when}")
     if not lines:
         lines.append("Сезонов пока нет")
@@ -112,7 +131,7 @@ def format_card(card: TitleCard) -> str:
     if card.genres:
         lines.append(f"Жанры: {', '.join(card.genres)}")
     if card.seasons is not None:
-        lines.extend(season_lines(card.seasons))
+        lines.extend(season_lines(card.seasons, card.tz))
         if card.franchise_movies:
             lines.append(franchise_movies_line(card.franchise_movies))
     else:

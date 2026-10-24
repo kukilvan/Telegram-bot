@@ -28,11 +28,13 @@ from datetime import date, datetime, time, timezone
 from typing import Any, Protocol
 
 from app.tracker.seasons import Episode, PartCut, Season
+from app.tracker.sources.anilist_schedule import PartSchedule, parse_schedules
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "shikimori"
 KIND = "anime"
 
+RELEASED_STATUS = "released"  # Shikimori's word for an entry that has been out in full
 SEASON_KINDS = frozenset({"tv", "ona"})
 MOVIE_KIND = "movie"
 CHAIN_RELATIONS = ("prequel", "sequel")
@@ -50,6 +52,9 @@ FetchEntries = Callable[[Sequence[str]], Awaitable[list[dict[str, Any]]]]
 class AniListIds(Protocol):
     async def get_anilist_ids(self, mal_ids: Sequence[int]) -> Mapping[int, int]:
         """AniList ids by MAL id; a MAL id AniList does not know is simply missing."""
+
+    async def get_schedules(self, anilist_ids: Sequence[int]) -> list[dict[str, Any]]:
+        """Raw AniList records (status, episode count, next airing episode) of the given entries."""
 
 
 @dataclass(frozen=True)
@@ -107,6 +112,7 @@ class SeasonPart:
     first_episode: int  # counted through the whole season
     episode_count: int | None
     ids: SourceIds
+    status: str = ""  # Shikimori's: «anons», «ongoing» or «released»
 
 
 @dataclass(frozen=True)
@@ -132,6 +138,8 @@ class AnimeSnapshot:
     parts: list[SeasonPart] = field(default_factory=list)
     movies: list[FranchiseMovie] = field(default_factory=list)
     franchise: str | None = None  # Shikimori's franchise key; unconnected chains can share it, so it is no identity
+    # AniList's schedule of each part that is not over, by the part's Shikimori id; a part AniList did not answer for is missing
+    schedules: dict[str, PartSchedule] = field(default_factory=dict)
 
     def state(self) -> dict[str, Any]:
         """Seasons, parts and movies live in their own tables; the snapshot row keeps only the franchise key.
@@ -336,7 +344,7 @@ def build_season(number: int, entries: Sequence[Entry]) -> tuple[Season, list[Se
         cuts=tuple(cuts),
     )
     parts = [
-        SeasonPart(number, index + 1, cut.first_episode, cut.expected, entry.ids())
+        SeasonPart(number, index + 1, cut.first_episode, cut.expected, entry.ids(), entry.status)
         for index, (cut, entry) in enumerate(zip(cuts, entries))
     ]
     return season, parts
@@ -411,14 +419,30 @@ class ShikimoriAnimeSource:
 
         A failing Shikimori request fails the whole snapshot: a franchise stored without part of its chain
         would later look as if a season had been announced out of nowhere. A failing AniList only leaves
-        the AniList ids empty (the polling of anime, a later ticket, is to fill them in)."""
+        the AniList ids empty (the next poll fills them in) and leaves the schedules out: the core then goes by what
+        Shikimori says and by what it stored."""
         entries = await collect_entries(self._shikimori.fetch_entries, external_id)
         if external_id not in entries:
             return None
         snapshot = build_snapshot(entries)
         if snapshot is None:
             return None
-        return await self._with_anilist_ids(snapshot)
+        return await self._with_schedules(await self._with_anilist_ids(snapshot))
+
+    async def _with_schedules(self, snapshot: AnimeSnapshot) -> AnimeSnapshot:
+        """AniList's schedule of every part that is not over. A part that is over has nothing left to schedule."""
+        if self._anilist is None:
+            return snapshot
+        asked = {p.ids.anilist: p.ids.shikimori for p in snapshot.parts if p.ids.anilist and p.status != RELEASED_STATUS}
+        if not asked:
+            return snapshot
+        try:
+            media = await self._anilist.get_schedules([int(anilist_id) for anilist_id in asked])
+        except Exception as exc:  # the schedule is a refinement: Shikimori's figures and the stored ones stand without it
+            logging.warning("AniList schedules for anime %s not found: %r", snapshot.external_id, exc)
+            return snapshot
+        found = parse_schedules(media)
+        return replace(snapshot, schedules={asked[i]: schedule for i, schedule in found.items() if i in asked})
 
     async def _with_anilist_ids(self, snapshot: AnimeSnapshot) -> AnimeSnapshot:
         if self._anilist is None:
