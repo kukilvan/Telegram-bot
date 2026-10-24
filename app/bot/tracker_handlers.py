@@ -7,6 +7,7 @@ list until the web app (it is removed together with the other old bot flows).
 
 import logging
 from collections.abc import Sequence
+from datetime import timezone
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
@@ -19,15 +20,20 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
+from app.tracker import delivery
 from app.tracker.actions import FOLLOW, SEASONS, WATCHED, Action, card_actions
-from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card
+from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card, format_when
 from app.tracker.core import Tracker, TitleNotFound, UnknownEvent, UnknownSeason, UnknownTitle, WatchableSeason
+from app.tracker.series_events import SAMPLE_EPISODES_ID
 from app.utils.secrets_mask import mask_secrets
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
 ADD_BUTTON = "➕ Добавить"
 MY_TITLES_BUTTON = "📚 Мои тайтлы"
+DIGEST_BUTTON = "📋 Сводка сейчас"
+WINDOWS_BUTTON = "🕒 Окна доставки"
 _KIND_PREFIX = "tev:"
+_WINDOW_PREFIX = "twin:"  # twin:<scenario id>: a test event as if it were queued at that moment of the week
 _ADD_KIND_PREFIX = "tadd:"
 _PICK_PREFIX = "tpick:"
 _CARD_PREFIX = "tcard:"
@@ -84,7 +90,8 @@ def main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=ADD_BUTTON), KeyboardButton(text=MY_TITLES_BUTTON)],
-            [KeyboardButton(text=TEST_EVENT_BUTTON)],
+            [KeyboardButton(text=DIGEST_BUTTON)],
+            [KeyboardButton(text=TEST_EVENT_BUTTON), KeyboardButton(text=WINDOWS_BUTTON)],
         ],
         resize_keyboard=True,
     )
@@ -145,6 +152,69 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Отправлено")
         else:
             await callback.answer("Не удалось отправить, событие осталось в очереди и придёт позже.")
+
+    # --- «Сводка сейчас» и проверка окон доставки -----------------------------------------------
+
+    async def send_digest_now(message: Message) -> None:
+        if not is_owner(message.from_user):
+            return
+        forget_pending(message.from_user)
+        try:
+            result = await tracker.digest_now()
+        except Exception as exc:  # the queue is read from the database: tell the owner, keep the bot alive
+            logging.warning("digest now failed: %s", mask_secrets(repr(exc)))
+            await message.answer("Не удалось собрать сводку. Попробуйте ещё раз.")
+            return
+        if result.events == 0:
+            await message.answer("Накопленных событий нет — присылать нечего.")
+        elif not result.delivered:
+            await message.answer("Не удалось отправить сводку. События остались в очереди и придут позже.")
+
+    async def show_windows_menu(message: Message) -> None:
+        if not is_owner(message.from_user):
+            return
+        forget_pending(message.from_user)
+        rows = [
+            [InlineKeyboardButton(text=s.label, callback_data=f"{_WINDOW_PREFIX}{s.id}")]
+            for s in delivery.WINDOW_SCENARIOS
+        ]
+        await message.answer(
+            "Какой момент недели подставить? Я отправлю тестовое событие «Сериал: две серии подряд» "
+            "так, как будто оно появилось именно тогда, и покажу, что с ним сделают правила доставки.",
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=rows),
+        )
+
+    async def run_window_test(callback: CallbackQuery) -> None:
+        if not is_owner(callback.from_user):
+            return
+        scenario = delivery.scenario_by_id(callback.data.removeprefix(_WINDOW_PREFIX))
+        if scenario is None:
+            await callback.answer("Такого момента больше нет, откройте меню заново.")
+            return
+        try:
+            moment = tracker.window_test_moment(scenario)
+            tz = tracker.delivery_rules().tz
+            result = await tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment)
+        except Exception as exc:
+            logging.warning("window test failed: %s", mask_secrets(repr(exc)))
+            await callback.answer("Не удалось выполнить проверку. Попробуйте ещё раз.")
+            return
+        await callback.answer()
+
+        def when(value) -> str:
+            return format_when(value.astimezone(timezone.utc).replace(tzinfo=None), tz)
+
+        if result.delivered_at_once:
+            text = f"Как будто сейчас {when(moment)}: сообщения пришли сразу, правила их не задерживают."
+        elif result.delivered and result.held_until is not None:
+            text = (
+                f"Как будто сейчас {when(moment)}: в этот момент ничего не пришло, события копились. "
+                f"Выше — сводка, которая уйдёт {when(result.held_until)}."
+            )
+        else:
+            text = "Не удалось отправить, события остались в очереди и придут позже."
+        if callback.message is not None:
+            await callback.message.answer(text)
 
     # --- «Добавить» -----------------------------------------------------------------------------
 
@@ -387,6 +457,11 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     dp.message.register(show_menu, Command("test_event"))
     dp.message.register(show_menu, F.text == TEST_EVENT_BUTTON)
     dp.callback_query.register(send_test_event, F.data.startswith(_KIND_PREFIX))
+
+    dp.message.register(send_digest_now, Command("digest"))
+    dp.message.register(send_digest_now, F.text == DIGEST_BUTTON)
+    dp.message.register(show_windows_menu, F.text == WINDOWS_BUTTON)
+    dp.callback_query.register(run_window_test, F.data.startswith(_WINDOW_PREFIX))
 
     dp.message.register(show_add_menu, F.text == ADD_BUTTON)
     dp.message.register(show_my_titles, F.text == MY_TITLES_BUTTON)

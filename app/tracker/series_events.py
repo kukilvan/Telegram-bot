@@ -500,3 +500,17 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
     ("series-closed", "Сериал: закрыт", message_closed(_SAMPLE, ENDED_STATUS, 4)),
     ("series-canceled", "Сериал: отменён", message_closed(_SAMPLE, CANCELED_STATUS, 4)),
 ]
+
+SAMPLE_EPISODES_ID = "series-two-episodes"
+SAMPLE_EPISODES_LABEL = "Сериал: две серии подряд"
+
+
+def sample_episode_events() -> list[tuple[str, dict[str, Any]]]:
+    """Two episodes of one season as real «вышла серия» events (type and payload): a summary folds them into one line."""
+    return [
+        (EPISODE_OUT, {"text": message_episode(_SAMPLE, _SAMPLE_SEASON, 5, None), "season": 2, "episode": 5}),
+        (
+            EPISODE_OUT,
+            {"text": message_episode(_SAMPLE, _SAMPLE_SEASON, 6, "следующая: пн, 12 окт"), "season": 2, "episode": 6},
+        ),
+    ]

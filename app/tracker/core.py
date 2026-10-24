@@ -9,14 +9,24 @@ import logging
 import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone, tzinfo
+from dataclasses import replace
+from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from typing import Any, Protocol
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
-from app.tracker import anime_events, movie_events, progress, seasons as season_logic, sequel_events, series_events
+from app.tracker import (
+    anime_events,
+    delivery,
+    movie_events,
+    progress,
+    seasons as season_logic,
+    sequel_events,
+    series_events,
+)
 from app.tracker.actions import Action, event_actions
 from app.tracker.cards import MovieLine, TitleCard
 from app.tracker.models import (
@@ -45,6 +55,16 @@ POLLED_STATUSES = (STATUS_WANT, STATUS_WAITING)  # an own-release check runs for
 
 PART_GAP_SETTING = "part_gap_weeks"
 DEFAULT_PART_GAP_WEEKS = season_logic.DEFAULT_PART_GAP // timedelta(weeks=1)  # the default lives in `seasons`
+
+# settings of the delivery rules (absent: the default of `delivery`; the time zone falls back to the one the core was given)
+TIMEZONE_SETTING = "timezone"
+WORKDAYS_SETTING = "workdays"  # weekday numbers, Monday is 0
+DIGEST_AT_SETTING = "digest_at"  # "15:00"
+QUIET_FROM_SETTING = "quiet_from"
+QUIET_UNTIL_SETTING = "quiet_until"
+
+MAX_DIGEST_BUTTONS = 10  # buttons of the events inside a summary (the rest are reached from the card)
+BUTTON_NAME_LIMIT = 30
 
 
 class Sender(Protocol):
@@ -107,12 +127,24 @@ class TestEventKind:
     id: str
     label: str
     build: Callable[[], dict[str, Any]]  # payload of the sample event; must contain "text"
+    # several events instead of one (event type and payload each); the summary folds them like real ones
+    events: Callable[[], list[tuple[str, dict[str, Any]]]] | None = None
 
 
 @dataclass(frozen=True)
 class TestEventResult:
     __test__ = False
 
+    delivered: bool  # every event of the sample reached the owner
+    delivered_at_once: bool = False  # ... at the moment it was queued (false when the rules made it wait)
+    held_until: datetime | None = None  # aware UTC; set when the rules made the sample wait for this moment
+
+
+@dataclass(frozen=True)
+class DigestResult:
+    """«Сводка сейчас»: how many events were waiting and whether the summary went out."""
+
+    events: int
     delivered: bool
 
 
@@ -181,14 +213,31 @@ class Tracker:
         )
         for kind_id, label, text in samples:
             self.register_test_event_kind(TestEventKind(kind_id, label, lambda text=text: {"text": text}))
+        self.register_test_event_kind(
+            TestEventKind(
+                series_events.SAMPLE_EPISODES_ID,
+                series_events.SAMPLE_EPISODES_LABEL,
+                lambda: series_events.sample_episode_events()[0][1],
+                series_events.sample_episode_events,
+            )
+        )
+        saved = self._saved_timezone()
+        if saved is not None:
+            self.local_tz = saved  # the owner's setting wins over the one the process was started with
 
     # --- events ---------------------------------------------------------------------------------
 
     def record_event(
-        self, type: str, payload: dict[str, Any], dedup_key: str, title_id: int | None = None
+        self,
+        type: str,
+        payload: dict[str, Any],
+        dedup_key: str,
+        title_id: int | None = None,
+        at: datetime | None = None,
     ) -> int | None:
-        """Store an event and queue it for delivery. Returns its id, or None if this fact is already known."""
-        now = _naive_utc(self.clock())
+        """Store an event and queue it for delivery. Returns its id, or None if this fact is already known.
+        `at` stands in for the moment of detection (a test event with a substituted time)."""
+        now = _naive_utc(at or self.clock())
         with self.session_factory() as session:
             event = Event(type=type, title_id=title_id, payload=payload, dedup_key=dedup_key, detected_at=now)
             session.add(event)
@@ -226,12 +275,74 @@ class Tracker:
             await asyncio.to_thread(self._set_part_gap_weeks, weeks)
 
     def _set_part_gap_weeks(self, weeks: int) -> None:
+        self._store_settings({PART_GAP_SETTING: weeks})
+
+    def delivery_rules(self) -> delivery.DeliveryRules:
+        """The owner's time zone, working days, summary hour and quiet hours; what is not set is the default."""
         with self.session_factory() as session:
-            record = session.get(SettingRecord, PART_GAP_SETTING)
-            if record is None:
-                session.add(SettingRecord(key=PART_GAP_SETTING, value=weeks))
-            else:
-                record.value = weeks
+            return self._delivery_rules(session)
+
+    def _delivery_rules(self, session) -> delivery.DeliveryRules:
+        keys = (TIMEZONE_SETTING, WORKDAYS_SETTING, DIGEST_AT_SETTING, QUIET_FROM_SETTING, QUIET_UNTIL_SETTING)
+        stored = {r.key: r.value for r in session.scalars(select(SettingRecord).where(SettingRecord.key.in_(keys)))}
+        tz = ZoneInfo(stored[TIMEZONE_SETTING]) if TIMEZONE_SETTING in stored else (self.local_tz or timezone.utc)
+        workdays = stored.get(WORKDAYS_SETTING, delivery.DEFAULT_WORKDAYS)
+        return delivery.DeliveryRules(
+            tz=tz,
+            workdays=frozenset(workdays),
+            digest_at=delivery.parse_time(stored.get(DIGEST_AT_SETTING, delivery.DEFAULT_DIGEST_AT)),
+            quiet_from=delivery.parse_time(stored.get(QUIET_FROM_SETTING, delivery.DEFAULT_QUIET_FROM)),
+            quiet_until=delivery.parse_time(stored.get(QUIET_UNTIL_SETTING, delivery.DEFAULT_QUIET_UNTIL)),
+        )
+
+    def _saved_timezone(self) -> tzinfo | None:
+        with self.session_factory() as session:
+            record = session.get(SettingRecord, TIMEZONE_SETTING)
+            return ZoneInfo(record.value) if record is not None else None
+
+    async def set_delivery_rules(
+        self,
+        *,
+        tz_name: str | None = None,
+        workdays: Sequence[int] | None = None,
+        digest_at: time | str | None = None,
+        quiet_from: time | str | None = None,
+        quiet_until: time | str | None = None,
+    ) -> None:
+        """Change the given rules (the others stay). Nothing is stored when any value is wrong.
+
+        `workdays` are weekday numbers, Monday is 0; none at all is allowed (every day is a day off). Equal
+        `quiet_from` and `quiet_until` mean no quiet hours. The new rules apply to what is already queued."""
+        new: dict[str, Any] = {}
+        if tz_name is not None:
+            try:
+                ZoneInfo(tz_name)
+            except (ZoneInfoNotFoundError, ValueError) as exc:
+                raise ValueError(f"unknown time zone {tz_name!r}") from exc
+            new[TIMEZONE_SETTING] = tz_name
+        if workdays is not None:
+            days = sorted(set(workdays))
+            if any(not isinstance(d, int) or isinstance(d, bool) or not 0 <= d <= 6 for d in days):
+                raise ValueError("working days are weekday numbers from 0 (Monday) to 6 (Sunday)")
+            new[WORKDAYS_SETTING] = days
+        for key, value in (
+            (DIGEST_AT_SETTING, digest_at), (QUIET_FROM_SETTING, quiet_from), (QUIET_UNTIL_SETTING, quiet_until)
+        ):
+            if value is not None:
+                new[key] = delivery.format_time(delivery.parse_time(value))
+        async with self._write_lock:
+            await asyncio.to_thread(self._store_settings, new)
+        if TIMEZONE_SETTING in new:
+            self.local_tz = ZoneInfo(new[TIMEZONE_SETTING])
+
+    def _store_settings(self, values: dict[str, Any]) -> None:
+        with self.session_factory() as session:
+            for key, value in values.items():
+                record = session.get(SettingRecord, key)
+                if record is None:
+                    session.add(SettingRecord(key=key, value=value))
+                else:
+                    record.value = value
             session.commit()
 
     # --- titles ---------------------------------------------------------------------------------
@@ -809,67 +920,169 @@ class Tracker:
     def test_event_kinds(self) -> list[TestEventKind]:
         return list(self._kinds.values())
 
-    async def send_test_event(self, kind_id: str) -> TestEventResult:
-        """Create a fresh sample event of the given kind and try to deliver it right away."""
-        kind = self._kinds[kind_id]
-        payload = kind.build()
-        payload = {**payload, "text": f"Тестовое событие «{kind.label}»: {payload['text']}"}
-        event_id = await asyncio.to_thread(
-            self.record_event, "test", payload, f"test:{kind.id}:{uuid.uuid4().hex}"
-        )
-        await self.deliver_pending()
-        return TestEventResult(delivered=await asyncio.to_thread(self._is_delivered, event_id))
+    async def send_test_event(self, kind_id: str, at: datetime | None = None) -> TestEventResult:
+        """Create a fresh sample of the given kind and deliver it.
 
-    def _is_delivered(self, event_id: int) -> bool:
+        Without `at` it goes out at once, whatever the hour: this checks that the channel works. With `at` (an aware
+        moment) the sample is queued as if that moment were now and judged by the delivery rules of the owner. When
+        the rules make it wait, the moment it would be released is played out too, so the owner sees the summary.
+        Only the sample itself is touched: what really waits in the queue stays where it is."""
+        kind = self._kinds[kind_id]
+        built = kind.events() if kind.events is not None else [("test", kind.build())]
+        samples = [
+            (event_type, {**payload, "text": f"Тестовое событие «{kind.label}»: {payload['text']}"})
+            for event_type, payload in built
+        ]
+        run_id = uuid.uuid4().hex
+        event_ids = await asyncio.to_thread(self._record_samples, kind.id, samples, run_id, at)
+        only = frozenset(event_ids)
+        if at is None:
+            await self.deliver_pending(force=True, only=only)
+            delivered = await asyncio.to_thread(self._all_delivered, only)
+            return TestEventResult(delivered=delivered, delivered_at_once=delivered)
+
+        await self.deliver_pending(now=at, only=only)
+        if await asyncio.to_thread(self._all_delivered, only):
+            return TestEventResult(delivered=True, delivered_at_once=True)
+        rules = await asyncio.to_thread(self.delivery_rules)
+        release, waited = rules.release(_naive_utc(at))
+        if not waited:  # the rules let it go at once, so the sender failed
+            return TestEventResult(delivered=False)
+        released_at = release.replace(tzinfo=timezone.utc)
+        await self.deliver_pending(now=released_at, only=only)
+        return TestEventResult(
+            delivered=await asyncio.to_thread(self._all_delivered, only), held_until=released_at
+        )
+
+    def _record_samples(
+        self, kind_id: str, samples: list[tuple[str, dict[str, Any]]], run_id: str, at: datetime | None
+    ) -> list[int]:
+        return [
+            self.record_event(event_type, payload, f"test:{kind_id}:{run_id}:{number}", at=at)
+            for number, (event_type, payload) in enumerate(samples)
+        ]
+
+    def _all_delivered(self, event_ids: frozenset[int]) -> bool:
         with self.session_factory() as session:
-            item = session.scalar(select(DeliveryItem).where(DeliveryItem.event_id == event_id))
-            return item is not None and item.status == "delivered"
+            items = session.scalars(select(DeliveryItem).where(DeliveryItem.event_id.in_(event_ids))).all()
+            return len(items) == len(event_ids) and all(item.status == "delivered" for item in items)
+
+    def window_test_moment(self, scenario: delivery.WindowScenario) -> datetime:
+        """The next moment of the scenario on the owner's clock, as an aware moment."""
+        rules = self.delivery_rules()
+        local = scenario.next_moment(rules.local(_naive_utc(self.clock())))
+        return rules.utc(local).replace(tzinfo=timezone.utc)
 
     # --- delivery -------------------------------------------------------------------------------
 
-    async def deliver_pending(self) -> DeliveryReport:
-        """Send everything waiting in the queue. A failed send stays queued; the rest still go out."""
+    async def deliver_pending(
+        self, *, now: datetime | None = None, only: frozenset[int] | None = None, force: bool = False
+    ) -> DeliveryReport:
+        """Send what the delivery rules let out at this moment. A failed send stays queued; the rest still go out.
+
+        Events that arrived while the bot had to be silent wait and go out in one summary. `force` sends everything
+        one by one regardless of the rules; `only` limits the pass to these event ids; `now` stands in for the clock."""
         report = DeliveryReport()
         async with self._delivery_lock:
-            pending = await asyncio.to_thread(self._pending_items)
-            for item_id, event in pending:
-                actions = event_actions(event.type, event.id, event.title_id)
-                if await self._deliver_one(item_id, format_event(event), actions):
-                    report.delivered += 1
-                else:
-                    report.failed += 1
+            moment = _naive_utc(now or self.clock())
+            rules, pending, names = await asyncio.to_thread(self._load_queue, only)
+            if force:
+                single, summary = pending, []
+            else:
+                single, summary = rules.due(pending, moment)
+            for item in single:  # episodes are folded only inside a summary: a message of its own stays as it is
+                await self._send((item,), item.text, event_actions(item.type, item.event_id, item.title_id), report)
+            if summary:
+                await self._send_summary(summary, moment, rules, report, names)
         return report
 
-    def _pending_items(self) -> list[tuple[int, Event]]:
-        with self.session_factory() as session:
-            return list(
-                session.execute(
-                    select(DeliveryItem.id, Event)
-                    .join(Event, Event.id == DeliveryItem.event_id)
-                    .where(DeliveryItem.status == "pending")
-                    .order_by(DeliveryItem.id)
-                )
-            )
+    async def digest_now(self) -> DigestResult:
+        """«Сводка сейчас»: everything waiting goes out in one summary at once, whatever the hour, and is marked delivered."""
+        report = DeliveryReport()
+        async with self._delivery_lock:
+            moment = _naive_utc(self.clock())
+            rules, pending, names = await asyncio.to_thread(self._load_queue, None)
+            if pending:
+                await self._send_summary(pending, moment, rules, report, names)
+        return DigestResult(events=len(pending), delivered=bool(pending) and report.failed == 0)
 
-    async def _deliver_one(self, item_id: int, message: str, actions: Sequence[Action]) -> bool:
+    def _load_queue(
+        self, only: frozenset[int] | None
+    ) -> tuple[delivery.DeliveryRules, list[delivery.Pending], dict[int, str]]:
+        with self.session_factory() as session:
+            query = (
+                select(DeliveryItem.id, DeliveryItem.created_at, Event)
+                .join(Event, Event.id == DeliveryItem.event_id)
+                .where(DeliveryItem.status == "pending")
+                .order_by(DeliveryItem.id)
+            )
+            if only is not None:
+                query = query.where(Event.id.in_(only))
+            pending = [
+                delivery.Pending(item_id, event.id, event.type, event.title_id, format_event(event), event.payload, created)
+                for item_id, created, event in session.execute(query)
+            ]
+            ids = {p.title_id for p in pending if p.title_id is not None}
+            names = {t.id: t.title for t in session.scalars(select(Title).where(Title.id.in_(ids)))} if ids else {}
+            return self._delivery_rules(session), pending, names
+
+    async def _send_summary(
+        self,
+        pending: list[delivery.Pending],
+        moment: datetime,
+        rules: delivery.DeliveryRules,
+        report: DeliveryReport,
+        names: dict[int, str],
+    ) -> None:
+        units = delivery.fold_episodes(pending)
+        for text, held in delivery.digest_messages(units, moment, rules):
+            members = tuple(m for unit in held for m in unit.members)
+            await self._send(members, text, self._summary_actions(held, names), report)
+
+    @staticmethod
+    def _summary_actions(units: list[delivery.Unit], names: dict[int, str]) -> list[Action]:
+        """The buttons of the events inside a summary, each saying which title it is for."""
+        actions: list[Action] = []
+        for unit in units:
+            single = unit.single
+            if single is None:
+                continue
+            name = single.data.get("sequel_title") or names.get(single.title_id, "")
+            if len(name) > BUTTON_NAME_LIMIT:
+                name = name[: BUTTON_NAME_LIMIT - 1] + "…"
+            for action in event_actions(single.type, single.event_id, single.title_id):
+                actions.append(replace(action, label=f"{action.label}: {name}") if name else action)
+        return actions[:MAX_DIGEST_BUTTONS]
+
+    async def _send(
+        self, members: Sequence[delivery.Pending], message: str, actions: Sequence[Action], report: DeliveryReport
+    ) -> None:
+        """Send one message that settles all `members`; they are marked delivered only if the send succeeded."""
         error: Exception | None = None
         try:
             await self.sender.send(message, actions)
         except Exception as exc:  # the sender is a network client: any failure means "try again later"
             error = exc
-            logging.warning("delivery of queue item %s failed: %s", item_id, mask_secrets(repr(exc)))
+            logging.warning(
+                "delivery of queue items %s failed: %s", [m.item_id for m in members], mask_secrets(repr(exc))
+            )
 
-        await asyncio.to_thread(self._record_attempt, item_id, error)
-        return error is None
+        await asyncio.to_thread(self._record_attempts, [m.item_id for m in members], error)
+        if error is None:
+            report.delivered += len(members)
+        else:
+            report.failed += len(members)
 
-    def _record_attempt(self, item_id: int, error: Exception | None) -> None:
+    def _record_attempts(self, item_ids: Sequence[int], error: Exception | None) -> None:
+        now = _naive_utc(self.clock())
         with self.session_factory() as session:
-            item = session.get(DeliveryItem, item_id)
-            item.attempts += 1
-            if error is None:
-                item.status = "delivered"
-                item.last_error = None
-                item.delivered_at = _naive_utc(self.clock())
-            else:
-                item.last_error = mask_secrets(repr(error))[:500]
+            for item_id in item_ids:
+                item = session.get(DeliveryItem, item_id)
+                item.attempts += 1
+                if error is None:
+                    item.status = "delivered"
+                    item.last_error = None
+                    item.delivered_at = now
+                else:
+                    item.last_error = mask_secrets(repr(error))[:500]
             session.commit()
