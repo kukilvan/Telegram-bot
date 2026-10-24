@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
-from app.tracker.actions import SEASONS, WATCHED, card_actions
+from app.tracker.actions import DELETE, SEASONS, WATCHED, card_actions
 from app.tracker.cards import format_card
 from app.tracker.core import Tracker, UnknownSeason, UnknownTitle
 from app.tracker.db import create_session_factory
@@ -310,6 +310,6 @@ def test_series_card_offers_the_seasons_button_and_not_watched(tracker):
 
     actions = card_actions(tracker.title_card(result.title_id))
 
-    assert [a.name for a in actions] == [SEASONS]
+    assert [a.name for a in actions] == [SEASONS, DELETE]
     assert actions[0].arg == result.title_id
     assert WATCHED not in [a.name for a in actions]

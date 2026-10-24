@@ -14,7 +14,7 @@ from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from typing import Any, Protocol
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, delete, or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
@@ -98,6 +98,11 @@ class AddResult:
 @dataclass(frozen=True)
 class WatchedResult:
     changed: bool  # False: the movie was already watched
+
+
+@dataclass(frozen=True)
+class DeleteResult:
+    name: str  # the title that was removed, for the message to the owner
 
 
 @dataclass(frozen=True)
@@ -239,7 +244,8 @@ class Tracker:
         at: datetime | None = None,
     ) -> int | None:
         """Store an event and queue it for delivery. Returns its id, or None if this fact is already known.
-        `at` stands in for the moment of detection (a test event with a substituted time)."""
+        `at` stands in for the moment of detection (a test event with a substituted time). An event of a title that is
+        no longer in the list (deleted while the poll was under way) is dropped."""
         now = _naive_utc(at or self.clock())
         with self.session_factory() as session:
             event = Event(type=type, title_id=title_id, payload=payload, dedup_key=dedup_key, detected_at=now)
@@ -247,6 +253,10 @@ class Tracker:
             try:
                 session.flush()
             except IntegrityError:
+                session.rollback()
+                return None
+            # the flush holds the write lock, so the title cannot be deleted between this check and the commit
+            if title_id is not None and session.get(Title, title_id) is None:
                 session.rollback()
                 return None
             session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
@@ -592,6 +602,41 @@ class Tracker:
             session.commit()
             return WatchedResult(changed=True)
 
+    async def delete_title(self, title_id: int) -> DeleteResult:
+        """Remove a title and everything that belongs to it, in one transaction: all of it or nothing."""
+        async with self._write_lock:
+            return await asyncio.to_thread(self._delete_title, title_id)
+
+    def _delete_title(self, title_id: int) -> DeleteResult:
+        with self.session_factory() as session:
+            name = session.scalar(select(Title.title).where(Title.id == title_id))
+            if name is None:
+                raise UnknownTitle(title_id)
+            events = select(Event.id).where(Event.title_id == title_id)
+            # `events.title_id` has no foreign key, so nothing cascades: the events and their queue entries go by hand.
+            # A sequel announcement the owner has already seen stays, cut loose from the title: its «Следить» button
+            # works on the event alone. Its key is changed, because the key names the sequel and the same film added
+            # again must be able to announce it anew.
+            seen = session.scalars(
+                select(Event).where(
+                    Event.title_id == title_id,
+                    Event.type == sequel_events.SEQUEL_ANNOUNCED,
+                    Event.id.in_(select(DeliveryItem.event_id).where(DeliveryItem.status == "delivered")),
+                )
+            ).all()
+            for event in seen:
+                event.title_id = None
+                event.dedup_key = f"deleted:{event.id}:{event.dedup_key}"[:255]
+            session.flush()
+            session.execute(delete(DeliveryItem).where(DeliveryItem.event_id.in_(events)))
+            session.execute(delete(Event).where(Event.title_id == title_id))
+            removed = session.execute(delete(Title).where(Title.id == title_id)).rowcount  # the rest cascades
+            if not removed:  # deleted by someone else since the name was read
+                session.rollback()
+                raise UnknownTitle(title_id)
+            session.commit()
+            return DeleteResult(name)
+
     async def follow_sequel(self, event_id: int) -> AddResult:
         """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it."""
         kind, sequel_id = await asyncio.to_thread(self._announced_sequel, event_id)
@@ -696,6 +741,9 @@ class Tracker:
             apply = self._apply_sequels if due.sequels else self._applier(due.kind)
             found = await asyncio.to_thread(apply, due, snapshot)
         except Exception as exc:  # one broken title or source must not stop the pass
+            if not await asyncio.to_thread(self._title_exists, due.id):
+                logging.info("title %s was deleted while it was polled", due.id)  # nothing broke: it is simply gone
+                return
             logging.warning("polling title %s failed: %s", due.id, mask_secrets(repr(exc)))
             report.failed += 1
             broken.append((due, exc))
@@ -706,6 +754,10 @@ class Tracker:
             return
         report.polled += 1
         report.events += found
+
+    def _title_exists(self, title_id: int) -> bool:
+        with self.session_factory() as session:
+            return session.get(Title, title_id) is not None
 
     async def _tell_owner_about(self, broken: list[tuple[_DueTitle, Exception]], report: PollReport) -> None:
         try:
@@ -1144,6 +1196,8 @@ class Tracker:
         with self.session_factory() as session:
             for item_id in item_ids:
                 item = session.get(DeliveryItem, item_id)
+                if item is None:  # its title was deleted while the message was on its way: the entry is gone with it
+                    continue
                 item.attempts += 1
                 if error is None:
                     item.status = "delivered"

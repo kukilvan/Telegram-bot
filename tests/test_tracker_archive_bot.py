@@ -186,7 +186,7 @@ def test_the_card_of_a_wanted_movie_has_a_watched_button(tracker, replies):
     Chat_(tracker).press(f"tcard:{title_id}")
 
     [(_, text, buttons)] = messages(replies)
-    assert [b.text for b in buttons] == ["✅ Посмотрел"]
+    assert [b.text for b in buttons] == ["✅ Посмотрел", "🗑 Удалить"]
     assert buttons[0].callback_data == f"tact:watched:{title_id}"
 
 
@@ -212,7 +212,7 @@ def test_the_card_of_a_watched_movie_shows_the_status_and_no_button(tracker, rep
 
     [(_, text, buttons)] = messages(replies)
     assert "Просмотрено" in text
-    assert buttons == []
+    assert [b.text for b in buttons] == ["🗑 Удалить"]  # nothing left to mark, but the title can still be removed
 
 
 def test_pressing_watched_again_says_it_is_already_done(tracker, replies):
@@ -276,7 +276,7 @@ def test_the_card_button_under_an_event_opens_the_card_of_its_title(tracker, mov
 
     [(_, text, card_buttons)] = messages(replies)
     assert "Дюна: Часть третья" in text and "Хочу" in text
-    assert [b.text for b in card_buttons] == ["✅ Посмотрел"]
+    assert [b.text for b in card_buttons] == ["✅ Посмотрел", "🗑 Удалить"]
 
 
 def test_the_card_button_of_a_title_that_is_gone_says_so(tracker, replies):
@@ -337,7 +337,7 @@ def test_pressing_follow_adds_the_sequel_as_wanted_and_shows_its_card(tracker, s
     assert [(t.name, t.status) for t in tracker.list_titles()] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
     [(_, text, card_buttons)] = [r for r in replies if r[0] == "message"]
     assert "Продолжение добавлено" in text and "Хочу" in text
-    assert [b.text for b in card_buttons] == ["✅ Посмотрел"]
+    assert [b.text for b in card_buttons] == ["✅ Посмотрел", "🗑 Удалить"]
     assert replies.dropped == [None]
 
 

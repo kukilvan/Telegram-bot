@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from anime_fakes import FakeAniList, FakeShikimori
-from app.tracker.actions import card_actions
+from app.tracker.actions import DELETE, card_actions
 from app.tracker.cards import format_card
 from app.tracker.core import Tracker, TitleNotFound
 from app.tracker.db import create_session_factory
@@ -280,7 +280,7 @@ def test_a_franchise_of_films_alone_has_no_seasons_to_mark_and_no_button_for_it(
 
     assert tracker.watchable_seasons(title) == []
     assert "Сезонов пока нет" in format_card(tracker.title_card(title))
-    assert card_actions(tracker.title_card(title)) == []
+    assert [a.name for a in card_actions(tracker.title_card(title))] == [DELETE]  # only «Удалить»
 
 
 def test_a_part_without_a_count_and_nothing_out_does_not_overlap_the_next_one(tracker, shikimori, session_factory):

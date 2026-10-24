@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
-from app.tracker.actions import CARD, FOLLOW, WATCHED, card_actions
+from app.tracker.actions import CARD, DELETE, FOLLOW, WATCHED, card_actions
 from app.tracker.core import Tracker, UnknownEvent, UnknownTitle
 from app.tracker.db import create_session_factory
 from app.tracker.models import Event, SourceSnapshot, Title
@@ -194,11 +194,14 @@ def test_the_card_of_a_watched_movie_still_shows_its_dates(tracker, source):
 
 def test_the_card_offers_watched_only_while_the_movie_is_wanted(tracker, source):
     title_id = add(tracker, source, movie(DUNE))
-    assert [(a.name, a.arg) for a in card_actions(tracker.title_card(title_id))] == [(WATCHED, title_id)]
+    assert [(a.name, a.arg) for a in card_actions(tracker.title_card(title_id))] == [
+        (WATCHED, title_id),
+        (DELETE, title_id),
+    ]
 
     run(tracker.mark_watched(title_id))
 
-    assert card_actions(tracker.title_card(title_id)) == []
+    assert [a.name for a in card_actions(tracker.title_card(title_id))] == [DELETE]
 
 
 # --- the archive is not checked for its own release ----------------------------------------------

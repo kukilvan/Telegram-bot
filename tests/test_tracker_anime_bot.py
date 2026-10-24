@@ -180,7 +180,7 @@ def test_the_card_of_a_listed_anime_has_the_seasons_button(tracker, replies):
     replies.clear()
     chat.press("tcard:1")
 
-    assert labels(last_message(replies)[2]) == ["📺 Просмотренные сезоны"]
+    assert labels(last_message(replies)[2]) == ["📺 Просмотренные сезоны", "🗑 Удалить"]
 
 
 def test_adding_the_franchise_through_another_entry_opens_the_same_title(tracker, replies):

@@ -267,7 +267,7 @@ def test_list_shows_every_title_and_a_tap_opens_the_card(tracker, replies):
 
     chat.say(MY_TITLES_BUTTON)
     _, _, buttons = replies[-1]
-    assert labels(buttons) == ["🎬 Дюна: Часть вторая (2024)", "🎬 Дюна: Часть третья (2026)"]
+    assert labels(buttons) == ["🎬 Дюна: Часть вторая (2024)", "🎬 Дюна: Часть третья (2026)", "🗑 Удалить несколько"]
 
     chat.press(callback_of(buttons, "Часть третья"))
     _, card, _ = replies[-1]

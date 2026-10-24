@@ -263,7 +263,7 @@ def test_the_card_button_opens_the_same_choice_later(tracker, replies):
     add_series(chat, replies)
     chat.press(callback_of(last_message(replies)[2], "Готово"))  # skip it at adding
     card_buttons = last_message(replies)[2]
-    assert labels(card_buttons) == ["📺 Просмотренные сезоны"]
+    assert labels(card_buttons) == ["📺 Просмотренные сезоны", "🗑 Удалить"]
 
     chat.press(callback_of(card_buttons, "Просмотренные сезоны"))
 

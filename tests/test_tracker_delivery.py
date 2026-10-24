@@ -15,7 +15,7 @@ from sqlalchemy import select
 from app.tracker import delivery, movie_events
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
-from app.tracker.models import DeliveryItem
+from app.tracker.models import DeliveryItem, Title
 from app.tracker.seasons import Episode, Season
 from app.tracker.series_events import EPISODE_OUT, SAMPLE_EPISODES_ID, message_episode
 from app.tracker.sources.tmdb_movies import MovieSnapshot
@@ -327,7 +327,20 @@ def test_a_long_summary_is_split_into_messages_telegram_accepts(tracker, clock, 
 # --- folded episodes -------------------------------------------------------------------------------
 
 
+def ensure_title(tracker, title_id, name):
+    """A bare title row: an event is recorded only for a title that is in the list."""
+    now = datetime(2026, 10, 24)
+    with tracker.session_factory() as session:
+        if session.get(Title, title_id) is None:
+            session.add(
+                Title(id=title_id, kind="series", title=name, original_title=name, year=2026, genres=[], status="want",
+                      tracking_enabled=True, added_at=now, status_changed_at=now)
+            )
+            session.commit()
+
+
 def episode_event(tracker, clock, title_id, season, number, day=SUN, hour=10, part=None, name="Укрытие", next_line=None):
+    ensure_title(tracker, title_id, name)
     clock.at(day, hour, 0)
     payload = {"text": message_episode(name, Season(season, f"Сезон {season}", 10), number, next_line),
                "season": season, "episode": number}

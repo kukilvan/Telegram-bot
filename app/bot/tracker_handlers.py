@@ -1,11 +1,13 @@
 """Bot side of the tracker core: the menu («Добавить», «Мои тайтлы», «Сводка сейчас», «Тестовое событие»,
-«Окна доставки»), the buttons under messages («Посмотрел», «Следить», «Карточка») and the Telegram sender.
+«Окна доставки»), the buttons under messages and cards («Посмотрел», «Следить», «Карточка», «Удалить») and the
+Telegram sender.
 
 Handlers talk to the core only through the `Tracker` facade. «Добавить» is a temporary way to fill the
 list until the web app (it goes away when the web app arrives).
 """
 
 import logging
+import secrets
 from collections.abc import Sequence
 from datetime import timezone
 
@@ -21,9 +23,17 @@ from aiogram.types import (
 )
 
 from app.tracker import delivery
-from app.tracker.actions import CARD, FOLLOW, SEASONS, WATCHED, Action, card_actions
+from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card, format_when
-from app.tracker.core import Tracker, TitleNotFound, UnknownEvent, UnknownSeason, UnknownTitle, WatchableSeason
+from app.tracker.core import (
+    TitleNotFound,
+    TitleSummary,
+    Tracker,
+    UnknownEvent,
+    UnknownSeason,
+    UnknownTitle,
+    WatchableSeason,
+)
 from app.tracker.series_events import SAMPLE_EPISODES_ID
 from app.utils.secrets_mask import mask_secrets
 
@@ -40,6 +50,10 @@ _CARD_PREFIX = "tcard:"
 _ACTION_PREFIX = "tact:"  # tact:<action name>:<number>, see app.tracker.actions
 _SEASON_PREFIX = "tsea:"  # tsea:<title id>:<season number> flips a mark, tsea:<title id>:done closes the choice
 _DONE = "done"
+_DELETE_PREFIX = "tdel:"  # tdel:y:<title id> deletes after the question, tdel:n:<title id> drops it
+_BULK_PREFIX = "tdm:"  # tdm:open starts a selection; tdm:<selection id>:t:<title id> | go | yes | no work on it
+_YES, _NO = "y", "n"
+_BULK_OPEN, _BULK_TOGGLE, _BULK_GO, _BULK_YES, _BULK_NO = "open", "t", "go", "yes", "no"
 
 MAX_SUGGESTIONS = 10
 MAX_LIST_BUTTONS = 50
@@ -53,6 +67,9 @@ START_TEXT = (
     "👋 Бот работает. Кнопки меню внизу: «Добавить» и «Мои тайтлы» ведут список, «Сводка сейчас» присылает "
     "накопленные события, «Тестовое событие» и «Окна доставки» показывают, как выглядят сообщения."
 )
+DELETE_BULK_BUTTON = "🗑 Удалить несколько"
+_NOT_IN_LIST = "Этого тайтла больше нет в списке."
+_STALE_SELECTION = "Эта кнопка больше не работает, откройте список заново."
 _ASK_SEASONS = (
     "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
     "повторное нажатие снимает отметку. Когда закончите, нажмите «Готово»."
@@ -119,10 +136,42 @@ def _title_button_text(name: str, year: int | None) -> str:
     return f"{name} ({year})" if year else name
 
 
+def _delete_question(names: Sequence[str]) -> str:
+    quoted = ", ".join(f"«{name}»" for name in names)
+    return f"Удалить {quoted} из списка? Сезоны, отметки и накопленные события тоже сотрутся. Вернуть нельзя."
+
+
+def _confirm_markup(yes: str, no: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Да, удалить", callback_data=yes)],
+            [InlineKeyboardButton(text="Отмена", callback_data=no)],
+        ]
+    )
+
+
+def _selection_markup(selection_id: str, titles: Sequence[TitleSummary], chosen: set[int]) -> InlineKeyboardMarkup:
+    """The titles with a mark on the chosen ones, then the delete button (with the count) and the cancel button."""
+    rows = [
+        [
+            InlineKeyboardButton(
+                text=f"{'✅' if t.id in chosen else KIND_ICONS.get(t.kind, '🎞')} {_title_button_text(t.name, t.year)}",
+                callback_data=f"{_BULK_PREFIX}{selection_id}:{_BULK_TOGGLE}:{t.id}",
+            )
+        ]
+        for t in titles
+    ]
+    go = f"{_BULK_PREFIX}{selection_id}:{_BULK_GO}"
+    rows.append([InlineKeyboardButton(text=f"Удалить выбранные ({len(chosen)})", callback_data=go)])
+    rows.append([InlineKeyboardButton(text="Отмена", callback_data=f"{_BULK_PREFIX}{selection_id}:{_BULK_NO}")])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
+
+
 def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids: list[int]) -> None:
     """Register on `dp` itself (not a sub-router) so these win over the catch-all text handler."""
     allowed = frozenset(allowed_user_ids)
     awaiting_name: dict[int, str] = {}  # owner id -> kind whose name the next text message is
+    selections: dict[int, tuple[str, set[int]]] = {}  # owner id -> (id of the open selection, chosen ids); lost on restart
 
     def is_owner(user) -> bool:  # second line of defence behind AccessMiddleware
         return getattr(user, "id", None) in allowed
@@ -337,6 +386,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             ]
             for t in titles[:MAX_LIST_BUTTONS]
         ]
+        rows.append([InlineKeyboardButton(text=DELETE_BULK_BUTTON, callback_data=f"{_BULK_PREFIX}{_BULK_OPEN}")])
         header = "Ваши тайтлы. Нажмите на название, чтобы открыть карточку:"
         if len(titles) > MAX_LIST_BUTTONS:
             header += f"\nПоказаны первые {MAX_LIST_BUTTONS} из {len(titles)}."
@@ -345,7 +395,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def show_card_of(callback: CallbackQuery, title_id: int) -> None:
         card = tracker.title_card(title_id)
         if card is None:
-            await callback.answer("Этого тайтла больше нет в списке.")
+            await callback.answer(_NOT_IN_LIST)
             return
         await callback.answer()
         await send_card(callback, card)
@@ -372,7 +422,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         try:
             result = await tracker.mark_watched(title_id)
         except UnknownTitle:
-            await callback.answer("Этого тайтла больше нет в списке.")
+            await callback.answer(_NOT_IN_LIST)
             return
         except Exception as exc:
             logging.warning("marking a title watched failed: %s", mask_secrets(repr(exc)))
@@ -408,6 +458,9 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await send_card(callback, tracker.title_card(result.title_id), heading)
 
     async def open_seasons_choice(callback: CallbackQuery, title_id: int) -> None:
+        if tracker.title_card(title_id) is None:
+            await callback.answer(_NOT_IN_LIST)
+            return
         if not await ask_watched_seasons(callback, title_id):
             await callback.answer("Пока нет вышедших сезонов, отмечать нечего.")
             return
@@ -421,6 +474,9 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Эта кнопка больше не работает.")
             return
         title_id = int(raw_id)
+        if tracker.title_card(title_id) is None:
+            await callback.answer(_NOT_IN_LIST)
+            return
         if raw_number == _DONE:
             await drop_buttons(callback)
             await callback.answer("Готово")
@@ -436,7 +492,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
                 raise UnknownSeason(f"{title_id}:{number}")
             await tracker.set_season_watched(title_id, number, not marks[number])
         except UnknownTitle:
-            await callback.answer("Этого тайтла больше нет в списке.")
+            await callback.answer(_NOT_IN_LIST)
             return
         except UnknownSeason:
             await callback.answer("Такого сезона нет или он ещё не вышел.")
@@ -453,6 +509,138 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         except Exception as exc:  # the marks are saved; a stale message only keeps its old look
             logging.debug("could not refresh the season buttons: %s", mask_secrets(repr(exc)))
 
+    # --- «Удалить» ------------------------------------------------------------------------------
+
+    async def ask_delete(callback: CallbackQuery, title_id: int) -> None:
+        card = tracker.title_card(title_id)
+        if card is None:
+            await callback.answer(_NOT_IN_LIST)
+            return
+        await callback.answer()
+        if callback.message is not None:
+            await callback.message.answer(
+                _delete_question([card.title]),
+                reply_markup=_confirm_markup(f"{_DELETE_PREFIX}{_YES}:{title_id}", f"{_DELETE_PREFIX}{_NO}:{title_id}"),
+            )
+
+    async def answer_delete(callback: CallbackQuery) -> None:
+        if not is_owner(callback.from_user):
+            return
+        answer, _, raw_id = callback.data.removeprefix(_DELETE_PREFIX).partition(":")
+        if answer not in (_YES, _NO) or not (raw_id.isascii() and raw_id.isdigit()):
+            await callback.answer("Эта кнопка больше не работает.")
+            return
+        if answer == _NO:
+            await drop_buttons(callback)
+            await callback.answer("Отменено, тайтл остался в списке.")
+            return
+        try:
+            result = await tracker.delete_title(int(raw_id))
+        except UnknownTitle:
+            await drop_buttons(callback)
+            await callback.answer(_NOT_IN_LIST)
+            return
+        except Exception as exc:  # the question stays, so the press can be repeated
+            logging.warning("deleting a title failed: %s", mask_secrets(repr(exc)))
+            await callback.answer("Не удалось удалить. Попробуйте ещё раз.")
+            return
+        await drop_buttons(callback)
+        await callback.answer()
+        if callback.message is not None:
+            await callback.message.answer(f"🗑 Удалено: {result.name}")
+
+    # --- «Удалить несколько» --------------------------------------------------------------------
+
+    async def open_selection(callback: CallbackQuery) -> None:
+        titles = tracker.list_titles()[:MAX_LIST_BUTTONS]
+        if not titles:
+            await callback.answer("Список пуст, удалять нечего.")
+            return
+        selection_id = secrets.token_hex(3)  # told apart from the selections of earlier runs and of earlier presses
+        selections[callback.from_user.id] = (selection_id, set())
+        await callback.answer()
+        if callback.message is not None:
+            await callback.message.answer(
+                "Отметьте тайтлы, которые нужно удалить. Повторное нажатие снимает отметку.",
+                reply_markup=_selection_markup(selection_id, titles, set()),
+            )
+
+    async def press_selection(callback: CallbackQuery) -> None:
+        if not is_owner(callback.from_user):
+            return
+        rest = callback.data.removeprefix(_BULK_PREFIX)
+        if rest == _BULK_OPEN:
+            await open_selection(callback)
+            return
+        selection_id, _, action = rest.partition(":")
+        current = selections.get(callback.from_user.id)
+        if current is None or current[0] != selection_id:  # after a restart, or after a newer selection was opened
+            await callback.answer(_STALE_SELECTION)
+            return
+        chosen = current[1]
+        verb, _, raw = action.partition(":")
+        if verb == _BULK_TOGGLE and raw.isascii() and raw.isdigit():
+            chosen.symmetric_difference_update({int(raw)})
+            await callback.answer()
+            if callback.message is None:
+                return
+            try:
+                await callback.message.edit_reply_markup(
+                    reply_markup=_selection_markup(selection_id, tracker.list_titles()[:MAX_LIST_BUTTONS], chosen)
+                )
+            except Exception as exc:  # the marks are kept; a stale message only keeps its old look
+                logging.debug("could not refresh the selection buttons: %s", mask_secrets(repr(exc)))
+        elif verb == _BULK_GO:
+            await ask_delete_selected(callback, selection_id, chosen)
+        elif verb == _BULK_YES:
+            await delete_selected(callback, chosen)
+        elif verb == _BULK_NO:
+            selections.pop(callback.from_user.id, None)
+            await drop_buttons(callback)
+            await callback.answer("Отменено, ничего не удалено.")
+        else:
+            await callback.answer("Эта кнопка больше не работает.")
+
+    async def ask_delete_selected(callback: CallbackQuery, selection_id: str, chosen: set[int]) -> None:
+        names = [t.name for t in tracker.list_titles() if t.id in chosen]
+        if not names:
+            await callback.answer("Ничего не выбрано, удалять нечего.")
+            return
+        # the question is about exactly these titles: the selection moves under a new id, so the old buttons go stale
+        # and a title marked after the question cannot be deleted by the answer to it
+        asked_id = secrets.token_hex(3)
+        selections[callback.from_user.id] = (asked_id, set(chosen))
+        await callback.answer()
+        if callback.message is not None:
+            await callback.message.answer(
+                _delete_question(names),
+                reply_markup=_confirm_markup(
+                    f"{_BULK_PREFIX}{asked_id}:{_BULK_YES}", f"{_BULK_PREFIX}{asked_id}:{_BULK_NO}"
+                ),
+            )
+
+    async def delete_selected(callback: CallbackQuery, chosen: set[int]) -> None:
+        selections.pop(callback.from_user.id, None)  # one question, one answer
+        await drop_buttons(callback)
+        names = {t.id: t.name for t in tracker.list_titles()}
+        removed: list[str] = []
+        failed: list[str] = []
+        for title_id in sorted(chosen):
+            try:
+                removed.append((await tracker.delete_title(title_id)).name)
+            except UnknownTitle:
+                continue  # already removed from its own card
+            except Exception as exc:
+                logging.warning("deleting a title failed: %s", mask_secrets(repr(exc)))
+                failed.append(names.get(title_id, str(title_id)))
+        await callback.answer()
+        if callback.message is None:
+            return
+        lines = [f"🗑 Удалено: {', '.join(removed)}"] if removed else []
+        if failed:
+            lines.append(f"Не удалось удалить: {', '.join(failed)}. Откройте список и попробуйте ещё раз.")
+        await callback.message.answer("\n".join(lines) if lines else "Этих тайтлов уже нет в списке.")
+
     async def press_action(callback: CallbackQuery) -> None:
         if not is_owner(callback.from_user):
             return
@@ -466,6 +654,8 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await open_seasons_choice(callback, number)
         elif number is not None and name == CARD:
             await show_card_of(callback, number)
+        elif number is not None and name == DELETE:
+            await ask_delete(callback, number)
         else:
             await callback.answer("Эта кнопка больше не работает.")
 
@@ -486,4 +676,6 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     dp.callback_query.register(add_picked, F.data.startswith(_PICK_PREFIX))
     dp.callback_query.register(show_card, F.data.startswith(_CARD_PREFIX))
     dp.callback_query.register(press_action, F.data.startswith(_ACTION_PREFIX))
+    dp.callback_query.register(answer_delete, F.data.startswith(_DELETE_PREFIX))
+    dp.callback_query.register(press_selection, F.data.startswith(_BULK_PREFIX))
     dp.callback_query.register(flip_season, F.data.startswith(_SEASON_PREFIX))

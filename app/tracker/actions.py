@@ -10,11 +10,13 @@ WATCHED = "watched"  # arg: title id
 FOLLOW = "follow"  # arg: id of the «sequel announced» event
 SEASONS = "seasons"  # arg: title id; opens the choice of watched seasons
 CARD = "card"  # arg: title id; shows the title's card (stands in for «Открыть» until there is a web app)
+DELETE = "delete"  # arg: title id; asks for confirmation, then removes the title with everything that belongs to it
 
 _WATCHED_LABEL = "✅ Посмотрел"
 _FOLLOW_LABEL = "👀 Следить"
 _SEASONS_LABEL = "📺 Просмотренные сезоны"
 _CARD_LABEL = "📄 Карточка"
+_DELETE_LABEL = "🗑 Удалить"
 
 _MOVIE_EVENTS = frozenset(
     {movie_events.DATE_ANNOUNCED, movie_events.DATE_MOVED, movie_events.RELEASED, movie_events.DIGITAL}
@@ -24,7 +26,7 @@ _MOVIE_EVENTS = frozenset(
 @dataclass(frozen=True)
 class Action:
     label: str
-    name: str  # WATCHED | FOLLOW | SEASONS | CARD
+    name: str  # WATCHED | FOLLOW | SEASONS | CARD | DELETE
     arg: int
 
 
@@ -40,8 +42,10 @@ def event_actions(event_type: str, event_id: int, title_id: int | None) -> list[
 
 
 def card_actions(card: TitleCard) -> list[Action]:
-    """Buttons under a title's card: «Посмотрел» until the movie is watched, the watched seasons of a series or an anime."""
+    """Buttons under a title's card: «Посмотрел» until the movie is watched, the watched seasons of a series or an anime,
+    and «Удалить» for any title."""
+    delete = Action(_DELETE_LABEL, DELETE, card.id)
     if card.kind in ("series", "anime"):
         has_seasons = card.seasons is not None and (card.seasons.current or card.seasons.announced)
-        return [Action(_SEASONS_LABEL, SEASONS, card.id)] if has_seasons else []
-    return [Action(_WATCHED_LABEL, WATCHED, card.id)] if card.status == STATUS_WANT else []
+        return [Action(_SEASONS_LABEL, SEASONS, card.id), delete] if has_seasons else [delete]
+    return [Action(_WATCHED_LABEL, WATCHED, card.id), delete] if card.status == STATUS_WANT else [delete]
