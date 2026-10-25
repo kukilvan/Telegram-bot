@@ -28,7 +28,7 @@ from app.tracker import (
     sequel_events,
     series_events,
 )
-from app.tracker.actions import Action, event_actions
+from app.tracker.actions import CARD, FOLLOW, WATCHED, Action, event_actions
 from app.tracker.cards import MovieLine, TitleCard
 from app.tracker.models import (
     STATUS_WAITING,
@@ -64,7 +64,7 @@ DIGEST_AT_SETTING = "digest_at"  # "15:00"
 QUIET_FROM_SETTING = "quiet_from"
 QUIET_UNTIL_SETTING = "quiet_until"
 
-MAX_DIGEST_BUTTONS = 10  # buttons of the events inside a summary (the rest are reached from the card)
+MAX_DIGEST_BUTTONS = 10  # buttons of the events inside a summary; «Следить» is shown whatever the limit
 BUTTON_NAME_LIMIT = 30
 
 
@@ -1164,7 +1164,11 @@ class Tracker:
                     continue
                 shown.add((action.name, action.arg))
                 actions.append(replace(action, label=f"{action.label}: {name}") if name else action)
-        return actions[:MAX_DIGEST_BUTTONS]
+        # «Следить» is never cut: a sequel announcement has no card or list entry to follow from. The rest fill
+        # what is left of the limit, «Посмотрел» before «Карточка», and are reached from «Мои тайтлы» if cut.
+        follow = [a for a in actions if a.name == FOLLOW]
+        rest = [a for name in (WATCHED, CARD) for a in actions if a.name == name]
+        return follow + rest[: max(0, MAX_DIGEST_BUTTONS - len(follow))]
 
     async def _send(
         self, members: Sequence[delivery.Pending], message: str, actions: Sequence[Action], report: DeliveryReport

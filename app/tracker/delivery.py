@@ -9,7 +9,9 @@ An event is judged by the moment it was queued:
   - otherwise it goes out at once.
 What waited goes out as one message: after the quiet hours of a day off, the message of that morning; on a working
 day, the summary of 15:00 (a night's events join it). At any moment inside the quiet hours or on a working morning
-nothing goes out, a retry of a failed send included.
+nothing goes out, a retry of a failed send included. An event that should have gone at once, but whose send failed
+and which outlived the quiet hours or a working morning, joins that summary too; a retry inside the same open
+stretch of time goes out alone.
 
 Several episodes of one season of one title are folded into a single line («вышли серии 5–6») — in a summary only.
 Failures of several titles of one source for one reason in one pass are folded into one message, in a summary and
@@ -86,8 +88,29 @@ class DeliveryRules:
                 break
         return (self.utc(local), True) if waited else (queued_at, False)
 
+    def next_silence(self, moment: datetime) -> datetime | None:
+        """The nearest start of silence strictly after this moment (naive UTC), or None when the bot is never silent.
+        Silence starts with the quiet hours or at the midnight of a working day (until the summary hour it is silent),
+        whichever comes first."""
+        local = self.local(moment)
+        starts: list[datetime] = []
+        if self.quiet_from != self.quiet_until:
+            start = datetime.combine(local.date(), self.quiet_from)
+            starts.append(start if start > local else start + timedelta(days=1))
+        if self.digest_at > time(0, 0):  # a summary hour at midnight leaves no working morning to be silent in
+            for ahead in range(1, 8):
+                midnight = datetime.combine(local.date() + timedelta(days=ahead), time(0, 0))
+                if self.is_workday(midnight):
+                    starts.append(midnight)
+                    break
+        return self.utc(min(starts)) if starts else None
+
     def due(self, queue: Sequence["Pending"], now: datetime) -> tuple[list["Pending"], list["Pending"]]:
-        """(events to send one by one, events to send in one summary) among the queued ones at `now`."""
+        """(events to send one by one, events to send in one summary) among the queued ones at `now`.
+
+        An event goes in the summary when it had to wait by the rules, or when silence began after it was allowed to
+        go and before now (its send failed and it outlived the quiet hours or a working morning). A plain retry inside
+        the same open stretch of time is a message of its own."""
         if self.holds(now):
             return [], []
         single: list[Pending] = []
@@ -96,6 +119,9 @@ class DeliveryRules:
             release, waited = self.release(pending.queued_at)
             if release > now:
                 continue
+            if not waited:
+                silence = self.next_silence(release)
+                waited = silence is not None and silence <= now  # it sat through silence: it joins the summary
             (summary if waited else single).append(pending)
         return single, summary
 

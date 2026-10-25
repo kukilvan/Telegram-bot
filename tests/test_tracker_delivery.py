@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from sqlalchemy import select
 
-from app.tracker import delivery, movie_events
+from app.tracker import delivery, movie_events, sequel_events
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import DeliveryItem, Title
@@ -491,6 +491,133 @@ def test_a_summary_offers_one_card_button_per_title(session_factory, clock, send
     assert [a.label.split(":")[0] for a in actions].count("📄 Карточка") == 1
 
 
+# --- an event that missed its open window joins the summary ---------------------------------------
+
+
+def test_an_event_that_outlived_the_quiet_hours_joins_the_morning_summary(tracker, clock, sender):
+    sender.failing = True
+    queue(tracker, clock, FRI, 12, 0, "застряло")
+    deliver(tracker, clock, FRI, 12, 1)  # the send fails, the event stays in the queue
+    queue(tracker, clock, FRI, 23, 0, "ночью раз")
+    queue(tracker, clock, SAT, 2, 0, "ночью два")
+    deliver(tracker, clock, FRI, 21, 0)  # still failing, and now the quiet hours begin
+    sender.failing = False
+
+    deliver(tracker, clock, SAT, 7, 29)
+    assert sender.sent == []
+    deliver(tracker, clock, SAT, 7, 30)
+
+    [summary] = sender.messages
+    assert summary.startswith("📋 Сводка")
+    assert all(text in summary for text in ("застряло", "ночью раз", "ночью два"))
+
+
+def test_an_event_stuck_over_a_working_morning_joins_the_15_00_summary(tracker, clock, sender):
+    sender.failing = True
+    queue(tracker, clock, SUN, 16, 0, "застряло")
+    deliver(tracker, clock, SUN, 16, 1)
+    sender.failing = False
+    queue(tracker, clock, MON, 9, 0, "утреннее")
+
+    deliver(tracker, clock, MON, 15, 0)
+
+    [summary] = sender.messages
+    assert summary.startswith("📋 Сводка")
+    assert "застряло" in summary and "утреннее" in summary
+
+
+def test_a_retry_in_the_same_open_window_is_a_message_of_its_own(tracker, clock, sender):
+    sender.failing = True
+    queue(tracker, clock, FRI, 12, 0, "повтор")
+    deliver(tracker, clock, FRI, 12, 1)
+    sender.failing = False
+
+    deliver(tracker, clock, FRI, 12, 5)
+
+    assert sender.messages == ["🧪 повтор"]
+
+
+def test_without_quiet_hours_and_working_days_a_late_event_goes_out_alone(tracker, clock, sender):
+    set_rules(tracker, workdays=[], quiet_from="21:00", quiet_until="21:00")
+    sender.failing = True
+    queue(tracker, clock, FRI, 12, 0, "опоздало")
+    deliver(tracker, clock, FRI, 12, 1)
+    sender.failing = False
+
+    deliver(tracker, clock, SAT, 9, 0)
+
+    assert sender.messages == ["🧪 опоздало"]
+
+
+# --- the order of the buttons under a summary -------------------------------------------------------
+
+
+def movie_event(tracker, clock, title_id, name, key):
+    ensure_title(tracker, title_id, name)
+    clock.at(SUN, 10)
+    return tracker.record_event(movie_events.RELEASED, {"text": f"🎬 {name} — вышел в кино"}, key, title_id=title_id)
+
+
+def sequel_event(tracker, clock, title_id, sequel_id, name):
+    ensure_title(tracker, title_id, "Фильм")
+    clock.at(SUN, 10)
+    payload = {"text": f"🎬 Анонсировано продолжение: {name}", "kind": "movie", "sequel_id": sequel_id,
+               "sequel_title": name}
+    return tracker.record_event(sequel_events.SEQUEL_ANNOUNCED, payload, f"sequel:{sequel_id}", title_id=title_id)
+
+
+def test_follow_buttons_come_first_and_are_never_cut(tracker, clock, sender):
+    for number in range(1, 11):
+        movie_event(tracker, clock, number, f"Фильм {number}", f"k{number}")
+    sequel_event(tracker, clock, 20, 501, "Продолжение А")
+    sequel_event(tracker, clock, 21, 502, "Продолжение Б")
+
+    deliver(tracker, clock, SUN, 15, 0)
+
+    [(message, actions)] = sender.sent
+    assert len(message.splitlines()) == 13  # the header and twelve events in one summary
+    assert [a.label for a in actions[:2]] == ["👀 Следить: Продолжение А", "👀 Следить: Продолжение Б"]
+    assert [a.arg for a in actions[:2]] == ["movie:501", "movie:502"]
+    assert len(actions) == 10  # the follow buttons, then the rest up to ten
+    assert [a.label.split(":")[0] for a in actions[2:]] == ["✅ Посмотрел"] * 8
+
+
+def test_watched_goes_before_card_in_the_rest_of_the_buttons(tracker, clock, sender):
+    for number in range(1, 7):
+        movie_event(tracker, clock, number, f"Фильм {number}", f"k{number}")
+
+    deliver(tracker, clock, SUN, 15, 0)
+
+    [(_, actions)] = sender.sent
+    assert [a.label.split(":")[0] for a in actions] == ["✅ Посмотрел"] * 6 + ["📄 Карточка"] * 4
+
+
+def test_all_follow_buttons_are_shown_even_when_there_are_more_than_ten(tracker, clock, sender):
+    for number in range(12):
+        sequel_event(tracker, clock, 30, 600 + number, f"Продолжение {number}")
+    movie_event(tracker, clock, 31, "Фильм", "k")
+
+    deliver(tracker, clock, SUN, 15, 0)
+
+    [(_, actions)] = sender.sent
+    assert [a.arg for a in actions] == [f"movie:{600 + n}" for n in range(12)]
+
+
+def test_a_follow_button_is_not_repeated_for_one_sequel(tracker, clock, sender):
+    sequel_event(tracker, clock, 30, 700, "Продолжение")
+    ensure_title(tracker, 31, "Другой")
+    tracker.record_event(
+        sequel_events.SEQUEL_ANNOUNCED,
+        {"text": "🎬 то же продолжение", "kind": "movie", "sequel_id": 700, "sequel_title": "Продолжение"},
+        "sequel:700:again", title_id=31,
+    )
+
+    deliver(tracker, clock, SUN, 15, 0)
+
+    [(_, actions)] = sender.sent
+    assert [a.arg for a in actions] == ["movie:700"]
+
+
 # --- settings: the time zone, working days, summary hour, quiet hours ------------------------------
 
 
@@ -685,3 +812,67 @@ def test_quiet_hours_inside_one_day():
         False, True, True, False,
     ]
     assert rules.release(datetime(2026, 11, 1, 3, 0)) == (datetime(2026, 11, 1, 5, 0), True)
+
+
+# --- the next start of silence ---------------------------------------------------------------------
+
+
+def test_the_next_silence_after_a_midday_on_a_day_off_is_the_start_of_the_quiet_hours():
+    rules = delivery.DeliveryRules()  # UTC, Sunday to Thursday, summary 15:00, quiet 21:00–07:30
+
+    assert rules.next_silence(datetime(2026, 11, 6, 12, 0)) == datetime(2026, 11, 6, 21, 0)  # a Friday
+
+
+def test_the_next_silence_after_a_working_afternoon_is_the_quiet_hours_not_midnight():
+    rules = delivery.DeliveryRules()
+
+    assert rules.next_silence(datetime(2026, 11, 1, 16, 0)) == datetime(2026, 11, 1, 21, 0)  # a Sunday
+
+
+def test_the_next_silence_is_the_midnight_of_a_working_day_when_it_comes_first():
+    rules = delivery.DeliveryRules(quiet_from=time(1, 0), quiet_until=time(2, 0))
+
+    # Saturday 10:00: Sunday works, so its morning is silent from its midnight, before the quiet hours at 01:00
+    assert rules.next_silence(datetime(2026, 11, 7, 10, 0)) == datetime(2026, 11, 8, 0, 0)
+
+
+def test_the_next_silence_is_the_quiet_hours_when_they_come_before_midnight():
+    rules = delivery.DeliveryRules(quiet_from=time(23, 30), quiet_until=time(0, 30))
+
+    assert rules.next_silence(datetime(2026, 11, 7, 10, 0)) == datetime(2026, 11, 7, 23, 30)
+
+
+def test_without_quiet_hours_the_next_silence_is_the_midnight_of_the_next_working_day():
+    rules = delivery.DeliveryRules(quiet_from=time(21, 0), quiet_until=time(21, 0))
+
+    assert rules.next_silence(datetime(2026, 11, 6, 12, 0)) == datetime(2026, 11, 8, 0, 0)  # Friday, then Sunday
+
+
+def test_without_working_days_the_next_silence_is_the_start_of_the_quiet_hours():
+    rules = delivery.DeliveryRules(workdays=frozenset())
+
+    assert rules.next_silence(datetime(2026, 11, 6, 12, 0)) == datetime(2026, 11, 6, 21, 0)
+
+
+def test_there_is_no_silence_without_quiet_hours_and_working_days():
+    rules = delivery.DeliveryRules(workdays=frozenset(), quiet_from=time(21, 0), quiet_until=time(21, 0))
+
+    assert rules.next_silence(datetime(2026, 11, 6, 12, 0)) is None
+
+
+def test_a_summary_hour_at_midnight_leaves_no_working_morning_to_be_silent_in():
+    rules = delivery.DeliveryRules(digest_at=time(0, 0), quiet_from=time(21, 0), quiet_until=time(21, 0))
+
+    assert rules.next_silence(datetime(2026, 11, 6, 12, 0)) is None
+
+
+def test_the_next_silence_is_strictly_after_the_moment():
+    rules = delivery.DeliveryRules()
+
+    assert rules.next_silence(datetime(2026, 11, 6, 21, 0)) == datetime(2026, 11, 7, 21, 0)
+
+
+def test_the_next_silence_is_found_on_the_owners_clock_and_returned_in_utc():
+    rules = delivery.DeliveryRules(tz=JERUSALEM)  # UTC+2 in November
+
+    assert rules.next_silence(datetime(2026, 11, 6, 10, 0)) == datetime(2026, 11, 6, 19, 0)  # 21:00 there
