@@ -302,13 +302,13 @@ def test_marking_every_released_season_makes_the_title_wait_for_the_next_one(tra
     assert "Просмотрены сезоны: 1, 2, 3" in format_card(tracker.title_card(title))
 
 
-def test_some_seasons_marked_leaves_the_title_wanted(tracker):
+def test_some_seasons_marked_make_the_anime_in_progress(tracker):
     title = add(tracker, KUSURIYA).title_id
 
     run(tracker.set_season_watched(title, 1, True))
     run(tracker.set_season_watched(title, 2, True))
 
-    assert tracker.title_card(title).status == "want"  # season 3 is on air and not watched
+    assert tracker.title_card(title).status == "in_progress"  # season 3 is on air and not watched
 
 
 def test_the_mark_belongs_to_the_season_and_covers_its_parts(tracker):

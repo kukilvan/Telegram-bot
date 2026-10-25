@@ -522,7 +522,7 @@ def test_the_films_stored_with_the_title_follow_the_source(tracker, shikimori, c
 # --- статусы работают и для аниме --------------------------------------------------------------------
 
 
-def test_a_new_season_returns_a_waiting_anime_to_wanted(tracker, shikimori, clock):
+def test_a_new_season_takes_a_waiting_anime_to_in_progress(tracker, shikimori, clock):
     title = add(tracker, JJK)
     for number in (1, 2, 3):
         run(tracker.set_season_watched(title, number, True))
@@ -532,13 +532,21 @@ def test_a_new_season_returns_a_waiting_anime_to_wanted(tracker, shikimori, cloc
 
     poll_and_deliver(tracker, clock, days=15)  # the premiere day, 5 Nov, has passed
 
-    assert tracker.title_card(title).status == "want"
+    assert tracker.title_card(title).status == "in_progress"
 
 
 def test_a_waiting_anime_is_still_polled(tracker, shikimori, clock):
     title = add(tracker, JJK)
     for number in (1, 2, 3):
         run(tracker.set_season_watched(title, number, True))
+
+    assert poll_and_deliver(tracker, clock, hours=25).polled == 1
+
+
+def test_an_in_progress_anime_is_still_polled(tracker, shikimori, clock):
+    title = add(tracker, JJK)
+    run(tracker.set_season_watched(title, 1, True))
+    assert tracker.title_card(title).status == "in_progress"
 
     assert poll_and_deliver(tracker, clock, hours=25).polled == 1
 

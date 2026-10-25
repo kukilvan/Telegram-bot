@@ -31,6 +31,7 @@ from app.tracker import (
 from app.tracker.actions import CARD, FOLLOW, WATCHED, Action, event_actions
 from app.tracker.cards import MovieLine, TitleCard
 from app.tracker.models import (
+    STATUS_IN_PROGRESS,
     STATUS_WAITING,
     STATUS_WANT,
     STATUS_WATCHED,
@@ -52,7 +53,7 @@ Clock = Callable[[], datetime]  # returns an aware datetime
 PRIMARY_ROLE = "primary"
 
 SEASONAL_KINDS = ("series", "anime")  # titles whose status follows the owner's season marks
-POLLED_STATUSES = (STATUS_WANT, STATUS_WAITING)  # an own-release check runs for these, while tracking is on
+POLLED_STATUSES = (STATUS_WANT, STATUS_IN_PROGRESS, STATUS_WAITING)  # an own-release check runs for these, while tracking is on
 
 PART_GAP_SETTING = "part_gap_weeks"
 DEFAULT_PART_GAP_WEEKS = season_logic.DEFAULT_PART_GAP // timedelta(weeks=1)  # the default lives in `seasons`

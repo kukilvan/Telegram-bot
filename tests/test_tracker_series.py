@@ -294,12 +294,12 @@ def test_marking_an_unknown_title_or_season_is_an_error(tracker):
         run(tracker.set_season_watched(result.title_id, 0, True))
 
 
-def test_marking_a_season_while_others_are_unwatched_keeps_the_status(tracker):
+def test_marking_a_season_while_others_are_unwatched_makes_the_series_in_progress(tracker):
     result = run(tracker.add_title("series", "125988"))
 
     run(tracker.set_season_watched(result.title_id, 3, True))
 
-    assert tracker.list_titles()[0].status == "want"  # the other seasons are still unwatched; the automatic statuses are in test_tracker_series_statuses
+    assert tracker.list_titles()[0].status == "in_progress"  # the other seasons are still unwatched; the automatic statuses are in test_tracker_series_statuses
 
 
 # --- buttons ------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@ from app.tracker.seasons import RELEASED, SeasonsView
 
 KIND_LABELS = {"movie": "Фильм", "series": "Сериал", "anime": "Аниме"}
 KIND_ICONS = {"movie": "🎬", "series": "📺", "anime": "🎌"}
-STATUS_LABELS = {"want": "Хочу", "waiting": "Жду", "to_finish": "Досмотреть", "watched": "Просмотрено"}
+STATUS_LABELS = {"want": "Хочу", "in_progress": "В процессе", "waiting": "Жду", "to_finish": "Досмотреть", "watched": "Просмотрено"}
 _WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")
 
 _MONTHS = (

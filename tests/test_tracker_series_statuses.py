@@ -148,21 +148,48 @@ def test_everything_released_is_watched_and_a_season_is_expected_so_the_status_i
     assert tracking(session_factory, title_id) is True
 
 
-def test_a_series_with_something_unwatched_stays_want(tracker, source):
+def test_a_series_with_nothing_marked_stays_want(tracker, source, session_factory):
+    title_id = add(tracker, source, OPEN)
+
+    assert status(tracker, title_id) == "want"
+    assert tracking(session_factory, title_id) is True
+
+
+def test_an_airing_series_with_some_released_seasons_marked_is_in_progress_and_followed(tracker, source, session_factory):
     title_id = add(tracker, source, OPEN)
 
     mark(tracker, title_id, 1)
 
-    assert status(tracker, title_id) == "want"
+    assert status(tracker, title_id) == "in_progress"
+    assert tracking(session_factory, title_id) is True
 
 
-def test_taking_a_mark_off_returns_waiting_to_want(tracker, source):
+def test_taking_a_mark_off_returns_waiting_to_in_progress(tracker, source):
     title_id = add(tracker, source, OPEN)
     mark(tracker, title_id, 1, 2)
 
     mark(tracker, title_id, 2, watched=False)
 
+    assert status(tracker, title_id) == "in_progress"
+
+
+def test_taking_every_mark_off_returns_in_progress_to_want(tracker, source, session_factory):
+    title_id = add(tracker, source, OPEN)
+    mark(tracker, title_id, 1)
+
+    mark(tracker, title_id, 1, watched=False)
+
     assert status(tracker, title_id) == "want"
+    assert tracking(session_factory, title_id) is True
+
+
+def test_marking_every_released_season_of_an_in_progress_series_makes_it_waiting(tracker, source):
+    title_id = add(tracker, source, OPEN)
+    mark(tracker, title_id, 1)
+
+    mark(tracker, title_id, 2)
+
+    assert status(tracker, title_id) == "waiting"
 
 
 def test_a_series_with_nothing_released_yet_is_not_waiting(tracker, source):
@@ -182,14 +209,26 @@ def test_a_waiting_series_is_still_polled(tracker, source, clock):
     assert source.snapshot_calls == calls + 1
 
 
-def test_a_new_season_that_starts_airing_takes_a_waiting_series_back_to_want(tracker, source, clock):
+def test_an_in_progress_series_is_still_polled_and_a_new_episode_arrives_as_an_event(tracker, source, clock, sender):
+    title_id = add(tracker, source, show("9", season(1, "2026-03-02"), season(2, "2026-06-01", count=30)))
+    mark(tracker, title_id, 1)
+    assert status(tracker, title_id) == "in_progress"
+    calls = source.snapshot_calls
+
+    poll(tracker, clock, hours=52)  # Mon 26 Oct, 16:00: past the digest hour, so the event goes out at once
+
+    assert source.snapshot_calls == calls + 1
+    assert any("вышла серия 22" in message for message in sender.sent)
+
+
+def test_a_new_season_that_starts_airing_takes_a_waiting_series_to_in_progress(tracker, source, clock):
     title_id = add(tracker, source, show("5", season(1, "2026-03-02"), season(2, "2026-11-02")))
     mark(tracker, title_id, 1)
     assert status(tracker, title_id) == "waiting"
 
     poll(tracker, clock, days=9)  # Mon 2 Nov: the first episode of season 2 is out
 
-    assert status(tracker, title_id) == "want"
+    assert status(tracker, title_id) == "in_progress"
 
 
 # --- «Просмотрено» -------------------------------------------------------------------------------
@@ -304,7 +343,8 @@ def test_the_closing_event_still_arrives_and_the_card_shows_the_new_status(track
 
 
 @pytest.mark.parametrize(
-    ("raw", "label"), [("waiting", "Жду"), ("to_finish", "Досмотреть"), ("watched", "Просмотрено"), ("want", "Хочу")]
+    ("raw", "label"),
+    [("waiting", "Жду"), ("in_progress", "В процессе"), ("to_finish", "Досмотреть"), ("watched", "Просмотрено"), ("want", "Хочу")],
 )
 def test_the_card_names_every_status_in_russian(tracker, source, raw, label):
     title_id = add(tracker, source, OPEN)
@@ -319,14 +359,19 @@ def test_the_status_time_changes_only_when_the_status_does(tracker, source, cloc
         added = s.get(Title, title_id).status_changed_at
 
     clock.advance(hours=1)
-    mark(tracker, title_id, 1)  # still «Хочу»
+    mark(tracker, title_id, 1)  # «В процессе»
     with session_factory() as s:
-        assert s.get(Title, title_id).status_changed_at == added
+        assert s.get(Title, title_id).status_changed_at == added + timedelta(hours=1)
+
+    clock.advance(hours=1)
+    mark(tracker, title_id, 1)  # the same mark again: still «В процессе»
+    with session_factory() as s:
+        assert s.get(Title, title_id).status_changed_at == added + timedelta(hours=1)
 
     clock.advance(hours=1)
     mark(tracker, title_id, 2)  # «Жду»
     with session_factory() as s:
-        assert s.get(Title, title_id).status_changed_at == added + timedelta(hours=2)
+        assert s.get(Title, title_id).status_changed_at == added + timedelta(hours=3)
 
 
 def test_marking_a_season_creates_no_event(tracker, source, session_factory):
