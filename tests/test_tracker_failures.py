@@ -209,18 +209,36 @@ def test_the_message_for_one_title_reads_as_promised():
 def test_the_message_for_several_titles_names_the_first_ones():
     titles = ["Дюна", "Укрытие", "А", "Б", "В", "Г", "Д", "Е", "Ж", "З", "И", "К"]
 
-    text = failures.message_many("TMDb", titles)
+    text = failures.message_many("TMDb", failures.TIMEOUT, titles)
 
     assert text == (
-        "⚠️ TMDb не отвечает. Не удалось проверить 12 тайтлов: Дюна, Укрытие, А, Б, В, … Повторю через 30 мин."
+        "⚠️ Не удалось проверить 12 тайтлов: TMDb не ответил вовремя. Дюна, Укрытие, А, Б, В, … Повторю через 30 мин."
     )
+
+
+def test_the_message_for_several_titles_gives_the_real_reason():
+    text = failures.message_many("TMDb", failures.KEY_REJECTED, ["Дюна", "Укрытие"])
+
+    assert "TMDb не принял ключ — проверьте ключ в настройках" in text
+    assert "не отвечает" not in text
+
+
+@pytest.mark.parametrize("many", [False, True])
+def test_an_unknown_error_names_the_source(many):
+    text = (
+        failures.message_many("TMDb", failures.UNKNOWN, ["Дюна", "Укрытие"])
+        if many
+        else failures.message_one("Дюна", "TMDb", failures.UNKNOWN)
+    )
+
+    assert "у TMDb неизвестная ошибка, подробности в журнале" in text
 
 
 @pytest.mark.parametrize(
     "count, word", [(2, "тайтла"), (3, "тайтла"), (5, "тайтлов"), (11, "тайтлов"), (12, "тайтлов"), (21, "тайтл"), (22, "тайтла")]
 )
 def test_the_count_agrees_with_the_word(count, word):
-    text = failures.message_many("TMDb", [f"Т{i}" for i in range(count)])
+    text = failures.message_many("TMDb", failures.TIMEOUT, [f"Т{i}" for i in range(count)])
 
     assert f"проверить {count} {word}:" in text
 
@@ -353,8 +371,67 @@ def test_many_titles_of_one_source_give_one_message(tracker, source, clock, send
 
     report = poll(tracker, clock, days=2)
 
-    assert notices(sender) == ["⚠️ TMDb не отвечает. Не удалось проверить 3 тайтла: Дюна, Укрытие, Аркейн. Повторю через 30 мин."]
-    assert report.notices == 1
+    assert notices(sender) == [
+        "⚠️ Не удалось проверить 3 тайтла: не удалось подключиться к TMDb. Дюна, Укрытие, Аркейн. Повторю через 30 мин."
+    ]
+    assert report.notices == 3  # one event per title; delivery folds them
+
+
+def test_different_reasons_of_one_source_give_a_message_each(tracker, source, clock, sender):
+    for number, name in enumerate(["Дюна", "Укрытие", "Аркейн"], start=1):
+        add_movie(tracker, str(number), name)
+    source.errors["1"] = httpx.ReadTimeout("slow", request=REQUEST)
+    source.errors["2"] = httpx.ReadTimeout("slow", request=REQUEST)
+    source.errors["3"] = TmdbHttpError("x (HTTP 401)", 401)
+
+    poll(tracker, clock, days=2)
+
+    assert sorted(notices(sender)) == sorted([
+        "⚠️ Не удалось проверить 2 тайтла: TMDb не ответил вовремя. Дюна, Укрытие. Повторю через 30 мин.",
+        "⚠️ Не удалось проверить «Аркейн»: TMDb не принял ключ — проверьте ключ в настройках. Повторю через 30 мин.",
+    ])
+    cards = [a for message, actions in sender.sent for a in actions if "Аркейн" in message]
+    assert [a.name for a in cards] == ["card"]
+
+
+def test_titles_the_source_no_longer_knows_are_never_folded(tracker, source, clock, sender):
+    for number, name in enumerate(["Дюна", "Укрытие"], start=1):
+        add_movie(tracker, str(number), name)
+        source.unknown.add(str(number))
+
+    poll(tracker, clock, days=2)
+
+    assert sorted(notices(sender)) == [
+        "⚠️ Не удалось проверить «Дюна»: TMDb больше не знает этого тайтла. Повторю через 30 мин.",
+        "⚠️ Не удалось проверить «Укрытие»: TMDb больше не знает этого тайтла. Повторю через 30 мин.",
+    ]
+    assert all([a.name for a in actions] == ["card"] for _, actions in sender.sent)
+
+
+def test_the_event_is_one_per_title_with_the_pass_stamp(tracker, source, clock, session_factory):
+    ids = [add_movie(tracker, str(n), f"Т{n}") for n in (1, 2, 3)]
+    for n in (1, 2, 3):
+        source.errors[str(n)] = ConnectionError("down")
+
+    poll(tracker, clock, days=2)
+
+    with session_factory() as s:
+        events = s.scalars(select(Event).where(Event.type == failures.SOURCE_FAILED).order_by(Event.id)).all()
+    assert [e.title_id for e in events] == ids
+    assert {e.payload["pass"] for e in events} == {"20261026T120000"}
+    assert {(e.payload["source"], e.payload["reason"]) for e in events} == {("TMDb", failures.CONNECTION)}
+    assert [e.payload["title_name"] for e in events] == ["Т1", "Т2", "Т3"]
+
+
+def test_an_old_common_event_is_delivered_by_its_own_text(tracker, sender):
+    tracker.record_event(
+        failures.SOURCE_FAILED,
+        {"text": "⚠️ TMDb не отвечает. Не удалось проверить 2 тайтла: А, Б. Повторю через 30 мин.", "source": "TMDb", "titles": ["А", "Б"]},
+        "failure:TMDb:old:1,2",
+    )
+    run(tracker.deliver_pending())
+
+    assert sender.messages == ["⚠️ TMDb не отвечает. Не удалось проверить 2 тайтла: А, Б. Повторю через 30 мин."]
 
 
 def test_two_broken_sources_give_two_messages(session_factory, clock, sender):
@@ -536,7 +613,10 @@ def test_on_a_day_off_the_notice_comes_at_once(session_factory, sender, source):
             "failure-one", "Сбой источника: один тайтл",
             "⚠️ Не удалось проверить «Дюна»: TMDb не ответил вовремя. Повторю через 30 мин.",
         ),
-        ("failure-many", "Сбой источника: несколько тайтлов", "⚠️ TMDb не отвечает. Не удалось проверить 6 тайтлов:"),
+        (
+            "failure-many", "Сбой источника: несколько тайтлов",
+            "⚠️ Не удалось проверить 6 тайтлов: TMDb не ответил вовремя. Дюна, Укрытие, Аркейн, Оппенгеймер, Барби, …",
+        ),
     ],
 )
 def test_the_samples_are_in_the_test_event_menu(tracker, sender, kind_id, label, text):
@@ -546,3 +626,57 @@ def test_the_samples_are_in_the_test_event_menu(tracker, sender, kind_id, label,
 
     assert result.delivered
     assert text in sender.messages[0]
+
+
+# --- a title deleted while the common message waits ---------------------------------------------
+
+
+def three_waiting_failures(session_factory, sender, source):
+    clock = FakeClock(local(5, 20))  # Thursday evening
+    tracker = Tracker(session_factory, clock=clock, sender=sender, sources={"movie": source})
+    run(tracker.set_delivery_rules(**RULES))
+    ids = [add_movie(tracker, str(n), name) for n, name in enumerate(["Дюна", "Укрытие", "Аркейн"], start=1)]
+    for n in (1, 2, 3):
+        source.errors[str(n)] = httpx.ReadTimeout("slow", request=REQUEST)
+    clock.now = local(5, 22)  # quiet hours
+    for title_id in ids:
+        make_due(session_factory, title_id, clock.now)
+    run(tracker.poll_due())
+    run(tracker.deliver_pending())
+    assert sender.sent == []
+    clock.now = local(6, 7, 30)
+    return tracker, ids
+
+
+def test_a_deleted_title_is_not_named_in_the_morning_summary(session_factory, sender, source):
+    tracker, ids = three_waiting_failures(session_factory, sender, source)
+    run(tracker.delete_title(ids[1]))
+
+    run(tracker.deliver_pending())
+
+    (message,) = sender.messages
+    assert "Не удалось проверить 2 тайтла: TMDb не ответил вовремя. Дюна, Аркейн." in message
+    assert "Укрытие" not in message
+
+
+def test_when_one_of_three_is_left_it_comes_as_a_single_message(session_factory, sender, source):
+    tracker, ids = three_waiting_failures(session_factory, sender, source)
+    run(tracker.delete_title(ids[0]))
+    run(tracker.delete_title(ids[1]))
+
+    run(tracker.deliver_pending())
+
+    (message,) = sender.messages
+    assert "⚠️ Не удалось проверить «Аркейн»: TMDb не ответил вовремя. Повторю через 30 мин." in message
+    ((_, actions),) = sender.sent
+    assert [a.name for a in actions] == ["card"]
+
+
+def test_when_all_are_deleted_nothing_comes(session_factory, sender, source):
+    tracker, ids = three_waiting_failures(session_factory, sender, source)
+    for title_id in ids:
+        run(tracker.delete_title(title_id))
+
+    run(tracker.deliver_pending())
+
+    assert sender.sent == []

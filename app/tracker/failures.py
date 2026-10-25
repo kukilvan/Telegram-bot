@@ -6,6 +6,7 @@ the exception is only sorted into a reason (what the owner can do about it); the
 
 from collections.abc import Sequence
 from datetime import timedelta
+from typing import Any
 
 import httpx
 
@@ -34,7 +35,7 @@ _REASONS = {
     KEY_REJECTED: "{source} не принял ключ — проверьте ключ в настройках",
     SOURCE_DOWN: "{source} недоступен — у него сейчас сбой",
     GONE: "{source} больше не знает этого тайтла",
-    UNKNOWN: "неизвестная ошибка, подробности в журнале",
+    UNKNOWN: "у {source} неизвестная ошибка, подробности в журнале",
 }
 
 
@@ -99,21 +100,49 @@ def _titles_word(count: int) -> str:
     return "тайтлов"
 
 
-def message_many(source: str, titles: Sequence[str], retry: timedelta = RETRY_AFTER_FAILURE) -> str:
-    """«⚠️ TMDb не отвечает. Не удалось проверить 12 тайтлов: Дюна, Укрытие, … Повторю через 30 мин.»"""
+def message_many(source: str, reason: str, titles: Sequence[str], retry: timedelta = RETRY_AFTER_FAILURE) -> str:
+    """«⚠️ Не удалось проверить 12 тайтлов: TMDb не ответил вовремя. Дюна, Укрытие, … Повторю через 30 мин.»"""
+    why = _REASONS[reason].format(source=source)
     names = ", ".join(titles[:MAX_NAMES]) + (", …" if len(titles) > MAX_NAMES else ".")
     return (
-        f"⚠️ {source} не отвечает. Не удалось проверить {len(titles)} {_titles_word(len(titles))}: {names} "
+        f"⚠️ Не удалось проверить {len(titles)} {_titles_word(len(titles))}: {why}. {names} "
         f"Повторю через {_minutes(retry)} мин."
     )
 
 
+def failure_payload(title_name: str, source: str, reason: str, stamp: str) -> dict[str, Any]:
+    """The payload of a «source failure» event of one title. Delivery folds events with the same `source`, `reason`
+    and `pass` (the stamp of the pass that found them) into one message."""
+    return {
+        "text": message_one(title_name, source, reason),
+        "source": source,
+        "reason": reason,
+        "title_name": title_name,
+        "pass": stamp,
+    }
+
+
+def foldable(data: dict[str, Any]) -> tuple[str, str, str] | None:
+    """(source, reason, pass) of a failure event that may be folded with others; None for a title the source no
+    longer knows (it gets its own message with a card button) and for old events that carry no such fields."""
+    source, reason, stamp = data.get("source"), data.get("reason"), data.get("pass")
+    if not (source and reason and stamp) or reason == GONE or "title_name" not in data:
+        return None
+    return source, reason, stamp
+
+
+SAMPLE_TITLES = ["Дюна", "Укрытие", "Аркейн", "Оппенгеймер", "Барби", "Аватар"]
+
+
+def sample_failure_events() -> list[tuple[str, dict[str, Any]]]:
+    """Failures of several titles in one pass as real events (type and payload): delivery folds them into one message."""
+    return [(SOURCE_FAILED, failure_payload(name, "TMDb", TIMEOUT, "sample")) for name in SAMPLE_TITLES]
+
+
+SAMPLE_MANY_ID = "failure-many"
+SAMPLE_MANY_LABEL = "Сбой источника: несколько тайтлов"
+
 # (id, menu label, message text) of the sample events in «Тестовое событие»
 TEST_SAMPLES: list[tuple[str, str, str]] = [
     ("failure-one", "Сбой источника: один тайтл", message_one("Дюна", "TMDb", TIMEOUT)),
-    (
-        "failure-many",
-        "Сбой источника: несколько тайтлов",
-        message_many("TMDb", ["Дюна", "Укрытие", "Аркейн", "Оппенгеймер", "Барби", "Аватар"]),
-    ),
 ]

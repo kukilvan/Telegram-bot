@@ -223,6 +223,14 @@ class Tracker:
             self.register_test_event_kind(TestEventKind(kind_id, label, lambda text=text: {"text": text}))
         self.register_test_event_kind(
             TestEventKind(
+                failures.SAMPLE_MANY_ID,
+                failures.SAMPLE_MANY_LABEL,
+                lambda: failures.sample_failure_events()[0][1],
+                failures.sample_failure_events,
+            )
+        )
+        self.register_test_event_kind(
+            TestEventKind(
                 series_events.SAMPLE_EPISODES_ID,
                 series_events.SAMPLE_EPISODES_LABEL,
                 lambda: series_events.sample_episode_events()[0][1],
@@ -248,20 +256,30 @@ class Tracker:
         no longer in the list (deleted while the poll was under way) is dropped."""
         now = _naive_utc(at or self.clock())
         with self.session_factory() as session:
-            event = Event(type=type, title_id=title_id, payload=payload, dedup_key=dedup_key, detected_at=now)
-            session.add(event)
-            try:
-                session.flush()
-            except IntegrityError:
-                session.rollback()
-                return None
-            # the flush holds the write lock, so the title cannot be deleted between this check and the commit
-            if title_id is not None and session.get(Title, title_id) is None:
-                session.rollback()
-                return None
-            session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
-            session.commit()
-            return event.id
+            event_id = self._enqueue_event(session, type, payload, dedup_key, title_id, now)
+            if event_id is not None:
+                session.commit()
+            return event_id
+
+    @staticmethod
+    def _enqueue_event(
+        session, type: str, payload: dict[str, Any], dedup_key: str, title_id: int | None, now: datetime
+    ) -> int | None:
+        """Add an event and its delivery-queue entry (status «pending») to the session; the caller commits. None, with
+        the session rolled back, if the fact is already known or its title is gone."""
+        event = Event(type=type, title_id=title_id, payload=payload, dedup_key=dedup_key, detected_at=now)
+        session.add(event)
+        try:
+            session.flush()
+        except IntegrityError:
+            session.rollback()
+            return None
+        # the flush holds the write lock, so the title cannot be deleted between this check and the commit
+        if title_id is not None and session.get(Title, title_id) is None:
+            session.rollback()
+            return None
+        session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
+        return event.id
 
     # --- settings -------------------------------------------------------------------------------
 
@@ -766,52 +784,33 @@ class Tracker:
             logging.warning("queueing failure notices failed: %s", mask_secrets(repr(exc)))
 
     def _queue_failure_notices(self, broken: list[tuple[_DueTitle, Exception]]) -> int:
-        """Queue the «could not check» messages of one pass: one per source, and none for a title the owner was told
-        about in the last 24 hours. The notice and the time it was sent are stored together, so a restart
-        neither repeats a notice nor loses one."""
+        """Queue the «could not check» events of one pass: one per title, and none for a title the owner was told about
+        in the last 24 hours. Delivery folds the events of one source and reason into a message. The event and the time
+        it was queued are stored together, so a restart neither repeats a notice nor loses one."""
         now = _naive_utc(self.clock())
+        stamp = now.strftime("%Y%m%dT%H%M%S")  # the moment of the pass; it opens the 24-hour window of its titles
         queued = 0
-        with self.session_factory() as session:
-            by_source: dict[str, list[tuple[Title, str]]] = {}
-            seen: set[int] = set()
-            for due, exc in broken:
-                if due.id in seen:  # two broken sources of one title are one failure
-                    continue
-                seen.add(due.id)
+        seen: set[int] = set()
+        for due, exc in broken:
+            if due.id in seen:  # two broken sources of one title are one failure
+                continue
+            seen.add(due.id)
+            with self.session_factory() as session:
                 title = session.get(Title, due.id)
                 if title is None or (
                     title.failure_notified_at is not None and now - title.failure_notified_at < failures.COOLDOWN
                 ):
                     continue
-                by_source.setdefault(failures.source_name(due.snapshot_source), []).append(
-                    (title, failures.reason_of(exc))
+                payload = failures.failure_payload(
+                    title.title, failures.source_name(due.snapshot_source), failures.reason_of(exc), stamp
                 )
-            stamp = now.strftime("%Y%m%dT%H%M%S")  # the moment of the notice opens its 24-hour window
-            for source, items in by_source.items():
-                if len(items) == 1:
-                    title, reason = items[0]
-                    text = failures.message_one(title.title, source, reason)
-                    key = f"failure:{title.id}:{stamp}"
-                    payload = {"text": text, "source": source, "reason": reason}
-                    title_id = title.id
-                else:
-                    names = [t.title for t, _ in items]
-                    text = failures.message_many(source, names)
-                    key = f"failure:{source}:{stamp}:{','.join(str(t.id) for t, _ in items)}"
-                    payload = {"text": text, "source": source, "titles": names}
-                    title_id = None
-                for title, _ in items:
-                    title.failure_notified_at = now
-                if session.scalar(select(Event.id).where(Event.dedup_key == key)) is not None:
-                    continue
-                event = Event(
-                    type=failures.SOURCE_FAILED, title_id=title_id, payload=payload, dedup_key=key, detected_at=now
+                title.failure_notified_at = now
+                event_id = self._enqueue_event(
+                    session, failures.SOURCE_FAILED, payload, f"failure:{title.id}:{stamp}", title.id, now
                 )
-                session.add(event)
-                session.flush()
-                session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
-                queued += 1
-            session.commit()
+                if event_id is not None:
+                    queued += 1
+                session.commit()
         return queued
 
     def _applier(self, kind: str) -> Callable[[_DueTitle, Any], int]:
@@ -1043,10 +1042,8 @@ class Tracker:
         Only the sample itself is touched: what really waits in the queue stays where it is."""
         kind = self._kinds[kind_id]
         built = kind.events() if kind.events is not None else [("test", kind.build())]
-        samples = [
-            (event_type, {**payload, "text": f"Тестовое событие «{kind.label}»: {payload['text']}"})
-            for event_type, payload in built
-        ]
+        prefix = f"Тестовое событие «{kind.label}»: "
+        samples = [(event_type, {**payload, "text": prefix + payload["text"], "prefix": prefix}) for event_type, payload in built]
         run_id = uuid.uuid4().hex
         event_ids = await asyncio.to_thread(self._record_samples, kind.id, samples, run_id, at)
         only = frozenset(event_ids)
@@ -1104,8 +1101,11 @@ class Tracker:
                 single, summary = pending, []
             else:
                 single, summary = rules.due(pending, moment)
-            for item in single:  # episodes are folded only inside a summary: a message of its own stays as it is
-                await self._send((item,), item.text, event_actions(item.type, item.event_id, item.title_id), report)
+            # episodes are folded only inside a summary; failures of one source and reason are folded everywhere
+            for unit in delivery.fold(single, episodes=False):
+                item = unit.single
+                actions = event_actions(item.type, item.event_id, item.title_id) if item is not None else []
+                await self._send(unit.members, unit.text, actions, report)
             if summary:
                 await self._send_summary(summary, moment, rules, report, names)
         return report
@@ -1148,7 +1148,7 @@ class Tracker:
         report: DeliveryReport,
         names: dict[int, str],
     ) -> None:
-        units = delivery.fold_episodes(pending)
+        units = delivery.fold(pending, episodes=True)
         for text, held in delivery.digest_messages(units, moment, rules):
             members = tuple(m for unit in held for m in unit.members)
             await self._send(members, text, self._summary_actions(held, names), report)

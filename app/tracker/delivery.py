@@ -11,7 +11,9 @@ What waited goes out as one message: after the quiet hours of a day off, the mes
 day, the summary of 15:00 (a night's events join it). At any moment inside the quiet hours or on a working morning
 nothing goes out, a retry of a failed send included.
 
-Several episodes of one season of one title are folded into a single line («вышли серии 5–6»).
+Several episodes of one season of one title are folded into a single line («вышли серии 5–6») — in a summary only.
+Failures of several titles of one source for one reason in one pass are folded into one message, in a summary and
+in a message of their own alike.
 """
 
 from collections.abc import Iterable, Sequence
@@ -19,6 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from typing import Any
 
+from app.tracker import failures
 from app.tracker.cards import format_weekday_date, local_moment
 from app.tracker.series_events import EPISODE_OUT
 
@@ -140,31 +143,62 @@ def episode_ranges(numbers: Iterable[int]) -> str:
     return ", ".join(str(r[0]) if len(r) == 1 else f"{r[0]}–{r[-1]}" for r in runs)
 
 
-def fold_episodes(queue: Sequence[Pending]) -> list[Unit]:
-    """Units in queue order; episodes of one season of one title (two or more) become one unit at the place
-    of the first. The folded text keeps the second line of the latest episode («Сезон 2 · следующая: …»)."""
+def _failure_key(pending: Pending) -> tuple[Any, ...] | None:
+    if pending.type != failures.SOURCE_FAILED:
+        return None
+    key = failures.foldable(pending.data)
+    return ("failure", *key) if key is not None else None
+
+
+def fold(queue: Sequence[Pending], *, episodes: bool) -> list[Unit]:
+    """Units in queue order. Two or more failures with the same source, reason and pass become one unit with a common
+    text and no buttons; with `episodes`, episodes of one season of one title (two or more) become one unit too. A
+    folded unit stands at the place of its first member. The folded episodes keep the second line of the latest one."""
+    def key_of(pending: Pending) -> tuple[Any, ...] | None:
+        if (key := _failure_key(pending)) is not None:
+            return key
+        if episodes and (key := _episode_key(pending)) is not None:
+            return ("episodes", *key)
+        return None
+
     groups: dict[tuple[Any, ...], list[Pending]] = {}
     for pending in queue:
-        key = _episode_key(pending)
+        key = key_of(pending)
         if key is not None:
             groups.setdefault(key, []).append(pending)
-    folded = {key: members for key, members in groups.items() if len({m.data["episode"] for m in members}) > 1}
+    folded = {
+        key: members
+        for key, members in groups.items()
+        if len(members) > 1 and (key[0] == "failure" or len({m.data["episode"] for m in members}) > 1)
+    }
 
     units: list[Unit] = []
-    done: set[int] = set()
+    done: set[tuple[Any, ...]] = set()
     for pending in queue:
-        key = _episode_key(pending)
+        key = key_of(pending)
         members = folded.get(key) if key is not None else None
         if members is None:
             units.append(Unit((pending,), pending.text))
         elif key not in done:
             done.add(key)
-            latest = max(members, key=lambda m: m.data["episode"])
-            who = key[1]
-            head = f"{who} — вышли серии {episode_ranges(m.data['episode'] for m in members)}"
-            tail = latest.text.split("\n", 1)[1] if "\n" in latest.text else ""
-            units.append(Unit(tuple(members), f"{head}\n{tail}" if tail else head))
+            if key[0] == "failure":
+                units.append(Unit(tuple(members), _failures_text(key, members)))
+            else:
+                units.append(Unit(tuple(members), _episodes_text(key, members)))
     return units
+
+
+def _failures_text(key: tuple[Any, ...], members: Sequence[Pending]) -> str:
+    _, source, reason, _ = key
+    prefix = members[0].data.get("prefix", "")  # a test sample says so in front of its text
+    return prefix + failures.message_many(source, reason, [m.data["title_name"] for m in members])
+
+
+def _episodes_text(key: tuple[Any, ...], members: Sequence[Pending]) -> str:
+    latest = max(members, key=lambda m: m.data["episode"])
+    head = f"{key[2]} — вышли серии {episode_ranges(m.data['episode'] for m in members)}"
+    tail = latest.text.split("\n", 1)[1] if "\n" in latest.text else ""
+    return f"{head}\n{tail}" if tail else head
 
 
 def one_line(text: str) -> str:
