@@ -30,6 +30,7 @@ from app.tracker.core import (
     TitleSummary,
     Tracker,
     UnknownEvent,
+    UnknownKind,
     UnknownSeason,
     UnknownTitle,
     WatchableSeason,
@@ -69,6 +70,7 @@ START_TEXT = (
 )
 DELETE_BULK_BUTTON = "🗑 Удалить несколько"
 _NOT_IN_LIST = "Этого тайтла больше нет в списке."
+_DEAD_BUTTON = "Эта кнопка больше не работает."
 _STALE_SELECTION = "Эта кнопка больше не работает, откройте список заново."
 _ASK_SEASONS = (
     "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
@@ -439,11 +441,21 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
                 f"✅ Просмотрено: {card.title}\nФильм в архиве. Раз в неделю я проверю, не анонсировано ли продолжение."
             )
 
-    async def follow_sequel(callback: CallbackQuery, event_id: int) -> None:
+    async def follow_sequel(callback: CallbackQuery, raw: str) -> None:
+        """`raw` is "<kind>:<id>" on a button of the current kind, or the number of the announcement on an old one."""
+        kind, _, sequel_id = raw.partition(":")
         try:
-            result = await tracker.follow_sequel(event_id)
+            if raw.isascii() and raw.isdigit():
+                result = await tracker.follow_sequel(int(raw))
+            elif kind and sequel_id:
+                result = await tracker.follow_sequel_of(kind, sequel_id)
+            else:
+                raise UnknownKind(raw)
         except UnknownEvent:
             await callback.answer("Это объявление больше недоступно.")
+            return
+        except UnknownKind:
+            await callback.answer(_DEAD_BUTTON)
             return
         except TitleNotFound:
             await callback.answer("Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
@@ -646,10 +658,10 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             return
         name, _, raw = callback.data.removeprefix(_ACTION_PREFIX).partition(":")
         number = int(raw) if raw.isascii() and raw.isdigit() else None
-        if number is not None and name == WATCHED:
+        if name == FOLLOW:
+            await follow_sequel(callback, raw)
+        elif number is not None and name == WATCHED:
             await mark_watched(callback, number)
-        elif number is not None and name == FOLLOW:
-            await follow_sequel(callback, number)
         elif number is not None and name == SEASONS:
             await open_seasons_choice(callback, number)
         elif number is not None and name == CARD:
@@ -657,7 +669,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         elif number is not None and name == DELETE:
             await ask_delete(callback, number)
         else:
-            await callback.answer("Эта кнопка больше не работает.")
+            await callback.answer(_DEAD_BUTTON)
 
     dp.message.register(start, CommandStart())
     dp.message.register(show_menu, Command("test_event"))

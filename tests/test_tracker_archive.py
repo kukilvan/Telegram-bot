@@ -305,6 +305,16 @@ def test_the_announcement_offers_to_follow_the_sequel_and_not_to_mark_watched(tr
     assert [a.name for a in actions] == [FOLLOW]
 
 
+def test_the_follow_button_carries_the_kind_and_the_id_of_the_sequel(tracker, source, sequels, clock, sender):
+    archive(tracker, source, sequels)
+    sequels.set(DUNE, PART_THREE)
+
+    week_later(tracker, clock)
+
+    [actions] = sender.actions
+    assert [(a.name, a.arg) for a in actions] == [(FOLLOW, f"movie:{PART_THREE.external_id}")]
+
+
 def test_movie_event_messages_offer_watched_and_the_card_for_their_movie(tracker, source, clock, sender):
     title_id = add(tracker, source, movie(DUNE))
     source.update(movie(DUNE, theatrical=date(2027, 5, 5)))

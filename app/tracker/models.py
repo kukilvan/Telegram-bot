@@ -151,8 +151,8 @@ class Event(TrackerBase):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     type: Mapped[str] = mapped_column(String(64))
-    # Plain column for now: the titles table arrives with the next tickets, which add the foreign key
-    title_id: Mapped[int | None] = mapped_column(Integer)
+    # Deleting a title deletes its events in the database itself; empty for events that belong to no title (test events)
+    title_id: Mapped[int | None] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
     payload: Mapped[dict] = mapped_column(JSON)
     dedup_key: Mapped[str] = mapped_column(String(255), unique=True)
     detected_at: Mapped[datetime] = mapped_column(DateTime)
@@ -162,7 +162,7 @@ class DeliveryItem(TrackerBase):
     __tablename__ = "delivery_queue"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    event_id: Mapped[int] = mapped_column(ForeignKey("events.id"), unique=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id", ondelete="CASCADE"), unique=True)
     status: Mapped[str] = mapped_column(String(16), index=True)  # pending | delivered
     attempts: Mapped[int] = mapped_column(default=0)
     last_error: Mapped[str | None] = mapped_column(String(500))

@@ -9,11 +9,12 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
+from sqlalchemy.exc import IntegrityError
 
 from anime_fakes import FakeAniList, FakeShikimori
 from app.tracker import sequel_events
-from app.tracker.core import Tracker, UnknownEvent, UnknownTitle
+from app.tracker.core import Tracker, UnknownEvent, UnknownKind, UnknownTitle
 from app.tracker.db import create_session_factory
 from app.tracker.models import (
     DeliveryItem,
@@ -317,6 +318,27 @@ def test_an_event_cannot_be_recorded_for_a_title_that_is_gone(tracker, session_f
     assert rows_left(session_factory) == 0
 
 
+def test_the_database_itself_refuses_an_event_of_a_title_that_does_not_exist(session_factory):
+    with session_factory() as s:
+        s.add(Event(type="x", title_id=999, payload={}, dedup_key="k", detected_at=T0.replace(tzinfo=None)))
+        with pytest.raises(IntegrityError):
+            s.commit()
+
+
+def test_the_database_itself_removes_the_events_and_queue_of_a_deleted_title(tracker, movies, session_factory):
+    title_id = add_movie(tracker, movies)
+    tracker.record_event("movie_released", {"text": "x"}, "k1", title_id=title_id)
+    with session_factory() as s:
+        s.execute(delete(Title).where(Title.id == title_id))  # no help from the core
+        s.commit()
+
+    assert rows_left(session_factory) == 0
+
+
+def test_an_event_without_a_title_is_allowed(tracker, session_factory):
+    assert tracker.record_event("ping", {"text": "x"}, "k2") is not None
+
+
 # --- the sequel announcement ---------------------------------------------------------------------
 
 
@@ -350,18 +372,47 @@ def test_a_title_followed_from_an_announcement_stays_after_the_original_is_delet
     assert tracker.title_card(followed).status == "want"
 
 
+def test_a_delivered_announcement_goes_with_the_film_and_leaves_no_event_or_queue_entry(
+    tracker, movies, sequels, clock, session_factory
+):
+    original = announce_sequel(tracker, movies, sequels, clock)
+    run(tracker.deliver_pending())
+
+    run(tracker.delete_title(original))
+
+    assert rows_left(session_factory) == 0
+
+
 def test_the_follow_button_under_an_old_announcement_still_works_after_the_film_is_deleted(
     tracker, movies, sequels, clock, session_factory
 ):
     original = announce_sequel(tracker, movies, sequels, clock)
     run(tracker.deliver_pending())
-    event_id = sequel_event_id(session_factory)
 
     run(tracker.delete_title(original))
-    result = run(tracker.follow_sequel(event_id))
+    result = run(tracker.follow_sequel_of("movie", DUNE_3))  # the button carries the kind and the id, not the event
 
     assert result.created is True
     assert [t.name for t in tracker.list_titles()] == ["Дюна: Часть третья"]
+
+
+def test_the_old_kind_of_follow_button_needs_its_event_and_says_so_when_it_is_gone(
+    tracker, movies, sequels, clock, session_factory
+):
+    original = announce_sequel(tracker, movies, sequels, clock)
+    run(tracker.deliver_pending())
+    event_id = sequel_event_id(session_factory)
+    assert run(tracker.follow_sequel(event_id)).created is True  # works while the event is there
+
+    run(tracker.delete_title(original))
+
+    with pytest.raises(UnknownEvent):
+        run(tracker.follow_sequel(event_id))
+
+
+def test_following_a_kind_nobody_announces_sequels_for_is_refused(tracker):
+    with pytest.raises(UnknownKind):
+        run(tracker.follow_sequel_of("game", "1"))
 
 
 def test_an_announcement_nobody_has_seen_goes_with_the_film(tracker, movies, sequels, clock, session_factory):
@@ -377,7 +428,7 @@ def test_an_announcement_nobody_has_seen_goes_with_the_film(tracker, movies, seq
     assert rows_left(session_factory) == 0
 
 
-def test_a_kept_announcement_does_not_silence_the_next_one_of_a_film_with_the_same_number(
+def test_a_film_deleted_and_added_again_can_announce_the_same_sequel_again(
     tracker, movies, sequels, clock, sender, session_factory
 ):
     original = announce_sequel(tracker, movies, sequels, clock)

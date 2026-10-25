@@ -85,6 +85,10 @@ class UnknownEvent(Exception):
     """There is no «sequel announced» event with this id."""
 
 
+class UnknownKind(Exception):
+    """Sequels are not announced for this kind of title, so there is nothing to follow."""
+
+
 class UnknownSeason(Exception):
     """The title has no season with this number (specials, season 0, are not seasons)."""
 
@@ -630,35 +634,25 @@ class Tracker:
             name = session.scalar(select(Title.title).where(Title.id == title_id))
             if name is None:
                 raise UnknownTitle(title_id)
-            events = select(Event.id).where(Event.title_id == title_id)
-            # `events.title_id` has no foreign key, so nothing cascades: the events and their queue entries go by hand.
-            # A sequel announcement the owner has already seen stays, cut loose from the title: its «Следить» button
-            # works on the event alone. Its key is changed, because the key names the sequel and the same film added
-            # again must be able to announce it anew.
-            seen = session.scalars(
-                select(Event).where(
-                    Event.title_id == title_id,
-                    Event.type == sequel_events.SEQUEL_ANNOUNCED,
-                    Event.id.in_(select(DeliveryItem.event_id).where(DeliveryItem.status == "delivered")),
-                )
-            ).all()
-            for event in seen:
-                event.title_id = None
-                event.dedup_key = f"deleted:{event.id}:{event.dedup_key}"[:255]
-            session.flush()
-            session.execute(delete(DeliveryItem).where(DeliveryItem.event_id.in_(events)))
-            session.execute(delete(Event).where(Event.title_id == title_id))
-            removed = session.execute(delete(Title).where(Title.id == title_id)).rowcount  # the rest cascades
+            # the database cascades: seasons, ids, snapshots, events, and the queue entries of those events
+            removed = session.execute(delete(Title).where(Title.id == title_id)).rowcount
             if not removed:  # deleted by someone else since the name was read
                 session.rollback()
                 raise UnknownTitle(title_id)
             session.commit()
             return DeleteResult(name)
 
-    async def follow_sequel(self, event_id: int) -> AddResult:
-        """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it."""
-        kind, sequel_id = await asyncio.to_thread(self._announced_sequel, event_id)
+    async def follow_sequel_of(self, kind: str, sequel_id: str) -> AddResult:
+        """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it.
+        The button names the sequel, so it works even when the announcement or its film is gone."""
+        if kind not in self.sequel_sources:
+            raise UnknownKind(kind)
         return await self.add_title(kind, sequel_id)
+
+    async def follow_sequel(self, event_id: int) -> AddResult:
+        """The same for an old button, which holds only the number of the announcement: works while the event exists."""
+        kind, sequel_id = await asyncio.to_thread(self._announced_sequel, event_id)
+        return await self.follow_sequel_of(kind, sequel_id)
 
     def _announced_sequel(self, event_id: int) -> tuple[str, str]:
         with self.session_factory() as session:
@@ -1104,7 +1098,7 @@ class Tracker:
             # episodes are folded only inside a summary; failures of one source and reason are folded everywhere
             for unit in delivery.fold(single, episodes=False):
                 item = unit.single
-                actions = event_actions(item.type, item.event_id, item.title_id) if item is not None else []
+                actions = event_actions(item.type, item.event_id, item.title_id, item.data) if item is not None else []
                 await self._send(unit.members, unit.text, actions, report)
             if summary:
                 await self._send_summary(summary, moment, rules, report, names)
@@ -1165,7 +1159,7 @@ class Tracker:
             name = single.data.get("sequel_title") or names.get(single.title_id, "")
             if len(name) > BUTTON_NAME_LIMIT:
                 name = name[: BUTTON_NAME_LIMIT - 1] + "…"
-            for action in event_actions(single.type, single.event_id, single.title_id):
+            for action in event_actions(single.type, single.event_id, single.title_id, single.data):
                 if (action.name, action.arg) in shown:
                     continue
                 shown.add((action.name, action.arg))

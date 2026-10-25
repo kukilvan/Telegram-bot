@@ -12,7 +12,8 @@ from aiogram.types import CallbackQuery, Chat, Message, Update, User
 from sqlalchemy import select
 
 from app.bot.access import AccessMiddleware
-from app.bot.tracker_handlers import TelegramSender, register_tracker_handlers
+from app.bot.tracker_handlers import TelegramSender, actions_markup, register_tracker_handlers
+from app.tracker.actions import FOLLOW, Action
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import Event
@@ -373,6 +374,53 @@ def test_follow_on_an_event_that_is_not_an_announcement_is_refused(tracker, tele
     Chat_(tracker).press(f"tact:follow:{event_id}")
 
     assert replies == [("callback", "Это объявление больше недоступно.", None)]
+
+
+def test_the_follow_button_data_is_kind_and_id_and_fits_telegrams_limit(tracker, sequels, clock, telegram):
+    announce_sequel(tracker, sequels, clock)
+    _, buttons = event_text_and_buttons(telegram, "Анонсировано продолжение")
+
+    assert buttons[0].callback_data == f"tact:follow:movie:{DUNE_3}"
+    longest = Action("x", FOLLOW, f"series:{'9' * 45}")
+    assert len(actions_markup([longest]).inline_keyboard[0][0].callback_data.encode()) <= 64
+
+
+def test_follow_works_after_the_original_film_is_deleted(tracker, sequels, clock, telegram, replies):
+    announce_sequel(tracker, sequels, clock)
+    _, buttons = event_text_and_buttons(telegram, "Анонсировано продолжение")
+    [dune] = tracker.list_titles()
+    run(tracker.delete_title(dune.id))
+
+    Chat_(tracker).press(buttons[0].callback_data)
+
+    assert [(t.name, t.status) for t in tracker.list_titles()] == [("Дюна: Часть третья", "want")]
+    assert "Продолжение добавлено" in messages(replies)[0][1]
+
+
+def test_an_old_follow_button_with_an_event_number_still_works_while_the_event_exists(
+    tracker, sequels, clock, telegram, replies
+):
+    announce_sequel(tracker, sequels, clock)
+    with tracker.session_factory() as s:
+        event_id = s.scalar(select(Event.id).where(Event.type == "movie_sequel_announced"))
+
+    Chat_(tracker).press(f"tact:follow:{event_id}")
+
+    assert [t.name for t in tracker.list_titles()] == ["Дюна", "Дюна: Часть третья"]
+
+
+def test_an_old_follow_button_without_its_event_says_the_announcement_is_gone(tracker, replies):
+    Chat_(tracker).press("tact:follow:999")
+
+    assert replies == [("callback", "Это объявление больше недоступно.", None)]
+
+
+@pytest.mark.parametrize("data", ["tact:follow:game:1", "tact:follow:movie:", "tact:follow::1", "tact:follow:x"])
+def test_a_follow_button_of_an_unknown_kind_or_shape_stops_working(tracker, replies, data):
+    Chat_(tracker).press(data)
+
+    assert replies == [("callback", "Эта кнопка больше не работает.", None)]
+    assert tracker.list_titles() == []
 
 
 def test_a_stranger_cannot_follow(tracker, sequels, clock, telegram, replies):
