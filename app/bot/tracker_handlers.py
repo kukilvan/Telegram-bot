@@ -72,6 +72,7 @@ START_TEXT = (
 DELETE_BULK_BUTTON = "🗑 Удалить несколько"
 _NOT_IN_LIST = "Этого тайтла больше нет в списке."
 _DEAD_BUTTON = "Эта кнопка больше не работает."
+_ADDING = "Добавляю…"
 _STALE_SELECTION = "Эта кнопка больше не работает, откройте список заново."
 _ASK_SEASONS = (
     "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
@@ -327,23 +328,30 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         if kind is None:
             await callback.answer(_NO_SUCH_KIND)
             return
+        await callback.answer(_ADDING)  # the source may take longer than Telegram waits for the answer
         try:
             result = await tracker.add_title(kind, external_id)
         except KeyError:
-            await callback.answer(_NO_SUCH_KIND)
+            await tell_failure(callback, _NO_SUCH_KIND)
             return
         except TitleNotFound:
-            await callback.answer(f"Не нашёл такой тайтл в {KINDS[kind].source_name}, попробуйте поискать заново.")
+            await tell_failure(callback, f"Не нашёл такой тайтл в {KINDS[kind].source_name}, попробуйте поискать заново.")
             return
         except Exception as exc:
             logging.warning("adding a title failed: %s", repr(exc))
-            await callback.answer(f"Не удалось получить данные из {KINDS[kind].source_name}. Попробуйте чуть позже.")
+            await tell_failure(callback, f"Не удалось получить данные из {KINDS[kind].source_name}. Попробуйте чуть позже.")
             return
-        await callback.answer()
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"
         await send_card(callback, await tracker.title_card(result.title_id), heading)
         if result.created:
             await ask_watched_seasons(callback, result.title_id)
+
+    async def tell_failure(callback: CallbackQuery, text: str) -> None:
+        """After the early answer the press has no popup left: a failure goes to the chat as a message."""
+        if callback.message is None:
+            logging.warning("no message to tell the owner: %s", text)
+            return
+        await callback.message.answer(text)
 
     async def ask_watched_seasons(callback: CallbackQuery, title_id: int) -> bool:
         """Offer the seasons with released episodes for marking. False: a movie or nothing is out yet."""
@@ -444,28 +452,30 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def follow_sequel(callback: CallbackQuery, raw: str) -> None:
         """`raw` is "<kind>:<id>" on a button of the current kind, or the number of the announcement on an old one."""
         kind, _, sequel_id = raw.partition(":")
-        try:
-            if raw.isascii() and raw.isdigit():
-                result = await tracker.follow_sequel(int(raw))
-            elif kind and sequel_id:
-                result = await tracker.follow_sequel_of(kind, sequel_id)
-            else:
-                raise UnknownKind(raw)
-        except UnknownEvent:
-            await callback.answer("Это объявление больше недоступно.")
-            return
-        except UnknownKind:
+        old_event = raw.isascii() and raw.isdigit()
+        if not old_event and not (_kind_of(kind) and sequel_id):
             await callback.answer(_DEAD_BUTTON)
             return
+        await callback.answer(_ADDING)  # the source may take longer than Telegram waits for the answer
+        try:
+            if old_event:
+                result = await tracker.follow_sequel(int(raw))
+            else:
+                result = await tracker.follow_sequel_of(kind, sequel_id)
+        except UnknownEvent:
+            await tell_failure(callback, "Это объявление больше недоступно.")
+            return
+        except UnknownKind:
+            await tell_failure(callback, _DEAD_BUTTON)
+            return
         except TitleNotFound:
-            await callback.answer("Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
+            await tell_failure(callback, "Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
             return
         except Exception as exc:
             logging.warning("following a sequel failed: %s", repr(exc))
-            await callback.answer("Не удалось получить данные из TMDb. Попробуйте чуть позже.")
+            await tell_failure(callback, "Не удалось получить данные из TMDb. Попробуйте чуть позже.")
             return
         await drop_pressed_button(callback)
-        await callback.answer()
         heading = "✅ Продолжение добавлено в список" if result.created else "Уже в списке"
         await send_card(callback, await tracker.title_card(result.title_id), heading)
 

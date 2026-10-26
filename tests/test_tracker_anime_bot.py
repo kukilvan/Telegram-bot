@@ -205,7 +205,7 @@ def test_shikimori_failure_is_answered_with_its_name_and_nothing_is_stored(track
     shikimori.broken = True
     chat.press(callback_of(replies[-1][2], "Магическая битва"))
 
-    assert replies[-1][0] == "callback" and "Shikimori" in replies[-1][1]
+    assert replies[-1][0] == "message" and "Shikimori" in replies[-1][1]  # the press itself was answered early
     assert run(tracker.list_titles()) == []
 
 

@@ -225,14 +225,14 @@ def test_source_failure_gives_a_friendly_answer_and_stores_nothing(tracker, movi
     movies.failing = True
     chat.press(callback_of(replies[-1][2], "Часть вторая"))
 
-    assert replies[-1][0] == "callback" and "TMDb" in replies[-1][1]
+    assert replies[-1][0] == "message" and "TMDb" in replies[-1][1]  # the press itself was answered early
     assert run(tracker.list_titles()) == []
 
 
 def test_id_without_a_movie_is_answered_not_crashed(tracker, replies):
     Chat_(tracker).press("tpick:movie:1396")
 
-    assert replies[-1][0] == "callback" and "не нашёл" in replies[-1][1].lower()
+    assert replies[-1][0] == "message" and "не нашёл" in replies[-1][1].lower()
     assert run(tracker.list_titles()) == []
 
 

@@ -386,7 +386,10 @@ def test_follow_during_a_tmdb_outage_says_to_try_later_and_adds_nothing(tracker,
 
     Chat_(tracker).press(buttons[0].callback_data)
 
-    assert replies == [("callback", "Не удалось получить данные из TMDb. Попробуйте чуть позже.", None)]
+    assert [(kind, text) for kind, text, _ in replies] == [
+        ("callback", "Добавляю…"),
+        ("message", "Не удалось получить данные из TMDb. Попробуйте чуть позже."),
+    ]
     assert len(run(tracker.list_titles())) == 1
 
 
@@ -397,7 +400,10 @@ def test_follow_on_an_event_that_is_not_an_announcement_is_refused(tracker, tele
 
     Chat_(tracker).press(f"tact:follow:{event_id}")
 
-    assert replies == [("callback", "Это объявление больше недоступно.", None)]
+    assert [(kind, text) for kind, text, _ in replies] == [
+        ("callback", "Добавляю…"),
+        ("message", "Это объявление больше недоступно."),
+    ]
 
 
 def test_the_follow_button_data_is_kind_and_id_and_fits_telegrams_limit(tracker, sequels, clock, telegram):
@@ -436,7 +442,10 @@ def test_an_old_follow_button_with_an_event_number_still_works_while_the_event_e
 def test_an_old_follow_button_without_its_event_says_the_announcement_is_gone(tracker, replies):
     Chat_(tracker).press("tact:follow:999")
 
-    assert replies == [("callback", "Это объявление больше недоступно.", None)]
+    assert [(kind, text) for kind, text, _ in replies] == [
+        ("callback", "Добавляю…"),
+        ("message", "Это объявление больше недоступно."),
+    ]
 
 
 @pytest.mark.parametrize("data", ["tact:follow:game:1", "tact:follow:movie:", "tact:follow::1", "tact:follow:x"])
