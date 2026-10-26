@@ -65,7 +65,7 @@ async def main() -> None:
                 "anime": ShikimoriAnimeSource(shikimori, anilist),
             },
             sequel_sources={"movie": TmdbSequelSource(tmdb)},
-            local_tz=ZoneInfo(settings.bot_timezone),
+            default_tz=ZoneInfo(settings.bot_timezone),
         )
         dp = build_dispatcher(tracker, allowed_ids)
 

@@ -96,7 +96,7 @@ def set_rules(tracker, **override):
 def queue(tracker, clock, day, hour, minute, text, key=None):
     """An event that appears at this moment of the owner's clock; returns its id."""
     clock.at(day, hour, minute)
-    return tracker.record_event("test", {"text": text}, dedup_key=key or text)
+    return run(tracker.record_event("test", {"text": text}, dedup_key=key or text))
 
 
 def deliver(tracker, clock, day, hour, minute=0):
@@ -346,7 +346,7 @@ def episode_event(tracker, clock, title_id, season, number, day=SUN, hour=10, pa
                "season": season, "episode": number}
     if part:
         payload["part"] = part
-    return tracker.record_event(EPISODE_OUT, payload, f"series:{title_id}:s{season}:e{number}:out", title_id=title_id)
+    return run(tracker.record_event(EPISODE_OUT, payload, f"series:{title_id}:s{season}:e{number}:out", title_id=title_id))
 
 
 def test_episodes_of_one_season_of_one_title_become_one_line(tracker, clock, sender):
@@ -456,9 +456,9 @@ def test_a_summary_keeps_the_buttons_of_its_events_and_names_the_title(session_f
     set_rules(tracker)
     title_id = run(tracker.add_title("movie", "1")).title_id
     clock.at(SUN, 10)
-    tracker.record_event(
+    run(tracker.record_event(
         movie_events.RELEASED, {"text": "🎬 Дюна: Часть третья — вышел в кино"}, "k1", title_id=title_id
-    )
+    ))
 
     deliver(tracker, clock, SUN, 15, 0)
 
@@ -482,8 +482,8 @@ def test_a_summary_offers_one_card_button_per_title(session_factory, clock, send
     set_rules(tracker)
     title_id = run(tracker.add_title("movie", "1")).title_id
     clock.at(SUN, 10)
-    tracker.record_event(movie_events.DATE_ANNOUNCED, {"text": "🎬 Дюна — дата объявлена"}, "k1", title_id=title_id)
-    tracker.record_event(movie_events.RELEASED, {"text": "🎬 Дюна — вышел в кино"}, "k2", title_id=title_id)
+    run(tracker.record_event(movie_events.DATE_ANNOUNCED, {"text": "🎬 Дюна — дата объявлена"}, "k1", title_id=title_id))
+    run(tracker.record_event(movie_events.RELEASED, {"text": "🎬 Дюна — вышел в кино"}, "k2", title_id=title_id))
 
     deliver(tracker, clock, SUN, 15, 0)
 
@@ -555,7 +555,7 @@ def test_without_quiet_hours_and_working_days_a_late_event_goes_out_alone(tracke
 def movie_event(tracker, clock, title_id, name, key):
     ensure_title(tracker, title_id, name)
     clock.at(SUN, 10)
-    return tracker.record_event(movie_events.RELEASED, {"text": f"🎬 {name} — вышел в кино"}, key, title_id=title_id)
+    return run(tracker.record_event(movie_events.RELEASED, {"text": f"🎬 {name} — вышел в кино"}, key, title_id=title_id))
 
 
 def sequel_event(tracker, clock, title_id, sequel_id, name):
@@ -563,7 +563,7 @@ def sequel_event(tracker, clock, title_id, sequel_id, name):
     clock.at(SUN, 10)
     payload = {"text": f"🎬 Анонсировано продолжение: {name}", "kind": "movie", "sequel_id": sequel_id,
                "sequel_title": name}
-    return tracker.record_event(sequel_events.SEQUEL_ANNOUNCED, payload, f"sequel:{sequel_id}", title_id=title_id)
+    return run(tracker.record_event(sequel_events.SEQUEL_ANNOUNCED, payload, f"sequel:{sequel_id}", title_id=title_id))
 
 
 def test_follow_buttons_come_first_and_are_never_cut(tracker, clock, sender):
@@ -606,11 +606,11 @@ def test_all_follow_buttons_are_shown_even_when_there_are_more_than_ten(tracker,
 def test_a_follow_button_is_not_repeated_for_one_sequel(tracker, clock, sender):
     sequel_event(tracker, clock, 30, 700, "Продолжение")
     ensure_title(tracker, 31, "Другой")
-    tracker.record_event(
+    run(tracker.record_event(
         sequel_events.SEQUEL_ANNOUNCED,
         {"text": "🎬 то же продолжение", "kind": "movie", "sequel_id": 700, "sequel_title": "Продолжение"},
         "sequel:700:again", title_id=31,
-    )
+    ))
 
     deliver(tracker, clock, SUN, 15, 0)
 
@@ -654,22 +654,21 @@ def test_no_working_days_means_events_never_wait_for_a_summary(tracker, clock, s
     assert sender.messages == ["🧪 ранним утром"]
 
 
-def test_settings_survive_a_restart_and_the_time_zone_reaches_the_cards(session_factory, clock, sender):
+def test_settings_survive_a_restart_and_win_over_the_default_time_zone(session_factory, clock, sender):
     first = Tracker(session_factory, clock=clock, sender=sender, sources={})
     set_rules(first, tz_name="Asia/Tokyo", workdays=[0], digest_at="09:30", quiet_from="22:00", quiet_until="06:00")
 
-    second = Tracker(session_factory, clock=clock, sender=sender, sources={}, local_tz=ZoneInfo("Europe/Paris"))
+    second = Tracker(session_factory, clock=clock, sender=sender, sources={}, default_tz=ZoneInfo("Europe/Paris"))
 
-    rules = second.delivery_rules()
+    rules = run(second.delivery_rules())
     assert (rules.tz, rules.workdays) == (ZoneInfo("Asia/Tokyo"), frozenset({0}))
     assert (rules.digest_at, rules.quiet_from, rules.quiet_until) == (time(9, 30), time(22, 0), time(6, 0))
-    assert second.local_tz == ZoneInfo("Asia/Tokyo")  # the owner's choice wins over the one the process started with
 
 
 def test_without_settings_the_time_zone_is_the_one_the_core_was_given(session_factory, clock, sender):
-    tracker = Tracker(session_factory, clock=clock, sender=sender, sources={}, local_tz=ZoneInfo("Europe/Paris"))
+    tracker = Tracker(session_factory, clock=clock, sender=sender, sources={}, default_tz=ZoneInfo("Europe/Paris"))
 
-    assert tracker.delivery_rules().tz == ZoneInfo("Europe/Paris")
+    assert run(tracker.delivery_rules()).tz == ZoneInfo("Europe/Paris")
 
 
 def test_the_built_in_defaults_are_the_owners_week():
@@ -684,12 +683,12 @@ def test_the_built_in_defaults_are_the_owners_week():
     [{"tz_name": "Mars/Olympus"}, {"workdays": [7]}, {"workdays": [-1]}, {"digest_at": "25:00"}, {"quiet_from": "evening"}],
 )
 def test_a_wrong_setting_is_refused_and_nothing_is_changed(tracker, bad):
-    before = tracker.delivery_rules()
+    before = run(tracker.delivery_rules())
 
     with pytest.raises(ValueError):
         run(tracker.set_delivery_rules(**{"workdays": [1], **bad}))
 
-    assert tracker.delivery_rules() == before
+    assert run(tracker.delivery_rules()) == before
 
 
 # --- «Тестовое событие» with a substituted time ----------------------------------------------------
@@ -759,7 +758,7 @@ def test_every_scenario_has_an_expected_outcome():
 @pytest.mark.parametrize("scenario", delivery.WINDOW_SCENARIOS, ids=lambda s: s.id)
 def test_each_scenario_of_the_menu_is_the_moment_it_names_and_ends_as_the_rules_say(tracker, clock, sender, scenario):
     clock.at(SUN, 12)
-    moment = tracker.window_test_moment(scenario)
+    moment = run(tracker.window_test_moment(scenario))
 
     local_moment = moment.astimezone(JERUSALEM)
     assert (local_moment.weekday(), local_moment.time()) == (scenario.weekday, scenario.at)
@@ -779,7 +778,7 @@ def test_the_scenario_moment_today_counts_when_it_is_still_ahead(tracker, clock)
     clock.at(SUN, 9)
     scenario = delivery.scenario_by_id("work-morning")  # Sunday 10:00
 
-    assert tracker.window_test_moment(scenario) == local(SUN, 10)
+    assert run(tracker.window_test_moment(scenario)) == local(SUN, 10)
 
 
 # --- the pure helpers ------------------------------------------------------------------------------

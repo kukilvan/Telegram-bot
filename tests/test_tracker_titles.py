@@ -109,7 +109,7 @@ def test_added_movie_appears_in_the_list_with_status_want(tracker):
     result = run(tracker.add_title("movie", "693134"))
 
     assert result.created is True
-    [entry] = tracker.list_titles()
+    [entry] = run(tracker.list_titles())
     assert entry.id == result.title_id
     assert entry.name == "Дюна: Часть вторая"
     assert entry.year == 2024
@@ -120,7 +120,7 @@ def test_added_movie_appears_in_the_list_with_status_want(tracker):
 def test_card_has_names_year_genres_and_both_release_dates(tracker):
     result = run(tracker.add_title("movie", "693134"))
 
-    card = tracker.title_card(result.title_id)
+    card = run(tracker.title_card(result.title_id))
 
     assert card.title == "Дюна: Часть вторая"
     assert card.original_title == "Dune: Part Two"
@@ -158,7 +158,7 @@ def test_unknown_id_is_reported_and_nothing_is_stored(tracker, session_factory):
     with pytest.raises(TitleNotFound):
         run(tracker.add_title("movie", "1396"))
 
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_source_failure_is_not_hidden_and_nothing_is_stored(tracker, movies):
@@ -167,7 +167,7 @@ def test_source_failure_is_not_hidden_and_nothing_is_stored(tracker, movies):
     with pytest.raises(ConnectionError):
         run(tracker.add_title("movie", "693134"))
 
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_unknown_kind_is_rejected(tracker):
@@ -208,11 +208,11 @@ def test_the_list_keeps_the_order_titles_were_added(tracker):
     run(tracker.add_title("movie", "1170608"))
     run(tracker.add_title("movie", "693134"))
 
-    assert [t.name for t in tracker.list_titles()] == ["Дюна: Часть третья", "Дюна: Часть вторая"]
+    assert [t.name for t in run(tracker.list_titles())] == ["Дюна: Часть третья", "Дюна: Часть вторая"]
 
 
 def test_missing_title_card_is_none(tracker):
-    assert tracker.title_card(999) is None
+    assert run(tracker.title_card(999)) is None
 
 
 # --- how a card reads ---------------------------------------------------------------------------
@@ -221,7 +221,7 @@ def test_missing_title_card_is_none(tracker):
 def test_card_text_shows_names_year_genres_and_dates(tracker):
     result = run(tracker.add_title("movie", "693134"))
 
-    text = format_card(tracker.title_card(result.title_id))
+    text = format_card(run(tracker.title_card(result.title_id)))
 
     assert "Дюна: Часть вторая" in text
     assert "Dune: Part Two" in text
@@ -235,7 +235,7 @@ def test_card_text_shows_names_year_genres_and_dates(tracker):
 def test_card_text_says_not_announced_for_missing_dates(tracker):
     result = run(tracker.add_title("movie", "1170608"))
 
-    text = format_card(tracker.title_card(result.title_id))
+    text = format_card(run(tracker.title_card(result.title_id)))
 
     assert "16 декабря 2026" in text
     assert "Цифровой релиз: не объявлена" in text
@@ -244,7 +244,7 @@ def test_card_text_says_not_announced_for_missing_dates(tracker):
 def test_card_text_for_a_movie_with_no_data_at_all(tracker):
     result = run(tracker.add_title("movie", "77"))
 
-    text = format_card(tracker.title_card(result.title_id))
+    text = format_card(run(tracker.title_card(result.title_id)))
 
     assert "Безымянный" in text
     assert "Премьера в кино: не объявлена" in text

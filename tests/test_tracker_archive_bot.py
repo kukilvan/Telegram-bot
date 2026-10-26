@@ -196,7 +196,7 @@ def test_pressing_watched_on_a_card_archives_the_movie(tracker, replies):
 
     Chat_(tracker).press(f"tact:watched:{title_id}")
 
-    assert tracker.title_card(title_id).status == "watched"
+    assert run(tracker.title_card(title_id)).status == "watched"
     assert [r[1] for r in replies if r[0] == "callback"] == ["Отмечено как просмотренное"]
     [(_, text, _)] = [r for r in replies if r[0] == "message"]
     assert "Дюна" in text and "архиве" in text
@@ -247,7 +247,7 @@ def test_a_stranger_cannot_mark_anything_watched(tracker, replies):
     Chat_(tracker, uid=STRANGER).press(f"tact:watched:{title_id}")
 
     assert replies == []
-    assert tracker.title_card(title_id).status == "want"
+    assert run(tracker.title_card(title_id)).status == "want"
 
 
 def test_a_movie_event_arrives_with_a_watched_button_that_works(tracker, movies, clock, telegram, replies):
@@ -262,7 +262,7 @@ def test_a_movie_event_arrives_with_a_watched_button_that_works(tracker, movies,
     assert [b.text for b in buttons] == ["✅ Посмотрел", "📄 Карточка"]
 
     Chat_(tracker).press(buttons[0].callback_data)
-    assert tracker.title_card(title_id).status == "watched"
+    assert run(tracker.title_card(title_id)).status == "watched"
 
 
 def test_the_card_button_under_an_event_opens_the_card_of_its_title(tracker, movies, clock, telegram, replies):
@@ -326,7 +326,7 @@ def test_a_sequel_announcement_arrives_with_a_follow_button(tracker, sequels, cl
 def test_nothing_is_added_until_follow_is_pressed(tracker, sequels, clock, telegram):
     announce_sequel(tracker, sequels, clock)
 
-    assert [t.name for t in tracker.list_titles()] == ["Дюна"]
+    assert [t.name for t in run(tracker.list_titles())] == ["Дюна"]
 
 
 def test_pressing_follow_adds_the_sequel_as_wanted_and_shows_its_card(tracker, sequels, clock, telegram, replies):
@@ -335,7 +335,7 @@ def test_pressing_follow_adds_the_sequel_as_wanted_and_shows_its_card(tracker, s
 
     Chat_(tracker).press(buttons[0].callback_data)
 
-    assert [(t.name, t.status) for t in tracker.list_titles()] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
+    assert [(t.name, t.status) for t in run(tracker.list_titles())] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
     [(_, text, card_buttons)] = [r for r in replies if r[0] == "message"]
     assert "Продолжение добавлено" in text and "Хочу" in text
     assert [b.text for b in card_buttons] == ["✅ Посмотрел", "🗑 Удалить"]
@@ -351,7 +351,7 @@ def test_pressing_follow_twice_does_not_add_a_second_copy(tracker, sequels, cloc
 
     chat.press(buttons[0].callback_data)
 
-    assert len(tracker.list_titles()) == 2
+    assert len(run(tracker.list_titles())) == 2
     assert "Уже в списке" in [r for r in replies if r[0] == "message"][0][1]
 
 
@@ -363,7 +363,7 @@ def test_follow_during_a_tmdb_outage_says_to_try_later_and_adds_nothing(tracker,
     Chat_(tracker).press(buttons[0].callback_data)
 
     assert replies == [("callback", "Не удалось получить данные из TMDb. Попробуйте чуть позже.", None)]
-    assert len(tracker.list_titles()) == 1
+    assert len(run(tracker.list_titles())) == 1
 
 
 def test_follow_on_an_event_that_is_not_an_announcement_is_refused(tracker, telegram, replies):
@@ -388,12 +388,12 @@ def test_the_follow_button_data_is_kind_and_id_and_fits_telegrams_limit(tracker,
 def test_follow_works_after_the_original_film_is_deleted(tracker, sequels, clock, telegram, replies):
     announce_sequel(tracker, sequels, clock)
     _, buttons = event_text_and_buttons(telegram, "Анонсировано продолжение")
-    [dune] = tracker.list_titles()
+    [dune] = run(tracker.list_titles())
     run(tracker.delete_title(dune.id))
 
     Chat_(tracker).press(buttons[0].callback_data)
 
-    assert [(t.name, t.status) for t in tracker.list_titles()] == [("Дюна: Часть третья", "want")]
+    assert [(t.name, t.status) for t in run(tracker.list_titles())] == [("Дюна: Часть третья", "want")]
     assert "Продолжение добавлено" in messages(replies)[0][1]
 
 
@@ -406,7 +406,7 @@ def test_an_old_follow_button_with_an_event_number_still_works_while_the_event_e
 
     Chat_(tracker).press(f"tact:follow:{event_id}")
 
-    assert [t.name for t in tracker.list_titles()] == ["Дюна", "Дюна: Часть третья"]
+    assert [t.name for t in run(tracker.list_titles())] == ["Дюна", "Дюна: Часть третья"]
 
 
 def test_an_old_follow_button_without_its_event_says_the_announcement_is_gone(tracker, replies):
@@ -420,7 +420,7 @@ def test_a_follow_button_of_an_unknown_kind_or_shape_stops_working(tracker, repl
     Chat_(tracker).press(data)
 
     assert replies == [("callback", "Эта кнопка больше не работает.", None)]
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_a_stranger_cannot_follow(tracker, sequels, clock, telegram, replies):
@@ -430,4 +430,4 @@ def test_a_stranger_cannot_follow(tracker, sequels, clock, telegram, replies):
     Chat_(tracker, uid=STRANGER).press(buttons[0].callback_data)
 
     assert replies == []
-    assert len(tracker.list_titles()) == 1
+    assert len(run(tracker.list_titles())) == 1

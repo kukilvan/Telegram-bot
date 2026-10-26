@@ -118,7 +118,7 @@ def test_a_delivered_event_is_never_sent_twice(tracker, sender):
 
 
 def test_concurrent_delivery_runs_send_once(tracker, sender):
-    tracker.record_event("test", {"text": "hi"}, dedup_key="k1")
+    run(tracker.record_event("test", {"text": "hi"}, dedup_key="k1"))
 
     async def both():
         await asyncio.gather(tracker.deliver_pending(), tracker.deliver_pending())
@@ -129,8 +129,8 @@ def test_concurrent_delivery_runs_send_once(tracker, sender):
 
 
 def test_same_dedup_key_makes_one_event(tracker, sender, session_factory):
-    first = tracker.record_event("test", {"text": "hi"}, dedup_key="same")
-    second = tracker.record_event("test", {"text": "hi"}, dedup_key="same")
+    first = run(tracker.record_event("test", {"text": "hi"}, dedup_key="same"))
+    second = run(tracker.record_event("test", {"text": "hi"}, dedup_key="same"))
 
     run(tracker.deliver_pending())
 
@@ -151,9 +151,9 @@ def test_every_test_event_press_is_a_new_event(tracker, sender):
 
 
 def test_timestamps_come_from_the_clock_at_insert_time(tracker, session_factory, clock):
-    tracker.record_event("test", {"text": "a"}, dedup_key="a")
+    run(tracker.record_event("test", {"text": "a"}, dedup_key="a"))
     clock.advance(hours=3)
-    tracker.record_event("test", {"text": "b"}, dedup_key="b")
+    run(tracker.record_event("test", {"text": "b"}, dedup_key="b"))
 
     with session_factory() as s:
         events = list(s.scalars(select(Event).order_by(Event.id)))
@@ -202,8 +202,8 @@ def test_one_failing_event_does_not_stop_the_others(session_factory, clock):
 
     sender = PickySender()
     tracker = Tracker(session_factory, clock=clock, sender=sender, sources={})
-    tracker.record_event("test", {"text": "bad one"}, dedup_key="1")
-    tracker.record_event("test", {"text": "good one"}, dedup_key="2")
+    run(tracker.record_event("test", {"text": "bad one"}, dedup_key="1"))
+    run(tracker.record_event("test", {"text": "good one"}, dedup_key="2"))
 
     run(tracker.deliver_pending())
 

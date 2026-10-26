@@ -22,6 +22,10 @@ OWNER, STRANGER = 42, 7
 JERUSALEM = ZoneInfo("Asia/Jerusalem")
 
 
+def run(coro):
+    return asyncio.run(coro)
+
+
 class FakeBot:
     def __init__(self):
         self.sent = []
@@ -98,8 +102,8 @@ def press(dp, uid, data):
 
 
 def waiting_events(tracker):
-    tracker.record_event("test", {"text": "первое"}, dedup_key="1")
-    tracker.record_event("test", {"text": "второе"}, dedup_key="2")
+    run(tracker.record_event("test", {"text": "первое"}, dedup_key="1"))
+    run(tracker.record_event("test", {"text": "второе"}, dedup_key="2"))
 
 
 # --- «Сводка сейчас» -------------------------------------------------------------------------------

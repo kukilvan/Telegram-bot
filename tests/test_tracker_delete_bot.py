@@ -149,7 +149,7 @@ def callbacks(replies):
 
 
 def names(tracker):
-    return [t.name for t in tracker.list_titles()]
+    return [t.name for t in run(tracker.list_titles())]
 
 
 def ask_to_delete(chat, tracker, replies, title_id):
@@ -206,7 +206,7 @@ def test_cancelling_erases_nothing(tracker, replies):
 
 def test_the_events_of_the_deleted_title_go_too(tracker, replies):
     title_id = add(tracker)
-    tracker.record_event("movie_released", {"text": "x"}, "k", title_id=title_id)
+    run(tracker.record_event("movie_released", {"text": "x"}, "k", title_id=title_id))
     chat = Chat_(tracker)
 
     chat.press(callback_of(ask_to_delete(chat, tracker, replies, title_id), "Да, удалить"))

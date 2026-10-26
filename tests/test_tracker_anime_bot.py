@@ -22,6 +22,10 @@ OWNER = 42
 NOW = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 
 
+def run(coro):
+    return asyncio.run(coro)
+
+
 class FakeSender:
     async def send(self, message, actions=()):
         pass
@@ -149,7 +153,7 @@ def test_picked_anime_is_added_and_its_card_shows_the_seasons_and_the_films(trac
     assert "Сезон 3: вышло 12 из 12" in card
     assert "Сезон 4 анонсирован" in card
     assert "Фильмы франшизы: Магическая битва 0. Фильм (2021)" in card
-    [entry] = tracker.list_titles()
+    [entry] = run(tracker.list_titles())
     assert (entry.kind, entry.status) == ("anime", "want")
 
 
@@ -190,7 +194,7 @@ def test_adding_the_franchise_through_another_entry_opens_the_same_title(tracker
     chat.press("tpick:anime:48561")  # the prequel film of the same franchise
 
     assert "Уже в списке" in last_message(replies)[1]
-    assert len(tracker.list_titles()) == 1
+    assert len(run(tracker.list_titles())) == 1
 
 
 def test_shikimori_failure_is_answered_with_its_name_and_nothing_is_stored(tracker, shikimori, replies):
@@ -202,7 +206,7 @@ def test_shikimori_failure_is_answered_with_its_name_and_nothing_is_stored(track
     chat.press(callback_of(replies[-1][2], "Магическая битва"))
 
     assert replies[-1][0] == "callback" and "Shikimori" in replies[-1][1]
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_search_failure_is_answered_with_the_name_of_the_source(tracker, shikimori, replies):

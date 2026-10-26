@@ -21,6 +21,10 @@ OWNER, STRANGER = 42, 7
 NOW = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 
 
+def run(coro):
+    return asyncio.run(coro)
+
+
 def out(first_day, count):
     start = datetime.fromisoformat(first_day)
     return tuple(Episode(n + 1, start + timedelta(weeks=n)) for n in range(count))
@@ -177,7 +181,7 @@ def test_picked_series_is_added_and_its_card_shows_the_current_season_and_the_an
     assert "Укрытие · Silo" in card
     assert "Сезон 3: вышло 10 из 10" in card
     assert "Сезон 4 анонсирован" in card
-    [entry] = tracker.list_titles()
+    [entry] = run(tracker.list_titles())
     assert (entry.kind, entry.status) == ("series", "want")
 
 
@@ -220,7 +224,7 @@ def test_source_failure_gives_a_friendly_answer_and_stores_nothing(tracker, seri
     chat.press(callback_of(replies[-1][2], "Укрытие"))
 
     assert replies[-1][0] == "callback" and "TMDb" in replies[-1][1]
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_id_without_a_series_is_answered_not_crashed(tracker, replies):
@@ -239,10 +243,10 @@ def test_pressing_a_season_marks_it_and_pressing_again_takes_the_mark_off(tracke
 
     chat.press(callback_of(buttons, "Сезон 1"))
     assert labels(replies[-1][2]) == ["✅ Сезон 1", "Сезон 2", "Сезон 3", "Готово"]  # the keyboard is refreshed
-    assert [(s.number, s.watched) for s in tracker.watchable_seasons(1)] == [(1, True), (2, False), (3, False)]
+    assert [(s.number, s.watched) for s in run(tracker.watchable_seasons(1))] == [(1, True), (2, False), (3, False)]
 
     chat.press(callback_of(buttons, "Сезон 1"))
-    assert [s.watched for s in tracker.watchable_seasons(1)] == [False, False, False]
+    assert [s.watched for s in run(tracker.watchable_seasons(1))] == [False, False, False]
 
 
 def test_done_closes_the_choice_and_shows_the_card_with_the_marks(tracker, replies):
@@ -290,7 +294,7 @@ def test_marking_a_season_that_does_not_exist_is_answered_not_crashed(tracker, r
     chat.press("tsea:1:9")
 
     assert replies[-1][0] == "callback" and replies[-1][1]
-    assert all(not s.watched for s in tracker.watchable_seasons(1))
+    assert all(not s.watched for s in run(tracker.watchable_seasons(1)))
 
 
 @pytest.mark.parametrize("data", ["tsea:1:oops", "tsea:x:1", "tsea:"])
@@ -316,5 +320,5 @@ def test_stranger_cannot_add_or_mark_anything(tracker, series, replies, with_mid
     stranger.press("tact:seasons:1")
 
     assert replies == []
-    assert len(tracker.list_titles()) == 1
-    assert all(not s.watched for s in tracker.watchable_seasons(1))
+    assert len(run(tracker.list_titles())) == 1
+    assert all(not s.watched for s in run(tracker.watchable_seasons(1)))

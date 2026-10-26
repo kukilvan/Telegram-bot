@@ -209,7 +209,7 @@ class Tracker:
     sender: Sender
     sources: Mapping[str, Any] = field(default_factory=dict)
     sequel_sources: Mapping[str, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
-    local_tz: tzinfo | None = None  # the owner's time zone: anime messages and cards give the hour of an episode in it
+    default_tz: tzinfo = timezone.utc  # the time zone when the owner has set none (BOT_TIMEZONE); the set one is read from the database
     _kinds: dict[str, TestEventKind] = field(init=False, default_factory=dict)
     _delivery_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
     _poll_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
@@ -242,13 +242,10 @@ class Tracker:
                 series_events.sample_episode_events,
             )
         )
-        saved = self._saved_timezone()
-        if saved is not None:
-            self.local_tz = saved  # the owner's setting wins over the one the process was started with
 
     # --- events ---------------------------------------------------------------------------------
 
-    def record_event(
+    async def record_event(
         self,
         type: str,
         payload: dict[str, Any],
@@ -259,6 +256,16 @@ class Tracker:
         """Store an event and queue it for delivery. Returns its id, or None if this fact is already known.
         `at` stands in for the moment of detection (a test event with a substituted time). An event of a title that is
         no longer in the list (deleted while the poll was under way) is dropped."""
+        return await asyncio.to_thread(self._record_event, type, payload, dedup_key, title_id, at)
+
+    def _record_event(
+        self,
+        type: str,
+        payload: dict[str, Any],
+        dedup_key: str,
+        title_id: int | None = None,
+        at: datetime | None = None,
+    ) -> int | None:
         now = _naive_utc(at or self.clock())
         with self.session_factory() as session:
             event_id = self._enqueue_event(session, type, payload, dedup_key, title_id, now)
@@ -288,8 +295,11 @@ class Tracker:
 
     # --- settings -------------------------------------------------------------------------------
 
-    def part_gap_weeks(self) -> int:
+    async def part_gap_weeks(self) -> int:
         """Weeks of break between two episodes of a season after which the season is split into parts."""
+        return await asyncio.to_thread(self._load_part_gap_weeks)
+
+    def _load_part_gap_weeks(self) -> int:
         with self.session_factory() as session:
             return self._part_gap_weeks(session)
 
@@ -313,15 +323,24 @@ class Tracker:
     def _set_part_gap_weeks(self, weeks: int) -> None:
         self._store_settings({PART_GAP_SETTING: weeks})
 
-    def delivery_rules(self) -> delivery.DeliveryRules:
+    async def delivery_rules(self) -> delivery.DeliveryRules:
         """The owner's time zone, working days, summary hour and quiet hours; what is not set is the default."""
+        return await asyncio.to_thread(self._load_delivery_rules)
+
+    def _load_delivery_rules(self) -> delivery.DeliveryRules:
         with self.session_factory() as session:
             return self._delivery_rules(session)
 
+    def _time_zone(self, session) -> tzinfo:
+        """The owner's time zone: the stored setting, else the one the core was given. Read where it is needed, so a
+        change applies at once."""
+        record = session.get(SettingRecord, TIMEZONE_SETTING)
+        return ZoneInfo(record.value) if record is not None else self.default_tz
+
     def _delivery_rules(self, session) -> delivery.DeliveryRules:
-        keys = (TIMEZONE_SETTING, WORKDAYS_SETTING, DIGEST_AT_SETTING, QUIET_FROM_SETTING, QUIET_UNTIL_SETTING)
+        keys = (WORKDAYS_SETTING, DIGEST_AT_SETTING, QUIET_FROM_SETTING, QUIET_UNTIL_SETTING)
         stored = {r.key: r.value for r in session.scalars(select(SettingRecord).where(SettingRecord.key.in_(keys)))}
-        tz = ZoneInfo(stored[TIMEZONE_SETTING]) if TIMEZONE_SETTING in stored else (self.local_tz or timezone.utc)
+        tz = self._time_zone(session)
         workdays = stored.get(WORKDAYS_SETTING, delivery.DEFAULT_WORKDAYS)
         return delivery.DeliveryRules(
             tz=tz,
@@ -330,11 +349,6 @@ class Tracker:
             quiet_from=delivery.parse_time(stored.get(QUIET_FROM_SETTING, delivery.DEFAULT_QUIET_FROM)),
             quiet_until=delivery.parse_time(stored.get(QUIET_UNTIL_SETTING, delivery.DEFAULT_QUIET_UNTIL)),
         )
-
-    def _saved_timezone(self) -> tzinfo | None:
-        with self.session_factory() as session:
-            record = session.get(SettingRecord, TIMEZONE_SETTING)
-            return ZoneInfo(record.value) if record is not None else None
 
     async def set_delivery_rules(
         self,
@@ -368,8 +382,6 @@ class Tracker:
                 new[key] = delivery.format_time(delivery.parse_time(value))
         async with self._write_lock:
             await asyncio.to_thread(self._store_settings, new)
-        if TIMEZONE_SETTING in new:
-            self.local_tz = ZoneInfo(new[TIMEZONE_SETTING])
 
     def _store_settings(self, values: dict[str, Any]) -> None:
         with self.session_factory() as session:
@@ -535,8 +547,11 @@ class Tracker:
             loaded.append((record, season))
         return loaded
 
-    def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
+    async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
         """Seasons that can be marked as watched, with their marks. A season with nothing released cannot."""
+        return await asyncio.to_thread(self._watchable_seasons, title_id)
+
+    def _watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
         now = _naive_utc(self.clock())
         with self.session_factory() as session:
             return [
@@ -662,12 +677,18 @@ class Tracker:
                 raise UnknownEvent(event_id)
             return event.payload["kind"], event.payload["sequel_id"]
 
-    def list_titles(self) -> list[TitleSummary]:
+    async def list_titles(self) -> list[TitleSummary]:
+        return await asyncio.to_thread(self._list_titles)
+
+    def _list_titles(self) -> list[TitleSummary]:
         with self.session_factory() as session:
             rows = session.scalars(select(Title).order_by(Title.id))
             return [TitleSummary(t.id, t.kind, t.title, t.year, t.status) for t in rows]
 
-    def title_card(self, title_id: int) -> TitleCard | None:
+    async def title_card(self, title_id: int) -> TitleCard | None:
+        return await asyncio.to_thread(self._title_card, title_id)
+
+    def _title_card(self, title_id: int) -> TitleCard | None:
         with self.session_factory() as session:
             title = session.get(Title, title_id)
             if title is None:
@@ -697,7 +718,7 @@ class Tracker:
                 digital_date=_parse_date(state.get("digital_date")),
                 seasons=seasons_view,
                 franchise_movies=tuple(MovieLine(m.name, m.aired_on, m.released) for m in movies),
-                tz=self.local_tz if title.kind == "anime" else None,
+                tz=self._time_zone(session) if title.kind == "anime" else None,
             )
 
     # --- polling --------------------------------------------------------------------------------
@@ -826,7 +847,7 @@ class Tracker:
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
         for event in movie_events.detect_events(due.id, due.name, old, new, observed_on, today):
             payload = {"text": event.text, **event.data}
-            if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+            if self._record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                 found += 1
         with self.session_factory() as session:
             stored = self._stored_snapshot(session, due)
@@ -851,7 +872,7 @@ class Tracker:
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
         for event in series_events.detect_events(due.id, due.name, old, new, observed_at, now, gap):
             payload = {"text": event.text, **event.data}
-            if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+            if self._record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                 found += 1
         with self.session_factory() as session:
             self._sync_seasons(session, due.id, new.seasons)
@@ -895,6 +916,7 @@ class Tracker:
             observed_at = stored.observed_at
             previous = tuple(season for _, season in self._load_seasons(session, due.id))
             gap = self._part_gap(session)
+            tz = self._time_zone(session)
             title = session.get(Title, due.id)
             name = title.title if title.original_title in ("", title.title) else f"{title.title} ({title.original_title})"
             known = set(
@@ -911,14 +933,14 @@ class Tracker:
         assembled = anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, previous, now, known)
         new = series_events.ShowState.of(assembled, {}).keeping_known(old)
         detected = series_events.detect_events(
-            due.id, name, old, new, observed_at, now, gap, anime_events.flavor(self.local_tz)
+            due.id, name, old, new, observed_at, now, gap, anime_events.flavor(tz)
         )
         detected += anime_events.detect_movie_events(due.id, name, films, snapshot.movies, observed_at.date())
         found = 0
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
         for event in detected:
             payload = {"text": event.text, **event.data}
-            if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+            if self._record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                 found += 1
         with self.session_factory() as session:
             self._sync_seasons(session, due.id, new.seasons)
@@ -993,7 +1015,7 @@ class Tracker:
                 if event.data["sequel_id"] in listed:
                     continue  # the owner already follows it: nothing to offer
                 payload = {"text": event.text, **event.data}
-                if self.record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+                if self._record_event(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                     found += 1
         with self.session_factory() as session:
             stored = self._stored_snapshot(session, due)
@@ -1050,7 +1072,7 @@ class Tracker:
         await self.deliver_pending(now=at, only=only)
         if await asyncio.to_thread(self._all_delivered, only):
             return TestEventResult(delivered=True, delivered_at_once=True)
-        rules = await asyncio.to_thread(self.delivery_rules)
+        rules = await self.delivery_rules()
         release, waited = rules.release(_naive_utc(at))
         if not waited:  # the rules let it go at once, so the sender failed
             return TestEventResult(delivered=False)
@@ -1064,7 +1086,7 @@ class Tracker:
         self, kind_id: str, samples: list[tuple[str, dict[str, Any]]], run_id: str, at: datetime | None
     ) -> list[int]:
         return [
-            self.record_event(event_type, payload, f"test:{kind_id}:{run_id}:{number}", at=at)
+            self._record_event(event_type, payload, f"test:{kind_id}:{run_id}:{number}", at=at)
             for number, (event_type, payload) in enumerate(samples)
         ]
 
@@ -1073,9 +1095,9 @@ class Tracker:
             items = session.scalars(select(DeliveryItem).where(DeliveryItem.event_id.in_(event_ids))).all()
             return len(items) == len(event_ids) and all(item.status == "delivered" for item in items)
 
-    def window_test_moment(self, scenario: delivery.WindowScenario) -> datetime:
+    async def window_test_moment(self, scenario: delivery.WindowScenario) -> datetime:
         """The next moment of the scenario on the owner's clock, as an aware moment."""
-        rules = self.delivery_rules()
+        rules = await self.delivery_rules()
         local = scenario.next_moment(rules.local(_naive_utc(self.clock())))
         return rules.utc(local).replace(tzinfo=timezone.utc)
 

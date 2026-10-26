@@ -164,8 +164,8 @@ def test_marking_watched_changes_the_status_shown_in_the_list_and_the_card(track
     result = run(tracker.mark_watched(title_id))
 
     assert result.changed is True
-    assert [t.status for t in tracker.list_titles()] == ["watched"]
-    assert tracker.title_card(title_id).status == "watched"
+    assert [t.status for t in run(tracker.list_titles())] == ["watched"]
+    assert run(tracker.title_card(title_id)).status == "watched"
 
 
 def test_marking_watched_twice_changes_nothing_the_second_time(tracker, source, clock, session_factory):
@@ -189,19 +189,19 @@ def test_the_card_of_a_watched_movie_still_shows_its_dates(tracker, source):
     title_id = add(tracker, source, movie(DUNE, theatrical=date(2021, 9, 15)))
     run(tracker.mark_watched(title_id))
 
-    assert tracker.title_card(title_id).theatrical_date == date(2021, 9, 15)
+    assert run(tracker.title_card(title_id)).theatrical_date == date(2021, 9, 15)
 
 
 def test_the_card_offers_watched_only_while_the_movie_is_wanted(tracker, source):
     title_id = add(tracker, source, movie(DUNE))
-    assert [(a.name, a.arg) for a in card_actions(tracker.title_card(title_id))] == [
+    assert [(a.name, a.arg) for a in card_actions(run(tracker.title_card(title_id)))] == [
         (WATCHED, title_id),
         (DELETE, title_id),
     ]
 
     run(tracker.mark_watched(title_id))
 
-    assert [a.name for a in card_actions(tracker.title_card(title_id))] == [DELETE]
+    assert [a.name for a in card_actions(run(tracker.title_card(title_id)))] == [DELETE]
 
 
 # --- the archive is not checked for its own release ----------------------------------------------
@@ -409,7 +409,7 @@ def test_a_movie_without_a_sequel_source_is_archived_and_never_checked(session_f
     report = run(tracker.poll_due())
 
     assert report.failed == 0
-    assert tracker.title_card(title_id).status == "watched"
+    assert run(tracker.title_card(title_id)).status == "watched"
 
 
 # --- «Следить» -----------------------------------------------------------------------------------
@@ -426,7 +426,7 @@ def announce(tracker, source, sequels, clock, sender, *parts):
 def test_nothing_is_added_to_the_list_until_the_owner_follows(tracker, source, sequels, clock, sender):
     announce(tracker, source, sequels, clock, sender, PART_THREE)
 
-    assert [t.name for t in tracker.list_titles()] == ["Дюна"]
+    assert [t.name for t in run(tracker.list_titles())] == ["Дюна"]
 
 
 def test_following_a_sequel_adds_it_as_wanted(tracker, source, sequels, clock, sender):
@@ -436,7 +436,7 @@ def test_following_a_sequel_adds_it_as_wanted(tracker, source, sequels, clock, s
     result = run(tracker.follow_sequel(event_id))
 
     assert result.created is True
-    assert [(t.name, t.status) for t in tracker.list_titles()] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
+    assert [(t.name, t.status) for t in run(tracker.list_titles())] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
 
 
 def test_following_twice_opens_the_title_instead_of_adding_a_second_one(tracker, source, sequels, clock, sender):
@@ -448,7 +448,7 @@ def test_following_twice_opens_the_title_instead_of_adding_a_second_one(tracker,
 
     assert second.created is False
     assert second.title_id == first.title_id
-    assert len(tracker.list_titles()) == 2
+    assert len(run(tracker.list_titles())) == 2
 
 
 def test_the_followed_sequel_is_polled_like_any_wanted_movie(tracker, source, sequels, clock, sender):

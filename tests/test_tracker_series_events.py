@@ -456,7 +456,7 @@ def test_an_empty_answer_does_not_wipe_the_series_nor_announce_everything_again(
     source.update(show("252", name="Пустота"))  # a blip: no seasons at all
 
     poll_and_deliver(tracker, clock, hours=25)
-    assert "Сезон 2 анонсирован" in format_card(tracker.title_card(title_id))
+    assert "Сезон 2 анонсирован" in format_card(run(tracker.title_card(title_id)))
 
     source.update(full)
     poll_and_deliver(tracker, clock, hours=25)
@@ -468,7 +468,7 @@ def test_a_season_without_episodes_in_the_answer_keeps_what_was_known(tracker, s
     title_id = add(tracker, source, show("253", season(1, "2026-09-07", 10), name="Дыра"))
     source.update(show("253", Season(1, "Сезон 1", 10, ()), name="Дыра"))
     poll_and_deliver(tracker, clock, hours=2)
-    assert "Сезон 1: вышло 7 из 10" in format_card(tracker.title_card(title_id))
+    assert "Сезон 1: вышло 7 из 10" in format_card(run(tracker.title_card(title_id)))
 
     source.update(show("253", season(1, "2026-09-07", 10), name="Дыра"))
     poll_and_deliver(tracker, clock, days=2)
@@ -497,7 +497,7 @@ def test_the_owners_watched_marks_survive_a_poll_and_new_episodes_are_stored(tra
 
     poll_and_deliver(tracker, clock, days=2)
 
-    card = tracker.title_card(title_id)
+    card = run(tracker.title_card(title_id))
     assert card.seasons.watched == (1,)
     assert card.seasons.current.total == 12
     with session_factory() as s:

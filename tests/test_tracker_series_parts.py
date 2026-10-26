@@ -117,7 +117,7 @@ def poll_and_deliver(tracker, clock, **advance):
 
 
 def card_text(tracker, title_id):
-    return format_card(tracker.title_card(title_id))
+    return format_card(run(tracker.title_card(title_id)))
 
 
 def dedup_keys(session_factory, event_type):
@@ -174,7 +174,7 @@ def test_the_card_of_a_running_second_part_counts_only_that_part(tracker, source
 
 
 def test_the_threshold_is_six_weeks_until_the_owner_changes_it(tracker, source):
-    assert tracker.part_gap_weeks() == 6
+    assert run(tracker.part_gap_weeks()) == 6
 
     # a five-week break
     first = weekly("2026-08-03", 1, 4)
@@ -184,7 +184,7 @@ def test_the_threshold_is_six_weeks_until_the_owner_changes_it(tracker, source):
 
     run(tracker.set_part_gap_weeks(4))
 
-    assert tracker.part_gap_weeks() == 4
+    assert run(tracker.part_gap_weeks()) == 4
     assert "Сезон 3, часть 2: вышло 4 из 4" in card_text(tracker, title_id)  # part 1 ended, part 2 is out too
 
 
@@ -194,14 +194,14 @@ def test_the_threshold_survives_a_restart(session_factory, clock, sender, source
 
     second = Tracker(session_factory, clock=clock, sender=sender, sources={"series": source})
 
-    assert second.part_gap_weeks() == 10
+    assert run(second.part_gap_weeks()) == 10
 
 
 def test_a_threshold_below_one_week_is_refused(tracker):
     with pytest.raises(ValueError):
         run(tracker.set_part_gap_weeks(0))
 
-    assert tracker.part_gap_weeks() == 6
+    assert run(tracker.part_gap_weeks()) == 6
 
 
 # --- события: часть началась / закончилась ------------------------------------------------------------

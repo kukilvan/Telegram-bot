@@ -124,7 +124,7 @@ def tracker(session_factory, clock, series):
 
 def card_text(tracker, external_id):
     result = run(tracker.add_title("series", external_id))
-    return format_card(tracker.title_card(result.title_id))
+    return format_card(run(tracker.title_card(result.title_id)))
 
 
 # --- adding a series ----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ def card_text(tracker, external_id):
 def test_added_series_is_in_the_list_with_status_want(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    [entry] = tracker.list_titles()
+    [entry] = run(tracker.list_titles())
     assert result.created is True
     assert (entry.kind, entry.name, entry.year, entry.status) == ("series", "Укрытие", 2023, "want")
 
@@ -164,7 +164,7 @@ def test_unknown_series_id_is_reported_and_nothing_is_stored(tracker):
     with pytest.raises(TitleNotFound):
         run(tracker.add_title("series", "1"))
 
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 # --- what the card says about seasons ------------------------------------------------------------
@@ -191,10 +191,10 @@ def test_airing_season_shows_progress_and_the_next_episode_day(tracker, clock):
 def test_an_episode_counts_as_released_only_when_its_moment_has_come(tracker, clock):
     clock.now = datetime(2026, 10, 11, 23, 59, tzinfo=timezone.utc)
     result = run(tracker.add_title("series", "200"))
-    assert tracker.title_card(result.title_id).seasons.current.released == 5
+    assert run(tracker.title_card(result.title_id)).seasons.current.released == 5
 
     clock.now = datetime(2026, 10, 12, 0, 0, tzinfo=timezone.utc)
-    assert tracker.title_card(result.title_id).seasons.current.released == 6
+    assert run(tracker.title_card(result.title_id)).seasons.current.released == 6
 
 
 def test_a_new_show_without_aired_episodes_is_announced_not_zero_of_six(tracker):
@@ -231,11 +231,11 @@ def test_only_the_nearest_announced_season_gets_a_line(tracker):
 def test_season_zero_is_not_a_season(tracker):
     result = run(tracker.add_title("series", "205"))
 
-    text = format_card(tracker.title_card(result.title_id))
+    text = format_card(run(tracker.title_card(result.title_id)))
 
     assert "Сезон 0" not in text
     assert "Сезон 1: вышло 4 из 4" in text
-    assert [s.number for s in tracker.watchable_seasons(result.title_id)] == [1]
+    assert [s.number for s in run(tracker.watchable_seasons(result.title_id))] == [1]
 
 
 def test_series_card_has_names_year_genres_and_status(tracker):
@@ -253,7 +253,7 @@ def test_series_card_has_names_year_genres_and_status(tracker):
 def test_seasons_with_released_episodes_can_be_marked_the_announced_one_cannot(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    choices = tracker.watchable_seasons(result.title_id)
+    choices = run(tracker.watchable_seasons(result.title_id))
 
     assert [(c.number, c.watched) for c in choices] == [(1, False), (2, False), (3, False)]
 
@@ -263,11 +263,11 @@ def test_marked_seasons_show_on_the_card_and_unmarking_removes_them(tracker):
 
     run(tracker.set_season_watched(result.title_id, 1, True))
     run(tracker.set_season_watched(result.title_id, 2, True))
-    assert "Просмотрены сезоны: 1, 2" in format_card(tracker.title_card(result.title_id))
-    assert [c.watched for c in tracker.watchable_seasons(result.title_id)] == [True, True, False]
+    assert "Просмотрены сезоны: 1, 2" in format_card(run(tracker.title_card(result.title_id)))
+    assert [c.watched for c in run(tracker.watchable_seasons(result.title_id))] == [True, True, False]
 
     run(tracker.set_season_watched(result.title_id, 1, False))
-    assert "Просмотрены сезоны: 2" in format_card(tracker.title_card(result.title_id))
+    assert "Просмотрены сезоны: 2" in format_card(run(tracker.title_card(result.title_id)))
 
 
 def test_marking_twice_is_harmless(tracker):
@@ -276,7 +276,7 @@ def test_marking_twice_is_harmless(tracker):
     run(tracker.set_season_watched(result.title_id, 3, True))
     run(tracker.set_season_watched(result.title_id, 3, True))
 
-    assert tracker.title_card(result.title_id).seasons.watched == (3,)
+    assert run(tracker.title_card(result.title_id)).seasons.watched == (3,)
 
 
 def test_a_card_without_marks_has_no_watched_line(tracker):
@@ -299,7 +299,7 @@ def test_marking_a_season_while_others_are_unwatched_makes_the_series_in_progres
 
     run(tracker.set_season_watched(result.title_id, 3, True))
 
-    assert tracker.list_titles()[0].status == "in_progress"  # the other seasons are still unwatched; the automatic statuses are in test_tracker_series_statuses
+    assert run(tracker.list_titles())[0].status == "in_progress"  # the other seasons are still unwatched; the automatic statuses are in test_tracker_series_statuses
 
 
 # --- buttons ------------------------------------------------------------------------------------
@@ -308,7 +308,7 @@ def test_marking_a_season_while_others_are_unwatched_makes_the_series_in_progres
 def test_series_card_offers_the_seasons_button_and_not_watched(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    actions = card_actions(tracker.title_card(result.title_id))
+    actions = card_actions(run(tracker.title_card(result.title_id)))
 
     assert [a.name for a in actions] == [SEASONS, DELETE]
     assert actions[0].arg == result.title_id

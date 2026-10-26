@@ -424,11 +424,11 @@ def test_the_event_is_one_per_title_with_the_pass_stamp(tracker, source, clock, 
 
 
 def test_an_old_common_event_is_delivered_by_its_own_text(tracker, sender):
-    tracker.record_event(
+    run(tracker.record_event(
         failures.SOURCE_FAILED,
         {"text": "⚠️ TMDb не отвечает. Не удалось проверить 2 тайтла: А, Б. Повторю через 30 мин.", "source": "TMDb", "titles": ["А", "Б"]},
         "failure:TMDb:old:1,2",
-    )
+    ))
     run(tracker.deliver_pending())
 
     assert sender.messages == ["⚠️ TMDb не отвечает. Не удалось проверить 2 тайтла: А, Б. Повторю через 30 мин."]

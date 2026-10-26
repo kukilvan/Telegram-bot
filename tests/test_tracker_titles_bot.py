@@ -37,6 +37,10 @@ DUNE_3 = MovieSnapshot(
 )
 
 
+def run(coro):
+    return asyncio.run(coro)
+
+
 class FakeMovieSource:
     source_key = "tmdb_movie"
 
@@ -192,7 +196,7 @@ def test_picked_result_is_added_and_its_card_is_shown(tracker, replies):
     assert "Дюна: Часть вторая" in text and "Dune: Part Two" in text
     assert "27 февраля 2024" in text and "15 апреля 2024" in text
     assert "Хочу" in text
-    [entry] = tracker.list_titles()
+    [entry] = run(tracker.list_titles())
     assert entry.name == "Дюна: Часть вторая" and entry.status == "want"
 
 
@@ -204,7 +208,7 @@ def test_adding_the_same_movie_again_opens_the_card_without_a_duplicate(tracker,
     _, text, _ = replies[-1]
     assert "Уже в списке" in text
     assert "Дюна: Часть вторая" in text
-    assert len(tracker.list_titles()) == 1
+    assert len(run(tracker.list_titles())) == 1
 
 
 def test_unannounced_dates_read_not_announced(tracker, replies):
@@ -222,14 +226,14 @@ def test_source_failure_gives_a_friendly_answer_and_stores_nothing(tracker, movi
     chat.press(callback_of(replies[-1][2], "Часть вторая"))
 
     assert replies[-1][0] == "callback" and "TMDb" in replies[-1][1]
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_id_without_a_movie_is_answered_not_crashed(tracker, replies):
     Chat_(tracker).press("tpick:movie:1396")
 
     assert replies[-1][0] == "callback" and "не нашёл" in replies[-1][1].lower()
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_text_without_pressing_add_is_not_taken_as_a_search(tracker, movies, replies):
@@ -296,4 +300,4 @@ def test_stranger_gets_nothing_anywhere(tracker, movies, replies, with_middlewar
 
     assert replies == []
     assert movies.queries == []
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []

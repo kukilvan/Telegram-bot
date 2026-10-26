@@ -187,21 +187,21 @@ def pending_queue(session_factory) -> int:
 
 def test_a_deleted_movie_leaves_no_row_of_its_own_behind(tracker, movies, session_factory):
     title_id = add_movie(tracker, movies, theatrical=date(2027, 5, 5))
-    tracker.record_event("movie_date_announced", {"text": "x"}, "movie:1:date", title_id=title_id)
+    run(tracker.record_event("movie_date_announced", {"text": "x"}, "movie:1:date", title_id=title_id))
     run(tracker.deliver_pending())
-    tracker.record_event("movie_date_moved", {"text": "y"}, "movie:1:moved", title_id=title_id)  # still unsent
+    run(tracker.record_event("movie_date_moved", {"text": "y"}, "movie:1:moved", title_id=title_id))  # still unsent
     assert rows_left(session_factory) > 0
 
     run(tracker.delete_title(title_id))
 
     assert counts(session_factory) == {model.__tablename__: 0 for model in TITLE_TABLES}
-    assert tracker.list_titles() == []
-    assert tracker.title_card(title_id) is None
+    assert run(tracker.list_titles()) == []
+    assert run(tracker.title_card(title_id)) is None
 
 
 def test_a_deleted_series_takes_its_seasons_and_episodes_with_it(tracker, session_factory):
     title_id = run(tracker.add_title("series", "200")).title_id
-    tracker.record_event("series_ended", {"text": "x"}, "series:1:s1:ended", title_id=title_id)
+    run(tracker.record_event("series_ended", {"text": "x"}, "series:1:s1:ended", title_id=title_id))
     with session_factory() as s:
         assert s.scalar(select(func.count()).select_from(EpisodeRecord)) == 6
 
@@ -214,7 +214,7 @@ def test_a_deleted_anime_takes_its_parts_and_franchise_films_with_it(tracker, se
     title_id = run(tracker.add_title("anime", ABYSS)).title_id
     before = counts(session_factory)
     assert before["season_parts"] > 0 and before["franchise_movies"] > 0 and before["seasons"] > 0
-    tracker.record_event("anime_movie_out", {"text": "x"}, "anime:1:movie:1", title_id=title_id)
+    run(tracker.record_event("anime_movie_out", {"text": "x"}, "anime:1:movie:1", title_id=title_id))
 
     run(tracker.delete_title(title_id))
 
@@ -224,13 +224,13 @@ def test_a_deleted_anime_takes_its_parts_and_franchise_films_with_it(tracker, se
 def test_the_other_titles_are_left_as_they_are(tracker, movies, session_factory):
     keep = add_movie(tracker, movies, DUNE_3, "Дюна: Часть третья")
     gone = add_movie(tracker, movies, DUNE)
-    tracker.record_event("movie_released", {"text": "keep"}, "keep", title_id=keep)
-    tracker.record_event("movie_released", {"text": "gone"}, "gone", title_id=gone)
-    tracker.record_event("test", {"text": "no title"}, "ping")
+    run(tracker.record_event("movie_released", {"text": "keep"}, "keep", title_id=keep))
+    run(tracker.record_event("movie_released", {"text": "gone"}, "gone", title_id=gone))
+    run(tracker.record_event("test", {"text": "no title"}, "ping"))
 
     run(tracker.delete_title(gone))
 
-    assert [t.id for t in tracker.list_titles()] == [keep]
+    assert [t.id for t in run(tracker.list_titles())] == [keep]
     with session_factory() as s:
         assert sorted(s.scalars(select(Event.dedup_key))) == ["keep", "ping"]
         assert s.scalar(select(func.count()).select_from(DeliveryItem)) == 2
@@ -246,7 +246,7 @@ def test_deleting_says_which_title_went(tracker, movies):
 
 def test_deleting_a_title_that_is_not_there_is_an_error_and_changes_nothing(tracker, movies, session_factory):
     keep = add_movie(tracker, movies)
-    tracker.record_event("movie_released", {"text": "keep"}, "keep", title_id=keep)
+    run(tracker.record_event("movie_released", {"text": "keep"}, "keep", title_id=keep))
     before = counts(session_factory)
 
     with pytest.raises(UnknownTitle):
@@ -270,7 +270,7 @@ def test_deleting_twice_is_an_error_the_second_time(tracker, movies):
 
 def test_an_unsent_event_of_a_deleted_title_never_reaches_the_owner(tracker, movies, sender):
     title_id = add_movie(tracker, movies)
-    tracker.record_event("movie_released", {"text": "🎬 Дюна — вышел в кино"}, "k", title_id=title_id)
+    run(tracker.record_event("movie_released", {"text": "🎬 Дюна — вышел в кино"}, "k", title_id=title_id))
 
     run(tracker.delete_title(title_id))
     report = run(tracker.deliver_pending())
@@ -298,7 +298,7 @@ def test_a_new_title_with_the_number_of_a_deleted_one_gets_its_own_events(tracke
     run(tracker.deliver_pending())
 
     assert len(sender.sent) == 2  # the old dedup key did not silence the new title
-    assert [t.status for t in tracker.list_titles()] == ["want"]
+    assert [t.status for t in run(tracker.list_titles())] == ["want"]
 
 
 def test_adding_a_deleted_title_again_starts_from_scratch(tracker, movies):
@@ -309,11 +309,11 @@ def test_adding_a_deleted_title_again_starts_from_scratch(tracker, movies):
     again = run(tracker.add_title("movie", DUNE))
 
     assert again.created is True
-    assert tracker.title_card(again.title_id).status == "want"
+    assert run(tracker.title_card(again.title_id)).status == "want"
 
 
 def test_an_event_cannot_be_recorded_for_a_title_that_is_gone(tracker, session_factory):
-    assert tracker.record_event("movie_released", {"text": "x"}, "orphan", title_id=999) is None
+    assert run(tracker.record_event("movie_released", {"text": "x"}, "orphan", title_id=999)) is None
 
     assert rows_left(session_factory) == 0
 
@@ -327,7 +327,7 @@ def test_the_database_itself_refuses_an_event_of_a_title_that_does_not_exist(ses
 
 def test_the_database_itself_removes_the_events_and_queue_of_a_deleted_title(tracker, movies, session_factory):
     title_id = add_movie(tracker, movies)
-    tracker.record_event("movie_released", {"text": "x"}, "k1", title_id=title_id)
+    run(tracker.record_event("movie_released", {"text": "x"}, "k1", title_id=title_id))
     with session_factory() as s:
         s.execute(delete(Title).where(Title.id == title_id))  # no help from the core
         s.commit()
@@ -336,7 +336,7 @@ def test_the_database_itself_removes_the_events_and_queue_of_a_deleted_title(tra
 
 
 def test_an_event_without_a_title_is_allowed(tracker, session_factory):
-    assert tracker.record_event("ping", {"text": "x"}, "k2") is not None
+    assert run(tracker.record_event("ping", {"text": "x"}, "k2")) is not None
 
 
 # --- the sequel announcement ---------------------------------------------------------------------
@@ -367,9 +367,9 @@ def test_a_title_followed_from_an_announcement_stays_after_the_original_is_delet
 
     run(tracker.delete_title(original))
 
-    assert [t.id for t in tracker.list_titles()] == [followed]
-    assert tracker.title_card(followed).title == "Дюна: Часть третья"
-    assert tracker.title_card(followed).status == "want"
+    assert [t.id for t in run(tracker.list_titles())] == [followed]
+    assert run(tracker.title_card(followed)).title == "Дюна: Часть третья"
+    assert run(tracker.title_card(followed)).status == "want"
 
 
 def test_a_delivered_announcement_goes_with_the_film_and_leaves_no_event_or_queue_entry(
@@ -393,7 +393,7 @@ def test_the_follow_button_under_an_old_announcement_still_works_after_the_film_
     result = run(tracker.follow_sequel_of("movie", DUNE_3))  # the button carries the kind and the id, not the event
 
     assert result.created is True
-    assert [t.name for t in tracker.list_titles()] == ["Дюна: Часть третья"]
+    assert [t.name for t in run(tracker.list_titles())] == ["Дюна: Часть третья"]
 
 
 def test_the_old_kind_of_follow_button_needs_its_event_and_says_so_when_it_is_gone(
@@ -474,7 +474,7 @@ def test_deleting_a_title_while_it_is_polled_does_not_break_the_poll(tracker, mo
 
     assert report.failed == 0 and report.notices == 0
     assert [r for r in caplog.records if r.levelno >= logging.WARNING] == []
-    assert [t.id for t in tracker.list_titles()] == [keep]
+    assert [t.id for t in run(tracker.list_titles())] == [keep]
     with session_factory() as s:
         assert {e.title_id for e in s.scalars(select(Event))} <= {keep}
 
@@ -507,8 +507,8 @@ def test_deleting_a_title_while_a_message_is_on_its_way_does_not_break_the_deliv
 ):
     gone = add_movie(tracker, movies)
     other = add_movie(tracker, movies, DUNE_3, "Дюна: Часть третья")
-    tracker.record_event("movie_released", {"text": "first"}, "a", title_id=gone)
-    tracker.record_event("movie_released", {"text": "second"}, "b", title_id=other)
+    run(tracker.record_event("movie_released", {"text": "first"}, "a", title_id=gone))
+    run(tracker.record_event("movie_released", {"text": "second"}, "b", title_id=other))
 
     async def delete_during_send():
         sender.before_send = None
@@ -520,6 +520,6 @@ def test_deleting_a_title_while_a_message_is_on_its_way_does_not_break_the_deliv
 
     assert report.failed == 0
     assert [r for r in caplog.records if r.levelno >= logging.WARNING] == []
-    assert [t.id for t in tracker.list_titles()] == [other]
+    assert [t.id for t in run(tracker.list_titles())] == [other]
     with session_factory() as s:
         assert [e.dedup_key for e in s.scalars(select(Event))] == ["b"]

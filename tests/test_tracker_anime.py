@@ -62,7 +62,7 @@ def add(tracker, external_id):
 
 
 def card(tracker, external_id):
-    return format_card(tracker.title_card(add(tracker, external_id).title_id))
+    return format_card(run(tracker.title_card(add(tracker, external_id).title_id)))
 
 
 # --- adding a franchise --------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def card(tracker, external_id):
 def test_the_franchise_is_one_title_named_after_its_first_season(tracker):
     result = add(tracker, JJK)
 
-    [entry] = tracker.list_titles()
+    [entry] = run(tracker.list_titles())
     assert result.created is True
     assert (entry.kind, entry.name, entry.year, entry.status) == ("anime", "Магическая битва", 2020, "want")
 
@@ -113,7 +113,7 @@ def test_an_unknown_entry_is_reported_and_nothing_is_stored(tracker):
     with pytest.raises(TitleNotFound):
         add(tracker, "999999")
 
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_shikimori_failure_stores_nothing(tracker, shikimori):
@@ -122,7 +122,7 @@ def test_shikimori_failure_stores_nothing(tracker, shikimori):
     with pytest.raises(ConnectionError):
         add(tracker, JJK)
 
-    assert tracker.list_titles() == []
+    assert run(tracker.list_titles()) == []
 
 
 def test_the_search_offers_one_suggestion_per_franchise(tracker):
@@ -151,7 +151,7 @@ def test_jujutsu_kaisen_card_has_four_seasons_and_the_film_apart(tracker):
     assert "Сезон 3: вышло 12 из 12" in text
     assert "Сезон 4 анонсирован, дата не объявлена" in text
     assert "Фильмы франшизы: Магическая битва 0. Фильм (2021)" in text
-    assert [s.number for s in tracker.watchable_seasons(1)] == [1, 2, 3]  # season 4 has nothing to watch yet
+    assert [s.number for s in run(tracker.watchable_seasons(1))] == [1, 2, 3]  # season 4 has nothing to watch yet
 
 
 def test_kusuriya_card_names_the_part_of_the_third_season(tracker):
@@ -268,8 +268,8 @@ def test_the_seasons_offered_for_marking_are_those_with_a_released_episode(track
     jjk = add(tracker, JJK).title_id
     kusuriya = add(tracker, KUSURIYA).title_id
 
-    assert [s.number for s in tracker.watchable_seasons(jjk)] == [1, 2, 3]
-    assert [s.number for s in tracker.watchable_seasons(kusuriya)] == [1, 2, 3]  # season 3 has begun
+    assert [s.number for s in run(tracker.watchable_seasons(jjk))] == [1, 2, 3]
+    assert [s.number for s in run(tracker.watchable_seasons(kusuriya))] == [1, 2, 3]  # season 3 has begun
 
 
 def test_a_franchise_of_films_alone_has_no_seasons_to_mark_and_no_button_for_it(tracker, shikimori):
@@ -278,9 +278,9 @@ def test_a_franchise_of_films_alone_has_no_seasons_to_mark_and_no_button_for_it(
 
     title = add(tracker, "8001").title_id
 
-    assert tracker.watchable_seasons(title) == []
-    assert "Сезонов пока нет" in format_card(tracker.title_card(title))
-    assert [a.name for a in card_actions(tracker.title_card(title))] == [DELETE]  # only «Удалить»
+    assert run(tracker.watchable_seasons(title)) == []
+    assert "Сезонов пока нет" in format_card(run(tracker.title_card(title)))
+    assert [a.name for a in card_actions(run(tracker.title_card(title)))] == [DELETE]  # only «Удалить»
 
 
 def test_a_part_without_a_count_and_nothing_out_does_not_overlap_the_next_one(tracker, shikimori, session_factory):
@@ -298,8 +298,8 @@ def test_marking_every_released_season_makes_the_title_wait_for_the_next_one(tra
     for number in (1, 2, 3):
         run(tracker.set_season_watched(title, number, True))
 
-    assert tracker.title_card(title).status == "waiting"
-    assert "Просмотрены сезоны: 1, 2, 3" in format_card(tracker.title_card(title))
+    assert run(tracker.title_card(title)).status == "waiting"
+    assert "Просмотрены сезоны: 1, 2, 3" in format_card(run(tracker.title_card(title)))
 
 
 def test_some_seasons_marked_make_the_anime_in_progress(tracker):
@@ -308,7 +308,7 @@ def test_some_seasons_marked_make_the_anime_in_progress(tracker):
     run(tracker.set_season_watched(title, 1, True))
     run(tracker.set_season_watched(title, 2, True))
 
-    assert tracker.title_card(title).status == "in_progress"  # season 3 is on air and not watched
+    assert run(tracker.title_card(title)).status == "in_progress"  # season 3 is on air and not watched
 
 
 def test_the_mark_belongs_to_the_season_and_covers_its_parts(tracker):
@@ -316,4 +316,4 @@ def test_the_mark_belongs_to_the_season_and_covers_its_parts(tracker):
 
     run(tracker.set_season_watched(title, 3, True))
 
-    assert [(s.number, s.watched) for s in tracker.watchable_seasons(title)] == [(1, False), (2, False), (3, True)]
+    assert [(s.number, s.watched) for s in run(tracker.watchable_seasons(title))] == [(1, False), (2, False), (3, True)]

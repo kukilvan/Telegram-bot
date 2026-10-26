@@ -253,8 +253,8 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Такого момента больше нет, откройте меню заново.")
             return
         try:
-            moment = tracker.window_test_moment(scenario)
-            tz = tracker.delivery_rules().tz
+            moment = await tracker.window_test_moment(scenario)
+            tz = (await tracker.delivery_rules()).tz
             result = await tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment)
         except Exception as exc:
             logging.warning("window test failed: %s", mask_secrets(repr(exc)))
@@ -351,13 +351,13 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             return
         await callback.answer()
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"
-        await send_card(callback, tracker.title_card(result.title_id), heading)
+        await send_card(callback, await tracker.title_card(result.title_id), heading)
         if result.created:
             await ask_watched_seasons(callback, result.title_id)
 
     async def ask_watched_seasons(callback: CallbackQuery, title_id: int) -> bool:
         """Offer the seasons with released episodes for marking. False: a movie or nothing is out yet."""
-        seasons = tracker.watchable_seasons(title_id)
+        seasons = await tracker.watchable_seasons(title_id)
         if not seasons or callback.message is None:
             return False
         await callback.message.answer(_ASK_SEASONS, reply_markup=seasons_markup(title_id, seasons))
@@ -375,7 +375,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         if not is_owner(message.from_user):
             return
         forget_pending(message.from_user)
-        titles = tracker.list_titles()
+        titles = await tracker.list_titles()
         if not titles:
             await message.answer(f"Список пуст. Нажмите «{ADD_BUTTON}», чтобы добавить первый фильм.")
             return
@@ -395,7 +395,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await message.answer(header, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
 
     async def show_card_of(callback: CallbackQuery, title_id: int) -> None:
-        card = tracker.title_card(title_id)
+        card = await tracker.title_card(title_id)
         if card is None:
             await callback.answer(_NOT_IN_LIST)
             return
@@ -435,7 +435,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Уже отмечено как просмотренное.")
             return
         await callback.answer("Отмечено как просмотренное")
-        card = tracker.title_card(title_id)
+        card = await tracker.title_card(title_id)
         if callback.message is not None and card is not None:
             await callback.message.answer(
                 f"✅ Просмотрено: {card.title}\nФильм в архиве. Раз в неделю я проверю, не анонсировано ли продолжение."
@@ -467,10 +467,10 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await drop_buttons(callback)
         await callback.answer()
         heading = "✅ Продолжение добавлено в список" if result.created else "Уже в списке"
-        await send_card(callback, tracker.title_card(result.title_id), heading)
+        await send_card(callback, await tracker.title_card(result.title_id), heading)
 
     async def open_seasons_choice(callback: CallbackQuery, title_id: int) -> None:
-        if tracker.title_card(title_id) is None:
+        if await tracker.title_card(title_id) is None:
             await callback.answer(_NOT_IN_LIST)
             return
         if not await ask_watched_seasons(callback, title_id):
@@ -486,19 +486,19 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Эта кнопка больше не работает.")
             return
         title_id = int(raw_id)
-        if tracker.title_card(title_id) is None:
+        if await tracker.title_card(title_id) is None:
             await callback.answer(_NOT_IN_LIST)
             return
         if raw_number == _DONE:
             await drop_buttons(callback)
             await callback.answer("Готово")
-            await send_card(callback, tracker.title_card(title_id))
+            await send_card(callback, await tracker.title_card(title_id))
             return
         if not (raw_number.isascii() and raw_number.isdigit()):
             await callback.answer("Эта кнопка больше не работает.")
             return
         number = int(raw_number)
-        marks = {s.number: s.watched for s in tracker.watchable_seasons(title_id)}
+        marks = {s.number: s.watched for s in await tracker.watchable_seasons(title_id)}
         try:
             if number not in marks:
                 raise UnknownSeason(f"{title_id}:{number}")
@@ -516,7 +516,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await callback.answer()
         try:
             await callback.message.edit_reply_markup(
-                reply_markup=seasons_markup(title_id, tracker.watchable_seasons(title_id))
+                reply_markup=seasons_markup(title_id, await tracker.watchable_seasons(title_id))
             )
         except Exception as exc:  # the marks are saved; a stale message only keeps its old look
             logging.debug("could not refresh the season buttons: %s", mask_secrets(repr(exc)))
@@ -524,7 +524,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     # --- «Удалить» ------------------------------------------------------------------------------
 
     async def ask_delete(callback: CallbackQuery, title_id: int) -> None:
-        card = tracker.title_card(title_id)
+        card = await tracker.title_card(title_id)
         if card is None:
             await callback.answer(_NOT_IN_LIST)
             return
@@ -564,7 +564,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     # --- «Удалить несколько» --------------------------------------------------------------------
 
     async def open_selection(callback: CallbackQuery) -> None:
-        titles = tracker.list_titles()[:MAX_LIST_BUTTONS]
+        titles = (await tracker.list_titles())[:MAX_LIST_BUTTONS]
         if not titles:
             await callback.answer("Список пуст, удалять нечего.")
             return
@@ -598,7 +598,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
                 return
             try:
                 await callback.message.edit_reply_markup(
-                    reply_markup=_selection_markup(selection_id, tracker.list_titles()[:MAX_LIST_BUTTONS], chosen)
+                    reply_markup=_selection_markup(selection_id, (await tracker.list_titles())[:MAX_LIST_BUTTONS], chosen)
                 )
             except Exception as exc:  # the marks are kept; a stale message only keeps its old look
                 logging.debug("could not refresh the selection buttons: %s", mask_secrets(repr(exc)))
@@ -614,7 +614,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Эта кнопка больше не работает.")
 
     async def ask_delete_selected(callback: CallbackQuery, selection_id: str, chosen: set[int]) -> None:
-        names = [t.name for t in tracker.list_titles() if t.id in chosen]
+        names = [t.name for t in await tracker.list_titles() if t.id in chosen]
         if not names:
             await callback.answer("Ничего не выбрано, удалять нечего.")
             return
@@ -634,7 +634,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def delete_selected(callback: CallbackQuery, chosen: set[int]) -> None:
         selections.pop(callback.from_user.id, None)  # one question, one answer
         await drop_buttons(callback)
-        names = {t.id: t.name for t in tracker.list_titles()}
+        names = {t.id: t.name for t in await tracker.list_titles()}
         removed: list[str] = []
         failed: list[str] = []
         for title_id in sorted(chosen):

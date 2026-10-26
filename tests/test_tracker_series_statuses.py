@@ -114,7 +114,7 @@ def mark(tracker, title_id, *numbers, watched=True):
 
 
 def status(tracker, title_id):
-    return next(t.status for t in tracker.list_titles() if t.id == title_id)
+    return next(t.status for t in run(tracker.list_titles()) if t.id == title_id)
 
 
 def tracking(session_factory, title_id):
@@ -339,7 +339,7 @@ def test_the_closing_event_still_arrives_and_the_card_shows_the_new_status(track
     poll(tracker, clock, days=8)
 
     assert any("сериал закрыт" in message for message in sender.sent)
-    assert format_card(tracker.title_card(title_id)).splitlines()[0] == "📺 Сериал · Просмотрено"
+    assert format_card(run(tracker.title_card(title_id))).splitlines()[0] == "📺 Сериал · Просмотрено"
 
 
 @pytest.mark.parametrize(
@@ -348,7 +348,7 @@ def test_the_closing_event_still_arrives_and_the_card_shows_the_new_status(track
 )
 def test_the_card_names_every_status_in_russian(tracker, source, raw, label):
     title_id = add(tracker, source, OPEN)
-    card = tracker.title_card(title_id)
+    card = run(tracker.title_card(title_id))
 
     assert format_card(replace(card, status=raw)).splitlines()[0] == f"📺 Сериал · {label}"
 

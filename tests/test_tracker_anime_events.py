@@ -93,7 +93,7 @@ def tracker(session_factory, clock, sender, shikimori, anilist):
         clock=clock,
         sender=sender,
         sources={"anime": ShikimoriAnimeSource(shikimori, anilist)},
-        local_tz=ISRAEL,
+        default_tz=ISRAEL,
     )
 
 
@@ -227,7 +227,7 @@ def test_the_change_of_the_current_part_is_not_lost_when_anilist_has_no_data_for
 ):
     anilist = real_anilist(without=() if known_to_anilist else (62841,))
     tracker = Tracker(
-        session_factory, clock=clock, sender=sender, local_tz=ISRAEL,
+        session_factory, clock=clock, sender=sender, default_tz=ISRAEL,
         sources={"anime": ShikimoriAnimeSource(shikimori, anilist)},
     )
     finish_first_part_of_season_three(shikimori, anilist)
@@ -391,7 +391,7 @@ def test_a_schedule_numbered_on_through_the_season_is_not_taken_for_the_parts_ow
 
 
 def card_line(tracker, title_id):
-    return next(line for line in format_card(tracker.title_card(title_id)).splitlines() if line.startswith("Сезон 3"))
+    return next(line for line in format_card(run(tracker.title_card(title_id))).splitlines() if line.startswith("Сезон 3"))
 
 
 @pytest.mark.parametrize("break_it", [
@@ -526,13 +526,13 @@ def test_a_new_season_takes_a_waiting_anime_to_in_progress(tracker, shikimori, c
     title = add(tracker, JJK)
     for number in (1, 2, 3):
         run(tracker.set_season_watched(title, number, True))
-    assert tracker.title_card(title).status == "waiting"
+    assert run(tracker.title_card(title)).status == "waiting"
     announce_the_fourth_season(shikimori)
     start_the_fourth_season(shikimori)
 
     poll_and_deliver(tracker, clock, days=15)  # the premiere day, 5 Nov, has passed
 
-    assert tracker.title_card(title).status == "in_progress"
+    assert run(tracker.title_card(title)).status == "in_progress"
 
 
 def test_a_waiting_anime_is_still_polled(tracker, shikimori, clock):
@@ -546,7 +546,7 @@ def test_a_waiting_anime_is_still_polled(tracker, shikimori, clock):
 def test_an_in_progress_anime_is_still_polled(tracker, shikimori, clock):
     title = add(tracker, JJK)
     run(tracker.set_season_watched(title, 1, True))
-    assert tracker.title_card(title).status == "in_progress"
+    assert run(tracker.title_card(title)).status == "in_progress"
 
     assert poll_and_deliver(tracker, clock, hours=25).polled == 1
 
@@ -618,7 +618,37 @@ def test_an_anime_is_looked_at_only_when_its_time_has_come(tracker, anilist, clo
 def test_the_card_shows_the_next_episode_in_the_owners_time(tracker):
     title = add(tracker, KUSURIYA)
 
-    assert "Сезон 3, часть 1: вышло 4 из 12, следующая — пт, 30 окт в 16:00" in format_card(tracker.title_card(title))
+    assert "Сезон 3, часть 1: вышло 4 из 12, следующая — пт, 30 окт в 16:00" in format_card(run(tracker.title_card(title)))
+
+
+def test_a_new_time_zone_changes_the_hour_of_episodes_in_the_card_at_once(tracker):
+    title = add(tracker, KUSURIYA)
+
+    run(tracker.set_delivery_rules(tz_name="Asia/Tokyo"))  # Israel is UTC+2 after 25 Oct, Tokyo UTC+9
+
+    assert "следующая — пт, 30 окт в 23:00" in format_card(run(tracker.title_card(title)))
+
+
+def test_without_a_setting_the_card_uses_the_time_zone_the_core_was_given(session_factory, clock, sender, shikimori, anilist):
+    tracker = Tracker(
+        session_factory, clock=clock, sender=sender, default_tz=ZoneInfo("Asia/Tokyo"),
+        sources={"anime": ShikimoriAnimeSource(shikimori, anilist)},
+    )
+    title = add(tracker, KUSURIYA)
+
+    assert "следующая — пт, 30 окт в 23:00" in format_card(run(tracker.title_card(title)))
+
+
+def test_a_new_time_zone_changes_the_hour_in_the_messages_at_once(tracker, shikimori, anilist, clock, sender):
+    finish_first_part_of_season_three(shikimori, anilist)
+    shikimori.by_id[K3_PART_2]["airedOn"] = {"date": "2026-11-20", "year": 2026}
+    add(tracker, KUSURIYA)
+    shikimori.by_id[K3_PART_2].update(status="ongoing", episodesAired=1, nextEpisodeAt=shikimori_at(2026, 11, 27))
+    run(tracker.set_delivery_rules(tz_name="Asia/Tokyo"))
+
+    poll_and_deliver(tracker, clock, days=28)
+
+    assert sender.sent[0].endswith("следующая: пт, 27 ноя в 23:00")
 
 
 def test_a_stored_season_keeps_its_parts_after_a_poll(tracker, clock, session_factory):
@@ -626,7 +656,7 @@ def test_a_stored_season_keeps_its_parts_after_a_poll(tracker, clock, session_fa
 
     poll_and_deliver(tracker, clock, hours=7)
 
-    assert "Сезон 3, часть 1:" in format_card(tracker.title_card(title))
+    assert "Сезон 3, часть 1:" in format_card(run(tracker.title_card(title)))
     with session_factory() as s:
         assert len(list(s.scalars(select(PartRecord)))) == 4
         assert len(list(s.scalars(select(SeasonRecord)))) == 3
