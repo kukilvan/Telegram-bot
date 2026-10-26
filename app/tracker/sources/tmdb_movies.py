@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
+from app.tracker.models import TitleKind
+
 THEATRICAL = 3
 DIGITAL = 4
 
@@ -22,7 +24,7 @@ SOURCE_KEY = "tmdb_movie"  # TMDb shares one id space between movies and series,
 class Suggestion:
     """One search result the owner can pick."""
 
-    kind: str
+    kind: TitleKind
     external_id: str
     name: str
     original_name: str
@@ -68,7 +70,7 @@ def _year(value: str | None) -> int | None:
 def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
     return [
         Suggestion(
-            kind="movie",
+            kind=TitleKind.MOVIE,
             external_id=str(item["id"]),
             name=item.get("title") or item.get("original_title") or "",
             original_name=item.get("original_title") or item.get("title") or "",

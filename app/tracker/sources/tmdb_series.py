@@ -12,11 +12,12 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, time
 from typing import Any
 
+from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "tmdb_tv"  # TMDb shares one id space between movies and series, so ids are namespaced by kind
-KIND = "series"
+KIND = TitleKind.SERIES
 
 __all__ = ["Suggestion", "SeriesSnapshot", "TmdbSeriesSource", "parse_search", "parse_show", "SOURCE_KEY"]
 

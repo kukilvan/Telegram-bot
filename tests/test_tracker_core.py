@@ -11,7 +11,7 @@ from sqlalchemy import select, text
 
 from app.tracker.core import TestSample, Tracker
 from app.tracker.db import create_tracker_engine, create_session_factory, migrate
-from app.tracker.models import DeliveryItem, Event
+from app.tracker.models import DeliveryItem, Event, TitleKind
 
 
 class FakeClock:
@@ -184,10 +184,10 @@ def test_new_samples_appear_in_the_menu_without_touching_the_core(tracker, sende
 
 
 def test_sources_are_given_from_outside(session_factory, clock, sender):
-    sources = {"tmdb": object()}
+    sources = {TitleKind.MOVIE: object()}
     tracker = Tracker(session_factory, clock=clock, sender=sender, sources=sources)
 
-    assert tracker.sources["tmdb"] is sources["tmdb"]
+    assert tracker.sources[TitleKind.MOVIE] is sources[TitleKind.MOVIE]
 
 
 def test_one_failing_event_does_not_stop_the_others(session_factory, clock):

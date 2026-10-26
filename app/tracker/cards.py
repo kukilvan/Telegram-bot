@@ -3,11 +3,17 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timezone, tzinfo
 
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.seasons import RELEASED, SeasonsView
 
-KIND_LABELS = {"movie": "Фильм", "series": "Сериал", "anime": "Аниме"}
-KIND_ICONS = {"movie": "🎬", "series": "📺", "anime": "🎌"}
-STATUS_LABELS = {"want": "Хочу", "in_progress": "В процессе", "waiting": "Жду", "to_finish": "Досмотреть", "watched": "Просмотрено"}
+STATUS_LABELS = {
+    TitleStatus.WANT: "Хочу",
+    TitleStatus.IN_PROGRESS: "В процессе",
+    TitleStatus.WAITING: "Жду",
+    TitleStatus.TO_FINISH: "Досмотреть",
+    TitleStatus.WATCHED: "Просмотрено",
+}
 _WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")
 
 _MONTHS = (
@@ -30,12 +36,12 @@ class MovieLine:
 @dataclass(frozen=True)
 class TitleCard:
     id: int
-    kind: str
+    kind: TitleKind
     name: str
     original_name: str
     year: int | None
     genres: list[str]
-    status: str
+    status: TitleStatus
     theatrical_date: date | None = None
     digital_date: date | None = None
     seasons: SeasonsView | None = None  # series and anime
@@ -119,13 +125,11 @@ def franchise_movies_line(movies: tuple[MovieLine, ...]) -> str:
 
 
 def format_card(card: TitleCard) -> str:
-    icon = KIND_ICONS.get(card.kind, "🎞")
-    kind = KIND_LABELS.get(card.kind, card.kind)
-    status = STATUS_LABELS.get(card.status, card.status)
+    kind = KINDS[card.kind]
     names = card.name
     if card.original_name and card.original_name != card.name:
         names = f"{card.name} · {card.original_name}"
-    lines = [f"{icon} {kind} · {status}", names]
+    lines = [f"{kind.icon} {kind.label} · {STATUS_LABELS[card.status]}", names]
     if card.year:
         lines.append(f"Год: {card.year}")
     if card.genres:

@@ -27,16 +27,17 @@ from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time, timezone
 from typing import Any, Protocol
 
+from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.sources.anilist_schedule import PartSchedule, parse_schedules
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "shikimori"
-KIND = "anime"
+KIND = TitleKind.ANIME
 
 RELEASED_STATUS = "released"  # Shikimori's word for an entry that has been out in full
-SEASON_KINDS = frozenset({"tv", "ona"})
-MOVIE_KIND = "movie"
+SEASON_KINDS = frozenset({"tv", "ona"})  # Shikimori's own kinds of catalogue entry, not our TitleKind
+MOVIE_KIND = "movie"  # Shikimori's word too: a film among the entries of the chain
 CHAIN_RELATIONS = ("prequel", "sequel")
 MIN_SEASON_MINUTES = 10  # a shorter tv/ona entry is a chibi short, not a season; unknown length passes
 NOT_FOR_SUGGESTIONS = frozenset({"pv", "cm", "music"})

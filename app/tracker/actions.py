@@ -6,7 +6,8 @@ from typing import Any
 
 from app.tracker import movie_events, sequel_events
 from app.tracker.cards import TitleCard
-from app.tracker.models import STATUS_WANT
+from app.tracker.kinds import is_seasonal
+from app.tracker.models import TitleStatus
 
 WATCHED = "watched"  # arg: title id
 FOLLOW = "follow"  # arg: "<kind>:<id of the sequel in its source>" (an old button: the id of the «sequel announced» event)
@@ -53,7 +54,7 @@ def card_actions(card: TitleCard) -> list[Action]:
     """Buttons under a title's card: «Посмотрел» until the movie is watched, the watched seasons of a series or an anime,
     and «Удалить» for any title."""
     delete = Action(_DELETE_LABEL, DELETE, card.id)
-    if card.kind in ("series", "anime"):
+    if is_seasonal(card.kind):
         has_seasons = card.seasons is not None and (card.seasons.current or card.seasons.announced)
         return [Action(_SEASONS_LABEL, SEASONS, card.id), delete] if has_seasons else [delete]
-    return [Action(_WATCHED_LABEL, WATCHED, card.id), delete] if card.status == STATUS_WANT else [delete]
+    return [Action(_WATCHED_LABEL, WATCHED, card.id), delete] if card.status == TitleStatus.WANT else [delete]

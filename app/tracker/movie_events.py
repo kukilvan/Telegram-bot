@@ -12,8 +12,10 @@ from datetime import date, timedelta
 from typing import Any
 
 from app.tracker.cards import format_date, format_short_date
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind
 
-ICON = "🎬"
+_ICON = KINDS[TitleKind.MOVIE].icon
 
 DATE_ANNOUNCED = "movie_date_announced"
 DATE_MOVED = "movie_date_moved"
@@ -67,19 +69,19 @@ def _released_by(value: date | None, day: date) -> bool:
 
 
 def message_announced(name: str, premiere: date) -> str:
-    return f"{ICON} {name} — объявлена дата премьеры\nПремьера в кино: {format_date(premiere)}"
+    return f"{_ICON} {name} — объявлена дата премьеры\nПремьера в кино: {format_date(premiere)}"
 
 
 def message_moved(name: str, old: date, new: date) -> str:
-    return f"{ICON} {name} — премьера перенесена\n{format_short_date(old)} → {format_short_date(new)}"
+    return f"{_ICON} {name} — премьера перенесена\n{format_short_date(old)} → {format_short_date(new)}"
 
 
 def message_released(name: str) -> str:
-    return f"{ICON} {name} — вышел в кино"
+    return f"{_ICON} {name} — вышел в кино"
 
 
 def message_digital(name: str) -> str:
-    return f"{ICON} {name} — вышел цифровой релиз"
+    return f"{_ICON} {name} — вышел цифровой релиз"
 
 
 def detect_events(

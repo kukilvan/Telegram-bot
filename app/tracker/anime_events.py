@@ -28,21 +28,23 @@ from typing import Any
 
 from app.tracker import series_events
 from app.tracker.cards import NOT_ANNOUNCED, format_date
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
 from app.tracker.seasons import Episode, Season
 from app.tracker.series_events import Flavor
 from app.tracker.sources.anilist_schedule import PartSchedule
 from app.tracker.sources.shikimori_anime import RELEASED_STATUS, SeasonPart
 
-ICON = "🎌"
-KEY_PREFIX = "anime"
+_ICON = KINDS[TitleKind.ANIME].icon
+KEY_PREFIX = TitleKind.ANIME.value  # the keys already stored start with the kind's value
 
 MOVIE_ANNOUNCED = "anime_movie_announced"
 MOVIE_RELEASED = "anime_movie_released"
 
 
 def flavor(tz: tzinfo | None) -> Flavor:
-    return Flavor(icon=ICON, key_prefix=KEY_PREFIX, tz=tz)
+    return Flavor(icon=_ICON, key_prefix=KEY_PREFIX, tz=tz)
 
 
 # --- putting the two sources together --------------------------------------------------------------
@@ -141,11 +143,11 @@ def assemble(
 
 def message_movie_announced(name: str, film: str, premiere: date | None) -> str:
     when = f"премьера: {format_date(premiere)}" if premiere else f"дата {NOT_ANNOUNCED}"
-    return f"{ICON} {name} — анонсирован фильм франшизы\n«{film}» · {when}"
+    return f"{_ICON} {name} — анонсирован фильм франшизы\n«{film}» · {when}"
 
 
 def message_movie_released(name: str, film: str) -> str:
-    return f"{ICON} {name} — вышел фильм франшизы\n«{film}»"
+    return f"{_ICON} {name} — вышел фильм франшизы\n«{film}»"
 
 
 def detect_movie_events(

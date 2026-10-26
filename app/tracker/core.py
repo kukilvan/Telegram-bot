@@ -30,12 +30,10 @@ from app.tracker import (
 )
 from app.tracker.actions import CARD, FOLLOW, WATCHED, Action, event_actions
 from app.tracker.cards import MovieLine, TitleCard
+from app.tracker.kinds import is_seasonal, seasonal_kinds
 from app.tracker.models import (
-    STATUS_IN_PROGRESS,
-    STATUS_WAITING,
-    STATUS_WANT,
-    STATUS_WATCHED,
     DeliveryItem,
+    DeliveryStatus,
     EpisodeRecord,
     Event,
     ExternalId,
@@ -45,6 +43,8 @@ from app.tracker.models import (
     SettingRecord,
     SourceSnapshot,
     Title,
+    TitleKind,
+    TitleStatus,
 )
 from app.utils.secrets_mask import mask_secrets
 
@@ -52,8 +52,8 @@ Clock = Callable[[], datetime]  # returns an aware datetime
 
 PRIMARY_ROLE = "primary"
 
-SEASONAL_KINDS = ("series", "anime")  # titles whose status follows the owner's season marks
-POLLED_STATUSES = (STATUS_WANT, STATUS_IN_PROGRESS, STATUS_WAITING)  # an own-release check runs for these, while tracking is on
+# an own-release check runs for these, while tracking is on
+POLLED_STATUSES = (TitleStatus.WANT, TitleStatus.IN_PROGRESS, TitleStatus.WAITING)
 
 PART_GAP_SETTING = "part_gap_weeks"
 DEFAULT_PART_GAP_WEEKS = season_logic.DEFAULT_PART_GAP // timedelta(weeks=1)  # the default lives in `seasons`
@@ -115,10 +115,10 @@ class TitleSummary:
     """One row of the list."""
 
     id: int
-    kind: str
+    kind: TitleKind
     name: str
     year: int | None
-    status: str
+    status: TitleStatus
 
 
 @dataclass(frozen=True)
@@ -176,7 +176,7 @@ class PollReport:
 @dataclass(frozen=True)
 class _DueTitle:
     id: int
-    kind: str
+    kind: TitleKind
     name: str
     external_id: str
     snapshot_source: str  # which of the title's snapshots is due: its release source or its sequel source
@@ -207,8 +207,8 @@ class Tracker:
     session_factory: sessionmaker
     clock: Clock
     sender: Sender
-    sources: Mapping[str, Any] = field(default_factory=dict)
-    sequel_sources: Mapping[str, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
+    sources: Mapping[TitleKind, Any] = field(default_factory=dict)
+    sequel_sources: Mapping[TitleKind, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
     default_tz: tzinfo = timezone.utc  # the time zone when the owner has set none (BOT_TIMEZONE); the set one is read from the database
     _samples: dict[str, TestSample] = field(init=False, default_factory=dict)
     _delivery_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
@@ -216,6 +216,9 @@ class Tracker:
     _write_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)  # one «add» writes at a time
 
     def __post_init__(self) -> None:
+        # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
+        self.sources = {TitleKind(kind): source for kind, source in self.sources.items()}
+        self.sequel_sources = {TitleKind(kind): source for kind, source in self.sequel_sources.items()}
         self.register_test_sample(TestSample("ping", "Проверка связи", _ping_payload))
         sample_texts = (
             movie_events.TEST_SAMPLES
@@ -290,7 +293,7 @@ class Tracker:
         if title_id is not None and session.get(Title, title_id) is None:
             session.rollback()
             return None
-        session.add(DeliveryItem(event_id=event.id, status="pending", attempts=0, created_at=now))
+        session.add(DeliveryItem(event_id=event.id, status=DeliveryStatus.PENDING, attempts=0, created_at=now))
         return event.id
 
     # --- settings -------------------------------------------------------------------------------
@@ -395,11 +398,11 @@ class Tracker:
 
     # --- titles ---------------------------------------------------------------------------------
 
-    async def search(self, kind: str, query: str) -> list[Any]:
+    async def search(self, kind: TitleKind, query: str) -> list[Any]:
         """Suggestions for `query` from the source of this kind. Raises KeyError for an unknown kind."""
         return await self.sources[kind].suggest(query)
 
-    async def add_title(self, kind: str, external_id: str) -> AddResult:
+    async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
         """Put a search result into the list with status «Хочу», or open the title that is already there."""
         source = self.sources[kind]
         existing = await asyncio.to_thread(self._find_title_id, source.source_key, external_id)
@@ -425,7 +428,7 @@ class Tracker:
                 )
             )
 
-    def _store_title(self, kind: str, source_key: str, snapshot: Any) -> AddResult:
+    def _store_title(self, kind: TitleKind, source_key: str, snapshot: Any) -> AddResult:
         now = _naive_utc(self.clock())
         with self.session_factory() as session:
             title = Title(
@@ -436,7 +439,7 @@ class Tracker:
                 genres=list(snapshot.genres),
                 poster_path=snapshot.poster_path,
                 overview=snapshot.overview,
-                status=STATUS_WANT,
+                status=TitleStatus.WANT,
                 tracking_enabled=True,
                 added_at=now,
                 status_changed_at=now,
@@ -473,19 +476,19 @@ class Tracker:
             return AddResult(title.id, created=True)
 
     @staticmethod
-    def _first_seasons(kind: str, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
+    def _first_seasons(kind: TitleKind, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
         """The seasons to store with a new title; an anime's episodes are put together from both its sources."""
-        if kind == "anime":
+        if kind == TitleKind.ANIME:
             return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now)
         return getattr(snapshot, "seasons", ())
 
     @staticmethod
     def _first_check(
-        kind: str, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime
+        kind: TitleKind, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime
     ) -> datetime | None:
-        if kind == "movie":
+        if kind == TitleKind.MOVIE:
             return now + movie_events.check_interval_for_state(state, now.date())
-        if kind in SEASONAL_KINDS:
+        if is_seasonal(kind):
             return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
         return None
 
@@ -580,7 +583,7 @@ class Tracker:
 
     def _refresh_status(self, session, title: Title) -> None:
         """Give a series the status that follows from its season marks and the state of the show."""
-        if title.kind not in SEASONAL_KINDS:
+        if not is_seasonal(title.kind):
             return
         now = _naive_utc(self.clock())
         loaded = self._load_seasons(session, title.id)
@@ -623,9 +626,9 @@ class Tracker:
             title = session.get(Title, title_id)
             if title is None:
                 raise UnknownTitle(title_id)
-            if title.status == STATUS_WATCHED:
+            if title.status == TitleStatus.WATCHED:
                 return WatchedResult(changed=False)
-            title.status = STATUS_WATCHED
+            title.status = TitleStatus.WATCHED
             title.status_changed_at = now
             title.tracking_enabled = False  # its own release is no longer followed
             sequel_source = self.sequel_sources.get(title.kind)
@@ -661,9 +664,13 @@ class Tracker:
     async def follow_sequel_of(self, kind: str, sequel_id: str) -> AddResult:
         """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it.
         The button names the sequel, so it works even when the announcement or its film is gone."""
-        if kind not in self.sequel_sources:
+        try:
+            title_kind = TitleKind(kind)  # `kind` is text from a button or a stored event
+        except ValueError:
+            raise UnknownKind(kind) from None
+        if title_kind not in self.sequel_sources:
             raise UnknownKind(kind)
-        return await self.add_title(kind, sequel_id)
+        return await self.add_title(title_kind, sequel_id)
 
     async def follow_sequel(self, event_id: int) -> AddResult:
         """The same for an old button, which holds only the number of the announcement: works while the event exists."""
@@ -695,7 +702,7 @@ class Tracker:
                 return None
             state = self._own_state(session, title_id)
             seasons_view = None
-            if title.kind in SEASONAL_KINDS:
+            if is_seasonal(title.kind):
                 loaded = self._load_seasons(session, title_id)
                 seasons_view = season_logic.summarize(
                     (season for _, season in loaded),
@@ -718,7 +725,7 @@ class Tracker:
                 digital_date=_parse_date(state.get("digital_date")),
                 seasons=seasons_view,
                 franchise_movies=tuple(MovieLine(m.name, m.aired_on, m.released) for m in movies),
-                tz=self._time_zone(session) if title.kind == "anime" else None,
+                tz=self._time_zone(session) if title.kind == TitleKind.ANIME else None,
             )
 
     # --- polling --------------------------------------------------------------------------------
@@ -754,11 +761,11 @@ class Tracker:
                     or_(
                         and_(
                             own,
-                            Title.kind.in_(("movie", *SEASONAL_KINDS)),
+                            Title.kind.in_((TitleKind.MOVIE, *seasonal_kinds())),
                             Title.status.in_(POLLED_STATUSES),
                             Title.tracking_enabled.is_(True),
                         ),
-                        and_(~own, Title.status == STATUS_WATCHED),
+                        and_(~own, Title.status == TitleStatus.WATCHED),
                     ),
                     (SourceSnapshot.next_check_at.is_(None)) | (SourceSnapshot.next_check_at <= now),
                 )
@@ -829,10 +836,10 @@ class Tracker:
                 session.commit()
         return queued
 
-    def _applier(self, kind: str) -> Callable[[_DueTitle, Any], int]:
-        if kind == "anime":
+    def _applier(self, kind: TitleKind) -> Callable[[_DueTitle, Any], int]:
+        if kind == TitleKind.ANIME:
             return self._apply_anime
-        return self._apply_series if kind == "series" else self._apply_snapshot
+        return self._apply_series if kind == TitleKind.SERIES else self._apply_snapshot
 
     def _apply_snapshot(self, due: _DueTitle, snapshot: Any) -> int:
         """Compare the fresh snapshot with the stored one, queue events, store the new state."""
@@ -1093,7 +1100,7 @@ class Tracker:
     def _all_delivered(self, event_ids: frozenset[int]) -> bool:
         with self.session_factory() as session:
             items = session.scalars(select(DeliveryItem).where(DeliveryItem.event_id.in_(event_ids))).all()
-            return len(items) == len(event_ids) and all(item.status == "delivered" for item in items)
+            return len(items) == len(event_ids) and all(item.status == DeliveryStatus.DELIVERED for item in items)
 
     async def delivery_check_moment(self, check: delivery.DeliveryCheck) -> datetime:
         """The next moment of the delivery check on the owner's clock, as an aware moment."""
@@ -1144,7 +1151,7 @@ class Tracker:
             query = (
                 select(DeliveryItem.id, DeliveryItem.created_at, Event)
                 .join(Event, Event.id == DeliveryItem.event_id)
-                .where(DeliveryItem.status == "pending")
+                .where(DeliveryItem.status == DeliveryStatus.PENDING)
                 .order_by(DeliveryItem.id)
             )
             if only is not None:
@@ -1221,7 +1228,7 @@ class Tracker:
                     continue
                 item.attempts += 1
                 if error is None:
-                    item.status = "delivered"
+                    item.status = DeliveryStatus.DELIVERED
                     item.last_error = None
                     item.delivered_at = now
                 else:

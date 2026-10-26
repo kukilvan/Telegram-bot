@@ -25,26 +25,22 @@ from collections.abc import Collection, Iterable
 from dataclasses import dataclass
 from datetime import datetime
 
-from app.tracker.models import (
-    STATUS_IN_PROGRESS,
-    STATUS_TO_FINISH,
-    STATUS_WAITING,
-    STATUS_WANT,
-    STATUS_WATCHED,
-)
+from app.tracker.models import TitleStatus
 from app.tracker.seasons import Season
 
-AUTOMATIC_STATUSES = frozenset({STATUS_WANT, STATUS_IN_PROGRESS, STATUS_WAITING, STATUS_TO_FINISH, STATUS_WATCHED})
+AUTOMATIC_STATUSES = frozenset(
+    {TitleStatus.WANT, TitleStatus.IN_PROGRESS, TitleStatus.WAITING, TitleStatus.TO_FINISH, TitleStatus.WATCHED}
+)
 
 
 @dataclass(frozen=True)
 class SeriesStatus:
-    status: str
+    status: TitleStatus
     tracking: bool  # whether the title's release is still followed
 
 
 def series_status(
-    current: str, seasons: Iterable[Season], watched: Collection[int], closed: bool, now: datetime
+    current: TitleStatus, seasons: Iterable[Season], watched: Collection[int], closed: bool, now: datetime
 ) -> SeriesStatus | None:
     """The status the title should have, or None when it should stay as it is."""
     if current not in AUTOMATIC_STATUSES:
@@ -55,11 +51,11 @@ def series_status(
     all_watched = all(number in watched for number in released)
     some_watched = any(number in watched for number in released)
     if closed and all_watched:
-        return SeriesStatus(STATUS_WATCHED, tracking=False)
+        return SeriesStatus(TitleStatus.WATCHED, tracking=False)
     if closed and some_watched:
-        return SeriesStatus(STATUS_TO_FINISH, tracking=False)
+        return SeriesStatus(TitleStatus.TO_FINISH, tracking=False)
     if all_watched and not closed:
-        return SeriesStatus(STATUS_WAITING, tracking=True)
+        return SeriesStatus(TitleStatus.WAITING, tracking=True)
     if some_watched:
-        return SeriesStatus(STATUS_IN_PROGRESS, tracking=True)
-    return SeriesStatus(STATUS_WANT, tracking=True)
+        return SeriesStatus(TitleStatus.IN_PROGRESS, tracking=True)
+    return SeriesStatus(TitleStatus.WANT, tracking=True)

@@ -16,6 +16,7 @@ from app.providers.shikimori import ShikimoriClient
 from app.providers.tmdb import TMDbProvider
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.models import TitleKind
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
@@ -62,11 +63,11 @@ async def main() -> None:
             clock=lambda: dt.now(tz=timezone.utc),
             sender=TelegramSender(bot, settings.owner_chat),
             sources={
-                "movie": TmdbMovieSource(tmdb),
-                "series": TmdbSeriesSource(tmdb),
-                "anime": ShikimoriAnimeSource(shikimori, anilist),
+                TitleKind.MOVIE: TmdbMovieSource(tmdb),
+                TitleKind.SERIES: TmdbSeriesSource(tmdb),
+                TitleKind.ANIME: ShikimoriAnimeSource(shikimori, anilist),
             },
-            sequel_sources={"movie": TmdbSequelSource(tmdb)},
+            sequel_sources={TitleKind.MOVIE: TmdbSequelSource(tmdb)},
             default_tz=time_zone_of(settings),
         )
         dp = build_dispatcher(tracker, allowed_ids)

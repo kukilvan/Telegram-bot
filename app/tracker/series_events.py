@@ -36,9 +36,9 @@ from app.tracker.movie_events import (
     SOON,
     DetectedEvent,
 )
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind
 from app.tracker.seasons import DEFAULT_PART_GAP, RELEASED as SEASON_RELEASED, Episode, Part, Season
-
-ICON = "📺"
 
 DATE_ANNOUNCED = "series_date_announced"
 SEASON_STARTED = "series_season_started"
@@ -58,8 +58,8 @@ class Flavor:
     """What differs between the kinds of title that share these events: the icon, the prefix of the dedup keys and
     whether the hour is told (and in which time zone)."""
 
-    icon: str = ICON
-    key_prefix: str = "series"
+    icon: str = KINDS[TitleKind.SERIES].icon
+    key_prefix: str = TitleKind.SERIES.value  # the keys already stored start with the kind's value
     tz: tzinfo | None = None  # None: the source knows only the day, so no hour is shown
 
     def day(self, moment: datetime) -> date:

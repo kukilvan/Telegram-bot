@@ -26,7 +26,7 @@ from aiogram.types import (
 
 from app.tracker import delivery
 from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
-from app.tracker.cards import KIND_ICONS, KIND_LABELS, TitleCard, format_card, format_when
+from app.tracker.cards import TitleCard, format_card, format_when
 from app.tracker.core import (
     TitleNotFound,
     TitleSummary,
@@ -37,6 +37,8 @@ from app.tracker.core import (
     UnknownTitle,
     WatchableSeason,
 )
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind
 from app.tracker.series_events import SAMPLE_EPISODES_ID
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
@@ -60,12 +62,7 @@ _BULK_OPEN, _BULK_TOGGLE, _BULK_GO, _BULK_YES, _BULK_NO = "open", "t", "go", "ye
 
 MAX_SUGGESTIONS = 10
 MAX_LIST_BUTTONS = 50
-_ASK_NAME = {
-    "movie": "Напишите название фильма (можно по-русски или по-английски).",
-    "series": "Напишите название сериала (можно по-русски или по-английски).",
-    "anime": "Напишите название аниме (можно по-русски или по-английски).",
-}
-_SOURCE_NAMES = {"movie": "TMDb", "series": "TMDb", "anime": "Shikimori"}  # where each kind comes from, for error texts
+_NO_SUCH_KIND = f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново."
 SUMMARY_COMMAND = "summary"
 BOT_COMMANDS = [BotCommand(command=SUMMARY_COMMAND, description="Сводка сейчас")]  # shown in Telegram's «/» menu
 START_TEXT = (
@@ -137,6 +134,14 @@ def _delete_question(names: Sequence[str]) -> str:
     return f"Удалить {quoted} из списка? Сезоны, отметки и накопленные события тоже сотрутся. Вернуть нельзя."
 
 
+def _kind_of(raw: str) -> TitleKind | None:
+    """The kind a button names; None for text that is no kind (a button of an older version of the bot)."""
+    try:
+        return TitleKind(raw)
+    except ValueError:
+        return None
+
+
 def _confirm_markup(yes: str, no: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -151,7 +156,7 @@ def _selection_markup(selection_id: str, titles: Sequence[TitleSummary], chosen:
     rows = [
         [
             InlineKeyboardButton(
-                text=f"{'✅' if t.id in chosen else KIND_ICONS.get(t.kind, '🎞')} {_title_button_text(t.name, t.year)}",
+                text=f"{'✅' if t.id in chosen else KINDS[t.kind].icon} {_title_button_text(t.name, t.year)}",
                 callback_data=f"{_BULK_PREFIX}{selection_id}:{_BULK_TOGGLE}:{t.id}",
             )
         ]
@@ -173,7 +178,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     owner = F.from_user.id.in_(frozenset(allowed_user_ids))
     router.message.filter(owner)
     router.callback_query.filter(owner)
-    awaiting_name: dict[int, str] = {}  # owner id -> kind whose name the next text message is
+    awaiting_name: dict[int, TitleKind] = {}  # owner id -> kind whose name the next text message is
     selections: dict[int, tuple[str, set[int]]] = {}  # owner id -> (id of the open selection, chosen ids); lost on restart
 
     def forget_pending(user) -> None:
@@ -271,20 +276,20 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def show_add_menu(message: Message) -> None:
         forget_pending(message.from_user)
         rows = [
-            [InlineKeyboardButton(text=KIND_LABELS.get(kind, kind), callback_data=f"{_ADD_KIND_PREFIX}{kind}")]
+            [InlineKeyboardButton(text=KINDS[kind].label, callback_data=f"{_ADD_KIND_PREFIX}{kind.value}")]
             for kind in tracker.sources
         ]
         await message.answer("Что добавить?", reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
 
     async def ask_name(callback: CallbackQuery) -> None:
-        kind = callback.data.removeprefix(_ADD_KIND_PREFIX)
-        if kind not in tracker.sources:
-            await callback.answer(f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново.")
+        kind = _kind_of(callback.data.removeprefix(_ADD_KIND_PREFIX))
+        if kind is None or kind not in tracker.sources:
+            await callback.answer(_NO_SUCH_KIND)
             return
         awaiting_name[callback.from_user.id] = kind
         await callback.answer()
         if callback.message is not None:
-            await callback.message.answer(_ASK_NAME.get(kind, "Напишите название."))
+            await callback.message.answer(KINDS[kind].ask_name)
 
     def is_name_for_search(message: Message) -> bool:
         text = message.text or ""
@@ -297,7 +302,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             suggestions = await tracker.search(kind, query)
         except Exception as exc:  # the source is a network client: tell the owner, keep the bot alive
             logging.warning("title search failed: %s", repr(exc))
-            await message.answer(f"Не удалось связаться с {_SOURCE_NAMES.get(kind, 'источником')}. Попробуйте чуть позже.")
+            await message.answer(f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже.")
             return
         if not suggestions:
             await message.answer(
@@ -307,7 +312,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         rows = [
             [
                 InlineKeyboardButton(
-                    text=_title_button_text(s.name, s.year), callback_data=f"{_PICK_PREFIX}{kind}:{s.external_id}"
+                    text=_title_button_text(s.name, s.year), callback_data=f"{_PICK_PREFIX}{kind.value}:{s.external_id}"
                 )
             ]
             for s in suggestions[:MAX_SUGGESTIONS]
@@ -317,18 +322,22 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         )
 
     async def add_picked(callback: CallbackQuery) -> None:
-        kind, _, external_id = callback.data.removeprefix(_PICK_PREFIX).partition(":")
+        raw_kind, _, external_id = callback.data.removeprefix(_PICK_PREFIX).partition(":")
+        kind = _kind_of(raw_kind)
+        if kind is None:
+            await callback.answer(_NO_SUCH_KIND)
+            return
         try:
             result = await tracker.add_title(kind, external_id)
         except KeyError:
-            await callback.answer(f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново.")
+            await callback.answer(_NO_SUCH_KIND)
             return
         except TitleNotFound:
-            await callback.answer(f"Не нашёл такой тайтл в {_SOURCE_NAMES.get(kind, 'источнике')}, попробуйте поискать заново.")
+            await callback.answer(f"Не нашёл такой тайтл в {KINDS[kind].source_name}, попробуйте поискать заново.")
             return
         except Exception as exc:
             logging.warning("adding a title failed: %s", repr(exc))
-            await callback.answer(f"Не удалось получить данные из {_SOURCE_NAMES.get(kind, 'источника')}. Попробуйте чуть позже.")
+            await callback.answer(f"Не удалось получить данные из {KINDS[kind].source_name}. Попробуйте чуть позже.")
             return
         await callback.answer()
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"
@@ -361,7 +370,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         rows = [
             [
                 InlineKeyboardButton(
-                    text=f"{KIND_ICONS.get(t.kind, '🎞')} {_title_button_text(t.name, t.year)}",
+                    text=f"{KINDS[t.kind].icon} {_title_button_text(t.name, t.year)}",
                     callback_data=f"{_CARD_PREFIX}{t.id}",
                 )
             ]

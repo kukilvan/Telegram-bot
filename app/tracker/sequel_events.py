@@ -10,9 +10,13 @@ from datetime import date, timedelta
 from typing import Any
 
 from app.tracker.cards import format_date
-from app.tracker.movie_events import ICON, DetectedEvent
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind
+from app.tracker.movie_events import DetectedEvent
 
 SEQUEL_ANNOUNCED = "movie_sequel_announced"
+
+_ICON = KINDS[TitleKind.MOVIE].icon
 
 INTERVAL = timedelta(days=7)  # an archived movie is looked at once a week, and only for sequels
 
@@ -61,10 +65,10 @@ def _parse(value: str | None) -> date | None:
 
 
 def message_sequel(name: str, sequel: str, premiere: date | None) -> str:
-    return f"{ICON} Анонсировано продолжение: {sequel}\nПродолжение фильма «{name}»\nПремьера: {format_date(premiere)}"
+    return f"{_ICON} Анонсировано продолжение: {sequel}\nПродолжение фильма «{name}»\nПремьера: {format_date(premiere)}"
 
 
-def detect_sequel_events(name: str, kind: str, old: Sequels, new: Sequels) -> list[DetectedEvent]:
+def detect_sequel_events(name: str, kind: TitleKind, old: Sequels, new: Sequels) -> list[DetectedEvent]:
     """Sequels in `new` that the previous snapshot did not hold. `new` must already keep the dropped parts."""
     known = {p.id for p in old.parts}
     return [
@@ -73,7 +77,7 @@ def detect_sequel_events(name: str, kind: str, old: Sequels, new: Sequels) -> li
             f"movie:sequel:{part.id}",  # one announcement per sequel: not per archived movie of the franchise
             message_sequel(name, part.name, part.date),
             {
-                "kind": kind,
+                "kind": kind.value,
                 "sequel_id": part.id,
                 "sequel_title": part.name,
                 "date": part.date.isoformat() if part.date else None,
