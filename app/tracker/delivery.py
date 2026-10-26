@@ -18,6 +18,7 @@ Failures of several titles of one source for one reason in one pass are folded i
 in a message of their own alike.
 """
 
+import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
@@ -26,6 +27,8 @@ from typing import Any
 from app.tracker import failures
 from app.tracker.cards import format_weekday_date, local_moment
 from app.tracker.series_events import EPISODE_OUT
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_WORKDAYS = frozenset({6, 0, 1, 2, 3})  # Sunday to Thursday; Monday is 0, as in `date.weekday()`
 DEFAULT_SUMMARY_AT = time(15, 0)
@@ -63,6 +66,15 @@ class DeliveryRules:
             return self.quiet_from <= at < self.quiet_until
         return at >= self.quiet_from or at < self.quiet_until  # they cross midnight
 
+    def check(self) -> None:
+        """The rules can send a summary: its hour is not inside the quiet hours (with no quiet hours there is nothing
+        to check). A ValueError says which hours clash."""
+        if self.is_quiet(datetime.combine(datetime.min, self.summary_at)):
+            raise ValueError(
+                f"час сводки {format_time(self.summary_at)} попадает в тихие часы "
+                f"{format_time(self.quiet_from)}–{format_time(self.quiet_until)}"
+            )
+
     def is_workday(self, local: datetime) -> bool:
         return local.weekday() in self.workdays
 
@@ -86,6 +98,12 @@ class DeliveryRules:
                 local, waited = datetime.combine(local.date(), self.summary_at), True
             else:
                 break
+        else:
+            if self.holds(self.utc(local)):  # rules stored before `check` existed: the summary hour is in the quiet hours
+                logger.warning(
+                    "delivery rules never open: summary hour %s, quiet hours %s–%s; the event waits at %s",
+                    format_time(self.summary_at), format_time(self.quiet_from), format_time(self.quiet_until), local,
+                )
         return (self.utc(local), True) if waited else (queued_at, False)
 
     def next_silence(self, moment: datetime) -> datetime | None:

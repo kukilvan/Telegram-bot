@@ -10,6 +10,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
+from app.tracker import movie_events
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import Event, SourceSnapshot
@@ -156,6 +157,68 @@ def test_a_second_move_is_a_new_event_but_the_same_move_is_not_repeated(tracker,
 
     assert len(sender.sent) == 2
     assert "22 янв 2027 → 5 мар 2027" in sender.sent[1]
+
+
+def moved_events(session_factory):
+    with session_factory() as s:
+        return list(s.scalars(select(Event).where(Event.type == "movie_date_moved").order_by(Event.id)))
+
+
+def test_a_move_there_and_back_and_there_again_is_three_events(tracker, source, clock, session_factory):
+    add(tracker, source, movie("1", theatrical=date(2026, 12, 15)))
+    for new_date in (date(2027, 1, 22), date(2026, 12, 15), date(2027, 1, 22)):
+        source.update(movie("1", theatrical=new_date))
+        poll_and_deliver(tracker, clock, days=2)
+
+    events = moved_events(session_factory)
+
+    assert [e.payload["new"] for e in events] == ["2027-01-22", "2026-12-15", "2027-01-22"]
+    assert len({e.dedup_key for e in events}) == 3
+
+
+def test_a_move_found_again_after_a_failed_save_is_one_event(tracker, source, clock, session_factory, monkeypatch):
+    add(tracker, source, movie("1", theatrical=date(2026, 12, 15)))
+    source.update(movie("1", theatrical=date(2027, 1, 22)))
+    with monkeypatch.context() as patch:
+        def broken(*args):
+            raise RuntimeError("database is locked")
+
+        patch.setattr(movie_events, "check_interval", broken)  # fails after the event is queued, before the state is saved
+        clock.advance(days=2)
+        run(tracker.poll_due())
+    assert len(moved_events(session_factory)) == 1
+
+    poll_and_deliver(tracker, clock, hours=1)  # the failed title is due again after 30 minutes
+
+    assert len(moved_events(session_factory)) == 1
+
+
+def test_a_move_queued_by_the_earlier_version_of_the_key_is_not_sent_again(tracker, source, clock, session_factory):
+    title_id = add(tracker, source, movie("1", theatrical=date(2026, 12, 15)))
+    source.update(movie("1", theatrical=date(2027, 1, 22)))
+    clock.advance(days=2)
+    # the earlier version queued the move under a key with only the new date, and then failed to save the state
+    run(tracker.record_event(
+        "movie_date_moved", {"text": "x", "new": "2027-01-22"}, f"movie:{title_id}:date_moved:2027-01-22", title_id=title_id
+    ))
+
+    run(tracker.poll_due())
+
+    assert len(moved_events(session_factory)) == 1
+
+
+def test_an_old_move_to_the_same_date_does_not_hide_a_new_one(tracker, source, clock, session_factory):
+    title_id = add(tracker, source, movie("1", theatrical=date(2026, 12, 15)))
+    run(tracker.record_event(  # a move to 22 Jan queued under the earlier key, long since saved and looked past
+        "movie_date_moved", {"text": "x", "new": "2027-01-22"}, f"movie:{title_id}:date_moved:2027-01-22", title_id=title_id
+    ))
+    clock.advance(days=1)
+    run(tracker.poll_due())  # a look with nothing new: the previous look is now later than that event
+    source.update(movie("1", theatrical=date(2027, 1, 22)))
+
+    poll_and_deliver(tracker, clock, days=2)
+
+    assert len(moved_events(session_factory)) == 2
 
 
 def test_movie_released_in_cinemas_is_delivered_once(tracker, source, clock, sender):
@@ -436,7 +499,8 @@ def test_events_are_stored_with_a_dedup_key_per_fact(tracker, source, clock, ses
 
     with session_factory() as s:
         [event] = list(s.scalars(select(Event)))
-    assert "2027-01-22" in event.dedup_key  # a move is keyed by its new date
+    assert "2027-01-22" in event.dedup_key  # a move is keyed by its new date ...
+    assert ":from:20261024T120000" in event.dedup_key  # ... and by the moment of the look it was seen from
 
 
 def test_a_failed_postponement_does_not_stop_the_pass(tracker, source, clock, sender, monkeypatch):

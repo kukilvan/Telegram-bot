@@ -353,6 +353,19 @@ def test_a_moved_episode_is_reported_once_and_the_one_after_the_move_arrives_on_
     ]
 
 
+def test_a_move_there_and_back_and_there_again_is_three_events(tracker, anilist, clock, session_factory):
+    add(tracker, KUSURIYA)
+    for moment in (datetime(2026, 11, 2, 14, 0), datetime(2026, 10, 30, 14, 0), datetime(2026, 11, 2, 14, 0)):
+        anilist.next_episode(AL_K3, 5, moment)
+        poll_and_deliver(tracker, clock, hours=7)
+
+    with session_factory() as s:
+        events = list(s.scalars(select(Event).where(Event.type == "series_date_moved").order_by(Event.id)))
+
+    assert [e.payload["new"] for e in events] == ["2026-11-02", "2026-10-30", "2026-11-02"]
+    assert len({e.dedup_key for e in events}) == 3
+
+
 def test_a_second_move_of_the_same_episode_on_the_same_day_is_reported_too(tracker, anilist, clock, sender):
     add(tracker, KUSURIYA)
     anilist.next_episode(AL_K3, 5, datetime(2026, 10, 30, 18, 0))  # 14:00 -> 18:00 UTC

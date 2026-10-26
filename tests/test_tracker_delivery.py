@@ -691,6 +691,83 @@ def test_a_wrong_setting_is_refused_and_nothing_is_changed(tracker, bad):
     assert run(tracker.delivery_rules()) == before
 
 
+def test_a_summary_hour_inside_the_quiet_hours_is_refused_and_the_rules_stay(tracker):
+    before = run(tracker.delivery_rules())
+
+    with pytest.raises(ValueError, match=r"час сводки 22:00 попадает в тихие часы 21:00–07:30"):
+        run(tracker.set_delivery_rules(summary_at="22:00"))
+
+    assert run(tracker.delivery_rules()) == before
+
+
+def test_the_whole_rules_are_checked_not_only_what_was_passed(tracker):
+    before = run(tracker.delivery_rules())  # the summary is at 15:00
+
+    with pytest.raises(ValueError, match="15:00"):
+        run(tracker.set_delivery_rules(quiet_from="14:00", quiet_until="16:00"))
+
+    assert run(tracker.delivery_rules()) == before
+
+
+def test_a_summary_hour_and_quiet_hours_may_be_changed_together_when_they_fit(tracker):
+    run(tracker.set_delivery_rules(summary_at="22:00", quiet_from="23:00", quiet_until="06:00"))
+
+    rules = run(tracker.delivery_rules())
+    assert (rules.summary_at, rules.quiet_from, rules.quiet_until) == (time(22, 0), time(23, 0), time(6, 0))
+
+
+def test_without_quiet_hours_any_summary_hour_is_allowed(tracker):
+    run(tracker.set_delivery_rules(quiet_from="21:00", quiet_until="21:00", summary_at="22:00"))
+
+    assert run(tracker.delivery_rules()).summary_at == time(22, 0)
+
+
+def test_the_summary_hour_at_the_end_of_the_quiet_hours_is_allowed(tracker):
+    run(tracker.set_delivery_rules(summary_at="07:30"))  # the quiet hours end at 07:30: that minute is already open
+
+    assert run(tracker.delivery_rules()).summary_at == time(7, 30)
+
+
+def test_two_changes_at_once_cannot_slip_past_the_check(tracker):
+    async def both():
+        return await asyncio.gather(
+            tracker.set_delivery_rules(summary_at="22:00", quiet_from="23:00", quiet_until="06:00"),
+            tracker.set_delivery_rules(quiet_from="21:00", quiet_until="07:30"),
+            return_exceptions=True,
+        )
+
+    run(both())
+
+    rules = run(tracker.delivery_rules())
+    assert not rules.is_quiet(datetime.combine(datetime(2026, 1, 1), rules.summary_at))
+
+
+def test_rules_stored_before_the_check_do_not_block_a_change_of_something_else(tracker, session_factory):
+    from app.tracker.models import SettingRecord
+
+    with session_factory() as s:  # a summary hour inside the quiet hours, as an earlier version allowed
+        s.get(SettingRecord, "summary_at").value = "22:00"
+        s.commit()
+
+    run(tracker.set_delivery_rules(workdays=[1]))
+    with pytest.raises(ValueError, match="22:00"):
+        run(tracker.set_delivery_rules(quiet_until="08:00"))  # a change of the hours themselves is still checked
+
+    assert run(tracker.delivery_rules()).workdays == frozenset({1})
+
+
+def test_rules_that_could_never_send_a_summary_are_still_read_and_a_warning_is_logged(caplog):
+    rules = delivery.DeliveryRules(
+        workdays=frozenset(range(7)), summary_at=time(22, 0), quiet_from=time(21, 0), quiet_until=time(7, 30)
+    )  # stored before the check existed
+
+    with caplog.at_level("WARNING"):
+        release, waited = rules.release(datetime(2026, 11, 1, 10, 0))
+
+    assert waited is True and rules.holds(release)
+    assert any("22:00" in record.getMessage() for record in caplog.records)
+
+
 # --- «Тестовое событие» with a substituted time ----------------------------------------------------
 
 

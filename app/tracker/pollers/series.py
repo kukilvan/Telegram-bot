@@ -30,7 +30,9 @@ class SeriesPoller(Poller):
             (s for s in snapshot.seasons if s.number >= 1), snapshot.state()
         ).keeping_known(old)
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
-        found = self.record_all(due, series_events.detect_events(due.id, due.name, old, new, observed_at, now, gap))
+        found = self.record_all(
+            due, series_events.detect_events(due.id, due.name, old, new, observed_at, now, gap), previous_look=observed_at
+        )
         with self.ctx.session_factory() as session:
             storage.sync_seasons(session, due.id, new.seasons)
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)

@@ -21,9 +21,11 @@ class MoviePoller(Poller):
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             old = movie_events.MovieDates.from_state(stored.state)
             new = movie_events.MovieDates.from_state(snapshot.state()).keeping_known(old)
-            observed_on = stored.observed_at.date()
+            observed_at = stored.observed_at
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
-        found = self.record_all(due, movie_events.detect_events(due.id, due.name, old, new, observed_on, today))
+        found = self.record_all(
+            due, movie_events.detect_events(due.id, due.name, old, new, observed_at, today), previous_look=observed_at
+        )
         with self.ctx.session_factory() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             stored.state = new.to_state()

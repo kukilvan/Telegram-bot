@@ -3,6 +3,7 @@ time zone. Each is read where it is needed, so a change applies at once."""
 
 import asyncio
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import time, timedelta, tzinfo
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -23,6 +24,9 @@ WORKDAYS_SETTING = "workdays"  # weekday numbers, Monday is 0
 SUMMARY_AT_SETTING = "summary_at"  # "15:00"
 QUIET_FROM_SETTING = "quiet_from"
 QUIET_UNTIL_SETTING = "quiet_until"
+_TIME_FIELDS = {  # the settings that hold a time of day, and the field of `DeliveryRules` each one fills
+    SUMMARY_AT_SETTING: "summary_at", QUIET_FROM_SETTING: "quiet_from", QUIET_UNTIL_SETTING: "quiet_until"
+}
 
 
 class SettingsStore:
@@ -96,8 +100,10 @@ class SettingsStore:
         """Change the given rules (the others stay). Nothing is stored when any value is wrong.
 
         `workdays` are weekday numbers, Monday is 0; none at all is allowed (every day is a day off). Equal
-        `quiet_from` and `quiet_until` mean no quiet hours. The new rules apply to what is already queued."""
-        new: dict[str, Any] = {}
+        `quiet_from` and `quiet_until` mean no quiet hours. A summary hour inside the quiet hours is refused (the rules are
+        checked whole, with what is stored): the bot would stay silent on working days. The new rules apply to what is
+        already queued."""
+        new: dict[str, Any] = {}  # the settings to store, as stored
         if tz_name is not None:
             try:
                 ZoneInfo(tz_name)
@@ -114,8 +120,17 @@ class SettingsStore:
         ):
             if value is not None:
                 new[key] = delivery.format_time(delivery.parse_time(value))
-        async with self.ctx.write_lock:
-            await asyncio.to_thread(self._store, new)
+        async with self.ctx.write_lock:  # read, check and write in a row: two changes cannot both pass the check
+            await asyncio.to_thread(self._check_and_store, new)
+
+    def _check_and_store(self, new: dict[str, Any]) -> None:
+        """Store `new` only when the rules it makes (the stored ones with these values over them) can send a summary."""
+        with self.ctx.session_factory() as session:
+            rules = self.rules(session)
+        changes = {field: delivery.parse_time(new[key]) for key, field in _TIME_FIELDS.items() if key in new}
+        if changes:  # rules stored before the check existed may clash; changing something else must still work
+            replace(rules, **changes).check()
+        self._store(new)
 
     def _store(self, values: dict[str, Any]) -> None:
         with self.ctx.session_factory() as session:

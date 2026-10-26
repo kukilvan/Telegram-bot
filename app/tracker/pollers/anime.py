@@ -72,7 +72,7 @@ class AnimePoller(Poller):
         )
         detected += anime_events.detect_movie_events(due.id, name, films, snapshot.movies, observed_at.date())
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
-        found = self.record_all(due, detected)
+        found = self.record_all(due, detected, previous_look=observed_at)
         with self.ctx.session_factory() as session:
             storage.sync_seasons(session, due.id, new.seasons)
             session.flush()

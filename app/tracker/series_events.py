@@ -27,6 +27,7 @@ from datetime import date, datetime, timedelta, tzinfo
 from typing import Any
 
 from app.tracker.cards import NOT_ANNOUNCED, format_date, format_day_month, format_short_date, format_when, local_moment
+from app.tracker.dedup import moved_key
 from app.tracker.movie_events import (
     INTERVAL_NEAR,
     INTERVAL_QUIET,
@@ -297,14 +298,16 @@ def _season_events(
         episode, old_at, new_at = moved
         part = next(p for p in parts if episode in p.numbers)
         premiere = episode == min(part.numbers) and part.released(now) == 0
+        earlier_key = f"{season_key}:e{episode}:moved:{_moment_key(new_at)}"
         events.append(
             DetectedEvent(
                 DATE_MOVED,
-                f"{season_key}:e{episode}:moved:{_moment_key(new_at)}",  # the new date is part of the key
+                moved_key(earlier_key, observed_at),  # the look it is seen from: see `moved_key`
                 message_moved(
                     name, number, episode, old_at, new_at, premiere, part.number if part.split else None, flavor
                 ),
                 {"season": number, "episode": episode, "old": old_at.date().isoformat(), "new": new_at.date().isoformat()},
+                earlier_key,
             )
         )
 

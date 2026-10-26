@@ -18,7 +18,7 @@ from app.tracker.pollers.base import Poller
 TRACKER = Path(core.__file__).parent
 MODULES = ("context", "settings_store", "storage", "queue", "titles", "polling", "delivery_service", "test_samples", "core")
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
-PURE = ("delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures", "cards", "kinds")
+PURE = ("dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures", "cards", "kinds")
 MAX_LINES = 400
 
 

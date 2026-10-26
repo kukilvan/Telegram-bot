@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.tracker import failures
@@ -44,6 +45,17 @@ class EventQueue:
             if event_id is not None:
                 session.commit()
             return event_id
+
+    def queued_since(self, dedup_key: str, since: datetime) -> bool:
+        """Whether an event with this key was queued at or after `since`.
+
+        A «date moved» key used to hold only the new date. A move such an old key queued after the previous look is the
+        move being found again (the state was not saved), and is not sent twice; one queued before that look is a
+        past move, and a new move to the same date is news."""
+        with self.ctx.session_factory() as session:
+            return session.scalar(
+                select(Event.id).where(Event.dedup_key == dedup_key, Event.detected_at >= since).limit(1)
+            ) is not None
 
     @staticmethod
     def enqueue(

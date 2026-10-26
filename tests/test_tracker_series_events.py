@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
+from app.tracker import series_events
 from app.tracker.core import Tracker
 from app.tracker.cards import format_card
 from app.tracker.db import create_session_factory
@@ -299,7 +300,52 @@ def test_the_next_episode_moved_is_reported_as_before_and_after(tracker, source,
     assert sender.sent == ["📺 Сдвиг — дата серии 8 сдвинулась\nСезон 1 · пн, 26 окт → пн, 2 ноя"]
 
 
-def test_moving_again_is_a_new_event_and_moving_back_to_a_reported_date_is_not_repeated(tracker, source, clock, sender):
+def test_a_move_there_and_back_and_there_again_is_three_events(tracker, source, clock, session_factory):
+    add(tracker, source, moved_show("2026-10-26"))
+    for first_new_date in ("2026-11-02", "2026-10-26", "2026-11-02"):
+        source.update(moved_show(first_new_date))
+        poll_and_deliver(tracker, clock, hours=7)
+
+    with session_factory() as s:
+        events = list(s.scalars(select(Event).where(Event.type == "series_date_moved").order_by(Event.id)))
+
+    assert [e.payload["new"] for e in events] == ["2026-11-02", "2026-10-26", "2026-11-02"]
+    assert len({e.dedup_key for e in events}) == 3
+
+
+def test_a_move_found_again_after_a_failed_save_is_one_event(tracker, source, clock, session_factory, monkeypatch):
+    add(tracker, source, moved_show("2026-10-26"))
+    source.update(moved_show("2026-11-02"))
+    with monkeypatch.context() as patch:
+        def broken(*args, **kwargs):
+            raise RuntimeError("database is locked")
+
+        patch.setattr(series_events, "check_interval", broken)  # fails after the event is queued, before the state is saved
+        clock.advance(hours=7)
+        run(tracker.poll_due())
+    poll_and_deliver(tracker, clock, hours=1)
+    poll_and_deliver(tracker, clock, hours=7)
+
+    with session_factory() as s:
+        assert len(list(s.scalars(select(Event).where(Event.type == "series_date_moved")))) == 1
+
+
+def test_a_move_queued_by_the_earlier_version_of_the_key_is_not_sent_again(tracker, source, clock, session_factory):
+    title_id = add(tracker, source, moved_show("2026-10-26"))
+    source.update(moved_show("2026-11-02"))
+    clock.advance(hours=7)
+    # the earlier version queued the move under a key with only the new date, and then failed to save the state
+    run(tracker.record_event(
+        "series_date_moved", {"text": "x", "new": "2026-11-02"}, f"series:{title_id}:s1:e8:moved:2026-11-02", title_id=title_id
+    ))
+
+    run(tracker.poll_due())
+
+    with session_factory() as s:
+        assert len(list(s.scalars(select(Event).where(Event.type == "series_date_moved")))) == 1
+
+
+def test_moving_again_is_a_new_event_and_moving_back_to_a_reported_date_is_a_new_event_too(tracker, source, clock, sender):
     add(tracker, source, moved_show("2026-10-26"))
     source.update(moved_show("2026-11-02"))
     poll_and_deliver(tracker, clock, hours=2)

@@ -58,10 +58,14 @@ class Poller:
         """Compare the fresh snapshot with the stored one, queue events, store the new state. Returns the events found."""
         raise NotImplementedError
 
-    def record_all(self, due: DueTitle, events: Iterable[Any]) -> int:
-        """Queue the detected events of a title; returns how many were new."""
+    def record_all(self, due: DueTitle, events: Iterable[Any], previous_look: datetime | None = None) -> int:
+        """Queue the detected events of a title; returns how many were new. An event whose fact an earlier version of
+        its key already queued after `previous_look` is not queued again."""
         found = 0
         for event in events:
+            earlier = getattr(event, "earlier_key", None)
+            if earlier is not None and previous_look is not None and self.queue.queued_since(earlier, previous_look):
+                continue
             payload = {"text": event.text, **event.data}
             if self.queue.record(event.type, payload, event.dedup_key, title_id=due.id) is not None:
                 found += 1

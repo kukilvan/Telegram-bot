@@ -8,10 +8,11 @@ snapshot was taken before that day, so a movie added after its premiere never an
 """
 
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from app.tracker.cards import format_date, format_short_date
+from app.tracker.dedup import moved_key
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 
@@ -58,6 +59,7 @@ class DetectedEvent:
     dedup_key: str
     text: str
     data: dict[str, Any]
+    earlier_key: str | None = None  # the key an earlier version gave this fact; see `EventQueue.queued_since`
 
 
 def _parse(value: str | None) -> date | None:
@@ -85,14 +87,15 @@ def message_digital(name: str) -> str:
 
 
 def detect_events(
-    title_id: int, name: str, old: MovieDates, new: MovieDates, observed_on: date, today: date
+    title_id: int, name: str, old: MovieDates, new: MovieDates, observed_at: datetime, today: date
 ) -> list[DetectedEvent]:
-    """Events between the previous snapshot (taken on `observed_on`) and the new one (taken `today`).
+    """Events between the previous snapshot (taken at `observed_at`) and the new one (taken `today`).
 
     `new` must already keep the dates the source dropped (`MovieDates.keeping_known`).
     """
     prefix = f"movie:{title_id}"
     events: list[DetectedEvent] = []
+    observed_on = observed_at.date()
 
     was_in_cinemas = _released_by(old.theatrical, observed_on)
     if new.theatrical is not None and not was_in_cinemas:
@@ -110,12 +113,17 @@ def detect_events(
                 )
             )
         elif new.theatrical != old.theatrical:
+            earlier_key = f"{prefix}:date_moved:{new.theatrical.isoformat()}"
             events.append(
                 DetectedEvent(
                     DATE_MOVED,
-                    f"{prefix}:date_moved:{new.theatrical.isoformat()}",  # the new date is part of the key
+                    # the new date alone would hide a move back to a date reported before (15 Dec → 22 Jan → 15 Dec →
+                    # 22 Jan); the look it is seen from tells a move found again after a failed save (the same stored
+                    # look, the same key) from a new move (a later look)
+                    moved_key(earlier_key, observed_at),
                     message_moved(name, old.theatrical, new.theatrical),
                     {"old": old.theatrical.isoformat(), "new": new.theatrical.isoformat()},
+                    earlier_key,
                 )
             )
 
