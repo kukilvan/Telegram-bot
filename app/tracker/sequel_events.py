@@ -20,7 +20,7 @@ INTERVAL = timedelta(days=7)  # an archived movie is looked at once a week, and 
 @dataclass(frozen=True)
 class Part:
     id: str
-    title: str
+    name: str
     date: date | None
 
 
@@ -39,8 +39,8 @@ class Sequels:
     def to_state(self) -> dict[str, Any]:
         return {
             "own_date": self.own_date.isoformat() if self.own_date else None,
-            "parts": [
-                {"id": p.id, "title": p.title, "date": p.date.isoformat() if p.date else None} for p in self.parts
+            "parts": [  # the key "title" keeps its old name: snapshots already saved are read with it
+                {"id": p.id, "title": p.name, "date": p.date.isoformat() if p.date else None} for p in self.parts
             ],
         }
 
@@ -71,11 +71,11 @@ def detect_sequel_events(name: str, kind: str, old: Sequels, new: Sequels) -> li
         DetectedEvent(
             SEQUEL_ANNOUNCED,
             f"movie:sequel:{part.id}",  # one announcement per sequel: not per archived movie of the franchise
-            message_sequel(name, part.title, part.date),
+            message_sequel(name, part.name, part.date),
             {
                 "kind": kind,
                 "sequel_id": part.id,
-                "sequel_title": part.title,
+                "sequel_title": part.name,
                 "date": part.date.isoformat() if part.date else None,
             },
         )

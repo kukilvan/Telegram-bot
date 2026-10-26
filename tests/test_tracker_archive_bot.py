@@ -25,9 +25,9 @@ DUNE, DUNE_3 = "438631", "1170608"
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 
 
-def movie(external_id, title, theatrical=None):
+def movie(external_id, name, theatrical=None):
     return MovieSnapshot(
-        external_id=external_id, title=title, original_title=title, year=2021, genres=[], theatrical_date=theatrical
+        external_id=external_id, name=name, original_name=name, year=2021, genres=[], theatrical_date=theatrical
     )
 
 

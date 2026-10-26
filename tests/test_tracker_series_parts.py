@@ -99,7 +99,7 @@ def season_in_parts(part1_day, part1_count, part2_day, part2_count, number=3):
 def show(external_id, *seasons, name=None):
     name = name or f"Сериал {external_id}"
     return SeriesSnapshot(
-        external_id=external_id, title=name, original_title=name, year=2026, genres=[], seasons=list(seasons),
+        external_id=external_id, name=name, original_name=name, year=2026, genres=[], seasons=list(seasons),
         status="Returning Series",
     )
 
@@ -353,17 +353,17 @@ def test_the_premiere_of_part_two_moving_is_reported_as_part_two(tracker, source
 
 
 @pytest.mark.parametrize(
-    "kind_id, expected",
+    "sample_id, expected",
     [
         ("series-part-announced", "объявлена дата части 2 сезона 3"),
         ("series-part-started", "началась часть 2 сезона 3"),
         ("series-part-ended", "закончилась часть 1 сезона 3"),
     ],
 )
-def test_the_part_events_are_in_the_test_event_menu(tracker, sender, kind_id, expected):
-    assert kind_id in [k.id for k in tracker.test_event_kinds()]
+def test_the_part_events_are_in_the_test_event_menu(tracker, sender, sample_id, expected):
+    assert sample_id in [k.id for k in tracker.test_samples()]
 
-    result = run(tracker.send_test_event(kind_id))
+    result = run(tracker.send_test_event(sample_id))
 
     assert result.delivered
     assert expected in sender.sent[0]

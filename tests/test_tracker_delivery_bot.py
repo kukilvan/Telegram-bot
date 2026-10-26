@@ -14,7 +14,7 @@ from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 from app.bot.access import AccessMiddleware
 from app.bot.tracker_handlers import (
-    DIGEST_BUTTON,
+    SUMMARY_BUTTON,
     RULES_CHECK_BUTTON,
     RULES_CHECK_CALLBACK,
     TEST_EVENT_BUTTON,
@@ -64,7 +64,7 @@ def tracker(telegram):
     )
     asyncio.run(
         tracker.set_delivery_rules(
-            tz_name="Asia/Jerusalem", workdays=[6, 0, 1, 2, 3], digest_at="15:00", quiet_from="21:00", quiet_until="07:30"
+            tz_name="Asia/Jerusalem", workdays=[6, 0, 1, 2, 3], summary_at="15:00", quiet_from="21:00", quiet_until="07:30"
         )
     )
     return tracker
@@ -116,7 +116,7 @@ def waiting_events(tracker):
 # --- «Сводка сейчас» -------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("how", [DIGEST_BUTTON, "/summary"])
+@pytest.mark.parametrize("how", [SUMMARY_BUTTON, "/summary"])
 def test_summary_now_sends_what_waits_in_one_message(tracker, telegram, replies, how):
     waiting_events(tracker)  # a working morning: the rules keep them back
 
@@ -129,7 +129,7 @@ def test_summary_now_sends_what_waits_in_one_message(tracker, telegram, replies,
 
 
 def test_summary_now_with_nothing_waiting_says_so(tracker, telegram, replies):
-    say(make_dispatcher(tracker), OWNER, DIGEST_BUTTON)
+    say(make_dispatcher(tracker), OWNER, SUMMARY_BUTTON)
 
     assert telegram.sent == []
     assert replies[0][0] == "message" and "нет" in replies[0][1]
@@ -140,15 +140,15 @@ def test_summary_now_tells_when_the_send_failed_and_keeps_the_events(tracker, te
     telegram.failing = True
     dp = make_dispatcher(tracker)
 
-    say(dp, OWNER, DIGEST_BUTTON)
+    say(dp, OWNER, SUMMARY_BUTTON)
 
     assert "не удалось" in replies[0][1].lower()
     telegram.failing = False
-    say(dp, OWNER, DIGEST_BUTTON)
+    say(dp, OWNER, SUMMARY_BUTTON)
     assert len(telegram.sent) == 1
 
 
-def test_digest_and_test_event_commands_are_gone(tracker, telegram, replies):
+def test_removed_summary_and_test_event_commands_are_gone(tracker, telegram, replies):
     waiting_events(tracker)
     dp = make_dispatcher(tracker)
 
@@ -180,7 +180,7 @@ def test_the_rules_check_lists_every_moment_of_the_week(tracker, replies):
 
     [_, (kind, text, buttons)] = replies
     assert kind == "message" and "окн" not in text.lower()
-    assert [b.text for b in buttons] == [s.label for s in delivery.WINDOW_SCENARIOS]
+    assert [b.text for b in buttons] == [s.label for s in delivery.DELIVERY_CHECKS]
     assert all(b.callback_data.startswith("twin:") for b in buttons)
 
 
@@ -212,11 +212,19 @@ def test_a_failed_send_is_reported_not_called_a_success(tracker, telegram, repli
     assert "Не удалось" in replies[-1][1]
 
 
-def test_an_unknown_scenario_is_answered_not_crashed(tracker, telegram, replies):
+def test_an_unknown_delivery_check_is_answered_not_crashed(tracker, telegram, replies):
     press(make_dispatcher(tracker), OWNER, "twin:gone")
 
     assert telegram.sent == []
     assert replies[0][0] == "callback" and replies[0][1]
+
+
+def test_the_values_of_buttons_already_sent_are_unchanged(tracker, replies):
+    say(make_dispatcher(tracker), OWNER, TEST_EVENT_BUTTON)
+    [(_, _, markup)] = replies
+    assert markup[0].callback_data == "tev:ping"  # the sample buttons of an old message keep working
+    assert RULES_CHECK_CALLBACK == "tchk:open"
+    assert [c.id for c in delivery.DELIVERY_CHECKS][0] == "work-morning"
 
 
 @pytest.mark.parametrize("with_middleware", [True, False])
@@ -224,7 +232,7 @@ def test_stranger_gets_nothing(tracker, telegram, replies, with_middleware):
     waiting_events(tracker)
     dp = make_dispatcher(tracker, with_middleware)
 
-    say(dp, STRANGER, DIGEST_BUTTON)
+    say(dp, STRANGER, SUMMARY_BUTTON)
     say(dp, STRANGER, "/summary")
     say(dp, STRANGER, TEST_EVENT_BUTTON)
     press(dp, STRANGER, RULES_CHECK_CALLBACK)

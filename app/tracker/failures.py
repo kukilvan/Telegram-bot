@@ -86,10 +86,10 @@ def _minutes(delay: timedelta) -> int:
     return int(delay.total_seconds() // 60)
 
 
-def message_one(title: str, source: str, reason: str, retry: timedelta = RETRY_AFTER_FAILURE) -> str:
+def message_one(name: str, source: str, reason: str, retry: timedelta = RETRY_AFTER_FAILURE) -> str:
     """«⚠️ Не удалось проверить «Дюна»: TMDb не ответил вовремя. Повторю через 30 мин.»"""
     why = _REASONS[reason].format(source=source)
-    return f"⚠️ Не удалось проверить «{title}»: {why}. Повторю через {_minutes(retry)} мин."
+    return f"⚠️ Не удалось проверить «{name}»: {why}. Повторю через {_minutes(retry)} мин."
 
 
 def _titles_word(count: int) -> str:

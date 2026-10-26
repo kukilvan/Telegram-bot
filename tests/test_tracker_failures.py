@@ -79,8 +79,8 @@ class FakeSource:
 def movie(external_id, name=None):
     return MovieSnapshot(
         external_id=external_id,
-        title=name or f"Фильм {external_id}",
-        original_title=name or f"Movie {external_id}",
+        name=name or f"Фильм {external_id}",
+        original_name=name or f"Movie {external_id}",
         year=2026,
         genres=[],
         poster_path=None,
@@ -121,7 +121,7 @@ def add_movie(tracker, external_id, name=None):
     result = run(tracker.add_title("movie", external_id))
     if name:
         with tracker.session_factory() as s:
-            s.get(Title, result.title_id).title = name
+            s.get(Title, result.title_id).name = name
             s.commit()
     return result.title_id
 
@@ -131,7 +131,7 @@ def add_anime_row(session_factory, external_id, name, now=T0):
     naive = now.replace(tzinfo=None)
     with session_factory() as s:
         title = Title(
-            kind="anime", title=name, original_title=name, year=2026, genres=[], status="want",
+            kind="anime", name=name, original_name=name, year=2026, genres=[], status="want",
             tracking_enabled=True, added_at=naive, status_changed_at=naive,
         )
         s.add(title)
@@ -534,7 +534,7 @@ def test_the_dedup_key_holds_the_title_and_the_start_of_the_day_window(tracker, 
     assert event.title_id == title_id
 
 
-RULES = dict(tz_name="Asia/Jerusalem", workdays=[6, 0, 1, 2, 3], digest_at="15:00", quiet_from="21:00", quiet_until="07:30")
+RULES = dict(tz_name="Asia/Jerusalem", workdays=[6, 0, 1, 2, 3], summary_at="15:00", quiet_from="21:00", quiet_until="07:30")
 
 
 def local(day, hour, minute=0):
@@ -609,7 +609,7 @@ def test_on_a_day_off_the_notice_comes_at_once(session_factory, sender, source):
 
 
 @pytest.mark.parametrize(
-    "kind_id, label, text",
+    "sample_id, label, text",
     [
         (
             "failure-one", "Сбой источника: один тайтл",
@@ -621,10 +621,10 @@ def test_on_a_day_off_the_notice_comes_at_once(session_factory, sender, source):
         ),
     ],
 )
-def test_the_samples_are_in_the_test_event_menu(tracker, sender, kind_id, label, text):
-    assert label in [kind.label for kind in tracker.test_event_kinds()]
+def test_the_samples_are_in_the_test_event_menu(tracker, sender, sample_id, label, text):
+    assert label in [sample.label for sample in tracker.test_samples()]
 
-    result = run(tracker.send_test_event(kind_id))
+    result = run(tracker.send_test_event(sample_id))
 
     assert result.delivered
     assert text in sender.messages[0]

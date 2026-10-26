@@ -21,7 +21,7 @@ class CollectionPart:
     """Another movie of the same collection."""
 
     external_id: str
-    title: str
+    name: str
     release_date: date | None
 
 
@@ -39,7 +39,7 @@ class SequelSnapshot:
             "parts": [
                 {
                     "id": part.external_id,
-                    "title": part.title,
+                    "title": part.name,  # the stored key keeps its old name: snapshots already saved are read with it
                     "date": part.release_date.isoformat() if part.release_date else None,
                 }
                 for part in self.parts
@@ -66,7 +66,7 @@ def parse_sequels(movie: dict[str, Any], collection: dict[str, Any] | None) -> S
     parts = [
         CollectionPart(
             external_id=str(raw["id"]),
-            title=raw.get("title") or raw.get("original_title") or "",
+            name=raw.get("title") or raw.get("original_title") or "",
             release_date=_parse_date(raw.get("release_date")),
         )
         for raw in (collection or {}).get("parts", [])

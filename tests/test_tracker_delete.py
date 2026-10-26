@@ -61,9 +61,9 @@ class FakeSender:
         self.sent.append(message)
 
 
-def movie(external_id, title="Дюна", theatrical=None):
+def movie(external_id, name="Дюна", theatrical=None):
     return MovieSnapshot(
-        external_id=external_id, title=title, original_title=title, year=2021, genres=[], theatrical_date=theatrical
+        external_id=external_id, name=name, original_name=name, year=2021, genres=[], theatrical_date=theatrical
     )
 
 
@@ -112,8 +112,8 @@ def run(coro):
 
 SERIES = SeriesSnapshot(
     external_id="200",
-    title="Идущий",
-    original_title="Идущий",
+    name="Идущий",
+    original_name="Идущий",
     year=2026,
     genres=[],
     seasons=[
@@ -163,8 +163,8 @@ def tracker(session_factory, clock, sender, movies, sequels):
     )
 
 
-def add_movie(tracker, movies, external_id=DUNE, title="Дюна", theatrical=None):
-    movies.by_id[external_id] = movie(external_id, title, theatrical)
+def add_movie(tracker, movies, external_id=DUNE, name="Дюна", theatrical=None):
+    movies.by_id[external_id] = movie(external_id, name, theatrical)
     return run(tracker.add_title("movie", external_id)).title_id
 
 
@@ -274,11 +274,11 @@ def test_an_unsent_event_of_a_deleted_title_never_reaches_the_owner(tracker, mov
 
     run(tracker.delete_title(title_id))
     report = run(tracker.deliver_pending())
-    digest = run(tracker.digest_now())
+    summary = run(tracker.summary_now())
 
     assert sender.sent == []
     assert (report.delivered, report.failed) == (0, 0)
-    assert (digest.events, digest.delivered) == (0, False)
+    assert (summary.events, summary.delivered) == (0, False)
 
 
 def test_a_new_title_with_the_number_of_a_deleted_one_gets_its_own_events(tracker, movies, sender, clock):
@@ -368,7 +368,7 @@ def test_a_title_followed_from_an_announcement_stays_after_the_original_is_delet
     run(tracker.delete_title(original))
 
     assert [t.id for t in run(tracker.list_titles())] == [followed]
-    assert run(tracker.title_card(followed)).title == "Дюна: Часть третья"
+    assert run(tracker.title_card(followed)).name == "Дюна: Часть третья"
     assert run(tracker.title_card(followed)).status == "want"
 
 

@@ -128,7 +128,7 @@ def test_shikimori_failure_stores_nothing(tracker, shikimori):
 def test_the_search_offers_one_suggestion_per_franchise(tracker):
     suggestions = run(tracker.search("anime", "магическая битва"))
 
-    assert [(s.kind, s.external_id, s.title) for s in suggestions if s.external_id == JJK] == [
+    assert [(s.kind, s.external_id, s.name) for s in suggestions if s.external_id == JJK] == [
         ("anime", JJK, "Магическая битва")
     ]
 

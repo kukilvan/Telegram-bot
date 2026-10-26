@@ -10,7 +10,7 @@ from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 from app.bot.tracker_handlers import (
     ADD_BUTTON,
-    DIGEST_BUTTON,
+    SUMMARY_BUTTON,
     MY_TITLES_BUTTON,
     TEST_EVENT_BUTTON,
     register_tracker_handlers,
@@ -20,7 +20,7 @@ from app.tracker.db import create_session_factory
 
 OWNER, STRANGER = 42, 7
 
-MESSAGES = ["/start", "/summary", ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON]
+MESSAGES = ["/start", "/summary", ADD_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, TEST_EVENT_BUTTON]
 CALLBACKS = [
     "tev:ping",
     "twin:friday",

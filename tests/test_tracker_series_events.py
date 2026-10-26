@@ -83,7 +83,7 @@ def season(number, first_day, count, expected=None):
 def show(external_id, *seasons, status="Returning Series", name=None):
     name = name or f"Сериал {external_id}"
     return SeriesSnapshot(
-        external_id=external_id, title=name, original_title=name, year=2026, genres=[], seasons=list(seasons), status=status
+        external_id=external_id, name=name, original_name=name, year=2026, genres=[], seasons=list(seasons), status=status
     )
 
 
@@ -555,7 +555,7 @@ def test_a_series_is_looked_at_only_when_its_time_has_come(tracker, source, cloc
 
 
 @pytest.mark.parametrize(
-    "kind_id, expected",
+    "sample_id, expected",
     [
         ("series-announced", "объявлена дата сезона"),
         ("series-started", "начался сезон"),
@@ -566,10 +566,10 @@ def test_a_series_is_looked_at_only_when_its_time_has_come(tracker, source, cloc
         ("series-canceled", "сериал отменён"),
     ],
 )
-def test_every_series_event_is_in_the_test_event_menu(tracker, sender, kind_id, expected):
-    assert kind_id in [k.id for k in tracker.test_event_kinds()]
+def test_every_series_event_is_in_the_test_event_menu(tracker, sender, sample_id, expected):
+    assert sample_id in [k.id for k in tracker.test_samples()]
 
-    result = run(tracker.send_test_event(kind_id))
+    result = run(tracker.send_test_event(sample_id))
 
     assert result.delivered is True
     assert sender.sent[-1].startswith("🧪 Тестовое событие")

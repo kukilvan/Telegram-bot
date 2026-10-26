@@ -69,7 +69,7 @@ def season(number, first_day, count=6):
 
 def show(external_id, *seasons, status="Returning Series"):
     return SeriesSnapshot(
-        external_id=external_id, title=f"Сериал {external_id}", original_title=f"Сериал {external_id}",
+        external_id=external_id, name=f"Сериал {external_id}", original_name=f"Сериал {external_id}",
         year=2026, genres=[], seasons=list(seasons), status=status,
     )
 
@@ -215,7 +215,7 @@ def test_an_in_progress_series_is_still_polled_and_a_new_episode_arrives_as_an_e
     assert status(tracker, title_id) == "in_progress"
     calls = source.snapshot_calls
 
-    poll(tracker, clock, hours=52)  # Mon 26 Oct, 16:00: past the digest hour, so the event goes out at once
+    poll(tracker, clock, hours=52)  # Mon 26 Oct, 16:00: past the summary hour, so the event goes out at once
 
     assert source.snapshot_calls == calls + 1
     assert any("вышла серия 22" in message for message in sender.sent)

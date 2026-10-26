@@ -11,7 +11,7 @@ from app.bot.main import build_dispatcher
 from app.bot.tracker_handlers import (
     ADD_BUTTON,
     BOT_COMMANDS,
-    DIGEST_BUTTON,
+    SUMMARY_BUTTON,
     MY_TITLES_BUTTON,
     TEST_EVENT_BUTTON,
 )
@@ -65,7 +65,7 @@ def test_start_shows_the_menu_with_exactly_the_four_buttons(tracker, replies):
     assert "окна" not in text.lower()
     assert isinstance(keyboard, ReplyKeyboardMarkup)
     labels = [button.text for row in keyboard.keyboard for button in row]
-    assert labels == [ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON]
+    assert labels == [ADD_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, TEST_EVENT_BUTTON]
 
 
 @pytest.mark.parametrize(
@@ -108,7 +108,7 @@ def test_a_stranger_gets_no_menu(tracker, replies):
     assert replies == []
 
 
-@pytest.mark.parametrize("button", [ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON])
+@pytest.mark.parametrize("button", [ADD_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, TEST_EVENT_BUTTON])
 def test_every_menu_button_gets_an_answer(tracker, replies, button):
     say(tracker, button)
 

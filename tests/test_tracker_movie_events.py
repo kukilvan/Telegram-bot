@@ -40,11 +40,11 @@ class FakeSender:
         self.sent.append(message)
 
 
-def movie(external_id, title="Дюна: Часть третья", theatrical=None, digital=None):
+def movie(external_id, name="Дюна: Часть третья", theatrical=None, digital=None):
     return MovieSnapshot(
         external_id=external_id,
-        title=title,
-        original_title=title,
+        name=name,
+        original_name=name,
         year=2026,
         genres=[],
         theatrical_date=theatrical,
@@ -206,10 +206,10 @@ def test_digital_date_that_appears_already_in_the_past_is_a_release(tracker, sou
 
 
 def test_events_of_different_movies_do_not_mix(tracker, source, clock, sender):
-    add(tracker, source, movie("1", title="Первый"))
-    add(tracker, source, movie("2", title="Второй"))
-    source.update(movie("1", title="Первый", theatrical=date(2026, 12, 16)))
-    source.update(movie("2", title="Второй", theatrical=date(2026, 12, 16)))
+    add(tracker, source, movie("1", name="Первый"))
+    add(tracker, source, movie("2", name="Второй"))
+    source.update(movie("1", name="Первый", theatrical=date(2026, 12, 16)))
+    source.update(movie("2", name="Второй", theatrical=date(2026, 12, 16)))
 
     poll_and_deliver(tracker, clock, days=2)
 
@@ -321,9 +321,9 @@ def test_nothing_expected_is_checked_rarely(tracker, source, clock, session_fact
 def test_a_failing_source_is_postponed_and_the_others_are_still_polled(
     tracker, source, clock, sender, session_factory
 ):
-    bad = add(tracker, source, movie("1", title="Сбойный"))
-    add(tracker, source, movie("2", title="Рабочий"))
-    source.update(movie("2", title="Рабочий", theatrical=date(2026, 12, 16)))
+    bad = add(tracker, source, movie("1", name="Сбойный"))
+    add(tracker, source, movie("2", name="Рабочий"))
+    source.update(movie("2", name="Рабочий", theatrical=date(2026, 12, 16)))
     source.failing.add("1")
     clock.advance(days=2)
 
@@ -379,7 +379,7 @@ def test_a_movie_the_source_no_longer_knows_is_postponed_not_fatal(tracker, sour
 
 
 @pytest.mark.parametrize(
-    "kind_id, expected",
+    "sample_id, expected",
     [
         ("movie-announced", "объявлена дата премьеры"),
         ("movie-moved", "→"),
@@ -387,10 +387,10 @@ def test_a_movie_the_source_no_longer_knows_is_postponed_not_fatal(tracker, sour
         ("movie-digital", "цифровой релиз"),
     ],
 )
-def test_all_four_movie_events_are_in_the_test_event_menu(tracker, sender, kind_id, expected):
-    assert kind_id in [k.id for k in tracker.test_event_kinds()]
+def test_all_four_movie_events_are_in_the_test_event_menu(tracker, sender, sample_id, expected):
+    assert sample_id in [k.id for k in tracker.test_samples()]
 
-    result = run(tracker.send_test_event(kind_id))
+    result = run(tracker.send_test_event(sample_id))
 
     assert result.delivered is True
     assert expected in sender.sent[0]
@@ -440,9 +440,9 @@ def test_events_are_stored_with_a_dedup_key_per_fact(tracker, source, clock, ses
 
 
 def test_a_failed_postponement_does_not_stop_the_pass(tracker, source, clock, sender, monkeypatch):
-    add(tracker, source, movie("1", title="Сбойный"))
-    add(tracker, source, movie("2", title="Рабочий"))
-    source.update(movie("2", title="Рабочий", theatrical=date(2026, 12, 16)))
+    add(tracker, source, movie("1", name="Сбойный"))
+    add(tracker, source, movie("2", name="Рабочий"))
+    source.update(movie("2", name="Рабочий", theatrical=date(2026, 12, 16)))
     source.failing.add("1")
     clock.advance(days=2)
 

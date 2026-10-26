@@ -663,7 +663,7 @@ def test_a_stored_season_keeps_its_parts_after_a_poll(tracker, clock, session_fa
 
 
 @pytest.mark.parametrize(
-    "kind_id, expected",
+    "sample_id, expected",
     [
         ("anime-announced", "объявлена дата сезона"),
         ("anime-started", "начался сезон"),
@@ -678,10 +678,10 @@ def test_a_stored_season_keeps_its_parts_after_a_poll(tracker, clock, session_fa
         ("anime-movie-released", "вышел фильм франшизы"),
     ],
 )
-def test_every_anime_event_is_in_the_test_event_menu(tracker, sender, kind_id, expected):
-    assert kind_id in [k.id for k in tracker.test_event_kinds()]
+def test_every_anime_event_is_in_the_test_event_menu(tracker, sender, sample_id, expected):
+    assert sample_id in [k.id for k in tracker.test_samples()]
 
-    result = run(tracker.send_test_event(kind_id))
+    result = run(tracker.send_test_event(sample_id))
 
     assert result.delivered is True
     assert sender.sent[-1].startswith("🧪 Тестовое событие")

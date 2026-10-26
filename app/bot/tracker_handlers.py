@@ -42,11 +42,11 @@ from app.tracker.series_events import SAMPLE_EPISODES_ID
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
 ADD_BUTTON = "➕ Добавить"
 MY_TITLES_BUTTON = "📚 Мои тайтлы"
-DIGEST_BUTTON = "📋 Сводка сейчас"
+SUMMARY_BUTTON = "📋 Сводка сейчас"
 RULES_CHECK_BUTTON = "🕒 Проверить правила доставки"  # the last item of the test-event list
 RULES_CHECK_CALLBACK = "tchk:open"
-_KIND_PREFIX = "tev:"
-_WINDOW_PREFIX = "twin:"  # twin:<scenario id>: a test event as if it were queued at that moment of the week (sent buttons keep it)
+_SAMPLE_PREFIX = "tev:"
+_CHECK_PREFIX = "twin:"  # twin:<delivery check id>: a test event as if it were queued at that moment of the week (sent buttons keep it)
 _ADD_KIND_PREFIX = "tadd:"
 _PICK_PREFIX = "tpick:"
 _CARD_PREFIX = "tcard:"
@@ -107,7 +107,7 @@ def main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=ADD_BUTTON), KeyboardButton(text=MY_TITLES_BUTTON)],
-            [KeyboardButton(text=DIGEST_BUTTON)],
+            [KeyboardButton(text=SUMMARY_BUTTON)],
             [KeyboardButton(text=TEST_EVENT_BUTTON)],
         ],
         resize_keyboard=True,
@@ -186,8 +186,8 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def show_menu(message: Message) -> None:
         forget_pending(message.from_user)
         rows = [
-            [InlineKeyboardButton(text=kind.label, callback_data=f"{_KIND_PREFIX}{kind.id}")]
-            for kind in tracker.test_event_kinds()
+            [InlineKeyboardButton(text=sample.label, callback_data=f"{_SAMPLE_PREFIX}{sample.id}")]
+            for sample in tracker.test_samples()
         ]
         rows.append([InlineKeyboardButton(text=RULES_CHECK_BUTTON, callback_data=RULES_CHECK_CALLBACK)])
         await message.answer(
@@ -196,9 +196,9 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         )
 
     async def send_test_event(callback: CallbackQuery) -> None:
-        kind_id = callback.data.removeprefix(_KIND_PREFIX)
+        sample_id = callback.data.removeprefix(_SAMPLE_PREFIX)
         try:
-            result = await tracker.send_test_event(kind_id)
+            result = await tracker.send_test_event(sample_id)
         except KeyError:
             await callback.answer("Такого события больше нет, откройте меню заново.")
             return
@@ -209,12 +209,12 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
 
     # --- «Сводка сейчас» и проверка правил доставки ---------------------------------------------
 
-    async def send_digest_now(message: Message) -> None:
+    async def send_summary_now(message: Message) -> None:
         forget_pending(message.from_user)
         try:
-            result = await tracker.digest_now()
+            result = await tracker.summary_now()
         except Exception as exc:  # the queue is read from the database: tell the owner, keep the bot alive
-            logging.warning("digest now failed: %s", repr(exc))
+            logging.warning("summary now failed: %s", repr(exc))
             await message.answer("Не удалось собрать сводку. Попробуйте ещё раз.")
             return
         if result.events == 0:
@@ -224,8 +224,8 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
 
     async def show_rules_check(callback: CallbackQuery) -> None:
         rows = [
-            [InlineKeyboardButton(text=s.label, callback_data=f"{_WINDOW_PREFIX}{s.id}")]
-            for s in delivery.WINDOW_SCENARIOS
+            [InlineKeyboardButton(text=c.label, callback_data=f"{_CHECK_PREFIX}{c.id}")]
+            for c in delivery.DELIVERY_CHECKS
         ]
         await callback.answer()
         if callback.message is None:
@@ -237,12 +237,12 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         )
 
     async def run_rules_check(callback: CallbackQuery) -> None:
-        scenario = delivery.scenario_by_id(callback.data.removeprefix(_WINDOW_PREFIX))
-        if scenario is None:
+        check = delivery.delivery_check_by_id(callback.data.removeprefix(_CHECK_PREFIX))
+        if check is None:
             await callback.answer("Такого момента больше нет, откройте меню заново.")
             return
         try:
-            moment = await tracker.window_test_moment(scenario)
+            moment = await tracker.delivery_check_moment(check)
             tz = (await tracker.delivery_rules()).tz
             result = await tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment)
         except Exception as exc:
@@ -307,7 +307,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         rows = [
             [
                 InlineKeyboardButton(
-                    text=_title_button_text(s.title, s.year), callback_data=f"{_PICK_PREFIX}{kind}:{s.external_id}"
+                    text=_title_button_text(s.name, s.year), callback_data=f"{_PICK_PREFIX}{kind}:{s.external_id}"
                 )
             ]
             for s in suggestions[:MAX_SUGGESTIONS]
@@ -415,7 +415,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         card = await tracker.title_card(title_id)
         if callback.message is not None and card is not None:
             await callback.message.answer(
-                f"✅ Просмотрено: {card.title}\nФильм в архиве. Раз в неделю я проверю, не анонсировано ли продолжение."
+                f"✅ Просмотрено: {card.name}\nФильм в архиве. Раз в неделю я проверю, не анонсировано ли продолжение."
             )
 
     async def follow_sequel(callback: CallbackQuery, raw: str) -> None:
@@ -506,7 +506,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await callback.answer()
         if callback.message is not None:
             await callback.message.answer(
-                _delete_question([card.title]),
+                _delete_question([card.name]),
                 reply_markup=_confirm_markup(f"{_DELETE_PREFIX}{_YES}:{title_id}", f"{_DELETE_PREFIX}{_NO}:{title_id}"),
             )
 
@@ -642,12 +642,12 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
 
     router.message.register(start, CommandStart())
     router.message.register(show_menu, F.text == TEST_EVENT_BUTTON)
-    router.callback_query.register(send_test_event, F.data.startswith(_KIND_PREFIX))
+    router.callback_query.register(send_test_event, F.data.startswith(_SAMPLE_PREFIX))
 
-    router.message.register(send_digest_now, Command(SUMMARY_COMMAND))
-    router.message.register(send_digest_now, F.text == DIGEST_BUTTON)
+    router.message.register(send_summary_now, Command(SUMMARY_COMMAND))
+    router.message.register(send_summary_now, F.text == SUMMARY_BUTTON)
     router.callback_query.register(show_rules_check, F.data == RULES_CHECK_CALLBACK)
-    router.callback_query.register(run_rules_check, F.data.startswith(_WINDOW_PREFIX))
+    router.callback_query.register(run_rules_check, F.data.startswith(_CHECK_PREFIX))
 
     router.message.register(show_add_menu, F.text == ADD_BUTTON)
     router.message.register(show_my_titles, F.text == MY_TITLES_BUTTON)

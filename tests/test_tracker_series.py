@@ -41,7 +41,7 @@ def weekly(first_day, count):
 
 def show(external_id, name, *seasons):
     return SeriesSnapshot(
-        external_id=external_id, title=name, original_title=name, year=2026, genres=["драма"], seasons=list(seasons)
+        external_id=external_id, name=name, original_name=name, year=2026, genres=["драма"], seasons=list(seasons)
     )
 
 
@@ -89,7 +89,7 @@ class FakeSeriesSource:
         self.snapshot_calls = 0
 
     async def suggest(self, query):
-        return [Suggestion("series", s.external_id, s.title, s.original_title, s.year) for s in self.by_id.values()]
+        return [Suggestion("series", s.external_id, s.name, s.original_name, s.year) for s in self.by_id.values()]
 
     async def snapshot(self, external_id):
         self.snapshot_calls += 1

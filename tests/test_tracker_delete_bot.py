@@ -26,8 +26,8 @@ STALE = "Эта кнопка больше не работает, откройт�
 def movie(external_id):
     return MovieSnapshot(
         external_id=external_id,
-        title=NAMES[external_id],
-        original_title=NAMES[external_id],
+        name=NAMES[external_id],
+        original_name=NAMES[external_id],
         year=2021,
         genres=[],
         theatrical_date=date(2027, 1, 1),

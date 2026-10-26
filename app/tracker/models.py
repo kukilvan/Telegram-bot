@@ -25,8 +25,8 @@ class Title(TrackerBase):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     kind: Mapped[str] = mapped_column(String(16), index=True)  # movie | series | anime | game
-    title: Mapped[str] = mapped_column(String(500))  # Russian name when the source knows it
-    original_title: Mapped[str] = mapped_column(String(500))
+    name: Mapped[str] = mapped_column(String(500))  # Russian name when the source knows it
+    original_name: Mapped[str] = mapped_column(String(500))
     year: Mapped[int | None] = mapped_column(Integer)
     genres: Mapped[list] = mapped_column(JSON)
     poster_path: Mapped[str | None] = mapped_column(String(255))

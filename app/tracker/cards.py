@@ -31,8 +31,8 @@ class MovieLine:
 class TitleCard:
     id: int
     kind: str
-    title: str
-    original_title: str
+    name: str
+    original_name: str
     year: int | None
     genres: list[str]
     status: str
@@ -122,9 +122,9 @@ def format_card(card: TitleCard) -> str:
     icon = KIND_ICONS.get(card.kind, "🎞")
     kind = KIND_LABELS.get(card.kind, card.kind)
     status = STATUS_LABELS.get(card.status, card.status)
-    names = card.title
-    if card.original_title and card.original_title != card.title:
-        names = f"{card.title} · {card.original_title}"
+    names = card.name
+    if card.original_name and card.original_name != card.name:
+        names = f"{card.name} · {card.original_name}"
     lines = [f"{icon} {kind} · {status}", names]
     if card.year:
         lines.append(f"Год: {card.year}")

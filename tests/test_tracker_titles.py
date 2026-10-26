@@ -34,8 +34,8 @@ class FakeSender:
 
 DUNE_2 = MovieSnapshot(
     external_id="693134",
-    title="Дюна: Часть вторая",
-    original_title="Dune: Part Two",
+    name="Дюна: Часть вторая",
+    original_name="Dune: Part Two",
     year=2024,
     genres=["фантастика", "приключения"],
     poster_path="/p.jpg",
@@ -45,15 +45,15 @@ DUNE_2 = MovieSnapshot(
 )
 DUNE_3 = MovieSnapshot(
     external_id="1170608",
-    title="Дюна: Часть третья",
-    original_title="Dune: Part Three",
+    name="Дюна: Часть третья",
+    original_name="Dune: Part Three",
     year=2026,
     genres=["фантастика"],
     theatrical_date=date(2026, 12, 16),
     digital_date=None,
 )
 NOT_ANNOUNCED = MovieSnapshot(
-    external_id="77", title="Безымянный", original_title="Безымянный", year=None, genres=[]
+    external_id="77", name="Безымянный", original_name="Безымянный", year=None, genres=[]
 )
 
 
@@ -66,7 +66,7 @@ class FakeMovieSource:
         self.failing = False
 
     async def suggest(self, query):
-        return [Suggestion("movie", s.external_id, s.title, s.original_title, s.year) for s in self.by_id.values()]
+        return [Suggestion("movie", s.external_id, s.name, s.original_name, s.year) for s in self.by_id.values()]
 
     async def snapshot(self, external_id):
         self.snapshot_calls += 1
@@ -122,8 +122,8 @@ def test_card_has_names_year_genres_and_both_release_dates(tracker):
 
     card = run(tracker.title_card(result.title_id))
 
-    assert card.title == "Дюна: Часть вторая"
-    assert card.original_title == "Dune: Part Two"
+    assert card.name == "Дюна: Часть вторая"
+    assert card.original_name == "Dune: Part Two"
     assert card.year == 2024
     assert card.genres == ["фантастика", "приключения"]
     assert card.theatrical_date == date(2024, 2, 27)
@@ -180,7 +180,7 @@ def test_external_id_is_unique_per_source_in_the_schema(tracker, session_factory
 
     with session_factory() as s:
         other = Title(
-            kind="movie", title="x", original_title="x", genres=[], status="want",
+            kind="movie", name="x", original_name="x", genres=[], status="want",
             tracking_enabled=True, added_at=T0.replace(tzinfo=None), status_changed_at=T0.replace(tzinfo=None),
         )
         s.add(other)

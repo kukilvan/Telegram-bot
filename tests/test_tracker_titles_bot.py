@@ -20,8 +20,8 @@ OWNER, STRANGER = 42, 7
 
 DUNE_2 = MovieSnapshot(
     external_id="693134",
-    title="Дюна: Часть вторая",
-    original_title="Dune: Part Two",
+    name="Дюна: Часть вторая",
+    original_name="Dune: Part Two",
     year=2024,
     genres=["фантастика", "приключения"],
     theatrical_date=date(2024, 2, 27),
@@ -29,8 +29,8 @@ DUNE_2 = MovieSnapshot(
 )
 DUNE_3 = MovieSnapshot(
     external_id="1170608",
-    title="Дюна: Часть третья",
-    original_title="Dune: Part Three",
+    name="Дюна: Часть третья",
+    original_name="Dune: Part Three",
     year=2026,
     genres=["фантастика"],
     theatrical_date=date(2026, 12, 16),
@@ -53,7 +53,7 @@ class FakeMovieSource:
         self.queries.append(query)
         if query == "ничего":
             return []
-        return [Suggestion("movie", s.external_id, s.title, s.original_title, s.year) for s in self.by_id.values()]
+        return [Suggestion("movie", s.external_id, s.name, s.original_name, s.year) for s in self.by_id.values()]
 
     async def snapshot(self, external_id):
         if self.failing:

@@ -26,8 +26,8 @@ class SeriesSnapshot:
     """What the source knows about a series right now."""
 
     external_id: str
-    title: str
-    original_title: str
+    name: str
+    original_name: str
     year: int | None
     genres: list[str] = field(default_factory=list)
     poster_path: str | None = None
@@ -59,8 +59,8 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
         Suggestion(
             kind=KIND,
             external_id=str(item["id"]),
-            title=item.get("name") or item.get("original_name") or "",
-            original_title=item.get("original_name") or item.get("name") or "",
+            name=item.get("name") or item.get("original_name") or "",
+            original_name=item.get("original_name") or item.get("name") or "",
             year=_year(item.get("first_air_date")),
         )
         for item in results
@@ -92,8 +92,8 @@ def parse_show(raw: dict[str, Any], season_details: dict[int, dict[str, Any] | N
     ]
     return SeriesSnapshot(
         external_id=str(raw["id"]),
-        title=raw.get("name") or raw.get("original_name") or "",
-        original_title=raw.get("original_name") or raw.get("name") or "",
+        name=raw.get("name") or raw.get("original_name") or "",
+        original_name=raw.get("original_name") or raw.get("name") or "",
         year=_year(raw.get("first_air_date")),
         genres=[genre["name"] for genre in raw.get("genres") or []],
         poster_path=raw.get("poster_path"),

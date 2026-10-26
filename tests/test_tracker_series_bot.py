@@ -32,8 +32,8 @@ def out(first_day, count):
 
 SILO = SeriesSnapshot(
     external_id="125988",
-    title="Укрытие",
-    original_title="Silo",
+    name="Укрытие",
+    original_name="Silo",
     year=2023,
     genres=["драма"],
     seasons=[
@@ -44,7 +44,7 @@ SILO = SeriesSnapshot(
     ],
 )
 NEWCOMER = SeriesSnapshot(
-    external_id="201", title="Новичок", original_title="Newcomer", year=2027, seasons=[Season(1, "Сезон 1", 6, ())]
+    external_id="201", name="Новичок", original_name="Newcomer", year=2027, seasons=[Season(1, "Сезон 1", 6, ())]
 )
 
 
@@ -58,7 +58,7 @@ class FakeSeriesSource:
 
     async def suggest(self, query):
         self.queries.append(query)
-        return [Suggestion("series", s.external_id, s.title, s.original_title, s.year) for s in self.by_id.values()]
+        return [Suggestion("series", s.external_id, s.name, s.original_name, s.year) for s in self.by_id.values()]
 
     async def snapshot(self, external_id):
         if self.failing:

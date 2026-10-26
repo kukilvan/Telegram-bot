@@ -48,8 +48,8 @@ def test_search_results_become_suggestions_with_russian_and_original_titles():
     suggestions = parse_search(load("search_movie_duna.json")["results"])
 
     part_two = next(s for s in suggestions if s.external_id == "693134")
-    assert part_two.title == "Дюна: Часть вторая"
-    assert part_two.original_title == "Dune: Part Two"
+    assert part_two.name == "Дюна: Часть вторая"
+    assert part_two.original_name == "Dune: Part Two"
     assert part_two.year == 2024
     assert part_two.kind == "movie"
 
@@ -72,8 +72,8 @@ def test_released_movie_has_theatrical_and_digital_dates_from_nested_release_dat
     snapshot = parse_movie(load("movie_693134.json"))
 
     assert snapshot.external_id == "693134"
-    assert snapshot.title == "Дюна: Часть вторая"
-    assert snapshot.original_title == "Dune: Part Two"
+    assert snapshot.name == "Дюна: Часть вторая"
+    assert snapshot.original_name == "Dune: Part Two"
     assert snapshot.year == 2024
     assert snapshot.genres == ["фантастика", "приключения"]
     # earliest theatrical (type 3) and earliest digital (type 4) over all regions
@@ -84,7 +84,7 @@ def test_released_movie_has_theatrical_and_digital_dates_from_nested_release_dat
 def test_announced_movie_without_digital_release_has_no_digital_date():
     snapshot = parse_movie(load("movie_1170608.json"))
 
-    assert snapshot.title == "Дюна: Часть третья"
+    assert snapshot.name == "Дюна: Часть третья"
     assert snapshot.theatrical_date == date(2026, 12, 16)
     assert snapshot.digital_date is None
 
@@ -119,7 +119,7 @@ def test_source_suggests_through_the_provider():
     suggestions = run(TmdbMovieSource(provider).suggest("Дюна"))
 
     assert provider.searched == ["Дюна"]
-    assert suggestions[0].title == "Дюна"
+    assert suggestions[0].name == "Дюна"
 
 
 def test_source_search_outage_is_an_error_not_an_empty_result():
@@ -130,7 +130,7 @@ def test_source_search_outage_is_an_error_not_an_empty_result():
 def test_source_snapshot_of_a_known_movie():
     snapshot = run(TmdbMovieSource(FakeProvider()).snapshot("438631"))
 
-    assert snapshot.original_title == "Dune"
+    assert snapshot.original_name == "Dune"
     assert snapshot.year == 2021
 
 

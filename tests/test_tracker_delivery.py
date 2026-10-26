@@ -86,7 +86,7 @@ def set_rules(tracker, **override):
     rules = {
         "tz_name": "Asia/Jerusalem",
         "workdays": [6, 0, 1, 2, 3],
-        "digest_at": "15:00",
+        "summary_at": "15:00",
         "quiet_from": "21:00",
         "quiet_until": "07:30",
     }
@@ -258,7 +258,7 @@ def test_summary_now_sends_what_is_waiting_in_one_message_and_marks_it_delivered
     queue(tracker, clock, SUN, 10, 5, "два")
     clock.at(SUN, 10, 30)  # a working morning: the rules would keep them
 
-    result = run(tracker.digest_now())
+    result = run(tracker.summary_now())
 
     assert (result.events, result.delivered) == (2, True)
     [summary] = sender.messages
@@ -272,14 +272,14 @@ def test_summary_now_works_in_the_quiet_hours(tracker, clock, sender):
     queue(tracker, clock, THU, 22, 0, "ночное")
 
     clock.at(THU, 23, 0)
-    result = run(tracker.digest_now())
+    result = run(tracker.summary_now())
 
     assert result.delivered is True
     assert "ночное" in sender.messages[0]
 
 
 def test_summary_now_with_nothing_waiting_sends_nothing(tracker, clock, sender):
-    result = run(tracker.digest_now())
+    result = run(tracker.summary_now())
 
     assert (result.events, result.delivered) == (0, False)
     assert sender.sent == []
@@ -291,12 +291,12 @@ def test_a_failed_summary_stays_queued_and_comes_with_the_next_one(tracker, cloc
     sender.failing = True
     clock.at(SUN, 10, 30)
 
-    result = run(tracker.digest_now())
+    result = run(tracker.summary_now())
 
     assert (result.events, result.delivered) == (2, False)
     assert statuses(session_factory) == ["pending", "pending"]
     sender.failing = False
-    result = run(tracker.digest_now())
+    result = run(tracker.summary_now())
     assert result.delivered is True
     assert len(sender.sent) == 1
 
@@ -333,7 +333,7 @@ def ensure_title(tracker, title_id, name):
     with tracker.session_factory() as session:
         if session.get(Title, title_id) is None:
             session.add(
-                Title(id=title_id, kind="series", title=name, original_title=name, year=2026, genres=[], status="want",
+                Title(id=title_id, kind="series", name=name, original_name=name, year=2026, genres=[], status="want",
                       tracking_enabled=True, added_at=now, status_changed_at=now)
             )
             session.commit()
@@ -416,7 +416,7 @@ def test_real_episodes_found_by_polling_are_folded_in_the_summary(session_factor
     def show():
         episodes = tuple(Episode(n + 1, datetime(2026, 9, 7) + timedelta(weeks=n)) for n in range(10))
         return SeriesSnapshot(
-            external_id="200", title="Идущий", original_title="Идущий", year=2026, genres=[],
+            external_id="200", name="Идущий", original_name="Идущий", year=2026, genres=[],
             seasons=[Season(1, "Сезон 1", 10, episodes)], status="Returning Series",
         )
 
@@ -631,7 +631,7 @@ def test_the_rules_are_judged_in_the_time_zone_from_the_settings(tracker, clock,
 
 
 def test_working_days_summary_hour_and_quiet_hours_are_settings(tracker, clock, sender):
-    set_rules(tracker, workdays=[4], digest_at="10:00", quiet_from="23:00", quiet_until="05:00")
+    set_rules(tracker, workdays=[4], summary_at="10:00", quiet_from="23:00", quiet_until="05:00")
     queue(tracker, clock, FRI, 8, 0, "пятница утром")  # now Friday is the working day
     queue(tracker, clock, SUN, 8, 0, "воскресенье утром")  # and Sunday is a day off
     queue(tracker, clock, SUN, 22, 0, "воскресный вечер")  # outside the new quiet hours
@@ -656,13 +656,13 @@ def test_no_working_days_means_events_never_wait_for_a_summary(tracker, clock, s
 
 def test_settings_survive_a_restart_and_win_over_the_default_time_zone(session_factory, clock, sender):
     first = Tracker(session_factory, clock=clock, sender=sender, sources={})
-    set_rules(first, tz_name="Asia/Tokyo", workdays=[0], digest_at="09:30", quiet_from="22:00", quiet_until="06:00")
+    set_rules(first, tz_name="Asia/Tokyo", workdays=[0], summary_at="09:30", quiet_from="22:00", quiet_until="06:00")
 
     second = Tracker(session_factory, clock=clock, sender=sender, sources={}, default_tz=ZoneInfo("Europe/Paris"))
 
     rules = run(second.delivery_rules())
     assert (rules.tz, rules.workdays) == (ZoneInfo("Asia/Tokyo"), frozenset({0}))
-    assert (rules.digest_at, rules.quiet_from, rules.quiet_until) == (time(9, 30), time(22, 0), time(6, 0))
+    assert (rules.summary_at, rules.quiet_from, rules.quiet_until) == (time(9, 30), time(22, 0), time(6, 0))
 
 
 def test_without_settings_the_time_zone_is_the_one_the_core_was_given(session_factory, clock, sender):
@@ -675,12 +675,12 @@ def test_the_built_in_defaults_are_the_owners_week():
     rules = delivery.DeliveryRules()
 
     assert rules.workdays == frozenset({6, 0, 1, 2, 3})  # Sunday to Thursday
-    assert (rules.digest_at, rules.quiet_from, rules.quiet_until) == (time(15, 0), time(21, 0), time(7, 30))
+    assert (rules.summary_at, rules.quiet_from, rules.quiet_until) == (time(15, 0), time(21, 0), time(7, 30))
 
 
 @pytest.mark.parametrize(
     "bad",
-    [{"tz_name": "Mars/Olympus"}, {"workdays": [7]}, {"workdays": [-1]}, {"digest_at": "25:00"}, {"quiet_from": "evening"}],
+    [{"tz_name": "Mars/Olympus"}, {"workdays": [7]}, {"workdays": [-1]}, {"summary_at": "25:00"}, {"quiet_from": "evening"}],
 )
 def test_a_wrong_setting_is_refused_and_nothing_is_changed(tracker, bad):
     before = run(tracker.delivery_rules())
@@ -739,7 +739,7 @@ def test_a_failing_sender_during_a_substituted_time_is_not_reported_as_held(trac
     assert result.delivered is False and result.held_until is None
 
 
-SCENARIO_OUTCOMES = {
+CHECK_OUTCOMES = {
     "work-morning": local(SUN, 15),
     "work-afternoon": None,
     "friday": None,
@@ -751,22 +751,22 @@ SCENARIO_OUTCOMES = {
 }
 
 
-def test_every_scenario_has_an_expected_outcome():
-    assert set(SCENARIO_OUTCOMES) == {s.id for s in delivery.WINDOW_SCENARIOS}
+def test_every_delivery_check_has_an_expected_outcome():
+    assert set(CHECK_OUTCOMES) == {s.id for s in delivery.DELIVERY_CHECKS}
 
 
-@pytest.mark.parametrize("scenario", delivery.WINDOW_SCENARIOS, ids=lambda s: s.id)
-def test_each_scenario_of_the_menu_is_the_moment_it_names_and_ends_as_the_rules_say(tracker, clock, sender, scenario):
+@pytest.mark.parametrize("check", delivery.DELIVERY_CHECKS, ids=lambda s: s.id)
+def test_each_delivery_check_of_the_menu_is_the_moment_it_names_and_ends_as_the_rules_say(tracker, clock, sender, check):
     clock.at(SUN, 12)
-    moment = run(tracker.window_test_moment(scenario))
+    moment = run(tracker.delivery_check_moment(check))
 
     local_moment = moment.astimezone(JERUSALEM)
-    assert (local_moment.weekday(), local_moment.time()) == (scenario.weekday, scenario.at)
+    assert (local_moment.weekday(), local_moment.time()) == (check.weekday, check.at)
     assert moment > clock()
 
     result = run(tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment))
 
-    expected = SCENARIO_OUTCOMES[scenario.id]
+    expected = CHECK_OUTCOMES[check.id]
     assert result.delivered is True
     assert result.delivered_at_once is (expected is None)
     if expected is not None:
@@ -774,11 +774,11 @@ def test_each_scenario_of_the_menu_is_the_moment_it_names_and_ends_as_the_rules_
         assert result.held_until.astimezone(JERUSALEM).weekday() == expected.astimezone(JERUSALEM).weekday()
 
 
-def test_the_scenario_moment_today_counts_when_it_is_still_ahead(tracker, clock):
+def test_the_delivery_check_moment_today_counts_when_it_is_still_ahead(tracker, clock):
     clock.at(SUN, 9)
-    scenario = delivery.scenario_by_id("work-morning")  # Sunday 10:00
+    check = delivery.delivery_check_by_id("work-morning")  # Sunday 10:00
 
-    assert run(tracker.window_test_moment(scenario)) == local(SUN, 10)
+    assert run(tracker.delivery_check_moment(check)) == local(SUN, 10)
 
 
 # --- the pure helpers ------------------------------------------------------------------------------
@@ -860,7 +860,7 @@ def test_there_is_no_silence_without_quiet_hours_and_working_days():
 
 
 def test_a_summary_hour_at_midnight_leaves_no_working_morning_to_be_silent_in():
-    rules = delivery.DeliveryRules(digest_at=time(0, 0), quiet_from=time(21, 0), quiet_until=time(21, 0))
+    rules = delivery.DeliveryRules(summary_at=time(0, 0), quiet_from=time(21, 0), quiet_until=time(21, 0))
 
     assert rules.next_silence(datetime(2026, 11, 6, 12, 0)) is None
 

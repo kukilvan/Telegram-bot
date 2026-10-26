@@ -66,8 +66,8 @@ def test_search_results_become_series_suggestions():
 
     silo = next(s for s in suggestions if s.external_id == str(SILO))
     assert silo.kind == "series"
-    assert silo.title == "Укрытие"
-    assert silo.original_title == "Silo"
+    assert silo.name == "Укрытие"
+    assert silo.original_name == "Silo"
     assert silo.year == 2023
 
 
@@ -81,8 +81,8 @@ def test_show_data_comes_from_the_show_response():
     snapshot = parse_show(load(f"tv_{SILO}.json"), silo_seasons())
 
     assert snapshot.external_id == str(SILO)
-    assert snapshot.title == "Укрытие"
-    assert snapshot.original_title == "Silo"
+    assert snapshot.name == "Укрытие"
+    assert snapshot.original_name == "Silo"
     assert snapshot.year == 2023
     assert snapshot.genres  # names, not ids
     assert all(isinstance(g, str) for g in snapshot.genres)
@@ -152,7 +152,7 @@ def test_source_suggests_through_the_provider():
     suggestions = run(TmdbSeriesSource(provider).suggest("Укрытие"))
 
     assert provider.searched == ["Укрытие"]
-    assert suggestions[0].title == "Укрытие"
+    assert suggestions[0].name == "Укрытие"
 
 
 def test_source_search_outage_is_an_error_not_an_empty_result():
@@ -165,7 +165,7 @@ def test_source_snapshot_reads_the_show_and_each_real_season():
 
     snapshot = run(TmdbSeriesSource(provider).snapshot(str(SILO)))
 
-    assert snapshot.original_title == "Silo"
+    assert snapshot.original_name == "Silo"
     assert [s.number for s in snapshot.seasons] == [1, 2, 3, 4]
     assert sorted(provider.season_calls) == [1, 2, 3, 4]
 

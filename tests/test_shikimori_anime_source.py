@@ -51,8 +51,8 @@ def test_one_piece_is_one_season():
 
     assert [s.number for s in snapshot.seasons] == [1]
     assert snapshot.movies == []
-    assert snapshot.title == "Ван-Пис"
-    assert snapshot.original_title == "One Piece"
+    assert snapshot.name == "Ван-Пис"
+    assert snapshot.original_name == "One Piece"
     assert snapshot.year == 1999
 
 
@@ -138,7 +138,7 @@ def test_the_title_is_the_first_season_and_not_a_film_that_came_before_it():
     snapshot = franchise("jujutsu_kaisen.json", "48561")
 
     assert snapshot.external_id == JJK
-    assert snapshot.title == "Магическая битва"
+    assert snapshot.name == "Магическая битва"
     assert snapshot.year == 2020
     assert snapshot.genres  # Russian genre names only, no demographics or themes
     assert "Сёнен" not in franchise("one_piece.json", ONE_PIECE).genres
@@ -321,7 +321,7 @@ def test_a_franchise_of_films_alone_has_no_seasons_and_still_a_title():
     snapshot = chain_of(_raw("1", "Film", kind="movie", aired="2016-08-26", episodes=1, russian="Фильм"))
 
     assert snapshot.seasons == [] and [m.name for m in snapshot.movies] == ["Фильм"]
-    assert (snapshot.external_id, snapshot.title) == ("1", "Фильм")
+    assert (snapshot.external_id, snapshot.name) == ("1", "Фильм")
 
 
 def test_a_chain_with_nothing_to_watch_is_none():
@@ -344,13 +344,13 @@ def test_search_gives_one_suggestion_per_franchise_named_after_its_first_season(
     suggestions = parse_search(load_search())
 
     jjk = next(s for s in suggestions if s.external_id == JJK)
-    assert (jjk.kind, jjk.title, jjk.original_title, jjk.year) == ("anime", "Магическая битва", "Jujutsu Kaisen", 2020)
-    assert sum(1 for s in suggestions if s.title.startswith("Магическая битва")) == 1  # not one per season or film
+    assert (jjk.kind, jjk.name, jjk.original_name, jjk.year) == ("anime", "Магическая битва", "Jujutsu Kaisen", 2020)
+    assert sum(1 for s in suggestions if s.name.startswith("Магическая битва")) == 1  # not one per season or film
 
 
 def test_search_leaves_out_promo_videos_and_music_but_keeps_other_franchises():
     suggestions = parse_search(load_search())
-    titles = [s.title for s in suggestions]
+    titles = [s.name for s in suggestions]
 
     assert "Магическая битва PV" not in titles
     assert "Восставшие на бой" not in titles  # a music video

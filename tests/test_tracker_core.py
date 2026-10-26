@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select, text
 
-from app.tracker.core import TestEventKind, Tracker
+from app.tracker.core import TestSample, Tracker
 from app.tracker.db import create_tracker_engine, create_session_factory, migrate
 from app.tracker.models import DeliveryItem, Event
 
@@ -69,20 +69,20 @@ def queue_rows(session_factory):
 
 
 def test_test_event_reaches_the_sender(tracker, sender):
-    kind = tracker.test_event_kinds()[0]
+    sample = tracker.test_samples()[0]
 
-    result = run(tracker.send_test_event(kind.id))
+    result = run(tracker.send_test_event(sample.id))
 
     assert result.delivered is True
     assert len(sender.sent) == 1
-    assert kind.label in sender.sent[0]
+    assert sample.label in sender.sent[0]
 
 
 def test_event_is_marked_delivered_only_after_a_successful_send(tracker, sender, session_factory):
-    kind = tracker.test_event_kinds()[0]
+    sample = tracker.test_samples()[0]
     sender.failing = True
 
-    result = run(tracker.send_test_event(kind.id))
+    result = run(tracker.send_test_event(sample.id))
 
     assert result.delivered is False
     [row] = queue_rows(session_factory)
@@ -92,9 +92,9 @@ def test_event_is_marked_delivered_only_after_a_successful_send(tracker, sender,
 
 
 def test_failed_event_is_delivered_on_the_next_attempt(tracker, sender, session_factory, clock):
-    kind = tracker.test_event_kinds()[0]
+    sample = tracker.test_samples()[0]
     sender.failing = True
-    run(tracker.send_test_event(kind.id))
+    run(tracker.send_test_event(sample.id))
 
     sender.failing = False
     clock.advance(minutes=1)
@@ -108,8 +108,8 @@ def test_failed_event_is_delivered_on_the_next_attempt(tracker, sender, session_
 
 
 def test_a_delivered_event_is_never_sent_twice(tracker, sender):
-    kind = tracker.test_event_kinds()[0]
-    run(tracker.send_test_event(kind.id))
+    sample = tracker.test_samples()[0]
+    run(tracker.send_test_event(sample.id))
 
     run(tracker.deliver_pending())
     run(tracker.deliver_pending())
@@ -142,10 +142,10 @@ def test_same_dedup_key_makes_one_event(tracker, sender, session_factory):
 
 
 def test_every_test_event_press_is_a_new_event(tracker, sender):
-    kind = tracker.test_event_kinds()[0]
+    sample = tracker.test_samples()[0]
 
-    run(tracker.send_test_event(kind.id))
-    run(tracker.send_test_event(kind.id))
+    run(tracker.send_test_event(sample.id))
+    run(tracker.send_test_event(sample.id))
 
     assert len(sender.sent) == 2
 
@@ -165,18 +165,18 @@ def test_timestamps_come_from_the_clock_at_insert_time(tracker, session_factory,
     assert rows[1].created_at == (T0 + timedelta(hours=3)).replace(tzinfo=None)
 
 
-def test_unknown_test_event_kind_is_rejected(tracker, sender):
+def test_unknown_test_sample_is_rejected(tracker, sender):
     with pytest.raises(KeyError):
-        run(tracker.send_test_event("no-such-kind"))
+        run(tracker.send_test_event("no-such-sample"))
     assert sender.sent == []
 
 
-def test_new_kinds_appear_in_the_menu_without_touching_the_core(tracker, sender):
-    tracker.register_test_event_kind(
-        TestEventKind(id="movie-announced", label="Фильм: объявлена дата", build=lambda: {"text": "Фильм скоро"})
+def test_new_samples_appear_in_the_menu_without_touching_the_core(tracker, sender):
+    tracker.register_test_sample(
+        TestSample(id="movie-announced", label="Фильм: объявлена дата", build=lambda: {"text": "Фильм скоро"})
     )
 
-    ids = [k.id for k in tracker.test_event_kinds()]
+    ids = [k.id for k in tracker.test_samples()]
     assert "movie-announced" in ids
 
     run(tracker.send_test_event("movie-announced"))

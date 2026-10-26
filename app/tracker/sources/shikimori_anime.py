@@ -128,8 +128,8 @@ class AnimeSnapshot:
     """What the source knows about an anime franchise right now."""
 
     external_id: str  # Shikimori id of the franchise's first season: the same whichever entry the owner picked
-    title: str
-    original_title: str
+    name: str
+    original_name: str
     year: int | None
     genres: list[str] = field(default_factory=list)
     poster_path: str | None = None
@@ -219,8 +219,8 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             Suggestion(
                 kind=KIND,
                 external_id=shown.id,
-                title=shown.display_name,
-                original_title=shown.name,
+                name=shown.display_name,
+                original_name=shown.name,
                 year=shown.aired_on.year if shown.aired_on else None,
             )
         )
@@ -372,8 +372,8 @@ def build_snapshot(entries: Mapping[str, Entry]) -> AnimeSnapshot | None:
     franchise = next((e.franchise for e in [head, *ordered] if e.franchise), None)
     return AnimeSnapshot(
         external_id=head.id,
-        title=head.display_name,
-        original_title=head.name,
+        name=head.display_name,
+        original_name=head.name,
         year=head.aired_on.year if head.aired_on else None,
         genres=list(head.genres),
         poster_path=head.poster,

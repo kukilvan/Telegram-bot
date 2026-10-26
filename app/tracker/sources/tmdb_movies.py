@@ -24,8 +24,8 @@ class Suggestion:
 
     kind: str
     external_id: str
-    title: str
-    original_title: str
+    name: str
+    original_name: str
     year: int | None
 
 
@@ -34,8 +34,8 @@ class MovieSnapshot:
     """What the source knows about a movie right now."""
 
     external_id: str
-    title: str
-    original_title: str
+    name: str
+    original_name: str
     year: int | None
     genres: list[str] = field(default_factory=list)
     poster_path: str | None = None
@@ -70,8 +70,8 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
         Suggestion(
             kind="movie",
             external_id=str(item["id"]),
-            title=item.get("title") or item.get("original_title") or "",
-            original_title=item.get("original_title") or item.get("title") or "",
+            name=item.get("title") or item.get("original_title") or "",
+            original_name=item.get("original_title") or item.get("title") or "",
             year=_year(item.get("release_date")),
         )
         for item in results
@@ -92,8 +92,8 @@ def parse_movie(raw: dict[str, Any]) -> MovieSnapshot:
     release_dates = raw.get("release_dates") or {}
     return MovieSnapshot(
         external_id=str(raw["id"]),
-        title=raw.get("title") or raw.get("original_title") or "",
-        original_title=raw.get("original_title") or raw.get("title") or "",
+        name=raw.get("title") or raw.get("original_title") or "",
+        original_name=raw.get("original_title") or raw.get("title") or "",
         year=_year(raw.get("release_date")),
         genres=[genre["name"] for genre in raw.get("genres") or []],
         poster_path=raw.get("poster_path"),

@@ -28,11 +28,11 @@ from app.tracker.cards import format_weekday_date, local_moment
 from app.tracker.series_events import EPISODE_OUT
 
 DEFAULT_WORKDAYS = frozenset({6, 0, 1, 2, 3})  # Sunday to Thursday; Monday is 0, as in `date.weekday()`
-DEFAULT_DIGEST_AT = time(15, 0)
+DEFAULT_SUMMARY_AT = time(15, 0)
 DEFAULT_QUIET_FROM = time(21, 0)
 DEFAULT_QUIET_UNTIL = time(7, 30)
 
-DIGEST_ICON = "📋"
+SUMMARY_ICON = "📋"
 MESSAGE_LIMIT = 3500  # Telegram refuses more than 4096 characters; a longer summary goes in several messages
 _EPISODE_MARK = " — вышла серия "  # where a series message names the title: «📺 Укрытие — вышла серия 5 из 10»
 
@@ -41,7 +41,7 @@ _EPISODE_MARK = " — вышла серия "  # where a series message names th
 class DeliveryRules:
     tz: tzinfo = timezone.utc
     workdays: frozenset[int] = DEFAULT_WORKDAYS
-    digest_at: time = DEFAULT_DIGEST_AT
+    summary_at: time = DEFAULT_SUMMARY_AT
     quiet_from: time = DEFAULT_QUIET_FROM
     quiet_until: time = DEFAULT_QUIET_UNTIL
 
@@ -69,7 +69,7 @@ class DeliveryRules:
     def holds(self, moment: datetime) -> bool:
         """At this moment the bot is silent: events wait."""
         local = self.local(moment)
-        return self.is_quiet(local) or (self.is_workday(local) and local.time() < self.digest_at)
+        return self.is_quiet(local) or (self.is_workday(local) and local.time() < self.summary_at)
 
     def _quiet_end(self, local: datetime) -> datetime:
         end = datetime.combine(local.date(), self.quiet_until)
@@ -82,8 +82,8 @@ class DeliveryRules:
         for _ in range(4):  # a quiet end that lands before the summary hour needs a second step; sane settings need two
             if self.is_quiet(local):
                 local, waited = self._quiet_end(local), True
-            elif self.is_workday(local) and local.time() < self.digest_at:
-                local, waited = datetime.combine(local.date(), self.digest_at), True
+            elif self.is_workday(local) and local.time() < self.summary_at:
+                local, waited = datetime.combine(local.date(), self.summary_at), True
             else:
                 break
         return (self.utc(local), True) if waited else (queued_at, False)
@@ -97,7 +97,7 @@ class DeliveryRules:
         if self.quiet_from != self.quiet_until:
             start = datetime.combine(local.date(), self.quiet_from)
             starts.append(start if start > local else start + timedelta(days=1))
-        if self.digest_at > time(0, 0):  # a summary hour at midnight leaves no working morning to be silent in
+        if self.summary_at > time(0, 0):  # a summary hour at midnight leaves no working morning to be silent in
             for ahead in range(1, 8):
                 midnight = datetime.combine(local.date() + timedelta(days=ahead), time(0, 0))
                 if self.is_workday(midnight):
@@ -231,10 +231,10 @@ def one_line(text: str) -> str:
     return " · ".join(part for part in text.split("\n") if part)
 
 
-def digest_messages(units: Sequence[Unit], moment: datetime, rules: DeliveryRules) -> list[tuple[str, list[Unit]]]:
+def summary_messages(units: Sequence[Unit], moment: datetime, rules: DeliveryRules) -> list[tuple[str, list[Unit]]]:
     """The summary as one message, or several when it would not fit into Telegram. Each message comes with the
     units it holds, so only those are marked as delivered when it goes out."""
-    header = f"{DIGEST_ICON} Сводка · {format_weekday_date(rules.local(moment).date())}"
+    header = f"{SUMMARY_ICON} Сводка · {format_weekday_date(rules.local(moment).date())}"
     messages: list[tuple[str, list[Unit]]] = []
     lines: list[str] = []
     held: list[Unit] = []
@@ -253,7 +253,7 @@ def digest_messages(units: Sequence[Unit], moment: datetime, rules: DeliveryRule
 
 
 @dataclass(frozen=True)
-class WindowScenario:
+class DeliveryCheck:
     """A moment of the week for «Тестовое событие»: the owner sees how the rules treat an event queued then."""
 
     id: str
@@ -268,20 +268,20 @@ class WindowScenario:
         return moment if moment > now_local else moment + timedelta(days=7)
 
 
-WINDOW_SCENARIOS: tuple[WindowScenario, ...] = (
-    WindowScenario("work-morning", "Вс, 10:00 — рабочий день до сводки", 6, time(10, 0)),
-    WindowScenario("work-afternoon", "Вс, 16:00 — рабочий день после сводки", 6, time(16, 0)),
-    WindowScenario("friday", "Пт, 12:00 — выходной", 4, time(12, 0)),
-    WindowScenario("saturday", "Сб, 10:00 — выходной", 5, time(10, 0)),
-    WindowScenario("night-before-day-off", "Чт, 22:00 — ночь перед выходным", 3, time(22, 0)),
-    WindowScenario("night-before-workday", "Сб, 22:00 — ночь перед рабочим днём", 5, time(22, 0)),
-    WindowScenario("quiet-ends", "Пт, 07:29 — за минуту до конца тихих часов", 4, time(7, 29)),
-    WindowScenario("quiet-ended", "Пт, 07:30 — тихие часы кончились", 4, time(7, 30)),
+DELIVERY_CHECKS: tuple[DeliveryCheck, ...] = (
+    DeliveryCheck("work-morning", "Вс, 10:00 — рабочий день до сводки", 6, time(10, 0)),
+    DeliveryCheck("work-afternoon", "Вс, 16:00 — рабочий день после сводки", 6, time(16, 0)),
+    DeliveryCheck("friday", "Пт, 12:00 — выходной", 4, time(12, 0)),
+    DeliveryCheck("saturday", "Сб, 10:00 — выходной", 5, time(10, 0)),
+    DeliveryCheck("night-before-day-off", "Чт, 22:00 — ночь перед выходным", 3, time(22, 0)),
+    DeliveryCheck("night-before-workday", "Сб, 22:00 — ночь перед рабочим днём", 5, time(22, 0)),
+    DeliveryCheck("quiet-ends", "Пт, 07:29 — за минуту до конца тихих часов", 4, time(7, 29)),
+    DeliveryCheck("quiet-ended", "Пт, 07:30 — тихие часы кончились", 4, time(7, 30)),
 )
 
 
-def scenario_by_id(scenario_id: str) -> WindowScenario | None:
-    return next((s for s in WINDOW_SCENARIOS if s.id == scenario_id), None)
+def delivery_check_by_id(check_id: str) -> DeliveryCheck | None:
+    return next((c for c in DELIVERY_CHECKS if c.id == check_id), None)
 
 
 def parse_time(value: str | time) -> time:

@@ -43,9 +43,9 @@ class FakeSender:
         self.actions.append(tuple(actions))
 
 
-def movie(external_id, title="Дюна", theatrical=None):
+def movie(external_id, name="Дюна", theatrical=None):
     return MovieSnapshot(
-        external_id=external_id, title=title, original_title=title, year=2021, genres=[], theatrical_date=theatrical
+        external_id=external_id, name=name, original_name=name, year=2021, genres=[], theatrical_date=theatrical
     )
 
 
@@ -126,9 +126,9 @@ def add(tracker, source, snapshot):
     return run(tracker.add_title("movie", snapshot.external_id)).title_id
 
 
-def archive(tracker, source, sequels, *parts, external_id=DUNE, title="Дюна"):
+def archive(tracker, source, sequels, *parts, external_id=DUNE, name="Дюна"):
     """Add a movie, mark it watched and let the first check record what its collection already holds."""
-    title_id = add(tracker, source, movie(external_id, title=title))
+    title_id = add(tracker, source, movie(external_id, name=name))
     sequels.set(external_id, *parts)
     run(tracker.mark_watched(title_id))
     run(tracker.poll_due())
@@ -360,8 +360,8 @@ def test_marking_watched_schedules_the_first_check_right_away(tracker, source, s
 def test_a_failing_sequel_check_is_postponed_and_the_other_movies_are_still_checked(
     tracker, source, sequels, clock, sender, session_factory
 ):
-    bad = archive(tracker, source, sequels, external_id="1", title="Сбойный")
-    archive(tracker, source, sequels, external_id="2", title="Рабочий")
+    bad = archive(tracker, source, sequels, external_id="1", name="Сбойный")
+    archive(tracker, source, sequels, external_id="2", name="Рабочий")
     sequels.failing.add("1")
     sequels.set("2", PART_THREE)
     clock.advance(days=7)
@@ -380,8 +380,8 @@ def test_a_failing_sequel_check_is_postponed_and_the_other_movies_are_still_chec
 def test_one_sequel_of_a_franchise_is_announced_once_however_many_of_its_movies_are_archived(
     tracker, source, sequels, clock, sender
 ):
-    archive(tracker, source, sequels, external_id="1", title="Первая часть")
-    archive(tracker, source, sequels, external_id="2", title="Вторая часть")
+    archive(tracker, source, sequels, external_id="1", name="Первая часть")
+    archive(tracker, source, sequels, external_id="2", name="Вторая часть")
     sequels.set("1", PART_THREE)
     sequels.set("2", PART_THREE)
 
@@ -392,7 +392,7 @@ def test_one_sequel_of_a_franchise_is_announced_once_however_many_of_its_movies_
 
 def test_a_sequel_the_owner_already_follows_is_not_announced(tracker, source, sequels, clock, sender):
     archive(tracker, source, sequels)
-    add(tracker, source, movie(PART_THREE.external_id, title="Дюна: Часть третья"))
+    add(tracker, source, movie(PART_THREE.external_id, name="Дюна: Часть третья"))
     sequels.set(DUNE, PART_THREE)
 
     week_later(tracker, clock)
@@ -431,7 +431,7 @@ def test_nothing_is_added_to_the_list_until_the_owner_follows(tracker, source, s
 
 def test_following_a_sequel_adds_it_as_wanted(tracker, source, sequels, clock, sender):
     event_id = announce(tracker, source, sequels, clock, sender, PART_THREE)
-    source.update(movie(PART_THREE.external_id, title="Дюна: Часть третья", theatrical=date(2026, 12, 15)))
+    source.update(movie(PART_THREE.external_id, name="Дюна: Часть третья", theatrical=date(2026, 12, 15)))
 
     result = run(tracker.follow_sequel(event_id))
 
@@ -441,7 +441,7 @@ def test_following_a_sequel_adds_it_as_wanted(tracker, source, sequels, clock, s
 
 def test_following_twice_opens_the_title_instead_of_adding_a_second_one(tracker, source, sequels, clock, sender):
     event_id = announce(tracker, source, sequels, clock, sender, PART_THREE)
-    source.update(movie(PART_THREE.external_id, title="Дюна: Часть третья"))
+    source.update(movie(PART_THREE.external_id, name="Дюна: Часть третья"))
     first = run(tracker.follow_sequel(event_id))
 
     second = run(tracker.follow_sequel(event_id))
@@ -453,10 +453,10 @@ def test_following_twice_opens_the_title_instead_of_adding_a_second_one(tracker,
 
 def test_the_followed_sequel_is_polled_like_any_wanted_movie(tracker, source, sequels, clock, sender):
     event_id = announce(tracker, source, sequels, clock, sender, PART_THREE)
-    source.update(movie(PART_THREE.external_id, title="Дюна: Часть третья"))
+    source.update(movie(PART_THREE.external_id, name="Дюна: Часть третья"))
     run(tracker.follow_sequel(event_id))
     sender.sent.clear()
-    source.update(movie(PART_THREE.external_id, title="Дюна: Часть третья", theatrical=date(2026, 12, 16)))
+    source.update(movie(PART_THREE.external_id, name="Дюна: Часть третья", theatrical=date(2026, 12, 16)))
 
     clock.advance(days=2)
     run(tracker.poll_due())
@@ -483,7 +483,7 @@ def test_only_a_sequel_announcement_can_be_followed(tracker, source, sender):
 
 
 def test_the_sequel_announcement_is_in_the_test_event_menu(tracker, sender):
-    assert "movie-sequel" in [k.id for k in tracker.test_event_kinds()]
+    assert "movie-sequel" in [k.id for k in tracker.test_samples()]
 
     result = run(tracker.send_test_event("movie-sequel"))
 

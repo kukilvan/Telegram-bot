@@ -47,7 +47,7 @@ def test_other_movies_of_the_collection_become_parts_and_the_movie_itself_is_lef
     snapshot = parse_sequels(load("movie_438631.json"), load("collection_726871.json"))
 
     assert snapshot.own_date == date(2021, 9, 15)
-    assert [(p.external_id, p.title, p.release_date) for p in snapshot.parts] == [
+    assert [(p.external_id, p.name, p.release_date) for p in snapshot.parts] == [
         ("693134", "Дюна: Часть вторая", date(2024, 2, 27)),
         ("1170608", "Дюна: Часть третья", date(2026, 12, 15)),
     ]

@@ -43,15 +43,15 @@ def test_no_public_method_that_opens_a_database_session_is_an_ordinary_function(
 
 @pytest.mark.parametrize(
     "name",
-    ["title_card", "list_titles", "watchable_seasons", "delivery_rules", "window_test_moment", "part_gap_weeks", "record_event"],
+    ["title_card", "list_titles", "watchable_seasons", "delivery_rules", "delivery_check_moment", "part_gap_weeks", "record_event"],
 )
 def test_the_methods_that_used_to_read_in_the_callers_thread_are_coroutines(name):
     assert inspect.iscoroutinefunction(getattr(Tracker, name))
 
 
 def test_the_methods_without_a_database_stay_ordinary():
-    assert not inspect.iscoroutinefunction(Tracker.test_event_kinds)
-    assert not inspect.iscoroutinefunction(Tracker.register_test_event_kind)
+    assert not inspect.iscoroutinefunction(Tracker.test_samples)
+    assert not inspect.iscoroutinefunction(Tracker.register_test_sample)
 
 
 def test_creating_the_core_does_not_open_the_database():
