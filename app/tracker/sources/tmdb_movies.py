@@ -13,6 +13,7 @@ from datetime import date
 from typing import Any
 
 from app.tracker.models import TitleKind
+from app.tracker.sources.dates import parse_response_date, response_year
 
 THEATRICAL = 3
 DIGITAL = 4
@@ -53,20 +54,6 @@ class MovieSnapshot:
         }
 
 
-def _parse_date(value: str | None) -> date | None:
-    if not value:
-        return None
-    try:
-        return date.fromisoformat(value[:10])
-    except ValueError:
-        return None
-
-
-def _year(value: str | None) -> int | None:
-    parsed = _parse_date(value)
-    return parsed.year if parsed else None
-
-
 def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
     return [
         Suggestion(
@@ -74,7 +61,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             external_id=str(item["id"]),
             name=item.get("title") or item.get("original_title") or "",
             original_name=item.get("original_title") or item.get("title") or "",
-            year=_year(item.get("release_date")),
+            year=response_year(item.get("release_date")),
         )
         for item in results
     ]
@@ -85,7 +72,7 @@ def _earliest(release_dates: dict[str, Any], release_type: int) -> date | None:
         parsed
         for region in (release_dates or {}).get("results", [])
         for entry in region.get("release_dates", [])
-        if entry.get("type") == release_type and (parsed := _parse_date(entry.get("release_date")))
+        if entry.get("type") == release_type and (parsed := parse_response_date(entry.get("release_date")))
     ]
     return min(found) if found else None
 
@@ -96,7 +83,7 @@ def parse_movie(raw: dict[str, Any]) -> MovieSnapshot:
         external_id=str(raw["id"]),
         name=raw.get("title") or raw.get("original_title") or "",
         original_name=raw.get("original_title") or raw.get("title") or "",
-        year=_year(raw.get("release_date")),
+        year=response_year(raw.get("release_date")),
         genres=[genre["name"] for genre in raw.get("genres") or []],
         poster_path=raw.get("poster_path"),
         overview=raw.get("overview") or None,

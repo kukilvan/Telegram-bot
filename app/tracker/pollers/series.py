@@ -33,7 +33,7 @@ class SeriesPoller(Poller):
         found = self.record_all(
             due, series_events.detect_events(due.id, due.name, old, new, observed_at, now, gap), previous_look=observed_at
         )
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             storage.sync_seasons(session, due.id, new.seasons)
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             stored.state = new.to_state()

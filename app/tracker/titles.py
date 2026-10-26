@@ -6,17 +6,17 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import delete, select
-from sqlalchemy.exc import IntegrityError
 
 from app.tracker import seasons as season_logic
 from app.tracker import sequel_events, storage
 from app.tracker.cards import MovieLine, TitleCard
-from app.tracker.context import PRIMARY_ROLE, CoreContext, parse_date
+from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.errors import TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ExternalId, Event, MovieRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import AddResult, DeleteResult, TitleSummary, WatchableSeason, WatchedResult
 from app.tracker.settings_store import SettingsStore
+from app.tracker.sources.dates import parse_date
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
@@ -52,23 +52,31 @@ class Titles:
             existing = await asyncio.to_thread(self._find_title_id, source.source_key, snapshot.external_id)
             if existing is not None:
                 return AddResult(existing, created=False)
-        async with self.ctx.write_lock:
-            return await asyncio.to_thread(self._store_title, kind, source.source_key, snapshot)
+        return await asyncio.to_thread(self._store_title, kind, source.source_key, snapshot)
 
     def _find_title_id(self, source_key: str, external_id: str) -> int | None:
         with self.ctx.session_factory() as session:
-            return session.scalar(
-                select(ExternalId.title_id).where(
-                    ExternalId.source == source_key,
-                    ExternalId.external_id == external_id,
-                    ExternalId.role == PRIMARY_ROLE,
-                )
+            return self._primary_title_id(session, source_key, external_id)
+
+    @staticmethod
+    def _primary_title_id(session, source_key: str, external_id: str) -> int | None:
+        return session.scalar(
+            select(ExternalId.title_id).where(
+                ExternalId.source == source_key,
+                ExternalId.external_id == external_id,
+                ExternalId.role == PRIMARY_ROLE,
             )
+        )
 
     def _store_title(self, kind: TitleKind, source_key: str, snapshot: Any) -> AddResult:
         now = self.ctx.now()
         poller = self.pollers.of(kind)
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
+            # the same title may have been added by a second request while this one waited for the source: the
+            # write session holds the database, so what is seen here stays true until the commit
+            existing = self._primary_title_id(session, source_key, snapshot.external_id)
+            if existing is not None:
+                return AddResult(existing, created=False)
             title = Title(
                 kind=kind,
                 name=snapshot.name,
@@ -102,15 +110,7 @@ class Titles:
             records = storage.store_seasons(session, title.id, seasons)
             poller.store_extras(session, title.id, records, snapshot)
             storage.refresh_status(session, title, now)
-            try:
-                session.commit()
-            except IntegrityError:
-                # the same movie was added by a second request while this one was waiting for the source
-                session.rollback()
-                existing = self._find_title_id(source_key, snapshot.external_id)
-                if existing is None:
-                    raise
-                return AddResult(existing, created=False)
+            session.commit()
             return AddResult(title.id, created=True)
 
     # --- seasons and statuses -------------------------------------------------------------------
@@ -127,12 +127,11 @@ class Titles:
         """The button of a season: mark it as watched, or take the mark off if it is there. Returns the seasons
         that can be marked, with their marks as they are now. Raises UnknownTitle, and UnknownSeason for a season
         that is not there or has nothing released."""
-        async with self.ctx.write_lock:
-            return await asyncio.to_thread(self._toggle_season, title_id, number)
+        return await asyncio.to_thread(self._toggle_season, title_id, number)
 
     def _toggle_season(self, title_id: int, number: int) -> list[WatchableSeason]:
         now = self.ctx.now()
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             title = session.get(Title, title_id)
             if title is None:
                 raise UnknownTitle(title_id)
@@ -148,11 +147,10 @@ class Titles:
 
     async def set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
         """Mark a season as watched, or take the mark off. Marking twice changes nothing."""
-        async with self.ctx.write_lock:
-            await asyncio.to_thread(self._set_season_watched, title_id, number, watched)
+        await asyncio.to_thread(self._set_season_watched, title_id, number, watched)
 
     def _set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             if session.get(Title, title_id) is None:
                 raise UnknownTitle(title_id)
             record = session.scalar(
@@ -166,12 +164,11 @@ class Titles:
 
     async def mark_watched(self, title_id: int) -> WatchedResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
-        async with self.ctx.write_lock:
-            return await asyncio.to_thread(self._set_watched, title_id)
+        return await asyncio.to_thread(self._set_watched, title_id)
 
     def _set_watched(self, title_id: int) -> WatchedResult:
         now = self.ctx.now()
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             title = session.get(Title, title_id)
             if title is None:
                 raise UnknownTitle(title_id)
@@ -197,11 +194,10 @@ class Titles:
 
     async def delete_title(self, title_id: int) -> DeleteResult:
         """Remove a title and everything that belongs to it, in one transaction: all of it or nothing."""
-        async with self.ctx.write_lock:
-            return await asyncio.to_thread(self._delete_title, title_id)
+        return await asyncio.to_thread(self._delete_title, title_id)
 
     def _delete_title(self, title_id: int) -> DeleteResult:
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             name = session.scalar(select(Title.name).where(Title.id == title_id))
             if name is None:
                 raise UnknownTitle(title_id)

@@ -26,7 +26,7 @@ class MoviePoller(Poller):
         found = self.record_all(
             due, movie_events.detect_events(due.id, due.name, old, new, observed_at, today), previous_look=observed_at
         )
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             stored.state = new.to_state()
             stored.observed_at = now

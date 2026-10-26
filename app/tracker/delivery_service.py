@@ -156,7 +156,7 @@ class DeliveryService:
 
     def _record_attempts(self, item_ids: Sequence[int], error: Exception | None) -> None:
         now = self.ctx.now()
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             for item_id in item_ids:
                 item = session.get(DeliveryItem, item_id)
                 if item is None:  # its title was deleted while the message was on its way: the entry is gone with it

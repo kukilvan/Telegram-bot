@@ -10,11 +10,12 @@ Season 0 holds specials and is not a season.
 """
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, time
+from datetime import datetime, time
 from typing import Any
 
 from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, Season
+from app.tracker.sources.dates import parse_response_date, response_year
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "tmdb_tv"  # TMDb shares one id space between movies and series, so ids are namespaced by kind
@@ -43,20 +44,6 @@ class SeriesSnapshot:
         return {"show_status": self.status}
 
 
-def _parse_date(value: str | None) -> date | None:
-    if not value:
-        return None
-    try:
-        return date.fromisoformat(value[:10])
-    except ValueError:
-        return None
-
-
-def _year(value: str | None) -> int | None:
-    parsed = _parse_date(value)
-    return parsed.year if parsed else None
-
-
 def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
     return [
         Suggestion(
@@ -64,7 +51,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             external_id=str(item["id"]),
             name=item.get("name") or item.get("original_name") or "",
             original_name=item.get("original_name") or item.get("name") or "",
-            year=_year(item.get("first_air_date")),
+            year=response_year(item.get("first_air_date")),
         )
         for item in results
     ]
@@ -73,7 +60,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
 def _parse_season(summary: dict[str, Any], detail: dict[str, Any] | None) -> Season:
     episodes = []
     for raw in (detail or {}).get("episodes") or []:
-        aired = _parse_date(raw.get("air_date"))
+        aired = parse_response_date(raw.get("air_date"))
         episodes.append(
             Episode(number=int(raw["episode_number"]), air_at=datetime.combine(aired, time.min) if aired else None)
         )
@@ -97,7 +84,7 @@ def parse_show(raw: dict[str, Any], season_details: dict[int, dict[str, Any] | N
         external_id=str(raw["id"]),
         name=raw.get("name") or raw.get("original_name") or "",
         original_name=raw.get("original_name") or raw.get("name") or "",
-        year=_year(raw.get("first_air_date")),
+        year=response_year(raw.get("first_air_date")),
         genres=[genre["name"] for genre in raw.get("genres") or []],
         poster_path=raw.get("poster_path"),
         overview=raw.get("overview") or None,

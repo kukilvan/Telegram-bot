@@ -12,6 +12,7 @@ from datetime import date
 from typing import Any
 
 from app.tracker.failures import TitleGone
+from app.tracker.sources.dates import parse_response_date
 
 SOURCE_KEY = "tmdb_sequels"  # distinct from the movie's own source: one title keeps one snapshot per source
 
@@ -47,15 +48,6 @@ class SequelSnapshot:
         }
 
 
-def _parse_date(value: str | None) -> date | None:
-    if not value:
-        return None
-    try:
-        return date.fromisoformat(value[:10])
-    except ValueError:
-        return None
-
-
 def collection_id(movie: dict[str, Any]) -> int | None:
     belongs = movie.get("belongs_to_collection") or {}
     return belongs.get("id")
@@ -67,12 +59,12 @@ def parse_sequels(movie: dict[str, Any], collection: dict[str, Any] | None) -> S
         CollectionPart(
             external_id=str(raw["id"]),
             name=raw.get("title") or raw.get("original_title") or "",
-            release_date=_parse_date(raw.get("release_date")),
+            release_date=parse_response_date(raw.get("release_date")),
         )
         for raw in (collection or {}).get("parts", [])
         if str(raw["id"]) != own_id
     ]
-    return SequelSnapshot(own_date=_parse_date(movie.get("release_date")), parts=parts)
+    return SequelSnapshot(own_date=parse_response_date(movie.get("release_date")), parts=parts)
 
 
 class TmdbSequelSource:

@@ -15,6 +15,7 @@ from app.tracker.cards import format_date, format_short_date
 from app.tracker.dedup import moved_key
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
+from app.tracker.sources.dates import parse_date
 
 _ICON = KINDS[TitleKind.MOVIE].icon
 
@@ -39,7 +40,7 @@ class MovieDates:
 
     @classmethod
     def from_state(cls, state: dict[str, Any]) -> "MovieDates":
-        return cls(_parse(state.get("theatrical_date")), _parse(state.get("digital_date")))
+        return cls(parse_date(state.get("theatrical_date")), parse_date(state.get("digital_date")))
 
     def to_state(self) -> dict[str, str | None]:
         return {
@@ -60,10 +61,6 @@ class DetectedEvent:
     text: str
     data: dict[str, Any]
     earlier_key: str | None = None  # the key an earlier version gave this fact; see `EventQueue.queued_since`
-
-
-def _parse(value: str | None) -> date | None:
-    return date.fromisoformat(value) if value else None
 
 
 def _released_by(value: date | None, day: date) -> bool:

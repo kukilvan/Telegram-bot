@@ -77,8 +77,7 @@ class SettingsStore:
         value applies to cards and events from now on without touching the stored episodes."""
         if weeks < 1:
             raise ValueError("the break between parts is at least one week")
-        async with self.ctx.write_lock:
-            await asyncio.to_thread(self._store, {PART_GAP_SETTING: weeks})
+        await asyncio.to_thread(self._store, {PART_GAP_SETTING: weeks})
 
     async def delivery_rules(self) -> delivery.DeliveryRules:
         """The owner's time zone, working days, summary hour and quiet hours; what is not set is the default."""
@@ -120,24 +119,28 @@ class SettingsStore:
         ):
             if value is not None:
                 new[key] = delivery.format_time(delivery.parse_time(value))
-        async with self.ctx.write_lock:  # read, check and write in a row: two changes cannot both pass the check
-            await asyncio.to_thread(self._check_and_store, new)
+        await asyncio.to_thread(self._check_and_store, new)
 
     def _check_and_store(self, new: dict[str, Any]) -> None:
-        """Store `new` only when the rules it makes (the stored ones with these values over them) can send a summary."""
-        with self.ctx.session_factory() as session:
-            rules = self.rules(session)
-        changes = {field: delivery.parse_time(new[key]) for key, field in _TIME_FIELDS.items() if key in new}
-        if changes:  # rules stored before the check existed may clash; changing something else must still work
-            replace(rules, **changes).check()
-        self._store(new)
+        """Store `new` only when the rules it makes (the stored ones with these values over them) can send a summary.
+        Read, check and write are in one write session: two changes cannot both pass the check."""
+        with self.ctx.write_session() as session:
+            changes = {field: delivery.parse_time(new[key]) for key, field in _TIME_FIELDS.items() if key in new}
+            if changes:  # rules stored before the check existed may clash; changing something else must still work
+                replace(self.rules(session), **changes).check()
+            self._put(session, new)
+            session.commit()
 
     def _store(self, values: dict[str, Any]) -> None:
-        with self.ctx.session_factory() as session:
-            for key, value in values.items():
-                record = session.get(SettingRecord, key)
-                if record is None:
-                    session.add(SettingRecord(key=key, value=value))
-                else:
-                    record.value = value
+        with self.ctx.write_session() as session:
+            self._put(session, values)
             session.commit()
+
+    @staticmethod
+    def _put(session, values: dict[str, Any]) -> None:
+        for key, value in values.items():
+            record = session.get(SettingRecord, key)
+            if record is None:
+                session.add(SettingRecord(key=key, value=value))
+            else:
+                record.value = value

@@ -40,7 +40,7 @@ class EventQueue:
         at: datetime | None = None,
     ) -> int | None:
         now = naive_utc(at or self.ctx.clock())
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             event_id = self.enqueue(session, type, payload, dedup_key, title_id, now)
             if event_id is not None:
                 session.commit()
@@ -61,7 +61,7 @@ class EventQueue:
     def enqueue(
         session, type: str, payload: dict[str, Any], dedup_key: str, title_id: int | None, now: datetime
     ) -> int | None:
-        """Add an event and its delivery-queue entry (status «pending») to the session; the caller commits. None, with
+        """Add an event and its delivery-queue entry (status «pending») to a write session; the caller commits. None, with
         the session rolled back, if the fact is already known or its title is gone."""
         event = Event(type=type, title_id=title_id, payload=payload, dedup_key=dedup_key, detected_at=now)
         session.add(event)
@@ -70,7 +70,7 @@ class EventQueue:
         except IntegrityError:
             session.rollback()
             return None
-        # the flush holds the write lock, so the title cannot be deleted between this check and the commit
+        # the write session holds the database, so the title cannot be deleted between this check and the commit
         if title_id is not None and session.get(Title, title_id) is None:
             session.rollback()
             return None
@@ -89,7 +89,7 @@ class EventQueue:
             if due.id in seen:  # two broken sources of one title are one failure
                 continue
             seen.add(due.id)
-            with self.ctx.session_factory() as session:
+            with self.ctx.write_session() as session:
                 title = session.get(Title, due.id)
                 if title is None or (
                     title.failure_notified_at is not None and now - title.failure_notified_at < failures.COOLDOWN

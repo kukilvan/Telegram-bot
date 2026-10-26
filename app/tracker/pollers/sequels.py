@@ -42,7 +42,7 @@ class SequelPoller(Poller):
                 if event.data["sequel_id"] not in listed  # the owner already follows it: nothing to offer
             ]
             found = self.record_all(due, events)
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             stored.state = new.to_state()
             stored.observed_at = now

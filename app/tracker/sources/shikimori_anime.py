@@ -30,6 +30,7 @@ from typing import Any, Protocol
 from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.sources.anilist_schedule import PartSchedule, parse_schedules
+from app.tracker.sources.dates import parse_response_date
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "shikimori"
@@ -152,11 +153,7 @@ class AnimeSnapshot:
 
 
 def _date(block: Any) -> date | None:
-    value = (block or {}).get("date")
-    try:
-        return date.fromisoformat(value[:10]) if value else None
-    except ValueError:
-        return None
+    return parse_response_date((block or {}).get("date"))
 
 
 def _moment(value: Any) -> datetime | None:

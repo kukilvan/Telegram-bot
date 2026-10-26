@@ -13,6 +13,7 @@ from app.tracker.cards import format_date
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
+from app.tracker.sources.dates import parse_date
 
 SEQUEL_ANNOUNCED = "movie_sequel_announced"
 
@@ -36,8 +37,8 @@ class Sequels:
     @classmethod
     def from_state(cls, state: dict[str, Any]) -> "Sequels":
         return cls(
-            own_date=_parse(state.get("own_date")),
-            parts=tuple(Part(p["id"], p["title"], _parse(p.get("date"))) for p in state.get("parts", [])),
+            own_date=parse_date(state.get("own_date")),
+            parts=tuple(Part(p["id"], p["title"], parse_date(p.get("date"))) for p in state.get("parts", [])),
         )
 
     def to_state(self) -> dict[str, Any]:
@@ -58,10 +59,6 @@ class Sequels:
     def is_sequel(self, part: Part) -> bool:
         """A part is a sequel unless it is known to have come out before this movie."""
         return part.date is None or self.own_date is None or part.date > self.own_date
-
-
-def _parse(value: str | None) -> date | None:
-    return date.fromisoformat(value) if value else None
 
 
 def message_sequel(name: str, sequel: str, premiere: date | None) -> str:

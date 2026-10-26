@@ -4,6 +4,7 @@ The schema is created only by Alembic (`app/tracker/migrations`), never by `crea
 """
 
 import pathlib
+import threading
 
 from alembic import command
 from alembic.config import Config
@@ -24,21 +25,72 @@ def database_file(url: str = TRACKER_DATABASE_URL) -> pathlib.Path | None:
     return None if database in (None, "", ":memory:") else pathlib.Path(database)
 
 
+WRITE_OPTION = "tracker_write"  # execution option of a connection: its transaction opens at once for writing
+
+
 def create_tracker_engine(url: str = TRACKER_DATABASE_URL) -> Engine:
-    """SQLite engine in WAL mode with foreign keys on. `sqlite://` gives a private in-memory database."""
+    """SQLite engine in WAL mode with foreign keys on. `sqlite://` gives a private in-memory database.
+
+    The driver (pysqlite) does not begin transactions itself; the engine writes the beginning (`begin` event, the way
+    SQLAlchemy documents it for SQLite): `BEGIN` for an ordinary transaction, `BEGIN IMMEDIATE` for a connection with
+    the option `WRITE_OPTION`. A writer that begins that way holds the database: another writer, of this process or of
+    another, waits up to `busy_timeout` instead of failing in the middle of «check, then write».
+    """
     file = database_file(url)
     if file is not None:
         file.parent.mkdir(parents=True, exist_ok=True)
     kwargs = {"poolclass": StaticPool, "connect_args": {"check_same_thread": False}} if file is None else {}
     engine = create_engine(url, **kwargs)
+    # An in-memory database is one connection shared by all threads, so its transactions cannot wait for each other in
+    # SQLite: they take turns in this lock, from the beginning of a transaction to the end of its commit or rollback.
+    turns = threading.Lock() if file is None else None
+    owner: list[int] = []  # the thread that holds `turns`
 
     @event.listens_for(engine, "connect")
     def _configure(dbapi_connection, _record):
+        dbapi_connection.isolation_level = None  # the beginning of a transaction is written by `_begin`
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")  # no-op for in-memory databases
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.execute("PRAGMA busy_timeout=5000")
         cursor.close()
+
+    def _release():
+        if owner and owner[0] == threading.get_ident():  # a transaction ends in the thread that began it
+            owner.clear()
+            turns.release()
+
+    @event.listens_for(engine, "begin")
+    def _begin(connection):
+        if turns is not None:
+            turns.acquire()
+            owner[:] = [threading.get_ident()]
+        try:
+            writing = connection.get_execution_options().get(WRITE_OPTION)
+            connection.exec_driver_sql("BEGIN IMMEDIATE" if writing else "BEGIN")
+        except BaseException:
+            if turns is not None:
+                _release()
+            raise
+
+    if turns is not None:
+        # the `commit` and `rollback` events fire before the driver's commit; the turn passes on only after it
+        dialect = engine.dialect
+        driver_commit, driver_rollback = dialect.do_commit, dialect.do_rollback
+
+        def do_commit(dbapi_connection):
+            try:
+                driver_commit(dbapi_connection)
+            finally:
+                _release()
+
+        def do_rollback(dbapi_connection):
+            try:
+                driver_rollback(dbapi_connection)
+            finally:
+                _release()
+
+        dialect.do_commit, dialect.do_rollback = do_commit, do_rollback
 
     return engine
 

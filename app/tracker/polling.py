@@ -145,6 +145,6 @@ class Polling:
 
     def _postpone(self, due: DueTitle, delay: timedelta) -> None:
         now = self.ctx.now()
-        with self.ctx.session_factory() as session:
+        with self.ctx.write_session() as session:
             storage.stored_snapshot(session, due.id, due.snapshot_source).next_check_at = now + delay
             session.commit()
