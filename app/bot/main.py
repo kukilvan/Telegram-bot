@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.bot.access import AccessMiddleware
 from app.bot.error_handler import ErrorMiddleware, send_startup_error_sync
-from app.bot.tracker_handlers import TelegramSender, owner_chat_id, register_tracker_handlers
+from app.bot.tracker_handlers import BOT_COMMANDS, TelegramSender, owner_chat_id, register_tracker_handlers
 from app.config import get_settings
 from app.providers.anilist import AniListProvider
 from app.providers.shikimori import ShikimoriClient
@@ -68,6 +68,7 @@ async def main() -> None:
             default_tz=ZoneInfo(settings.bot_timezone),
         )
         dp = build_dispatcher(tracker, allowed_ids)
+        await bot.set_my_commands(BOT_COMMANDS)
 
         scheduler = AsyncIOScheduler()
         # Two independent jobs: a slow source must never hold back delivery of events already in the queue.

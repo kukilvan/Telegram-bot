@@ -8,7 +8,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 from app.bot.access import AccessMiddleware
-from app.bot.tracker_handlers import TEST_EVENT_BUTTON, register_tracker_handlers
+from app.bot.tracker_handlers import RULES_CHECK_BUTTON, TEST_EVENT_BUTTON, register_tracker_handlers
 from app.tracker.core import TestEventKind, Tracker
 from app.tracker.db import create_session_factory
 
@@ -88,7 +88,7 @@ def test_owner_gets_a_menu_of_registered_kinds(tracker, replies):
     press_menu_button(make_dispatcher(tracker), OWNER)
 
     labels = [b.text for b in menu_buttons(replies)]
-    assert labels == [k.label for k in tracker.test_event_kinds()]
+    assert labels == [k.label for k in tracker.test_event_kinds()] + [RULES_CHECK_BUTTON]
     assert "Фильм: объявлена дата" in labels
 
 

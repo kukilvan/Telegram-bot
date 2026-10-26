@@ -10,10 +10,10 @@ from aiogram.types import CallbackQuery, Chat, InlineQuery, Message, ReplyKeyboa
 from app.bot.main import build_dispatcher
 from app.bot.tracker_handlers import (
     ADD_BUTTON,
+    BOT_COMMANDS,
     DIGEST_BUTTON,
     MY_TITLES_BUTTON,
     TEST_EVENT_BUTTON,
-    WINDOWS_BUTTON,
 )
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
@@ -57,14 +57,15 @@ def say(tracker, text, uid=OWNER):
     asyncio.run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=1, message=message)))
 
 
-def test_start_shows_the_menu_with_exactly_the_five_buttons(tracker, replies):
+def test_start_shows_the_menu_with_exactly_the_four_buttons(tracker, replies):
     say(tracker, "/start")
 
     [(text, keyboard)] = replies
     assert "Бот работает" in text
+    assert "окна" not in text.lower()
     assert isinstance(keyboard, ReplyKeyboardMarkup)
     labels = [button.text for row in keyboard.keyboard for button in row]
-    assert labels == [ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON, WINDOWS_BUTTON]
+    assert labels == [ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON]
 
 
 @pytest.mark.parametrize(
@@ -78,6 +79,9 @@ def test_start_shows_the_menu_with_exactly_the_five_buttons(tracker, replies):
         "/events 841",
         "/search Дюна",
         "/searchgame Witcher",
+        "/digest",
+        "/test_event",
+        "🕒 Окна доставки",
         "Дюна",
     ],
 )
@@ -104,8 +108,18 @@ def test_a_stranger_gets_no_menu(tracker, replies):
     assert replies == []
 
 
-@pytest.mark.parametrize("button", [ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON, WINDOWS_BUTTON])
+@pytest.mark.parametrize("button", [ADD_BUTTON, MY_TITLES_BUTTON, DIGEST_BUTTON, TEST_EVENT_BUTTON])
 def test_every_menu_button_gets_an_answer(tracker, replies, button):
     say(tracker, button)
 
     assert len(replies) == 1 and replies[0][0]
+
+
+def test_summary_command_answers(tracker, replies):
+    say(tracker, "/summary")
+
+    assert len(replies) == 1 and replies[0][0]
+
+
+def test_the_commands_registered_in_telegram_are_summary_only():
+    assert [(c.command, c.description) for c in BOT_COMMANDS] == [("summary", "Сводка сейчас")]
