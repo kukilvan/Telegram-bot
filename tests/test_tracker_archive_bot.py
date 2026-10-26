@@ -8,12 +8,12 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from aiogram import Bot, Dispatcher
-from aiogram.types import CallbackQuery, Chat, Message, Update, User
+from aiogram.types import CallbackQuery, Chat, InlineKeyboardMarkup, Message, Update, User
 from sqlalchemy import select
 
 from app.bot.access import AccessMiddleware
 from app.bot.tracker_handlers import TelegramSender, actions_markup, register_tracker_handlers
-from app.tracker.actions import FOLLOW, Action
+from app.tracker.actions import CARD, FOLLOW, WATCHED, Action
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import Event
@@ -21,7 +21,7 @@ from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.tracker.sources.tmdb_sequels import CollectionPart, SequelSnapshot
 
 OWNER, STRANGER = 42, 7
-DUNE, DUNE_3 = "438631", "1170608"
+DUNE, DUNE_3, AVATAR_4 = "438631", "1170608", "393209"
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 
 
@@ -151,10 +151,13 @@ class Chat_:
         register_tracker_handlers(self.dp, tracker, [OWNER])
         self._update_id = 0
 
-    def press(self, data):
+    def press(self, data, markup=None):
+        """Press the button `data` on a message that carries the keyboard `markup`."""
         self._update_id += 1
         user = User(id=self.uid, is_bot=False, first_name="x")
-        message = Message(message_id=1, date=0, chat=Chat(id=self.uid, type="private"), from_user=user, text="m")
+        message = Message(
+            message_id=1, date=0, chat=Chat(id=self.uid, type="private"), from_user=user, text="m", reply_markup=markup
+        )
         update = Update(
             update_id=self._update_id,
             callback_query=CallbackQuery(id="1", from_user=user, chat_instance="c", data=data, message=message),
@@ -178,6 +181,21 @@ def event_text_and_buttons(telegram, part):
     return next((text, buttons) for _, text, buttons in telegram.sent if part in text)
 
 
+def keyboard(buttons):
+    """The keyboard a message went out with, one button per row as the bot lays them out."""
+    return InlineKeyboardMarkup(inline_keyboard=[[b] for b in buttons])
+
+
+def summary_keyboard(*actions):
+    """A summary's keyboard as the bot sends it: one button per event, labelled with its title."""
+    return actions_markup([Action(label, name, arg) for label, name, arg in actions])
+
+
+def left(markup):
+    """The labels of the buttons a keyboard edit left on the message; None when it took the keyboard off."""
+    return None if markup is None else [b.text for row in markup.inline_keyboard for b in row]
+
+
 # --- «Посмотрел» ---------------------------------------------------------------------------------
 
 
@@ -194,13 +212,18 @@ def test_the_card_of_a_wanted_movie_has_a_watched_button(tracker, replies):
 def test_pressing_watched_on_a_card_archives_the_movie(tracker, replies):
     title_id = add(tracker)
 
-    Chat_(tracker).press(f"tact:watched:{title_id}")
+    chat = Chat_(tracker)
+    chat.press(f"tcard:{title_id}")
+    [(_, _, buttons)] = messages(replies)
+    replies.clear()
+
+    chat.press(buttons[0].callback_data, keyboard(buttons))
 
     assert run(tracker.title_card(title_id)).status == "watched"
     assert [r[1] for r in replies if r[0] == "callback"] == ["Отмечено как просмотренное"]
     [(_, text, _)] = [r for r in replies if r[0] == "message"]
     assert "Дюна" in text and "архиве" in text
-    assert replies.dropped == [None]  # the spent button is taken off the message
+    assert [left(m) for m in replies.dropped] == [["🗑 Удалить"]]  # only the spent button is taken off the card
 
 
 def test_the_card_of_a_watched_movie_shows_the_status_and_no_button(tracker, replies):
@@ -261,8 +284,9 @@ def test_a_movie_event_arrives_with_a_watched_button_that_works(tracker, movies,
     assert chat_id == OWNER and "Дюна: Часть третья" in text
     assert [b.text for b in buttons] == ["✅ Посмотрел", "📄 Карточка"]
 
-    Chat_(tracker).press(buttons[0].callback_data)
+    Chat_(tracker).press(buttons[0].callback_data, keyboard(buttons))
     assert run(tracker.title_card(title_id)).status == "watched"
+    assert [left(m) for m in replies.dropped] == [["📄 Карточка"]]  # the card of the archived film still opens
 
 
 def test_the_card_button_under_an_event_opens_the_card_of_its_title(tracker, movies, clock, telegram, replies):
@@ -333,13 +357,13 @@ def test_pressing_follow_adds_the_sequel_as_wanted_and_shows_its_card(tracker, s
     announce_sequel(tracker, sequels, clock)
     _, buttons = event_text_and_buttons(telegram, "Анонсировано продолжение")
 
-    Chat_(tracker).press(buttons[0].callback_data)
+    Chat_(tracker).press(buttons[0].callback_data, keyboard(buttons))
 
     assert [(t.name, t.status) for t in run(tracker.list_titles())] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
     [(_, text, card_buttons)] = [r for r in replies if r[0] == "message"]
     assert "Продолжение добавлено" in text and "Хочу" in text
     assert [b.text for b in card_buttons] == ["✅ Посмотрел", "🗑 Удалить"]
-    assert replies.dropped == [None]
+    assert replies.dropped == [None]  # its only button is spent: the keyboard comes off whole
 
 
 def test_pressing_follow_twice_does_not_add_a_second_copy(tracker, sequels, clock, telegram, replies):
@@ -431,3 +455,66 @@ def test_a_stranger_cannot_follow(tracker, sequels, clock, telegram, replies):
 
     assert replies == []
     assert len(run(tracker.list_titles())) == 1
+
+
+# --- a pressed button spends only itself ---------------------------------------------------------
+
+
+def test_follow_in_a_summary_leaves_the_other_follow_and_the_card(tracker, movies, replies):
+    movies.by_id[AVATAR_4] = movie(AVATAR_4, "Аватар 4", date(2029, 12, 21))
+    dune = add(tracker)
+    summary = summary_keyboard(
+        ("👀 Следить: Дюна: Часть третья", FOLLOW, f"movie:{DUNE_3}"),
+        ("👀 Следить: Аватар 4", FOLLOW, f"movie:{AVATAR_4}"),
+        ("📄 Карточка: Дюна", CARD, dune),
+    )
+    chat = Chat_(tracker)
+
+    chat.press(f"tact:follow:movie:{DUNE_3}", summary)
+
+    [after] = replies.dropped
+    assert left(after) == ["👀 Следить: Аватар 4", "📄 Карточка: Дюна"]
+
+    chat.press(f"tact:follow:movie:{AVATAR_4}", after)
+
+    assert [t.name for t in run(tracker.list_titles())] == ["Дюна", "Дюна: Часть третья", "Аватар 4"]
+    assert left(replies.dropped[-1]) == ["📄 Карточка: Дюна"]
+
+
+def test_watched_in_a_summary_leaves_the_other_titles_buttons(tracker, replies):
+    dune, dune_3 = add(tracker), add(tracker, DUNE_3)
+    summary = summary_keyboard(
+        ("✅ Посмотрел: Дюна", WATCHED, dune),
+        ("✅ Посмотрел: Дюна: Часть третья", WATCHED, dune_3),
+        ("📄 Карточка: Дюна", CARD, dune),
+    )
+
+    Chat_(tracker).press(f"tact:watched:{dune}", summary)
+
+    assert run(tracker.title_card(dune)).status == "watched"
+    assert [left(m) for m in replies.dropped] == [["✅ Посмотрел: Дюна: Часть третья", "📄 Карточка: Дюна"]]
+
+
+def test_watched_pressed_again_still_takes_only_itself_off(tracker, replies):
+    dune, dune_3 = add(tracker), add(tracker, DUNE_3)
+    run(tracker.mark_watched(dune))
+    summary = summary_keyboard(("✅ Посмотрел: Дюна", WATCHED, dune), ("✅ Посмотрел: Дюна: Часть третья", WATCHED, dune_3))
+
+    Chat_(tracker).press(f"tact:watched:{dune}", summary)
+
+    assert ("callback", "Уже отмечено как просмотренное.", None) in replies
+    assert [left(m) for m in replies.dropped] == [["✅ Посмотрел: Дюна: Часть третья"]]
+
+
+def test_a_failed_keyboard_edit_does_not_spoil_the_answer_to_the_press(tracker, replies, monkeypatch):
+    title_id = add(tracker)
+
+    async def message_is_too_old(self, **kwargs):
+        raise RuntimeError("message can't be edited")
+
+    monkeypatch.setattr(Message, "edit_reply_markup", message_is_too_old)
+
+    Chat_(tracker).press(f"tact:watched:{title_id}", summary_keyboard(("✅ Посмотрел", WATCHED, title_id)))
+
+    assert run(tracker.title_card(title_id)).status == "watched"
+    assert [r[1] for r in replies if r[0] == "callback"] == ["Отмечено как просмотренное"]

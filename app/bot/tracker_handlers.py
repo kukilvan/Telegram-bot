@@ -406,6 +406,20 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         except Exception as exc:  # an old or missing message: the answer to the press matters more
             logging.debug("could not remove buttons: %s", repr(exc))
 
+    async def drop_pressed_button(callback: CallbackQuery) -> None:
+        """Only the pressed button is spent: the others under the message (a summary's other titles) stay."""
+        markup = getattr(callback.message, "reply_markup", None)  # an old message comes without its keyboard
+        if markup is None:
+            return
+        rows = [[b for b in row if b.callback_data != callback.data] for row in markup.inline_keyboard]
+        rows = [row for row in rows if row]
+        try:
+            await callback.message.edit_reply_markup(
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=rows) if rows else None
+            )
+        except Exception as exc:  # an old or missing message: the answer to the press matters more
+            logging.debug("could not remove the pressed button: %s", repr(exc))
+
     async def mark_watched(callback: CallbackQuery, title_id: int) -> None:
         try:
             result = await tracker.mark_watched(title_id)
@@ -416,7 +430,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             logging.warning("marking a title watched failed: %s", repr(exc))
             await callback.answer("Не удалось сохранить. Попробуйте ещё раз.")
             return
-        await drop_buttons(callback)
+        await drop_pressed_button(callback)
         if not result.changed:
             await callback.answer("Уже отмечено как просмотренное.")
             return
@@ -450,7 +464,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             logging.warning("following a sequel failed: %s", repr(exc))
             await callback.answer("Не удалось получить данные из TMDb. Попробуйте чуть позже.")
             return
-        await drop_buttons(callback)
+        await drop_pressed_button(callback)
         await callback.answer()
         heading = "✅ Продолжение добавлено в список" if result.created else "Уже в списке"
         await send_card(callback, await tracker.title_card(result.title_id), heading)
