@@ -1,0 +1,696 @@
+{
+ "adult": false,
+ "backdrop_path": "/4XccmjsOmQZw8S2iW1wvlvmb5v1.jpg",
+ "created_by": [
+  {
+   "id": 21206,
+   "credit_id": "6404e86a021cee00da36d3be",
+   "name": "Грэм Йост",
+   "original_name": "Graham Yost",
+   "gender": 2,
+   "profile_path": "/zbaUcbYdFU28bGoi6F2lJo0XUaX.jpg"
+  }
+ ],
+ "episode_run_time": [],
+ "first_air_date": "2023-05-04",
+ "genres": [
+  {
+   "id": 10765,
+   "name": "НФ и Фэнтези"
+  },
+  {
+   "id": 18,
+   "name": "драма"
+  }
+ ],
+ "homepage": "https://tv.apple.com/show/umc.cmc.3yksgc857px0k0rqe5zd4jice",
+ "id": 125988,
+ "in_production": true,
+ "languages": [
+  "en"
+ ],
+ "last_air_date": "2026-09-03",
+ "last_episode_to_air": {
+  "id": 7173966,
+  "name": "Трой",
+  "overview": "Лидер просыпается в новом мире.",
+  "vote_average": 8.73,
+  "vote_count": 63,
+  "air_date": "2026-09-03",
+  "episode_number": 10,
+  "episode_type": "finale",
+  "production_code": "",
+  "runtime": 61,
+  "season_number": 3,
+  "show_id": 125988,
+  "still_path": "/cWfqa602Kcka7zRaLMq9TRhLJkH.jpg"
+ },
+ "name": "Укрытие",
+ "next_episode_to_air": {
+  "id": 7768410,
+  "name": "Эпизод 1",
+  "overview": "",
+  "vote_average": 0.0,
+  "vote_count": 0,
+  "air_date": "2027-07-08",
+  "episode_number": 1,
+  "episode_type": "standard",
+  "production_code": "",
+  "runtime": null,
+  "season_number": 4,
+  "show_id": 125988,
+  "still_path": null
+ },
+ "networks": [
+  {
+   "id": 2552,
+   "logo_path": "/bngHRFi794mnMq34gfVcm9nDxN1.png",
+   "name": "Apple TV",
+   "origin_country": ""
+  }
+ ],
+ "number_of_episodes": 31,
+ "number_of_seasons": 4,
+ "origin_country": [
+  "US"
+ ],
+ "original_language": "en",
+ "original_name": "Silo",
+ "overview": "На отравленной гибнущей планете будущего тысячи людей ютятся в огромном подземном укрытии. Нарушение шерифом основного правила и серия загадочных смертей вынуждают инженера Джульетту заняться раскрытием тайн и поиском правды о бункере.",
+ "popularity": 127.0868,
+ "poster_path": "/gRkvq6FgiGRdtCwhVIozaUqhoDL.jpg",
+ "production_companies": [
+  {
+   "id": 23242,
+   "logo_path": "/ucE6dN6pUPfZHH5JlXkq44TDUMS.png",
+   "name": "AMC Studios",
+   "origin_country": "US"
+  },
+  {
+   "id": 65105,
+   "logo_path": null,
+   "name": "Nemofilms",
+   "origin_country": "US"
+  },
+  {
+   "id": 199363,
+   "logo_path": null,
+   "name": "Mimir Films",
+   "origin_country": "US"
+  },
+  {
+   "id": 194232,
+   "logo_path": "/oE7H93u8sy5vvW5EH3fpCp68vvB.png",
+   "name": "Apple Studios",
+   "origin_country": "US"
+  }
+ ],
+ "production_countries": [
+  {
+   "iso_3166_1": "US",
+   "name": "United States of America"
+  }
+ ],
+ "seasons": [
+  {
+   "air_date": "2023-05-04",
+   "episode_count": 10,
+   "id": 196076,
+   "name": "Сезон 1",
+   "overview": "В мрачном антиутопическом будущем человечество цепляется за выживание глубоко под землей в пределах колоссального бункера. Джульетта, инженер, которой поручено разгадать тайну смерти коллеги, раскрывает поразительные секреты, которые угрожают самой сути их замкнутого мира.",
+   "poster_path": "/pVsPWmqscpvgv83ld138POqKM6p.jpg",
+   "season_number": 1,
+   "vote_average": 7.3
+  },
+  {
+   "air_date": "2024-11-14",
+   "episode_count": 10,
+   "id": 404198,
+   "name": "Сезон 2",
+   "overview": "Джульетта Николс, оказавшаяся за пределами бункера с отказавшим костюмом, мчится наперегонки со временем, ошеломленная тем, что рядом находится другой бункер, который может стать ее единственной надеждой на выживание. Тем временем внутри бункера назревают беспорядки, и Бернард Холланд собирает жителей, чтобы поддержать порядок на фоне растущих вопросов об их мире. По мере того как Джульетта сталкивается с неожиданными опасностями вблизи нового силоса, начинают всплывать скрытые истины о происхождении силосов и мира за их пределами, углубляя тайну.",
+   "poster_path": "/sZrBGRiZrp5KlbNfgszwryPDo2N.jpg",
+   "season_number": 2,
+   "vote_average": 6.7
+  },
+  {
+   "air_date": "2026-07-02",
+   "episode_count": 10,
+   "id": 512220,
+   "name": "Сезон 3",
+   "overview": "Третий сезон раскрывает историю происхождения, действие которой происходит на несколько столетий раньше, одновременно продолжая сагу о дистопическом обществе из 10 000 человек, живущих под землёй при загадочных обстоятельствах. В настоящем Джульетта Николс выживает после принудительной «чистки», но возвращается с потерей памяти, пока убежище оправляется от восстания и сталкивается с новой опасной угрозой. Тем временем в «прежние времена» журналистка Хелен Дрю и конгрессмен Дэниел Кин раскрывают заговор, который втягивает их в цепь событий с катастрофическими, необратимыми последствиями.",
+   "poster_path": "/gRkvq6FgiGRdtCwhVIozaUqhoDL.jpg",
+   "season_number": 3,
+   "vote_average": 7.3
+  },
+  {
+   "air_date": "2027-07-08",
+   "episode_count": 1,
+   "id": 532506,
+   "name": "Сезон 4",
+   "overview": "",
+   "poster_path": null,
+   "season_number": 4,
+   "vote_average": 0.0
+  }
+ ],
+ "softcore": false,
+ "spoken_languages": [
+  {
+   "english_name": "English",
+   "iso_639_1": "en",
+   "name": "English"
+  }
+ ],
+ "status": "Returning Series",
+ "tagline": "Правда таится в прошлом.",
+ "type": "Scripted",
+ "vote_average": 8.229,
+ "vote_count": 2848,
+ "season/1": {
+  "_id": "60a69f37b87aec00594bf505",
+  "air_date": "2023-05-04",
+  "episodes": [
+   {
+    "air_date": "2023-05-04",
+    "episode_number": 1,
+    "episode_type": "standard",
+    "id": 2964686,
+    "name": "День свободы",
+    "overview": "Планы шерифа Беккера на безоблачное будущее рушатся, когда некий хакер посвящает его жену в тайны Укрытия.",
+    "production_code": "",
+    "runtime": 62,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/rpZhJcWPpyLvPC5Vid61GD6JHVu.jpg",
+    "vote_average": 7.503,
+    "vote_count": 151
+   },
+   {
+    "air_date": "2023-05-04",
+    "episode_number": 2,
+    "episode_type": "standard",
+    "id": 4281661,
+    "name": "Выбор Холстона",
+    "overview": "Механик Джульетта сводит воедино факты, касающиеся загадочной гибели одного из работников.",
+    "production_code": "",
+    "runtime": 52,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/bRYHFClG8YkTJTy8fx73hgCd8Ac.jpg",
+    "vote_average": 7.377,
+    "vote_count": 138
+   },
+   {
+    "air_date": "2023-05-11",
+    "episode_number": 3,
+    "episode_type": "standard",
+    "id": 4281667,
+    "name": "Машины",
+    "overview": "Помощник шерифа и мэр Джанс вступают в конфликт с Бернардом. Чтобы генератор работал, Джульетта заключает сделку.",
+    "production_code": "",
+    "runtime": 66,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/8hQB4jxk9ydj55Mrl9sY95smV7.jpg",
+    "vote_average": 7.531,
+    "vote_count": 131
+   },
+   {
+    "air_date": "2023-05-18",
+    "episode_number": 4,
+    "episode_type": "standard",
+    "id": 4281669,
+    "name": "Правда",
+    "overview": "Джульетта пытается добиться доверия помощника шерифа Марнса и раскрыть тайну недавних трагических смертей.",
+    "production_code": "",
+    "runtime": 49,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/x3fMuXhTx5f91tQgjXNzopo5B5g.jpg",
+    "vote_average": 7.008,
+    "vote_count": 126
+   },
+   {
+    "air_date": "2023-05-25",
+    "episode_number": 5,
+    "episode_type": "standard",
+    "id": 4281672,
+    "name": "Сын уборщика",
+    "overview": "Симс приставляет Биллингса помощником к Джульетте, чьё расследование заставляет многих раскрыть карты.",
+    "production_code": "",
+    "runtime": 54,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/yzLUNo2jU82N5rdRG0xZ2A2ed79.jpg",
+    "vote_average": 6.967,
+    "vote_count": 120
+   },
+   {
+    "air_date": "2023-06-01",
+    "episode_number": 6,
+    "episode_type": "standard",
+    "id": 4281674,
+    "name": "Реликвия",
+    "overview": "В ходе расследования Джульетта узнает неприятные факты о том, кого, казалось бы, знала.",
+    "production_code": "",
+    "runtime": 55,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/k5UxYAS4Xmcsn3GZdCklXGMIBMd.jpg",
+    "vote_average": 6.926,
+    "vote_count": 115
+   },
+   {
+    "air_date": "2023-06-08",
+    "episode_number": 7,
+    "episode_type": "standard",
+    "id": 4281675,
+    "name": "Хранители",
+    "overview": "Бернард, всерьёз обеспокоенный вопросами безопасности, пытается заручиться поддержкой Джульетты. Джульетта просит отца об услуге.",
+    "production_code": "",
+    "runtime": 51,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/ukzV8BZbjlIU6WOKdoZqhHMg2yi.jpg",
+    "vote_average": 7.258,
+    "vote_count": 118
+   },
+   {
+    "air_date": "2023-06-15",
+    "episode_number": 8,
+    "episode_type": "standard",
+    "id": 4281676,
+    "name": "Ханна",
+    "overview": "Новые данные заставляют Джульетту по-новому взглянуть на прошлое своей семьи и открывают путь к одной из важнейших тайн Укрытия.",
+    "production_code": "",
+    "runtime": 48,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/sZaeOvZYS4evALQtm2wfC3eJxit.jpg",
+    "vote_average": 7.415,
+    "vote_count": 117
+   },
+   {
+    "air_date": "2023-06-22",
+    "episode_number": 9,
+    "episode_type": "standard",
+    "id": 4281678,
+    "name": "Побег",
+    "overview": "Мучимый совестью, Биллингс затевает собственное расследование и получает шокирующую подсказку от Джульетты.",
+    "production_code": "",
+    "runtime": 48,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/mogTf95jiLdvSXwnjpQcIs6Wxh2.jpg",
+    "vote_average": 7.482,
+    "vote_count": 113
+   },
+   {
+    "air_date": "2023-06-29",
+    "episode_number": 10,
+    "episode_type": "finale",
+    "id": 4281679,
+    "name": "Внешний мир",
+    "overview": "Судьба Джульетты кажется решенной, когда некоторые истины наконец выходят на свет.",
+    "production_code": "",
+    "runtime": 49,
+    "season_number": 1,
+    "show_id": 125988,
+    "still_path": "/qcqkEv0S8Re5V2UV9LFUWzHYyq3.jpg",
+    "vote_average": 7.878,
+    "vote_count": 127
+   }
+  ],
+  "name": "Сезон 1",
+  "networks": [
+   {
+    "id": 2552,
+    "logo_path": "/bngHRFi794mnMq34gfVcm9nDxN1.png",
+    "name": "Apple TV",
+    "origin_country": ""
+   }
+  ],
+  "overview": "В мрачном антиутопическом будущем человечество цепляется за выживание глубоко под землей в пределах колоссального бункера. Джульетта, инженер, которой поручено разгадать тайну смерти коллеги, раскрывает поразительные секреты, которые угрожают самой сути их замкнутого мира.",
+  "poster_path": "/pVsPWmqscpvgv83ld138POqKM6p.jpg",
+  "season_number": 1,
+  "vote_average": 7.3
+ },
+ "season/2": {
+  "_id": "66a5808337877dc30ac626d0",
+  "air_date": "2024-11-14",
+  "episodes": [
+   {
+    "air_date": "2024-11-14",
+    "episode_number": 1,
+    "episode_type": "standard",
+    "id": 5501094,
+    "name": "Инженер",
+    "overview": "Джульетта находит пристанище в Укрытии, давно разрушенном войной, думая, что она там одна.",
+    "production_code": "",
+    "runtime": 48,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/kB5wWdEknKlBJ8iGEYQyTJWTSZv.jpg",
+    "vote_average": 6.876,
+    "vote_count": 117
+   },
+   {
+    "air_date": "2024-11-21",
+    "episode_number": 2,
+    "episode_type": "standard",
+    "id": 5501095,
+    "name": "Приказ",
+    "overview": "В Укрытии номер 18 воцаряются волнения и беспорядки, после того как Джульетта сделала то, чего раньше никто не делал.",
+    "production_code": "",
+    "runtime": 42,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/gB2lEpKUvTshTdq00IRjQHFgG4J.jpg",
+    "vote_average": 6.694,
+    "vote_count": 103
+   },
+   {
+    "air_date": "2024-11-26",
+    "episode_number": 3,
+    "episode_type": "standard",
+    "id": 5501096,
+    "name": "Соло",
+    "overview": "Бернард обращается за помощью к судье Медоус. Биллингс начинает задумываться, не врут ли ему. Джульетта наконец знакомится с человеком в бункере.",
+    "production_code": "",
+    "runtime": 54,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/dY1nJnRuuhC0stZqNWShBYqk93H.jpg",
+    "vote_average": 6.875,
+    "vote_count": 100
+   },
+   {
+    "air_date": "2024-12-05",
+    "episode_number": 4,
+    "episode_type": "standard",
+    "id": 5501098,
+    "name": "Фисгармония",
+    "overview": "Джульетта отправляется в опасный путь за скафандром, чтобы вернуться домой и спасти свое Укрытие. Механики планируют встречу с судьей Медоус.",
+    "production_code": "",
+    "runtime": 54,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/lSsLzD8eVZaju4XUGmoTGSvZq2C.jpg",
+    "vote_average": 6.668,
+    "vote_count": 98
+   },
+   {
+    "air_date": "2024-12-12",
+    "episode_number": 5,
+    "episode_type": "standard",
+    "id": 5501099,
+    "name": "Спуск",
+    "overview": "Симс получает новую должность. Джульетта узнаёт, что Соло с ней нечестен. Бернард и Лукас совершают важное открытие.",
+    "production_code": "",
+    "runtime": 49,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/y2KEcaL7GLj5uYXP0t7C0d0R5B6.jpg",
+    "vote_average": 6.526,
+    "vote_count": 96
+   },
+   {
+    "air_date": "2024-12-19",
+    "episode_number": 6,
+    "episode_type": "standard",
+    "id": 5501101,
+    "name": "Баррикады",
+    "overview": "Бернард реализует план по устранению Нокса, Ширли и Уокер. Биллингс занимает четкую позицию. Соло спасает жизнь Джульетте и хочет кое-что взамен.",
+    "production_code": "",
+    "runtime": 43,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/aAPo83kOC5mfgcOado49ijWITVo.jpg",
+    "vote_average": 6.473,
+    "vote_count": 92
+   },
+   {
+    "air_date": "2024-12-26",
+    "episode_number": 7,
+    "episode_type": "standard",
+    "id": 5501102,
+    "name": "Погружение",
+    "overview": "Лукас получает задание. Механики делают эффектное заявление. Джульетта начинает рискованный спуск и сталкивается с новой опасностью.",
+    "production_code": "",
+    "runtime": 51,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/z60fohHAWgfhpVjZRZq4M1Itw7Z.jpg",
+    "vote_average": 6.589,
+    "vote_count": 84
+   },
+   {
+    "air_date": "2025-01-02",
+    "episode_number": 8,
+    "episode_type": "standard",
+    "id": 5501103,
+    "name": "Книга Куинна",
+    "overview": "Джульетта узнаёт, что с Соло что-то произошло. Бернард делает предложение Уокер. Лукас встречается с потомками Сальвадора Куинна.",
+    "production_code": "",
+    "runtime": 47,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/krzYmEQZ3ugR5MFqOMQJrv2pcnh.jpg",
+    "vote_average": 6.293,
+    "vote_count": 82
+   },
+   {
+    "air_date": "2025-01-09",
+    "episode_number": 9,
+    "episode_type": "standard",
+    "id": 5501104,
+    "name": "Мера предосторожности",
+    "overview": "Вера Биллингса пошатнулась. Лукас отправляется на Днище. Нокс находит предателя. Джульетта выясняет правду о прошлом Соло.",
+    "production_code": "",
+    "runtime": 59,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/aNgT4AEffmGwiabRD03riCz1aWr.jpg",
+    "vote_average": 6.957,
+    "vote_count": 82
+   },
+   {
+    "air_date": "2025-01-16",
+    "episode_number": 10,
+    "episode_type": "finale",
+    "id": 5501105,
+    "name": "В огонь",
+    "overview": "Мятежники делают ход, Джульетта тоже.",
+    "production_code": "",
+    "runtime": 59,
+    "season_number": 2,
+    "show_id": 125988,
+    "still_path": "/coz4XyEQ59IbkJ3UYB9Nr8UW8ur.jpg",
+    "vote_average": 7.222,
+    "vote_count": 99
+   }
+  ],
+  "name": "Сезон 2",
+  "networks": [],
+  "overview": "Джульетта Николс, оказавшаяся за пределами бункера с отказавшим костюмом, мчится наперегонки со временем, ошеломленная тем, что рядом находится другой бункер, который может стать ее единственной надеждой на выживание. Тем временем внутри бункера назревают беспорядки, и Бернард Холланд собирает жителей, чтобы поддержать порядок на фоне растущих вопросов об их мире. По мере того как Джульетта сталкивается с неожиданными опасностями вблизи нового силоса, начинают всплывать скрытые истины о происхождении силосов и мира за их пределами, углубляя тайну.",
+  "poster_path": "/sZrBGRiZrp5KlbNfgszwryPDo2N.jpg",
+  "season_number": 2,
+  "vote_average": 6.7
+ },
+ "season/3": {
+  "_id": "69e784c9520885c0cda1cc40",
+  "air_date": "2026-07-02",
+  "episodes": [
+   {
+    "air_date": "2026-07-02",
+    "episode_number": 1,
+    "episode_type": "standard",
+    "id": 7173957,
+    "name": "Кто ты?",
+    "overview": "Новый мэр Джульетта ничего не помнит о времени, проведенном во внешнем мире, а также о своем прошлом.",
+    "production_code": "",
+    "runtime": 56,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/nIvrv95n7gukebcCEUeZJDy9iEp.jpg",
+    "vote_average": 7.022,
+    "vote_count": 91
+   },
+   {
+    "air_date": "2026-07-09",
+    "episode_number": 2,
+    "episode_type": "standard",
+    "id": 7173958,
+    "name": "Всё хорошо",
+    "overview": "Биллингс расследует исчезновение. Дэниел Кин вступает в перепалку с журналисткой.",
+    "production_code": "",
+    "runtime": 51,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/u4kB03bgyjnwDEIpBkpjqTvdcbz.jpg",
+    "vote_average": 6.787,
+    "vote_count": 82
+   },
+   {
+    "air_date": "2026-07-16",
+    "episode_number": 3,
+    "episode_type": "standard",
+    "id": 7173959,
+    "name": "Темная сеть",
+    "overview": "Джульетта берет процесс выздоровления в свои руки. Хелен сталкивается с последствиями своего расследования.",
+    "production_code": "",
+    "runtime": 49,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/rlfEJJlIAlFEcw6nNfYpyNUbTPR.jpg",
+    "vote_average": 6.69,
+    "vote_count": 79
+   },
+   {
+    "air_date": "2026-07-23",
+    "episode_number": 4,
+    "episode_type": "standard",
+    "id": 7173960,
+    "name": "Главное — домой не возвращайся",
+    "overview": "Бегство от Камиллы приводит Джульетту к потрясающему открытию. Дэниел ищет помощи у друга.",
+    "production_code": "",
+    "runtime": 48,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/pYnJjrdS64krUWUAGB4ckZsqN1r.jpg",
+    "vote_average": 6.938,
+    "vote_count": 73
+   },
+   {
+    "air_date": "2026-07-30",
+    "episode_number": 5,
+    "episode_type": "standard",
+    "id": 7173961,
+    "name": "Память",
+    "overview": "Выясняются события, происшедшие после возвращения Джульетты, и заключаются неожиданные союзы.",
+    "production_code": "",
+    "runtime": 52,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/zcbjuLkbVPHSphOHClKQM0v1Zjf.jpg",
+    "vote_average": 7.196,
+    "vote_count": 69
+   },
+   {
+    "air_date": "2026-08-06",
+    "episode_number": 6,
+    "episode_type": "standard",
+    "id": 7173962,
+    "name": "Поездка",
+    "overview": "Биллингс и Хэнк сталкиваются с новой загадкой. Дэниел и Хелен получают неожиданное предложение.",
+    "production_code": "",
+    "runtime": 55,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/hCUVzq1FghJlS75KIG2Ttxua4AL.jpg",
+    "vote_average": 6.779,
+    "vote_count": 68
+   },
+   {
+    "air_date": "2026-08-13",
+    "episode_number": 7,
+    "episode_type": "standard",
+    "id": 7173963,
+    "name": "Рация",
+    "overview": "Джульетта посылает Лукаса и Кеннеди на задание, а Камилла в отчаянии требует от Роберта правды.",
+    "production_code": "",
+    "runtime": 55,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/hT47PUyS6fQrmukmbyXrL9nBgKc.jpg",
+    "vote_average": 7.258,
+    "vote_count": 66
+   },
+   {
+    "air_date": "2026-08-20",
+    "episode_number": 8,
+    "episode_type": "standard",
+    "id": 7173964,
+    "name": "Серая слизь",
+    "overview": "Отец Нокса Гас раскрывает свой секрет. Шарлотта принимает судьбоносное решение.",
+    "production_code": "",
+    "runtime": 56,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/qZiRIiFbjCSttNe3uNHsi6hoxWV.jpg",
+    "vote_average": 7.5,
+    "vote_count": 66
+   },
+   {
+    "air_date": "2026-08-27",
+    "episode_number": 9,
+    "episode_type": "standard",
+    "id": 7173965,
+    "name": "Прощание",
+    "overview": "Всё Укрытие шокировано объявлением Камиллы. Дэниел и Хелен посещают особенное мероприятие.",
+    "production_code": "",
+    "runtime": 62,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/fl5tbMRYYQ6eWEuU5E5wN3qRXrK.jpg",
+    "vote_average": 8.258,
+    "vote_count": 66
+   },
+   {
+    "air_date": "2026-09-03",
+    "episode_number": 10,
+    "episode_type": "finale",
+    "id": 7173966,
+    "name": "Трой",
+    "overview": "Лидер просыпается в новом мире.",
+    "production_code": "",
+    "runtime": 61,
+    "season_number": 3,
+    "show_id": 125988,
+    "still_path": "/cWfqa602Kcka7zRaLMq9TRhLJkH.jpg",
+    "vote_average": 8.73,
+    "vote_count": 63
+   }
+  ],
+  "name": "Сезон 3",
+  "networks": [],
+  "overview": "Третий сезон раскрывает историю происхождения, действие которой происходит на несколько столетий раньше, одновременно продолжая сагу о дистопическом обществе из 10 000 человек, живущих под землёй при загадочных обстоятельствах. В настоящем Джульетта Николс выживает после принудительной «чистки», но возвращается с потерей памяти, пока убежище оправляется от восстания и сталкивается с новой опасной угрозой. Тем временем в «прежние времена» журналистка Хелен Дрю и конгрессмен Дэниел Кин раскрывают заговор, который втягивает их в цепь событий с катастрофическими, необратимыми последствиями.",
+  "poster_path": "/gRkvq6FgiGRdtCwhVIozaUqhoDL.jpg",
+  "season_number": 3,
+  "vote_average": 7.3
+ },
+ "season/4": {
+  "_id": "6a6549235dc74d978d4b0e43",
+  "air_date": "2027-07-08",
+  "episodes": [
+   {
+    "air_date": "2027-07-08",
+    "episode_number": 1,
+    "episode_type": "standard",
+    "id": 7768410,
+    "name": "Эпизод 1",
+    "overview": "",
+    "production_code": "",
+    "runtime": null,
+    "season_number": 4,
+    "show_id": 125988,
+    "still_path": null,
+    "vote_average": 0.0,
+    "vote_count": 0
+   }
+  ],
+  "name": "Сезон 4",
+  "networks": [
+   {
+    "id": 2552,
+    "logo_path": "/bngHRFi794mnMq34gfVcm9nDxN1.png",
+    "name": "Apple TV",
+    "origin_country": ""
+   }
+  ],
+  "overview": "",
+  "poster_path": null,
+  "season_number": 4,
+  "vote_average": 0.0
+ }
+}

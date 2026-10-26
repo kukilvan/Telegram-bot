@@ -4,10 +4,13 @@ import asyncio
 import logging
 import time
 from collections import deque
+from collections.abc import Sequence
 
 import httpx
 
 from app.config import get_settings
+
+MAX_SEASONS_PER_REQUEST = 20  # TMDb's limit on `append_to_response` objects in one request
 
 
 class TmdbHttpError(RuntimeError):
@@ -246,6 +249,30 @@ class TMDbProvider:
             return None
         if resp.status_code != 200:
             raise TmdbHttpError(f"TMDb get_tv_show failed (HTTP {resp.status_code})", resp.status_code)
+        return resp.json()
+
+    async def get_tv_with_seasons(self, tv_id: int, season_numbers: Sequence[int]) -> dict | None:
+        """The series together with some of its seasons in one request (`season/{n}` keys hold the seasons).
+
+        Endpoint: GET /tv/{id}?language=ru&append_to_response=season/1,season/2,…
+        TMDb appends at most 20 seasons to one answer; asking for more raises ValueError. Returns None only
+        when there is no series at this id (404). Any other failure raises, like `get_tv_show`.
+        """
+        if len(season_numbers) > MAX_SEASONS_PER_REQUEST:
+            raise ValueError(f"TMDb appends at most {MAX_SEASONS_PER_REQUEST} seasons to one request")
+        params = {
+            "api_key": self._api_key,
+            "language": "ru",
+            "append_to_response": ",".join(f"season/{number}" for number in season_numbers),
+        }
+        resp = await self._get(f"/tv/{tv_id}", params)
+        if resp is None:
+            raise TmdbHttpError("TMDb is rate-limiting requests (HTTP 429)", 429)
+        if resp.status_code == 404:
+            logging.debug("TMDb get_tv_with_seasons HTTP 404 (no TV at this id)")
+            return None
+        if resp.status_code != 200:
+            raise TmdbHttpError(f"TMDb get_tv_with_seasons failed (HTTP {resp.status_code})", resp.status_code)
         return resp.json()
 
     async def get_tv_season(self, tv_id: int, season_number: int) -> dict | None:

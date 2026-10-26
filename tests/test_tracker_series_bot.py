@@ -249,6 +249,28 @@ def test_pressing_a_season_marks_it_and_pressing_again_takes_the_mark_off(tracke
     assert [s.watched for s in run(tracker.watchable_seasons(1))] == [False, False, False]
 
 
+def test_a_season_press_is_one_call_to_the_core_and_done_loads_the_card_once(tracker, replies, monkeypatch):
+    chat = Chat_(tracker)
+    add_series(chat, replies)
+    buttons = last_message(replies)[2]
+    calls = []
+    for name in ("title_card", "watchable_seasons", "set_season_watched", "toggle_season"):
+        real = getattr(tracker, name)
+
+        def spy(*args, _real=real, _name=name):
+            calls.append(_name)
+            return _real(*args)
+
+        monkeypatch.setattr(tracker, name, spy)
+
+    chat.press(callback_of(buttons, "Сезон 1"))
+    assert calls == ["toggle_season"]
+
+    calls.clear()
+    chat.press(callback_of(buttons, "Готово"))
+    assert calls == ["title_card"]
+
+
 def test_done_closes_the_choice_and_shows_the_card_with_the_marks(tracker, replies):
     chat = Chat_(tracker)
     add_series(chat, replies)

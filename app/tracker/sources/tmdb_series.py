@@ -3,9 +3,10 @@
 Parsing is pure (responses in, data out) and is tested on saved real responses. The network client
 (`TMDbProvider`) is passed in, so the adapter never talks to the network itself.
 
-`/tv/{id}` lists the seasons (number, name, episode count) but not their episodes, so every season is
-asked for separately (`/tv/{id}/season/{n}`). TMDb gives an episode's air day, not its hour: the episode
-counts as out from the start of that day (UTC). Season 0 holds specials and is not a season.
+`/tv/{id}` lists the seasons (number, name, episode count) but not their episodes, so the seasons are asked
+for in batches: one request returns the series with up to 20 seasons appended (`season/{n}` keys).
+TMDb gives an episode's air day, not its hour: the episode counts as out from the start of that day (UTC).
+Season 0 holds specials and is not a season.
 """
 
 from dataclasses import dataclass, field
@@ -18,6 +19,7 @@ from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "tmdb_tv"  # TMDb shares one id space between movies and series, so ids are namespaced by kind
 KIND = TitleKind.SERIES
+SEASONS_PER_REQUEST = 20  # TMDb appends at most 20 seasons to one answer
 
 __all__ = ["Suggestion", "SeriesSnapshot", "TmdbSeriesSource", "parse_search", "parse_show", "SOURCE_KEY"]
 
@@ -125,9 +127,17 @@ class TmdbSeriesSource:
         raw = await self._provider.get_tv_show(tv_id)
         if raw is None:
             return None
-        details = {}
-        for summary in raw.get("seasons") or []:
-            number = summary.get("season_number")
-            if number is not None and int(number) >= 1:
-                details[int(number)] = await self._provider.get_tv_season(tv_id, int(number))
+        numbers = [
+            int(summary["season_number"])
+            for summary in raw.get("seasons") or []
+            if summary.get("season_number") is not None and int(summary["season_number"]) >= 1
+        ]
+        details: dict[int, dict[str, Any] | None] = {}
+        for start in range(0, len(numbers), SEASONS_PER_REQUEST):
+            chunk = numbers[start:start + SEASONS_PER_REQUEST]
+            answer = await self._provider.get_tv_with_seasons(tv_id, chunk)
+            if answer is None:  # the series itself vanished between the two requests
+                return None
+            for number in chunk:
+                details[number] = answer.get(f"season/{number}")  # not in the answer: empty, as a 404 season was
         return parse_show(raw, details)

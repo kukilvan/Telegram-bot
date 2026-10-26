@@ -10,6 +10,13 @@ from datetime import time
 import pytest
 
 from app.tracker import delivery
+from app.utils import secrets_mask
+
+
+@pytest.fixture(autouse=True)
+def secrets_not_remembered(monkeypatch):
+    """The secrets are remembered once per run; a test that changes the environment starts with nothing remembered."""
+    monkeypatch.setattr(secrets_mask, "_remembered", None)
 
 
 @pytest.fixture(autouse=True)

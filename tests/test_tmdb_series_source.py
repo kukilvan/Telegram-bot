@@ -1,7 +1,7 @@
 """TMDb series adapter: saved real TMDb responses (tests/fixtures/tmdb) become suggestions and snapshots.
 
 The fixtures are the real answers for «Укрытие» (Silo, id 125988): `/tv/{id}`, `/tv/{id}/season/{n}` and the
-search. Season 4 there is the stub from BUG-12: one future episode and nothing aired. No network.
+search (the batched answers are in test_tmdb_series_batches.py). Season 4 there is the stub from BUG-12: one future episode and nothing aired. No network.
 """
 
 import asyncio
@@ -51,14 +51,18 @@ class FakeProvider:
         except FileNotFoundError:
             return None
 
-    async def get_tv_season(self, tv_id, season_number):
-        self.season_calls.append(season_number)
-        if season_number == self.broken_season:
+    async def get_tv_with_seasons(self, tv_id, numbers):
+        """The batched answer, put together from the per-season answers: `season/{n}` for the seasons TMDb has."""
+        self.season_calls.extend(numbers)
+        if self.broken_season in numbers:
             raise RuntimeError("TMDb is down")
-        try:
-            return load(f"tv_{tv_id}_season_{season_number}.json")
-        except FileNotFoundError:
-            return None
+        answer = {}
+        for number in numbers:
+            try:
+                answer[f"season/{number}"] = load(f"tv_{tv_id}_season_{number}.json")
+            except FileNotFoundError:
+                pass
+        return answer
 
 
 def test_search_results_become_series_suggestions():
@@ -160,7 +164,7 @@ def test_source_search_outage_is_an_error_not_an_empty_result():
         run(TmdbSeriesSource(FakeProvider()).suggest("down"))
 
 
-def test_source_snapshot_reads_the_show_and_each_real_season():
+def test_source_snapshot_reads_the_show_and_asks_for_each_real_season():
     provider = FakeProvider()
 
     snapshot = run(TmdbSeriesSource(provider).snapshot(str(SILO)))

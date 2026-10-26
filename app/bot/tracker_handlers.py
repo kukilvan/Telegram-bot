@@ -494,23 +494,20 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Эта кнопка больше не работает.")
             return
         title_id = int(raw_id)
-        if await tracker.title_card(title_id) is None:
-            await callback.answer(_NOT_IN_LIST)
-            return
         if raw_number == _DONE:
+            card = await tracker.title_card(title_id)
+            if card is None:
+                await callback.answer(_NOT_IN_LIST)
+                return
             await drop_buttons(callback)
             await callback.answer("Готово")
-            await send_card(callback, await tracker.title_card(title_id))
+            await send_card(callback, card)
             return
         if not (raw_number.isascii() and raw_number.isdigit()):
             await callback.answer("Эта кнопка больше не работает.")
             return
-        number = int(raw_number)
-        marks = {s.number: s.watched for s in await tracker.watchable_seasons(title_id)}
         try:
-            if number not in marks:
-                raise UnknownSeason(f"{title_id}:{number}")
-            await tracker.set_season_watched(title_id, number, not marks[number])
+            seasons = await tracker.toggle_season(title_id, int(raw_number))
         except UnknownTitle:
             await callback.answer(_NOT_IN_LIST)
             return
@@ -523,9 +520,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             return
         await callback.answer()
         try:
-            await callback.message.edit_reply_markup(
-                reply_markup=seasons_markup(title_id, await tracker.watchable_seasons(title_id))
-            )
+            await callback.message.edit_reply_markup(reply_markup=seasons_markup(title_id, seasons))
         except Exception as exc:  # the marks are saved; a stale message only keeps its old look
             logging.debug("could not refresh the season buttons: %s", repr(exc))
 

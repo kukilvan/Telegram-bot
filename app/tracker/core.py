@@ -132,6 +132,10 @@ class Tracker:
         """Mark a season as watched, or take the mark off. Marking twice changes nothing."""
         await self._titles.set_season_watched(title_id, number, watched)
 
+    async def toggle_season(self, title_id: int, number: int) -> list[WatchableSeason]:
+        """The button of a season: mark it, or take the mark off. Returns the seasons with their marks as they are now."""
+        return await self._titles.toggle_season(title_id, number)
+
     async def mark_watched(self, title_id: int) -> WatchedResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
         return await self._titles.mark_watched(title_id)

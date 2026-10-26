@@ -2,6 +2,7 @@
 follows from them. What differs by kind (the first seasons, the first check) is asked of the title's poller."""
 
 import asyncio
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import delete, select
@@ -19,6 +20,11 @@ from app.tracker.settings_store import SettingsStore
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
+
+
+def _watchable(loaded: list[tuple[SeasonRecord, season_logic.Season]], now: datetime) -> list[WatchableSeason]:
+    """The seasons with something released, with the owner's marks: the ones that can be marked."""
+    return [WatchableSeason(season.number, record.watched) for record, season in loaded if season.released(now) > 0]
 
 
 class Titles:
@@ -114,13 +120,31 @@ class Titles:
         return await asyncio.to_thread(self._watchable_seasons, title_id)
 
     def _watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
+        with self.ctx.session_factory() as session:
+            return _watchable(storage.load_seasons(session, title_id), self.ctx.now())
+
+    async def toggle_season(self, title_id: int, number: int) -> list[WatchableSeason]:
+        """The button of a season: mark it as watched, or take the mark off if it is there. Returns the seasons
+        that can be marked, with their marks as they are now. Raises UnknownTitle, and UnknownSeason for a season
+        that is not there or has nothing released."""
+        async with self.ctx.write_lock:
+            return await asyncio.to_thread(self._toggle_season, title_id, number)
+
+    def _toggle_season(self, title_id: int, number: int) -> list[WatchableSeason]:
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
-            return [
-                WatchableSeason(season.number, record.watched)
-                for record, season in storage.load_seasons(session, title_id)
-                if season.released(now) > 0
-            ]
+            title = session.get(Title, title_id)
+            if title is None:
+                raise UnknownTitle(title_id)
+            loaded = storage.load_seasons(session, title_id)
+            record = next((r for r, season in loaded if season.number == number and season.released(now) > 0), None)
+            if record is None:
+                raise UnknownSeason(f"{title_id}:{number}")
+            record.watched = not record.watched
+            storage.refresh_status(session, title, now)
+            seasons = _watchable(loaded, now)
+            session.commit()
+            return seasons
 
     async def set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
         """Mark a season as watched, or take the mark off. Marking twice changes nothing."""

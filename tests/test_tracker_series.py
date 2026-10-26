@@ -294,6 +294,63 @@ def test_marking_an_unknown_title_or_season_is_an_error(tracker):
         run(tracker.set_season_watched(result.title_id, 0, True))
 
 
+def test_toggling_a_season_marks_it_and_toggling_again_takes_the_mark_off(tracker):
+    result = run(tracker.add_title("series", "125988"))
+
+    marked = run(tracker.toggle_season(result.title_id, 2))
+    assert [(s.number, s.watched) for s in marked] == [(1, False), (2, True), (3, False)]
+    assert "Просмотрены сезоны: 2" in format_card(run(tracker.title_card(result.title_id)))
+
+    unmarked = run(tracker.toggle_season(result.title_id, 2))
+    assert [(s.number, s.watched) for s in unmarked] == [(1, False), (2, False), (3, False)]
+    assert unmarked == run(tracker.watchable_seasons(result.title_id))  # the answer is the list the bot would ask for
+
+
+def test_toggling_a_season_recalculates_the_status(tracker):
+    result = run(tracker.add_title("series", "125988"))
+    assert run(tracker.list_titles())[0].status == "want"
+
+    run(tracker.toggle_season(result.title_id, 3))
+    assert run(tracker.list_titles())[0].status == "in_progress"
+
+    run(tracker.toggle_season(result.title_id, 3))
+    assert run(tracker.list_titles())[0].status == "want"
+
+
+def test_toggling_an_unknown_title_or_season_is_an_error(tracker):
+    result = run(tracker.add_title("series", "125988"))
+
+    with pytest.raises(UnknownTitle):
+        run(tracker.toggle_season(999, 1))
+    with pytest.raises(UnknownSeason):
+        run(tracker.toggle_season(result.title_id, 9))
+    with pytest.raises(UnknownSeason):
+        run(tracker.toggle_season(result.title_id, 0))
+    assert all(not s.watched for s in run(tracker.watchable_seasons(result.title_id)))
+
+
+def test_a_season_with_nothing_released_cannot_be_toggled(tracker):
+    result = run(tracker.add_title("series", "125988"))  # season 4 is announced: one future episode, nothing out
+
+    with pytest.raises(UnknownSeason):
+        run(tracker.toggle_season(result.title_id, 4))
+
+    assert run(tracker.title_card(result.title_id)).seasons.watched == ()
+
+
+def test_toggling_loads_the_title_once(tracker, session_factory):
+    from sqlalchemy import event
+
+    result = run(tracker.add_title("series", "125988"))
+    statements = []
+    event.listen(session_factory.kw["bind"], "before_cursor_execute", lambda *args: statements.append(args[2]))
+
+    run(tracker.toggle_season(result.title_id, 1))
+
+    season_reads = [s for s in statements if s.lstrip().upper().startswith("SELECT") and "FROM seasons" in s]
+    assert len(season_reads) <= 2, season_reads  # one load of the seasons for the status, one for the answer at most
+
+
 def test_marking_a_season_while_others_are_unwatched_makes_the_series_in_progress(tracker):
     result = run(tracker.add_title("series", "125988"))
 

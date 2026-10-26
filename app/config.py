@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
+from app.utils.secrets_mask import remember_secrets
+
 
 def parse_user_ids(raw: str) -> list[int]:
     """Parse "123, 456" into [123, 456]; blank items are skipped, junk raises ValueError."""
@@ -84,4 +86,5 @@ def time_zone_of(settings: Settings) -> ZoneInfo:
 
 def get_settings() -> Settings:
     load_dotenv()  # loads .env into os.environ before Settings reads it
+    remember_secrets()  # the log is set up before .env is read: its tokens must join the masked values now
     return Settings()

@@ -6,8 +6,10 @@ from logging.handlers import RotatingFileHandler
 from unittest.mock import patch
 
 from app.bot import error_handler
+from app.config import get_settings
+from app.utils import secrets_mask
 from app.utils.logging_config import MaskingFormatter, setup_logging
-from app.utils.secrets_mask import mask_secrets
+from app.utils.secrets_mask import mask_secrets, remember_secrets
 
 TMDB_KEY = "0123456789abcdef0123456789abcdef"
 BOT_TOKEN = "123456789:AAH_fake-token_for-tests_0123456789abc"
@@ -38,14 +40,60 @@ def test_masks_bearer_and_json_tokens():
 
 def test_masks_env_secret_values_even_without_a_pattern(monkeypatch):
     monkeypatch.setenv("SOME_SERVICE_API_KEY", "plain-value-12345")
+    remember_secrets()
     out = mask_secrets("failed for plain-value-12345 (retry)")
     assert "plain-value-12345" not in out
 
 
 def test_leaves_ordinary_text_and_short_env_values_alone(monkeypatch):
     monkeypatch.setenv("MY_TINY_KEY", "abc")  # too short to be treated as a secret
+    remember_secrets()
     text = "Steam search 'witcher': got 10 apps abc"
     assert mask_secrets(text) == text
+
+
+def test_the_first_mask_remembers_the_secrets_when_nobody_did(monkeypatch):
+    monkeypatch.setenv("SOME_SERVICE_API_KEY", "plain-value-12345")
+
+    assert "plain-value-12345" not in mask_secrets("failed for plain-value-12345")
+
+
+def test_the_environment_is_scanned_once_for_many_lines(monkeypatch):
+    monkeypatch.setenv("SOME_SERVICE_API_KEY", "plain-value-12345")
+    scans = []
+    real_scan = secrets_mask._secret_values
+    monkeypatch.setattr(secrets_mask, "_secret_values", lambda: scans.append(1) or real_scan())
+
+    for number in range(200):
+        assert "plain-value-12345" not in mask_secrets(f"line {number}: plain-value-12345")
+
+    assert len(scans) == 1
+
+
+def test_the_remembered_secrets_do_not_follow_later_changes_of_the_environment(monkeypatch):
+    monkeypatch.setenv("SOME_SERVICE_API_KEY", "plain-value-12345")
+    remember_secrets()
+    monkeypatch.delenv("SOME_SERVICE_API_KEY")
+    monkeypatch.setenv("OTHER_SERVICE_API_KEY", "another-value-67890")
+
+    assert "plain-value-12345" not in mask_secrets("failed for plain-value-12345")
+    assert "another-value-67890" in mask_secrets("failed for another-value-67890")  # not remembered: by design
+
+
+def test_a_token_read_from_dotenv_after_logging_was_set_up_is_masked(monkeypatch):
+    def load_dotenv_stub(*args, **kwargs):
+        monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "dotenv-only-token-0123456789")
+        monkeypatch.setenv("TMDB_API_KEY", "dotenv-only-tmdb-0123456789")
+
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.delenv("TMDB_API_KEY", raising=False)
+    monkeypatch.setattr("app.config.load_dotenv", load_dotenv_stub)
+    mask_secrets("the logging started: nothing of .env is known yet")  # remembers the environment as it is now
+
+    get_settings()  # reads .env
+
+    out = mask_secrets("GET /bot dotenv-only-token-0123456789 and dotenv-only-tmdb-0123456789")
+    assert "dotenv-only" not in out
 
 
 def _logger_with(formatter):

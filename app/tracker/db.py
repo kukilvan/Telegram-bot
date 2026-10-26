@@ -17,13 +17,19 @@ TRACKER_DATABASE_URL = "sqlite:///./data/tracker.db"  # separate file: the legac
 MIGRATIONS_DIR = pathlib.Path(__file__).resolve().parent / "migrations"
 
 
+def database_file(url: str = TRACKER_DATABASE_URL) -> pathlib.Path | None:
+    """The file the database at this address lives in, as the engine opens it (a relative address counts from the
+    current folder). None for an in-memory database. The backup finds the database through this."""
+    database = make_url(url).database
+    return None if database in (None, "", ":memory:") else pathlib.Path(database)
+
+
 def create_tracker_engine(url: str = TRACKER_DATABASE_URL) -> Engine:
     """SQLite engine in WAL mode with foreign keys on. `sqlite://` gives a private in-memory database."""
-    parsed = make_url(url)
-    in_memory = parsed.database in (None, "", ":memory:")
-    if not in_memory:
-        pathlib.Path(parsed.database).parent.mkdir(parents=True, exist_ok=True)
-    kwargs = {"poolclass": StaticPool, "connect_args": {"check_same_thread": False}} if in_memory else {}
+    file = database_file(url)
+    if file is not None:
+        file.parent.mkdir(parents=True, exist_ok=True)
+    kwargs = {"poolclass": StaticPool, "connect_args": {"check_same_thread": False}} if file is None else {}
     engine = create_engine(url, **kwargs)
 
     @event.listens_for(engine, "connect")

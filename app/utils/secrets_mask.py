@@ -41,9 +41,21 @@ def _secret_values() -> list[str]:
     return sorted(values, key=len, reverse=True)
 
 
+_remembered: list[str] | None = None
+
+
+def remember_secrets() -> None:
+    """Collect the secret values of the environment once; `mask_secrets` uses them until this is called again.
+    Call it after the environment changes (`get_settings` does, right after loading `.env`)."""
+    global _remembered
+    _remembered = _secret_values()
+
+
 def mask_secrets(text: str) -> str:
     """Replace known secret values and secret-shaped fragments with ***."""
-    for value in _secret_values():
+    if _remembered is None:
+        remember_secrets()
+    for value in _remembered:
         text = text.replace(value, MASK)
     for pattern, repl in _PATTERNS:
         text = pattern.sub(repl, text)
