@@ -3,15 +3,14 @@
 import asyncio
 import logging
 from datetime import datetime as dt, timezone
-from zoneinfo import ZoneInfo
 
 from aiogram import Bot, Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.bot.access import AccessMiddleware
 from app.bot.error_handler import ErrorMiddleware, send_startup_error_sync
-from app.bot.tracker_handlers import BOT_COMMANDS, TelegramSender, owner_chat_id, register_tracker_handlers
-from app.config import get_settings
+from app.bot.tracker_handlers import BOT_COMMANDS, TelegramSender, register_tracker_handlers
+from app.config import get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
 from app.providers.shikimori import ShikimoriClient
 from app.providers.tmdb import TMDbProvider
@@ -47,25 +46,28 @@ async def main() -> None:
         logging.critical("ALLOWED_TELEGRAM_USER_IDS is empty: refusing to start an open bot")
         raise SystemExit(1)
 
+    if settings.owner_chat_id.strip() and settings.owner_chat_id_number is None:
+        logging.warning("OWNER_CHAT_ID is not a number; messages for the owner go to the first allowed user")
+
     tmdb = TMDbProvider()
     anilist = AniListProvider()
     shikimori = ShikimoriClient()
 
     async with Bot(token=settings.telegram_bot_token) as bot:
         me = await bot.get_me()
-        logging.info(f"Bot started as @{me.username}")
+        logging.info("Bot started as @%s", me.username)
 
         tracker = Tracker(
             create_session_factory(),
             clock=lambda: dt.now(tz=timezone.utc),
-            sender=TelegramSender(bot, owner_chat_id(settings.owner_chat_id, allowed_ids)),
+            sender=TelegramSender(bot, settings.owner_chat),
             sources={
                 "movie": TmdbMovieSource(tmdb),
                 "series": TmdbSeriesSource(tmdb),
                 "anime": ShikimoriAnimeSource(shikimori, anilist),
             },
             sequel_sources={"movie": TmdbSequelSource(tmdb)},
-            default_tz=ZoneInfo(settings.bot_timezone),
+            default_tz=time_zone_of(settings),
         )
         dp = build_dispatcher(tracker, allowed_ids)
         await bot.set_my_commands(BOT_COMMANDS)
@@ -101,7 +103,8 @@ if __name__ == "__main__":
         # Startup crash protection: send error via HTTP before anything else
         try:
             settings = get_settings()
-            send_startup_error_sync(settings.telegram_bot_token, settings.owner_chat_id, e)
+            if settings.owner_chat is not None:
+                send_startup_error_sync(settings.telegram_bot_token, settings.owner_chat, e)
         except Exception:
             pass  # Best effort — don't crash on error reporting
         raise

@@ -38,7 +38,6 @@ from app.tracker.core import (
     WatchableSeason,
 )
 from app.tracker.series_events import SAMPLE_EPISODES_ID
-from app.utils.secrets_mask import mask_secrets
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
 ADD_BUTTON = "➕ Добавить"
@@ -102,16 +101,6 @@ class TelegramSender:
 
     async def send(self, message: str, actions: Sequence[Action] = ()) -> None:
         await self._bot.send_message(chat_id=self._chat_id, text=message, reply_markup=actions_markup(actions))
-
-
-def owner_chat_id(configured: str, allowed_user_ids: list[int]) -> int:
-    """OWNER_CHAT_ID if it is a number, otherwise the first allowed user (a private chat id equals the user id)."""
-    try:
-        return int(configured)
-    except ValueError:
-        if configured:
-            logging.warning("OWNER_CHAT_ID is not a number; sending tracker messages to the first allowed user")
-        return allowed_user_ids[0]
 
 
 def main_keyboard() -> ReplyKeyboardMarkup:
@@ -225,7 +214,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         try:
             result = await tracker.digest_now()
         except Exception as exc:  # the queue is read from the database: tell the owner, keep the bot alive
-            logging.warning("digest now failed: %s", mask_secrets(repr(exc)))
+            logging.warning("digest now failed: %s", repr(exc))
             await message.answer("Не удалось собрать сводку. Попробуйте ещё раз.")
             return
         if result.events == 0:
@@ -257,7 +246,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             tz = (await tracker.delivery_rules()).tz
             result = await tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment)
         except Exception as exc:
-            logging.warning("delivery rules check failed: %s", mask_secrets(repr(exc)))
+            logging.warning("delivery rules check failed: %s", repr(exc))
             await callback.answer("Не удалось выполнить проверку. Попробуйте ещё раз.")
             return
         await callback.answer()
@@ -307,7 +296,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         try:
             suggestions = await tracker.search(kind, query)
         except Exception as exc:  # the source is a network client: tell the owner, keep the bot alive
-            logging.warning("title search failed: %s", mask_secrets(repr(exc)))
+            logging.warning("title search failed: %s", repr(exc))
             await message.answer(f"Не удалось связаться с {_SOURCE_NAMES.get(kind, 'источником')}. Попробуйте чуть позже.")
             return
         if not suggestions:
@@ -338,7 +327,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer(f"Не нашёл такой тайтл в {_SOURCE_NAMES.get(kind, 'источнике')}, попробуйте поискать заново.")
             return
         except Exception as exc:
-            logging.warning("adding a title failed: %s", mask_secrets(repr(exc)))
+            logging.warning("adding a title failed: %s", repr(exc))
             await callback.answer(f"Не удалось получить данные из {_SOURCE_NAMES.get(kind, 'источника')}. Попробуйте чуть позже.")
             return
         await callback.answer()
@@ -406,7 +395,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         try:
             await callback.message.edit_reply_markup(reply_markup=None)
         except Exception as exc:  # an old or missing message: the answer to the press matters more
-            logging.debug("could not remove buttons: %s", mask_secrets(repr(exc)))
+            logging.debug("could not remove buttons: %s", repr(exc))
 
     async def mark_watched(callback: CallbackQuery, title_id: int) -> None:
         try:
@@ -415,7 +404,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer(_NOT_IN_LIST)
             return
         except Exception as exc:
-            logging.warning("marking a title watched failed: %s", mask_secrets(repr(exc)))
+            logging.warning("marking a title watched failed: %s", repr(exc))
             await callback.answer("Не удалось сохранить. Попробуйте ещё раз.")
             return
         await drop_buttons(callback)
@@ -449,7 +438,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
             return
         except Exception as exc:
-            logging.warning("following a sequel failed: %s", mask_secrets(repr(exc)))
+            logging.warning("following a sequel failed: %s", repr(exc))
             await callback.answer("Не удалось получить данные из TMDb. Попробуйте чуть позже.")
             return
         await drop_buttons(callback)
@@ -496,7 +485,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Такого сезона нет или он ещё не вышел.")
             return
         except Exception as exc:
-            logging.warning("marking a season failed: %s", mask_secrets(repr(exc)))
+            logging.warning("marking a season failed: %s", repr(exc))
             await callback.answer("Не удалось сохранить. Попробуйте ещё раз.")
             return
         await callback.answer()
@@ -505,7 +494,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
                 reply_markup=seasons_markup(title_id, await tracker.watchable_seasons(title_id))
             )
         except Exception as exc:  # the marks are saved; a stale message only keeps its old look
-            logging.debug("could not refresh the season buttons: %s", mask_secrets(repr(exc)))
+            logging.debug("could not refresh the season buttons: %s", repr(exc))
 
     # --- «Удалить» ------------------------------------------------------------------------------
 
@@ -537,7 +526,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer(_NOT_IN_LIST)
             return
         except Exception as exc:  # the question stays, so the press can be repeated
-            logging.warning("deleting a title failed: %s", mask_secrets(repr(exc)))
+            logging.warning("deleting a title failed: %s", repr(exc))
             await callback.answer("Не удалось удалить. Попробуйте ещё раз.")
             return
         await drop_buttons(callback)
@@ -583,7 +572,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
                     reply_markup=_selection_markup(selection_id, (await tracker.list_titles())[:MAX_LIST_BUTTONS], chosen)
                 )
             except Exception as exc:  # the marks are kept; a stale message only keeps its old look
-                logging.debug("could not refresh the selection buttons: %s", mask_secrets(repr(exc)))
+                logging.debug("could not refresh the selection buttons: %s", repr(exc))
         elif verb == _BULK_GO:
             await ask_delete_selected(callback, selection_id, chosen)
         elif verb == _BULK_YES:
@@ -625,7 +614,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             except UnknownTitle:
                 continue  # already removed from its own card
             except Exception as exc:
-                logging.warning("deleting a title failed: %s", mask_secrets(repr(exc)))
+                logging.warning("deleting a title failed: %s", repr(exc))
                 failed.append(names.get(title_id, str(title_id)))
         await callback.answer()
         if callback.message is None:

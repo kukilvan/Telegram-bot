@@ -18,6 +18,7 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import DeliveryItem, Event, ExternalId, SourceSnapshot, Title
 from app.tracker.sources.tmdb_movies import MovieSnapshot
+from app.utils.logging_config import MaskingFormatter
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 JERUSALEM = ZoneInfo("Asia/Jerusalem")
@@ -476,7 +477,8 @@ def test_addresses_keys_and_exception_names_stay_in_the_log(tracker, source, clo
     (text,) = notices(sender)
     for leak in ("SECRET-KEY", "https://", "api_key", "RuntimeError", "ReadTimeout", "Traceback"):
         assert leak not in text
-    assert "SECRET-KEY" not in caplog.text
+    formatter = MaskingFormatter("%(message)s")  # the log masks on output, the code logs the error as it is
+    assert "SECRET-KEY" not in " ".join(formatter.format(record) for record in caplog.records)
 
 
 # --- delivery ------------------------------------------------------------------------------------

@@ -778,13 +778,13 @@ class Tracker:
             if not await asyncio.to_thread(self._title_exists, due.id):
                 logging.info("title %s was deleted while it was polled", due.id)  # nothing broke: it is simply gone
                 return
-            logging.warning("polling title %s failed: %s", due.id, mask_secrets(repr(exc)))
+            logging.warning("polling title %s failed: %s", due.id, repr(exc))
             report.failed += 1
             broken.append((due, exc))
             try:
                 await asyncio.to_thread(self._postpone, due, movie_events.RETRY_AFTER_FAILURE)
             except Exception as postpone_exc:  # even a failed postponement leaves the other titles to the pass
-                logging.warning("postponing title %s failed: %s", due.id, mask_secrets(repr(postpone_exc)))
+                logging.warning("postponing title %s failed: %s", due.id, repr(postpone_exc))
             return
         report.polled += 1
         report.events += found
@@ -797,7 +797,7 @@ class Tracker:
         try:
             report.notices = await asyncio.to_thread(self._queue_failure_notices, broken)
         except Exception as exc:  # a notice that cannot be stored must not hide the pass; the next failure tries again
-            logging.warning("queueing failure notices failed: %s", mask_secrets(repr(exc)))
+            logging.warning("queueing failure notices failed: %s", repr(exc))
 
     def _queue_failure_notices(self, broken: list[tuple[_DueTitle, Exception]]) -> int:
         """Queue the «could not check» events of one pass: one per title, and none for a title the owner was told about
@@ -1203,7 +1203,7 @@ class Tracker:
         except Exception as exc:  # the sender is a network client: any failure means "try again later"
             error = exc
             logging.warning(
-                "delivery of queue items %s failed: %s", [m.item_id for m in members], mask_secrets(repr(exc))
+                "delivery of queue items %s failed: %s", [m.item_id for m in members], repr(exc)
             )
 
         await asyncio.to_thread(self._record_attempts, [m.item_id for m in members], error)

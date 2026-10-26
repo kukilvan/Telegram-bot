@@ -56,7 +56,7 @@ def _save_error_to_file(exc: Exception) -> None:
         pass  # Best effort
 
 
-async def _send_error_via_http(token: str, chat_id: str, text: str) -> bool:
+async def _send_error_via_http(token: str, chat_id: int | str, text: str) -> bool:
     """Send error message via Telegram Bot API HTTP endpoint.
 
     Does NOT depend on bot object being initialized.
@@ -85,7 +85,7 @@ async def _send_error_via_http(token: str, chat_id: str, text: str) -> bool:
         return False
 
 
-def send_startup_error_sync(token: str, chat_id: str, exc: Exception) -> None:
+def send_startup_error_sync(token: str, chat_id: int, exc: Exception) -> None:
     """Synchronously send startup error via HTTP (blocking, for use in sys.excepthook)."""
     _save_error_to_file(exc)
     text = _format_error_for_telegram(exc)
@@ -95,7 +95,7 @@ def send_startup_error_sync(token: str, chat_id: str, exc: Exception) -> None:
         pass  # Best effort — don't crash
 
 
-async def send_runtime_error(token: str, chat_id: str, exc: Exception) -> None:
+async def send_runtime_error(token: str, chat_id: int, exc: Exception) -> None:
     """Send runtime error via Telegram Bot API."""
     _save_error_to_file(exc)
     text = _format_error_for_telegram(exc)
@@ -116,8 +116,8 @@ class ErrorMiddleware:
             return await handler(event, data)
         except Exception as e:
             token = self._settings.telegram_bot_token
-            chat_id = self._settings.owner_chat_id
-            if token and chat_id:
+            chat_id = self._settings.owner_chat
+            if token and chat_id is not None:
                 await send_runtime_error(token, chat_id, e)
             # Re-raise so aiogram's default error handling still works
             raise

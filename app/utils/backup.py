@@ -35,6 +35,6 @@ def backup_database() -> None:
     """Scheduler job: back up the database and log the result."""
     backup = create_backup()
     if backup:
-        logging.info(f"Database backup created: {backup}")
+        logging.info("Database backup created: %s", backup)
     else:
         logging.warning("No database file found for backup")

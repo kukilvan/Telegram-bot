@@ -215,16 +215,16 @@ class ShikimoriClient:
                     if resp.status_code == 429:
                         self._last_failure = (429, None)
                         retry_after = int(resp.headers.get("Retry-After", 2))
-                        logger.warning(f"Shikimori 429, retry after {retry_after}s")
+                        logger.warning("Shikimori 429, retry after %ss", retry_after)
                         await asyncio.sleep(retry_after)
                         continue
                     if resp.status_code != 200:
                         self._last_failure = (resp.status_code, None)
-                        logger.error(f"Shikimori request failed (HTTP {resp.status_code})")
+                        logger.error("Shikimori request failed (HTTP %s)", resp.status_code)
                         return None
                     data = resp.json()
                     if data.get("errors"):
-                        logger.error(f"Shikimori GraphQL errors: {data['errors']}")
+                        logger.error("Shikimori GraphQL errors: %s", data["errors"])
                         return None
                     return data
                 except Exception as e:
@@ -232,7 +232,7 @@ class ShikimoriClient:
                     if attempt < retries - 1:
                         await asyncio.sleep(2 ** attempt)
                         continue
-                    logger.error(f"Shikimori request error: {e}", exc_info=True)
+                    logger.error("Shikimori request error: %s", e, exc_info=True)
                     return None
         return None
 
@@ -265,7 +265,7 @@ class ShikimoriClient:
                 raise ShikimoriError("search failed", status, cause)
             return []
         items = data.get("data", {}).get("animes", [])
-        logger.debug(f"Shikimori search results: {len(items)} items, first: {items[0] if items else 'none'}")
+        logger.debug("Shikimori search results: %d items, first: %s", len(items), items[0] if items else "none")
         return items
 
     async def fetch_entries(self, ids: Sequence[str]) -> list[dict]:
@@ -335,7 +335,7 @@ class ShikimoriClient:
             if not items:
                 break
             all_items.extend(items)
-            logger.debug(f"Shikimori franchise '{franchise}' page {current_page}: {len(items)} items (total: {len(all_items)})")
+            logger.debug("Shikimori franchise %r page %s: %d items (total: %d)", franchise, current_page, len(items), len(all_items))
             if len(items) < 50:
                 break
             current_page += 1

@@ -27,21 +27,23 @@ class IGDBProvider:
     BASE_URL = "https://api.igdb.com/v4"
     TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
 
+    # IGDB's own request pacing (not TMDb's settings)
+    min_call_interval = 1.5      # seconds between consecutive calls
+    max_calls_per_minute = 30    # rolling per-minute cap on requests
+    backoff_base_seconds = 5.0   # initial wait on HTTP 429 (doubles per retry)
+    backoff_max_retries = 3      # attempts before giving up on 429
+
     def __init__(self) -> None:
         settings = get_settings()
         self.client_id = settings.igdb_client_id
         self.client_secret = settings.igdb_client_secret
         self.enabled = bool(self.client_id and self.client_secret)
-        self.min_call_interval = float(settings.tmdb_min_call_interval)
-        self.max_calls_per_minute = int(settings.tmdb_max_calls_per_minute)
-        self.backoff_base_seconds = float(settings.tmdb_429_backoff_base_seconds)
-        self.backoff_max_retries = int(settings.tmdb_429_max_retries)
 
         # OAuth state
         self._access_token: str | None = None
         self._token_expires_at: float = 0
 
-        # Throttling state (shared pacing with TMDbProvider)
+        # Throttling state
         self._last_call_at: float | None = None
         self._window_calls: deque[float] = deque()
 
@@ -148,9 +150,9 @@ class IGDBProvider:
         data = await self._post("/games", body)
         if data is None:
             return []
-        logging.info(f"IGDB search '{query}': got {len(data)} results")
+        logging.info("IGDB search %r: got %d results", query, len(data))
         if data:
-            logging.info(f"IGDB search first result keys: {list(data[0].keys())}")
+            logging.info("IGDB search first result keys: %s", list(data[0].keys()))
         return data
 
     async def get_game_details(self, igdb_id: int) -> dict | None:

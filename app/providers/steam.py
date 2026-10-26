@@ -38,10 +38,10 @@ class SteamProvider:
             items = data.get("items", [])
             # Filter to apps only (not bundles)
             apps = [item for item in items if item.get("type") == "app"]
-            logger.info(f"Steam search '{query}': got {len(apps)} apps")
+            logger.info("Steam search %r: got %d apps", query, len(apps))
             return apps[:limit]
         except Exception as e:
-            logger.error(f"Steam search failed: {e}")
+            logger.error("Steam search failed: %s", e)
             return []
 
     async def get_game_details(self, appid: int) -> dict | None:
@@ -60,7 +60,7 @@ class SteamProvider:
             details = app_data.get("data", {})
             return details
         except Exception as e:
-            logger.error(f"Steam appdetails failed for {appid}: {e}")
+            logger.error("Steam appdetails failed for %s: %s", appid, e)
             return None
 
     async def close(self):

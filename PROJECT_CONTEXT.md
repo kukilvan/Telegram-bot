@@ -1,6 +1,6 @@
 # PROJECT_CONTEXT.md
 
-Текущее состояние проекта. Правила работы — в `CLAUDE.md`, термины — в `CONTEXT.md`, решения — в `docs/adr/`. Обновлено: 2026-10-26 (после тикета 20).
+Текущее состояние проекта. Правила работы — в `CLAUDE.md`, термины — в `CONTEXT.md`, решения — в `docs/adr/`. Обновлено: 2026-10-26 (после тикета 21).
 
 ## Роли документов
 
@@ -58,7 +58,8 @@ ADR на сегодня: 0001 один экземпляр — один влад�
 - Тикет 17 (`release-tracker-v2`, правка тикета 11 по ревью): состав сводки — опоздавшие события входят в сводку, «Следить» не обрезается (подробности в тикете 11). Ждёт проверки владельцем.
 - Тикет 19 (`release-tracker-v2`, правка по ревью, П9 и П21): весь публичный интерфейс ядра, который читает или пишет базу, асинхронный. `title_card`, `list_titles`, `watchable_seasons`, `delivery_rules`, `window_test_moment`, `part_gap_weeks` и `record_event` теперь `async` (работа с базой в потоке), бот вызывает их через `await`; опрос и тестовые события пользуются внутренним `_record_event`. Часовой пояс: ядро получает при создании неизменяемый `default_tz` (из `BOT_TIMEZONE`), поле `local_tz`, его правка в `set_delivery_rules` и чтение базы при создании ядра (`_saved_timezone`) удалены; действующий пояс (настройка `timezone` или `default_tz`) читается там, где нужен — в карточке аниме, в текстах серий аниме при опросе и в правилах доставки, поэтому смена пояса через `set_delivery_rules` действует сразу. Создан `docs/coding-standards.md` с двумя правилами (асинхронное ядро, пояс из одного места); тест `tests/test_tracker_async_interface.py` проверяет, что каждый публичный метод `Tracker` с `session_factory` — корутина, и что создание ядра не открывает базу. Ждёт проверки владельцем.
 - Тикет 20 (`release-tracker-v2`, правка по ревью, П10 и П11): в меню бота четыре кнопки — «➕ Добавить», «📚 Мои тайтлы» / «📋 Сводка сейчас» / «🧪 Тестовое событие»; пятая «Окна доставки» убрана. Проверка правил доставки теперь последний пункт списка «Тестового события» — «🕒 Проверить правила доставки» (`tchk:open`): он открывает тот же список моментов недели (`twin:<сценарий>`, значения не менялись), проверка работает как раньше. Слова «окна» в текстах бота нет. Команды: `/start` и `/summary` («Сводка сейчас»); `/test_event` и `/digest` удалены. При запуске бот регистрирует `/summary` в Telegram (`set_my_commands`, `BOT_COMMANDS`), она видна в меню команд («/» у поля ввода). `START_TEXT` переписан под четыре кнопки. Все обработчики трекера стоят на своём `Router`, который создаёт `register_tracker_handlers` (и подключает к диспетчеру, и возвращает); фильтр владельца стоит один раз на `router.message` и `router.callback_query`, проверок `is_owner` в обработчиках больше нет (правило 3 в `docs/coding-standards.md`). `AccessMiddleware` остаётся первой линией без изменений. Тест `tests/test_tracker_owner_filter.py`: на диспетчере без `AccessMiddleware` чужие сообщения и нажатия не получают ответа. Ждёт проверки владельцем.
-- Тесты: 749, все проходят.
+- Тикет 21 (`release-tracker-v2`, правка по ревью, П12–П15): `start-bot.ps1` работает из любой папки (`Set-Location $PSScriptRoot`, файл в UTF-8 с BOM, иначе Windows PowerShell 5.1 ломает русский текст), `launch_bot.py` удалён. `BOT_TIMEZONE` по умолчанию `UTC`; без него при запуске в журнале «BOT_TIMEZONE: часовой пояс не задан, используется UTC» (`time_zone_of` в `app/config.py`). Из `Settings` и `.env.example` удалены `kinopub_*`, `rawg_api_key`, `poll_scan_interval_seconds`, `ps_store_region`, `steam_country_code`. AniList и IGDB держат лимиты частоты в самих клиентах (1,5 с / 30 в минуту / 5 с / 3 попытки), `TMDB_*` влияют только на TMDb. Чат владельца — свойство `Settings.owner_chat` (`OWNER_CHAT_ID`, если число, иначе первый из белого списка, иначе `None`): им пользуются отправитель трекера, `ErrorMiddleware` и отчёт о сбое запуска; `owner_chat_id()` из обработчиков удалён (раньше отчёты об ошибках при пустом `OWNER_CHAT_ID` молча не уходили). В журнал пишем через `%s`/`%r` без f-строк и без `mask_secrets` (маскирует `MaskingFormatter`); `mask_secrets` остался в `delivery_queue.last_error`, отчёте об ошибке и аварийном файле; правило 4 в `docs/coding-standards.md`, его охраняет тест `tests/test_launch_env_and_logs.py`. `.env.example` переписан: только используемые ключи, у каждого русский комментарий. Ждёт проверки владельцем.
+- Тесты: 765, все проходят.
 - В корне репозитория лежит мусор (отладочные `test_psn_*.py`, `test_steam*.py`, картинки, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`). Чистка — кусок 8.
 - Ключи (токен бота, ключ TMDb) засвечены в переписке и консоли; решено заменить все ключи один раз в конце, перед публикацией.
 
@@ -107,7 +108,7 @@ Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.Co
 cd E:\LocalAI\Bionic\Telegram-bot
 .\start-bot.ps1
 ```
-(скрипт активирует `.venv` и запускает `python -m app.bot.main`; окно закрывать нельзя, остановка — `Ctrl+C`).
+(скрипт сам переходит в свою папку, поэтому работает и из другой, например `C:\` с полным путём к нему; запускает `.venv\Scripts\python.exe -m app.bot.main` без `Activate.ps1`; если `.venv` нет, пишет по-русски, как его создать, и выходит; окно закрывать нельзя, остановка — `Ctrl+C`). Другого способа запуска нет: скрытый `launch_bot.py` удалён.
 
 Тесты:
 ```powershell
@@ -132,7 +133,7 @@ Telegram (aiogram 3.x) → app/bot (тонкие обработчики) → app
 | `app/bot/main.py` | Сборка бота (`build_dispatcher`: белый список → отчёты об ошибках → обработчики трекера; при запуске `set_my_commands`), ядра с источниками и планировщика (опрос и отправка очереди раз в минуту, бэкап в 03:00) |
 | `app/bot/access.py` | `AccessMiddleware`: белый список для всех апдейтов, fail-closed |
 | `app/bot/error_handler.py` | Отчёты владельцу об ошибках (`ErrorMiddleware`), сохранение в `data/temp_failure.txt` |
-| `app/config.py` | `Settings` из окружения, разбор `ALLOWED_TELEGRAM_USER_IDS` |
+| `app/config.py` | `Settings` из окружения, разбор `ALLOWED_TELEGRAM_USER_IDS`, `Settings.owner_chat` (единственный способ узнать чат владельца), `time_zone_of` (пояс из `BOT_TIMEZONE`, без него UTC и предупреждение) |
 | `app/providers/` | `tmdb.py`, `anilist.py`, `shikimori.py`: клиенты внешних API с ограничением частоты, на них стоят источники ядра; `igdb.py`, `steam.py` — для куска 6, пока не подключены. Для аниме v2: `ShikimoriClient.fetch_entries` (записи с их связями; сбой — `ShikimoriError`), `search_anime(strict=True)`, `AniListProvider.get_anilist_ids` (MAL-id → AniList-id одним запросом на 50 id), `AniListProvider.get_schedules` (статус, число серий и ближайшая серия по id AniList, 50 id на запрос; сбой — исключение, а не пустой список) |
 | `app/tracker/` | Ядро трекера v2: `core.py` (фасад `Tracker`: часы, отправитель и источники передаются снаружи; события, очередь доставки, тестовые события, опрос `poll_due`; каждый публичный метод, читающий или пишущий базу, — `async`, работа с базой идёт в потоке (правило 1 в `docs/coding-standards.md`); `record_event` не пишет событие несуществующего тайтла; часовой пояс по умолчанию `default_tz` не меняется, действующий читается из правил доставки), `models.py` (в том числе `seasons`, `episodes`, `season_parts`, `franchise_movies` и `settings`; порог частей — `part_gap_weeks()` / `set_part_gap_weeks()`), `db.py` (SQLite в режиме WAL, миграции), `migrations/` (отдельный Alembic, `alembic_tracker.ini`) |
 | `app/tracker/movie_events.py` | События фильма: `detect_events` (сравнение двух снимков), тексты сообщений, `check_interval` (когда проверять снова), образцы для «Тестового события». Без базы и сети |
@@ -202,12 +203,12 @@ Telegram (aiogram 3.x) → app/bot (тонкие обработчики) → app
 | — | `NameError: datetime` в `/search`, inline-поиске, добавлении игры IGDB | Исправлен (`979f0ed`) | |
 | — | Inline-ответ с более чем 50 результатами отклонялся Telegram | Исправлен (`979f0ed`) | |
 | — | Один сбойный тайтл останавливал весь проход опроса; стартовый прогон мог не дать боту запуститься | Исправлен (шаг 4) | |
-| — | Отчёты владельцу не доходили: `OWNER_CHAT_ID` — заготовка, а не число | Исправлен (в `.env`, шаг 4) | `.env.example` содержит заготовку `your_telegram_chat_id_here`, при развёртывании нужно подставить число |
+| — | Отчёты владельцу не доходили: `OWNER_CHAT_ID` — заготовка, а не число | Исправлен (в `.env`, шаг 4) | С тикета 21 при нечисловом или пустом значении отчёты идут первому из белого списка; в `.env.example` значение пустое |
 | — | Событие, которое не удалось отправить в Telegram, теряется: оно уже записано как отправленное | Исправлен (тикет 01, очередь доставки) | Не отправленное остаётся в очереди и уходит позже |
 | — | `test_tiering`: аниме без данных, ожидаются сутки, получается 6 часов | Снят | Старый опрос и тест удалены (тикет 12) |
 | — | В обработчике `/add` недостижимый код после `return` | Снят | `/add` удалён (тикет 12) |
 | — | Владельцу не приходит сообщение о сбое источника (раз в сутки на тайтл, история 78) | Исправлен (тикет 13, ждёт проверки) | Сообщение делает ядро (`app/tracker/failures.py`); старый `failures.py` удалён в тикете 12 |
-| — | В `.env` есть переменные, которые код не читает (`PSN_API_KEY`, `SHIKIMORI_CLIENT_ID/SECRET`), имена `psn_api_key` и `rawg_api_key` в нижнем регистре | Открыт | Привести к одному виду при чистке (кусок 8) |
+| — | В `.env` есть переменные, которые код не читает (`PSN_API_KEY`, `SHIKIMORI_CLIENT_ID/SECRET`), имя `psn_api_key` в нижнем регистре | Открыт | Привести к одному виду при чистке (кусок 8) |
 
 ## 8. Подводные камни (проверено на практике)
 
@@ -249,14 +250,12 @@ Telegram (aiogram 3.x) → app/bot (тонкие обработчики) → app
 |---|---|---|
 | `TELEGRAM_BOT_TOKEN` | да | Токен бота |
 | `ALLOWED_TELEGRAM_USER_IDS` | да | Белый список (числа через запятую); пустой — бот не стартует |
-| `OWNER_CHAT_ID` | нет | Число — id чата для отчётов об ошибках и сбоях опроса (для личного чата равен вашему Telegram id) |
+| `OWNER_CHAT_ID` | нет | Число — id чата для событий и отчётов об ошибках (для личного чата равен вашему Telegram id); не число или пусто — первый из `ALLOWED_TELEGRAM_USER_IDS` |
 | `TMDB_API_KEY` | да | Ключ TMDb |
 | `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET` | для игр | Учётные данные Twitch/IGDB |
-| `STEAM_COUNTRY_CODE`, `PS_STORE_REGION` | нет | Регион цен (сейчас `IL`) |
 | `SHIKIMORI_BASE_URL`, `SHIKIMORI_USER_AGENT` | нет | Shikimori |
-| `BOT_TIMEZONE` | нет | Часовой пояс (по умолчанию `Asia/Jerusalem`) |
-| `TMDB_MIN_CALL_INTERVAL`, `TMDB_MAX_CALLS_PER_MINUTE`, `TMDB_429_BACKOFF_BASE_SECONDS`, `TMDB_429_MAX_RETRIES` | нет | Настройки частоты запросов TMDb (1.5 с / 30 в минуту / 5 с / 3). `POLL_SCAN_INTERVAL_SECONDS` остался в `Settings`, но не читается: опрос идёт раз в минуту (`TRACKER_BEAT_SECONDS` в `app/bot/main.py`) |
-| `KINOPUB_*`, `RAWG_API_KEY`, `PS_STORE_REGION` | нет | Устаревшее: поля остаются в `Settings`, но код их не читает; уйдёт при чистке (кусок 8) |
+| `BOT_TIMEZONE` | нет | Часовой пояс владельца, например `Europe/Moscow` (по умолчанию `UTC` и предупреждение в журнале при запуске) |
+| `TMDB_MIN_CALL_INTERVAL`, `TMDB_MAX_CALLS_PER_MINUTE`, `TMDB_429_BACKOFF_BASE_SECONDS`, `TMDB_429_MAX_RETRIES` | нет | Настройки частоты запросов только для TMDb (1.5 с / 30 в минуту / 5 с / 3); у AniList и IGDB свои, постоянные в клиентах. Опрос идёт раз в минуту (`TRACKER_BEAT_SECONDS` в `app/bot/main.py`) |
 
 ## 11. Внешние сервисы
 

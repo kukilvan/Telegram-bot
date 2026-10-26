@@ -12,7 +12,6 @@ from collections.abc import Sequence
 
 import httpx
 
-from app.config import get_settings
 
 
 class AniListProvider:
@@ -127,14 +126,14 @@ class AniListProvider:
     }
     """
 
-    def __init__(self) -> None:
-        settings = get_settings()
-        self.min_call_interval = float(settings.tmdb_min_call_interval)
-        self.max_calls_per_minute = int(settings.tmdb_max_calls_per_minute)
-        self.backoff_base_seconds = float(settings.tmdb_429_backoff_base_seconds)
-        self.backoff_max_retries = int(settings.tmdb_429_max_retries)
+    # AniList's own request pacing (not TMDb's settings)
+    min_call_interval = 1.5      # seconds between consecutive calls
+    max_calls_per_minute = 30    # rolling per-minute cap on requests
+    backoff_base_seconds = 5.0   # initial wait on HTTP 429 (doubles per retry)
+    backoff_max_retries = 3      # attempts before giving up on 429
 
-        # Throttling state (shared pacing with TMDbProvider)
+    def __init__(self) -> None:
+        # Throttling state
         self._last_call_at: float | None = None
         self._window_calls: deque[float] = deque()
 
