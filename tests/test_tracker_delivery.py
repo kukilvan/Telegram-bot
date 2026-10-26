@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from sqlalchemy import select
 
-from app.tracker import delivery, movie_events, sequel_events
+from app.tracker import delivery, movie_events, sequel_events, test_samples
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import DeliveryItem, Title
@@ -752,10 +752,10 @@ CHECK_OUTCOMES = {
 
 
 def test_every_delivery_check_has_an_expected_outcome():
-    assert set(CHECK_OUTCOMES) == {s.id for s in delivery.DELIVERY_CHECKS}
+    assert set(CHECK_OUTCOMES) == {s.id for s in test_samples.DELIVERY_CHECKS}
 
 
-@pytest.mark.parametrize("check", delivery.DELIVERY_CHECKS, ids=lambda s: s.id)
+@pytest.mark.parametrize("check", test_samples.DELIVERY_CHECKS, ids=lambda s: s.id)
 def test_each_delivery_check_of_the_menu_is_the_moment_it_names_and_ends_as_the_rules_say(tracker, clock, sender, check):
     clock.at(SUN, 12)
     moment = run(tracker.delivery_check_moment(check))
@@ -776,7 +776,7 @@ def test_each_delivery_check_of_the_menu_is_the_moment_it_names_and_ends_as_the_
 
 def test_the_delivery_check_moment_today_counts_when_it_is_still_ahead(tracker, clock):
     clock.at(SUN, 9)
-    check = delivery.delivery_check_by_id("work-morning")  # Sunday 10:00
+    check = test_samples.delivery_check_by_id("work-morning")  # Sunday 10:00
 
     assert run(tracker.delivery_check_moment(check)) == local(SUN, 10)
 

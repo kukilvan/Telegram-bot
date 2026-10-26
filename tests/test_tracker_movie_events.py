@@ -449,7 +449,7 @@ def test_a_failed_postponement_does_not_stop_the_pass(tracker, source, clock, se
     def broken_postpone(title_id, delay):
         raise RuntimeError("database is locked")
 
-    monkeypatch.setattr(tracker, "_postpone", broken_postpone)
+    monkeypatch.setattr(tracker._polling, "_postpone", broken_postpone)
 
     report = run(tracker.poll_due())
     run(tracker.deliver_pending())

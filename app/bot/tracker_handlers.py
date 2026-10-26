@@ -24,7 +24,6 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
-from app.tracker import delivery
 from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import TitleCard, format_card, format_when
 from app.tracker.core import (
@@ -40,6 +39,7 @@ from app.tracker.core import (
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.series_events import SAMPLE_EPISODES_ID
+from app.tracker.test_samples import DELIVERY_CHECKS, delivery_check_by_id
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
 ADD_BUTTON = "➕ Добавить"
@@ -230,7 +230,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def show_rules_check(callback: CallbackQuery) -> None:
         rows = [
             [InlineKeyboardButton(text=c.label, callback_data=f"{_CHECK_PREFIX}{c.id}")]
-            for c in delivery.DELIVERY_CHECKS
+            for c in DELIVERY_CHECKS
         ]
         await callback.answer()
         if callback.message is None:
@@ -242,7 +242,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         )
 
     async def run_rules_check(callback: CallbackQuery) -> None:
-        check = delivery.delivery_check_by_id(callback.data.removeprefix(_CHECK_PREFIX))
+        check = delivery_check_by_id(callback.data.removeprefix(_CHECK_PREFIX))
         if check is None:
             await callback.answer("Такого момента больше нет, откройте меню заново.")
             return

@@ -252,38 +252,6 @@ def summary_messages(units: Sequence[Unit], moment: datetime, rules: DeliveryRul
     return messages
 
 
-@dataclass(frozen=True)
-class DeliveryCheck:
-    """A moment of the week for «Тестовое событие»: the owner sees how the rules treat an event queued then."""
-
-    id: str
-    label: str
-    weekday: int  # Monday is 0
-    at: time
-
-    def next_moment(self, now_local: datetime) -> datetime:
-        """The next such moment on the owner's clock (naive), today's included when it is still ahead."""
-        ahead = (self.weekday - now_local.weekday()) % 7
-        moment = datetime.combine(now_local.date() + timedelta(days=ahead), self.at)
-        return moment if moment > now_local else moment + timedelta(days=7)
-
-
-DELIVERY_CHECKS: tuple[DeliveryCheck, ...] = (
-    DeliveryCheck("work-morning", "Вс, 10:00 — рабочий день до сводки", 6, time(10, 0)),
-    DeliveryCheck("work-afternoon", "Вс, 16:00 — рабочий день после сводки", 6, time(16, 0)),
-    DeliveryCheck("friday", "Пт, 12:00 — выходной", 4, time(12, 0)),
-    DeliveryCheck("saturday", "Сб, 10:00 — выходной", 5, time(10, 0)),
-    DeliveryCheck("night-before-day-off", "Чт, 22:00 — ночь перед выходным", 3, time(22, 0)),
-    DeliveryCheck("night-before-workday", "Сб, 22:00 — ночь перед рабочим днём", 5, time(22, 0)),
-    DeliveryCheck("quiet-ends", "Пт, 07:29 — за минуту до конца тихих часов", 4, time(7, 29)),
-    DeliveryCheck("quiet-ended", "Пт, 07:30 — тихие часы кончились", 4, time(7, 30)),
-)
-
-
-def delivery_check_by_id(check_id: str) -> DeliveryCheck | None:
-    return next((c for c in DELIVERY_CHECKS if c.id == check_id), None)
-
-
 def parse_time(value: str | time) -> time:
     """«15:00» (or a `time`) to a `time`; anything else is a ValueError."""
     if isinstance(value, time):

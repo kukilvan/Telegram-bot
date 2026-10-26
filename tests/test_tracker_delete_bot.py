@@ -461,18 +461,18 @@ def test_a_failed_deletion_keeps_the_question_so_the_press_can_be_repeated(track
     title_id = add(tracker)
     chat = Chat_(tracker)
     yes = callback_of(ask_to_delete(chat, tracker, replies, title_id), "Да, удалить")
-    original = tracker._delete_title
+    original = tracker._titles._delete_title
 
     def broken(_title_id):
         raise RuntimeError("database is locked")
 
-    monkeypatch.setattr(tracker, "_delete_title", broken)
+    monkeypatch.setattr(tracker._titles, "_delete_title", broken)
     chat.press(yes)
     assert callbacks(replies)[-1] == "Не удалось удалить. Попробуйте ещё раз."
     assert replies.dropped == []
     assert names(tracker) == ["Дюна"]
 
-    monkeypatch.setattr(tracker, "_delete_title", original)
+    monkeypatch.setattr(tracker._titles, "_delete_title", original)
     chat.press(yes)
 
     assert names(tracker) == []
@@ -487,14 +487,14 @@ def test_a_title_that_could_not_be_deleted_is_named_in_the_answer(tracker, repli
     chat.press(callback_of(buttons, "Часть вторая"))
     chat.press(callback_of(buttons, "Удалить выбранные"))
     confirm = last_message(replies)[2]
-    original = tracker._delete_title
+    original = tracker._titles._delete_title
 
     def broken_for_the_first(title_id):
         if title_id == 1:
             raise RuntimeError("database is locked")
         return original(title_id)
 
-    monkeypatch.setattr(tracker, "_delete_title", broken_for_the_first)
+    monkeypatch.setattr(tracker._titles, "_delete_title", broken_for_the_first)
     chat.press(callback_of(confirm, "Да, удалить"))
 
     assert last_message(replies)[1] == (

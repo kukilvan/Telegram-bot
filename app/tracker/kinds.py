@@ -17,6 +17,7 @@ class KindInfo:
     ask_name: str  # the request that follows «Добавить» and the choice of this kind
     source_name: str  # the service the kind comes from, as error texts name it
     seasonal: bool  # has seasons: the status follows the owner's season marks
+    local_times: bool  # the time of an episode is shown on the owner's clock (the source gives the exact moment)
 
 
 KINDS: Mapping[TitleKind, KindInfo] = {
@@ -26,6 +27,7 @@ KINDS: Mapping[TitleKind, KindInfo] = {
         ask_name="Напишите название фильма (можно по-русски или по-английски).",
         source_name="TMDb",
         seasonal=False,
+        local_times=False,
     ),
     TitleKind.SERIES: KindInfo(
         label="Сериал",
@@ -33,6 +35,7 @@ KINDS: Mapping[TitleKind, KindInfo] = {
         ask_name="Напишите название сериала (можно по-русски или по-английски).",
         source_name="TMDb",
         seasonal=True,
+        local_times=False,
     ),
     TitleKind.ANIME: KindInfo(
         label="Аниме",
@@ -40,6 +43,7 @@ KINDS: Mapping[TitleKind, KindInfo] = {
         ask_name="Напишите название аниме (можно по-русски или по-английски).",
         source_name="Shikimori",
         seasonal=True,
+        local_times=True,
     ),
 }
 

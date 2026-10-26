@@ -483,7 +483,8 @@ def test_a_title_deleted_after_its_answer_came_leaves_nothing_behind(tracker, mo
     gone = add_movie(tracker, movies)
     movies.by_id[DUNE] = movie(DUNE, theatrical=date(2027, 5, 5))
     clock.advance(days=1)
-    original = tracker._apply_snapshot
+    movie_poller = tracker._polling.pollers.of("movie")
+    original = movie_poller.apply
 
     def apply_after_deleting(due, snapshot):
         run_in_loop = asyncio.new_event_loop()
@@ -493,7 +494,7 @@ def test_a_title_deleted_after_its_answer_came_leaves_nothing_behind(tracker, mo
             run_in_loop.close()
         return original(due, snapshot)
 
-    tracker._apply_snapshot = apply_after_deleting
+    movie_poller.apply = apply_after_deleting
     with caplog.at_level(logging.WARNING):
         report = run(tracker.poll_due())
 

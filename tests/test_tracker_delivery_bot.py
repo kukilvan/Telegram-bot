@@ -21,7 +21,7 @@ from app.bot.tracker_handlers import (
     TelegramSender,
     register_tracker_handlers,
 )
-from app.tracker import delivery
+from app.tracker import delivery, test_samples
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 
@@ -180,7 +180,7 @@ def test_the_rules_check_lists_every_moment_of_the_week(tracker, replies):
 
     [_, (kind, text, buttons)] = replies
     assert kind == "message" and "окн" not in text.lower()
-    assert [b.text for b in buttons] == [s.label for s in delivery.DELIVERY_CHECKS]
+    assert [b.text for b in buttons] == [s.label for s in test_samples.DELIVERY_CHECKS]
     assert all(b.callback_data.startswith("twin:") for b in buttons)
 
 
@@ -224,7 +224,7 @@ def test_the_values_of_buttons_already_sent_are_unchanged(tracker, replies):
     [(_, _, markup)] = replies
     assert markup[0].callback_data == "tev:ping"  # the sample buttons of an old message keep working
     assert RULES_CHECK_CALLBACK == "tchk:open"
-    assert [c.id for c in delivery.DELIVERY_CHECKS][0] == "work-morning"
+    assert [c.id for c in test_samples.DELIVERY_CHECKS][0] == "work-morning"
 
 
 @pytest.mark.parametrize("with_middleware", [True, False])
