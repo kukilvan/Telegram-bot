@@ -5,9 +5,12 @@ Issues and specs for this repo live as markdown files in `.scratch/`.
 ## Conventions
 
 - One feature per directory: `.scratch/<feature-slug>/`
+- The description (what and why, plain words, written before the spec) is `.scratch/<feature-slug>/description.md`
 - The spec is `.scratch/<feature-slug>/spec.md`
+- The code review of the finished feature is `.scratch/<feature-slug>/review.md`; each finding records its decision (fix as a new feature `.scratch/<feature-slug>-review-<N>/`, or defer to `KNOWN_ISSUES.md`)
+- The order of these steps and one-step-per-session are in `docs/agents/workflow.md`
 - Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01`, never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
+- State is recorded as a `Статус:` line near the top of each file (`открыт`, `ждёт проверки`, `принят`; see `docs/agents/workflow.md`). Older files of `release-tracker-v2` predate this line
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
 
 ## When a skill says "publish to the issue tracker"
