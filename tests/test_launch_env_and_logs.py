@@ -34,7 +34,7 @@ def env(monkeypatch):
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", BOT_TOKEN)
     monkeypatch.setenv("TMDB_API_KEY", "tmdb-test-key")
     for name in (
-        "ALLOWED_TELEGRAM_USER_IDS", "ALLOWED_TELEGRAM_USER_IDS_RAW", "OWNER_CHAT_ID", "BOT_TIMEZONE",
+        "ALLOWED_TELEGRAM_USER_IDS", "ALLOWED_TELEGRAM_USER_IDS_RAW", "OWNER_CHAT_ID", "BOT_TIMEZONE", "WEB_PASSWORD",
         "TMDB_MIN_CALL_INTERVAL", "TMDB_MAX_CALLS_PER_MINUTE", "TMDB_429_BACKOFF_BASE_SECONDS", "TMDB_429_MAX_RETRIES",
     ):
         monkeypatch.delenv(name, raising=False)

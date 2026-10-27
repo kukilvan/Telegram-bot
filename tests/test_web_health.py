@@ -55,10 +55,10 @@ def test_health_tells_nothing_about_the_app():
 
 
 def test_the_api_description_pages_are_not_served():
-    client = client_of(running_health())
+    client = client_of(running_health())  # no password: closed with 503; the signed-in get 404 (`test_web_login`)
 
     for address in ("/docs", "/redoc", "/openapi.json"):
-        assert client.get(address).status_code == 404, address
+        assert client.get(address).status_code != 200, address
 
 
 def test_the_web_server_has_no_request_log_and_writes_through_the_masking_formatter(tmp_path, monkeypatch):

@@ -4,7 +4,7 @@ import logging
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings
 
 from app.utils.secrets_mask import remember_secrets
@@ -51,8 +51,16 @@ class Settings(BaseSettings):
     shikimori_base_url: str = "https://shikimori.io"
     shikimori_user_agent: str = "Telegram-Bot"
 
+    # Password of the web app; without it (or shorter than 8 characters) the login is closed, the bot works as usual
+    web_password: str = ""
+
     # Time zone of the owner's rules when the owner has set none; read through `time_zone_of`
     bot_timezone: str = "UTC"
+
+    @field_validator("web_password")
+    @classmethod
+    def _strip_web_password(cls, value: str) -> str:
+        return value.strip()
 
     @property
     def allowed_telegram_user_ids(self) -> list[int]:

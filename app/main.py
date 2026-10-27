@@ -10,6 +10,7 @@ import os
 import sys
 from contextlib import suppress
 from datetime import datetime as dt, timezone
+from pathlib import Path
 
 from aiogram import Bot, Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -30,13 +31,14 @@ from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
 from app.tracker.sources.tmdb_series import TmdbSeriesSource
 from app.utils.logging_config import setup_logging
-from app.web import create_web_app, web_server
+from app.web import MIN_PASSWORD_LENGTH, create_web_app, web_server
 
 WEB_PORT = 8080  # inside the process; the port on the PC is docker compose's business
 # Not the owner's setting (not in .env.example): run from .venv on Windows the web must not open to the whole home
 # network, so the default is this PC only; the Docker image sets 0.0.0.0
 WEB_BIND_HOST = "WEB_BIND_HOST"
 WEB_STOP_GRACE_SECONDS = 5  # the started requests get this long on stop
+WEB_SECRET_FILE = Path("data") / "web_secret"  # the key that signs the session cookie (next to the database)
 
 
 class TelegramPart:
@@ -91,13 +93,16 @@ async def main() -> int:
     if settings.owner_chat_id.strip() and settings.owner_chat_id_number is None:
         logging.warning("OWNER_CHAT_ID is not a number; messages for the owner go to the first allowed user")
 
+    if len(settings.web_password) < MIN_PASSWORD_LENGTH:
+        logging.warning("WEB_PASSWORD не задан или короче %s символов: вход в веб закрыт", MIN_PASSWORD_LENGTH)
+
     bot = Bot(token=settings.telegram_bot_token)
     tracker = build_tracker(settings, bot)
 
     health = Health()
     host = os.environ.get(WEB_BIND_HOST, "").strip() or "127.0.0.1"
-    server = web_server(create_web_app(health=health.report), host=host, port=WEB_PORT,
-                        stop_grace=WEB_STOP_GRACE_SECONDS)
+    web_app = create_web_app(health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE)
+    server = web_server(web_app, host=host, port=WEB_PORT, stop_grace=WEB_STOP_GRACE_SECONDS)
     scheduler = AsyncIOScheduler()
     add_jobs(scheduler, tracker)
     runtime = Runtime(

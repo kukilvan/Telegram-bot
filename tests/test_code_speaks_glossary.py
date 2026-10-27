@@ -18,7 +18,11 @@ def app_files():
 
 
 def test_the_word_digest_is_not_in_the_code():
-    offenders = [str(p.relative_to(APP)) for p in app_files() if re.search("digest", p.read_text(encoding="utf-8"), re.I)]
+    # The standard library's own `compare_digest` and `hexdigest` (the web login) are not the old name of the summary
+    offenders = [
+        str(p.relative_to(APP)) for p in app_files()
+        if re.search("digest", re.sub(r"compare_digest|hexdigest", "", p.read_text(encoding="utf-8")), re.I)
+    ]
     assert offenders == []
 
 

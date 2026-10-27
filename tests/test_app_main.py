@@ -19,7 +19,7 @@ BOT_TOKEN = "123456789:AAH-secretTokenValue_abcdefghijklmnopqrstuv"
 
 
 @pytest.fixture
-def env(monkeypatch):
+def env(monkeypatch, tmp_path):
     monkeypatch.setattr("app.config.load_dotenv", lambda *a, **k: False)  # the real .env must not leak into the tests
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", BOT_TOKEN)
     monkeypatch.setenv("TMDB_API_KEY", "tmdb-test-key")
@@ -27,6 +27,8 @@ def env(monkeypatch):
     monkeypatch.setenv("BOT_TIMEZONE", "UTC")
     monkeypatch.delenv("OWNER_CHAT_ID", raising=False)
     monkeypatch.delenv(app_main.WEB_BIND_HOST, raising=False)
+    monkeypatch.delenv("WEB_PASSWORD", raising=False)
+    monkeypatch.setattr(app_main, "WEB_SECRET_FILE", tmp_path / "web_secret")  # not the real data folder
     return monkeypatch
 
 

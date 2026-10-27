@@ -1,0 +1,87 @@
+:root {
+  --bg: #f6f6f4;
+  --card: #ffffff;
+  --text: #1c1c1a;
+  --muted: #5d5d58;
+  --accent: #2b5fd9;
+  --border: #d8d8d2;
+  --error: #b3261e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --card: #21211f;
+    --text: #ecece8;
+    --muted: #a3a39c;
+    --accent: #7ea2ff;
+    --border: #3a3a36;
+    --error: #ff8a80;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-name { font-weight: 600; }
+
+main { padding: 1rem; max-width: 60rem; margin: 0 auto; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.narrow { max-width: 26rem; margin: 2rem auto; }
+
+h1 { margin: 0 0 0.75rem; font-size: 1.4rem; }
+
+label { display: block; margin-bottom: 0.25rem; color: var(--muted); }
+
+input[type="password"] {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--bg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-button {
+  background: none;
+  color: var(--accent);
+  padding: 0.25rem 0.5rem;
+  text-decoration: underline;
+}
+
+.error { color: var(--error); margin: 0 0 0.75rem; }
