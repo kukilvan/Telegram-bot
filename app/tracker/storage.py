@@ -1,7 +1,8 @@
 """What the parts of the core read and write together in one session: a title's seasons and episodes, its stored
 snapshots, and its status that follows from them. Helpers on a session someone else opened; the caller commits."""
 
-from collections.abc import Sequence
+import logging
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
@@ -42,10 +43,38 @@ def load_seasons(session, title_id: int) -> list[tuple[SeasonRecord, season_logi
             name=record.name,
             expected=record.episode_count,
             episodes=tuple(sorted((season_logic.Episode(e.number, e.air_at) for e in episodes), key=lambda e: e.number)),
-            cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count) for p in parts),
+            cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count, p.shikimori_id) for p in parts),
+            source_id=parts[0].shikimori_id if parts else None,  # the first part (smallest number) starts the season
         )
         loaded.append((record, season))
     return loaded
+
+
+def relayout_records(
+    session, title_id: int, renumber: Mapping[int, int], dissolved: Mapping[int, str | None]
+) -> None:
+    """Bring the stored seasons to the numbering the source has now. A season that starts no season any more is deleted
+    with its episodes and parts (the database cascades), its mark with it, and the log says so. The others keep their
+    record and their mark and get the new number, through temporary ones: no two seasons of a title may share a number
+    even for a moment."""
+    records = {r.number: r for r in session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id))}
+    name = session.get(Title, title_id).name
+    for number, entry in dissolved.items():
+        record = records.pop(number, None)
+        if record is None:
+            continue
+        logging.warning(
+            "Anime season dissolved: title %r, season %s, entry %s, watched mark: %s", name, number, entry, record.watched
+        )
+        session.delete(record)
+    session.flush()
+    moving = [(records[old], new) for old, new in renumber.items() if old != new and old in records]
+    for record, _ in moving:
+        record.number = -record.id
+    session.flush()
+    for record, new in moving:
+        record.number = new
+    session.flush()
 
 
 def sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> None:

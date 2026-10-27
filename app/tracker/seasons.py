@@ -71,15 +71,17 @@ class PartCut:
 
     first_episode: int
     expected: int | None
+    source_id: str | None = None  # the source's id of the entry behind the part; None: not known
 
 
 @dataclass(frozen=True)
 class Season(_EpisodeRun):
-    number: int  # 1 and up
+    number: int  # 1 and up; for an anime only the order of showing, the season is known by `source_id`
     name: str
     expected: int | None  # episode count the source announces; None: unknown
     episodes: tuple[Episode, ...] = ()
     cuts: tuple[PartCut, ...] = ()  # given parts, one per source entry; empty: parts follow the gaps
+    source_id: str | None = None  # the source's id of the entry the season starts with; None: known by its number
 
     def parts(self, gap: timedelta = DEFAULT_PART_GAP) -> tuple["Part", ...]:
         """The season cut at every break longer than `gap`; always at least one part.

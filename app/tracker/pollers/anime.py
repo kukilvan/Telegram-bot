@@ -49,7 +49,7 @@ class AnimePoller(Poller):
         with self.ctx.session_factory() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             observed_at = stored.observed_at
-            previous = tuple(season for _, season in storage.load_seasons(session, due.id))
+            stored_seasons = tuple(season for _, season in storage.load_seasons(session, due.id))
             gap = self.settings.part_gap(session)
             tz = self.settings.time_zone(session)
             title = session.get(Title, due.id)
@@ -64,8 +64,14 @@ class AnimePoller(Poller):
                 for m in session.scalars(select(MovieRecord).where(MovieRecord.title_id == due.id))
             }
         known.update(p.ids.shikimori for p in snapshot.parts if p.ids.anilist)
+        # a season is known by its first entry: what is stored is laid over the chain as it is now before the compare
+        layout = anime_events.relayout(stored_seasons, snapshot.parts)
+        previous = layout.seasons
+        new_entries = {p.ids.shikimori for p in snapshot.parts} - layout.had
         old = series_events.ShowState.of(previous, {})
-        assembled = anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, previous, now, known)
+        assembled = anime_events.assemble(
+            snapshot.seasons, snapshot.parts, snapshot.schedules, previous, now, known, new_entries, observed_at
+        )
         new = series_events.ShowState.of(assembled, {}).keeping_known(old)
         detected = series_events.detect_events(
             due.id, name, old, new, observed_at, now, gap, anime_events.flavor(tz)
@@ -74,6 +80,7 @@ class AnimePoller(Poller):
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
         found = self.record_all(due, detected, previous_look=observed_at)
         with self.ctx.write_session() as session:
+            storage.relayout_records(session, due.id, layout.renumber, layout.dissolved)
             storage.sync_seasons(session, due.id, new.seasons)
             session.flush()
             self._sync_entries(session, due.id, snapshot)
@@ -92,7 +99,23 @@ class AnimePoller(Poller):
         seasons = {r.number: r.id for r in session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id))}
         rows = {p.shikimori_id: p for p in session.scalars(select(PartRecord).where(PartRecord.title_id == title_id))}
         taken_anilist = {p.anilist_id for p in rows.values() if p.anilist_id}
-        taken_slots = {(p.season_id, p.number) for p in rows.values()}
+        # a known part whose entry moved to another season or number takes its new place; the place it leaves is free
+        wanted = {}
+        for part in snapshot.parts:
+            row = rows.get(part.ids.shikimori)
+            place = (seasons.get(part.season), part.number)
+            if row is not None and place[0] is not None and place != (row.season_id, row.number):
+                wanted[row.id] = place
+        fixed = {(p.season_id, p.number) for p in rows.values() if p.id not in wanted}  # places nobody leaves
+        moves = {row_id: place for row_id, place in wanted.items() if place not in fixed}
+        taken_slots = fixed | {(p.season_id, p.number) for p in rows.values() if p.id in wanted and p.id not in moves}
+        moving = [row for row in rows.values() if row.id in moves]
+        for row in moving:
+            row.number = -row.id  # out of the way first: the places may be exchanged
+        session.flush()
+        for row in moving:
+            row.season_id, row.number = moves[row.id]
+            taken_slots.add(moves[row.id])
         for part in snapshot.parts:
             row = rows.get(part.ids.shikimori)
             if row is None:

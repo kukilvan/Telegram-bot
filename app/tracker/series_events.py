@@ -22,7 +22,7 @@ such a season carry the part (`s3:p1:ended`); a season without a break keeps the
 """
 
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, tzinfo
 from typing import Any
 
@@ -105,11 +105,12 @@ class ShowState:
 
 def _keep_season(new: Season, old: Season) -> Season:
     cuts = new.cuts or old.cuts  # the parts of an anime season are given, not worked out: they must not be lost
+    expected = new.expected or old.expected
     if not new.episodes:
-        return Season(new.number, new.name, new.expected or old.expected, old.episodes, cuts)
+        return replace(new, expected=expected, episodes=old.episodes, cuts=cuts)
     known = {e.number: e.air_at for e in old.episodes}
     episodes = tuple(Episode(e.number, e.air_at or known.get(e.number)) for e in new.episodes)
-    return Season(new.number, new.name, new.expected or old.expected, episodes, cuts)
+    return replace(new, expected=expected, episodes=episodes, cuts=cuts)
 
 
 def _episode(season: Season, number: int) -> Episode | None:
@@ -256,7 +257,8 @@ def _season_events(
     events: list[DetectedEvent] = []
     number = new.number
     came = _newly_out(old, new, observed_at, now)
-    season_key = f"{prefix}:s{number}"
+    # an anime season is known by the entry it starts with: its number may move, its keys must not
+    season_key = f"{prefix}:src{new.source_id}" if new.source_id else f"{prefix}:s{number}"
     parts = new.parts(gap)
     old_parts = {p.number: p for p in old.parts(gap)} if old else {}
     unseen_ends = {

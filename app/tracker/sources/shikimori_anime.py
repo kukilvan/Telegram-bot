@@ -329,7 +329,7 @@ def build_season(number: int, entries: Sequence[Entry]) -> tuple[Season, list[Se
     cuts: list[PartCut] = []
     first_episode = 1
     for entry in entries:
-        cuts.append(PartCut(first_episode, entry.episodes))
+        cuts.append(PartCut(first_episode, entry.episodes, entry.id))
         listed = part_episodes(entry, first_episode)
         episodes.extend(listed)
         first_episode += max(entry.size, len(listed), 1)  # the next part never starts inside this one
@@ -340,6 +340,7 @@ def build_season(number: int, entries: Sequence[Entry]) -> tuple[Season, list[Se
         expected=expected,
         episodes=tuple(episodes),
         cuts=tuple(cuts),
+        source_id=entries[0].id,
     )
     parts = [
         SeasonPart(number, index + 1, cut.first_episode, cut.expected, entry.ids(), entry.status)
