@@ -21,7 +21,7 @@ from app.bot.tracker_handlers import (
     TelegramSender,
     register_tracker_handlers,
 )
-from app.tracker import delivery, test_samples
+from app.tracker import test_samples
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 

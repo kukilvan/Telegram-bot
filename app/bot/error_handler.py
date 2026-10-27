@@ -10,7 +10,6 @@ import html
 import logging
 import os
 import traceback
-from typing import Any
 
 import httpx
 

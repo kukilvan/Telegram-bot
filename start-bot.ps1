@@ -13,4 +13,13 @@ if (-not (Test-Path $python)) {
     exit 1
 }
 
-& $python -m app.bot.main
+# Веб-часть требует новых библиотек: без них бот не запустится, поэтому сначала проверяем их
+& $python -c "import fastapi, uvicorn" 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Не установлены библиотеки веб-части. Установите их один раз (в этой папке):"
+    Write-Host ".venv\Scripts\python.exe -m pip install -r requirements.txt"
+    exit 1
+}
+
+Write-Host "Проверка: откройте в браузере http://localhost:8080/health"
+& $python -m app.main

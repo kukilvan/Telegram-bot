@@ -5,7 +5,9 @@ from pathlib import Path
 
 from app.utils.secrets_mask import mask_secrets
 
-LOG_DIR = Path(__file__).parent.parent / "logs"
+# Everything to keep lives in data/: the database, its copies and the log (one folder to mount in Docker). The old
+# app/logs on the owner's PC stays as it is; nothing writes there any more
+LOG_DIR = Path(__file__).resolve().parent.parent.parent / "data" / "logs"
 MAX_BYTES = 10 * 1024 * 1024  # 10 MB
 BACKUP_COUNT = 5
 

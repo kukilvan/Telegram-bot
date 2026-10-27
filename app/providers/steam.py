@@ -6,7 +6,6 @@ Public endpoints — no API key required.
 """
 
 import logging
-from typing import Any
 
 import httpx
 

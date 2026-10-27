@@ -41,8 +41,8 @@
 
 ### Запуск (PowerShell, Windows)
 
-- Бот: `.\start-bot.ps1` (сам переходит в свою папку, работает из любой; запускает `.venv\Scripts\python.exe -m app.bot.main` без `Activate.ps1`; нет `.venv` — пишет, что сделать)
-  или напрямую: `.venv\Scripts\python.exe -m app.bot.main`. Другого способа запуска нет.
+- Бот: `.\start-bot.ps1` (сам переходит в свою папку, работает из любой; запускает `.venv\Scripts\python.exe -m app.main` — бот, опрос и веб одним процессом — без `Activate.ps1`; нет `.venv` — пишет, что сделать)
+  или напрямую: `.venv\Scripts\python.exe -m app.main`. Другого способа запуска нет. Проверка веба — `http://localhost:8080/health`.
 - Тесты: `.venv\Scripts\python.exe -m pytest tests/ -v`
 
 ## Agent skills

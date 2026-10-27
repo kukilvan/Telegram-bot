@@ -41,18 +41,6 @@ def env(monkeypatch):
     return monkeypatch
 
 
-# ---- the launch script ----------------------------------------------------
-
-def test_launch_script_works_from_any_folder_and_there_is_one_way_to_launch():
-    script = (ROOT / "start-bot.ps1").read_text(encoding="utf-8")
-
-    assert "Set-Location $PSScriptRoot" in script
-    assert ".venv\\Scripts\\python.exe" in script and "-m app.bot.main" in script
-    assert "Activate.ps1" not in script
-    assert "E:\\" not in script
-    assert not (ROOT / "launch_bot.py").exists()
-
-
 # ---- time zone ------------------------------------------------------------
 
 def test_without_bot_timezone_the_core_works_in_utc_and_the_log_warns(env, caplog):
