@@ -25,6 +25,8 @@ from app.utils.backup import backup_database
 from app.utils.logging_config import setup_logging
 
 TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles and, separately, sends the queue (retrying failed sends)
+BACKUP_EVERY_HOURS = 1  # how often the bot checks whether a database copy is due (the copy itself: over a day since the last)
+
 
 def build_dispatcher(tracker: Tracker, allowed_ids: list[int]) -> Dispatcher:
     """The whole bot: the allowlist, the error reporter and the tracker menu. Nothing else answers."""
@@ -35,6 +37,29 @@ def build_dispatcher(tracker: Tracker, allowed_ids: list[int]) -> Dispatcher:
     dp.update.outer_middleware(ErrorMiddleware())
     register_tracker_handlers(dp, tracker, allowed_ids)
     return dp
+
+
+def add_jobs(scheduler: AsyncIOScheduler, tracker: Tracker) -> None:
+    """The scheduler's jobs: polling, delivery and the database backup."""
+    # Two independent jobs: a slow source must never hold back delivery of events already in the queue.
+    # The queue send also retries events whose earlier send failed.
+    scheduler.add_job(
+        tracker.poll_due, "interval",
+        seconds=TRACKER_BEAT_SECONDS,
+        misfire_grace_time=30, coalesce=True, max_instances=1,
+    )
+    scheduler.add_job(
+        tracker.deliver_pending, "interval",
+        seconds=TRACKER_BEAT_SECONDS,
+        misfire_grace_time=30, coalesce=True, max_instances=1,
+    )
+    # The owner's PC is not on at night, so there is no fixed hour: every hour, starting now, the job makes a copy if
+    # the last one is over a day old (so a start after a day off copies at once)
+    scheduler.add_job(
+        backup_database, "interval",
+        hours=BACKUP_EVERY_HOURS, next_run_time=dt.now(timezone.utc),
+        misfire_grace_time=300, coalesce=True, max_instances=1,
+    )
 
 
 async def main() -> None:
@@ -74,23 +99,7 @@ async def main() -> None:
         await bot.set_my_commands(BOT_COMMANDS)
 
         scheduler = AsyncIOScheduler()
-        # Two independent jobs: a slow source must never hold back delivery of events already in the queue.
-        # The queue send also retries events whose earlier send failed.
-        scheduler.add_job(
-            tracker.poll_due, "interval",
-            seconds=TRACKER_BEAT_SECONDS,
-            misfire_grace_time=30, coalesce=True, max_instances=1,
-        )
-        scheduler.add_job(
-            tracker.deliver_pending, "interval",
-            seconds=TRACKER_BEAT_SECONDS,
-            misfire_grace_time=30, coalesce=True, max_instances=1,
-        )
-        # Daily database backup at 3 AM
-        scheduler.add_job(
-            backup_database, "cron", hour=3, minute=0,
-            misfire_grace_time=90,
-        )
+        add_jobs(scheduler, tracker)
         scheduler.start()
 
         # Long polling (for VPS deployment without webhook setup)

@@ -3,11 +3,15 @@
 The schema is created only by Alembic (`app/tracker/migrations`), never by `create_all`.
 """
 
+import logging
 import pathlib
+import sqlite3
 import threading
+from datetime import datetime
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
@@ -16,6 +20,9 @@ from sqlalchemy.pool import StaticPool
 TRACKER_DATABASE_URL = "sqlite:///./data/tracker.db"  # separate file: the legacy data/bot.db is not touched
 
 MIGRATIONS_DIR = pathlib.Path(__file__).resolve().parent / "migrations"
+
+BACKUP_FOLDER = "backups"  # next to the database file
+BACKUP_STAMP_FORMAT = "%Y%m%d_%H%M%S"  # the time in the name of a backup
 
 
 def database_file(url: str = TRACKER_DATABASE_URL) -> pathlib.Path | None:
@@ -95,17 +102,77 @@ def create_tracker_engine(url: str = TRACKER_DATABASE_URL) -> Engine:
     return engine
 
 
-def migrate(engine: Engine) -> None:
-    """Bring the database up to the latest revision (safe to call on every start)."""
+def _alembic_config() -> Config:
     config = Config()
     config.set_main_option("script_location", str(MIGRATIONS_DIR))
+    return config
+
+
+def migrate(engine: Engine) -> None:
+    """Bring the database up to the latest revision (safe to call on every start)."""
+    config = _alembic_config()
     with engine.begin() as connection:
         config.attributes["connection"] = connection
         command.upgrade(config, "head")
 
 
-def create_session_factory(url: str = TRACKER_DATABASE_URL) -> sessionmaker:
-    """Open the tracker database, migrate it and return a session factory."""
+def backup_name(now: datetime, suffix: str = "") -> str:
+    """The name of a backup made at `now`: `tracker_db_<time>.db`, or `tracker_db_<time>_<suffix>.db`."""
+    return f"tracker_db_{now.strftime(BACKUP_STAMP_FORMAT)}{'_' + suffix if suffix else ''}.db"
+
+
+def copy_database(source: pathlib.Path, target: pathlib.Path) -> None:
+    """Copy a database file with SQLite's online backup (safe while the bot writes in WAL mode). The backups of
+    `app/utils/backup.py` and the copy before a migration both go through this."""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    source_connection = sqlite3.connect(source)
+    try:
+        target_connection = sqlite3.connect(target)
+        try:
+            source_connection.backup(target_connection)
+        except BaseException:
+            target_connection.close()
+            target.unlink(missing_ok=True)  # a half-made file would pass for the newest copy
+            raise
+        finally:
+            target_connection.close()
+    finally:
+        source_connection.close()
+
+
+def _revision_of(file: pathlib.Path) -> str | None:
+    """The migration revision the database file is at; None if it has none (an empty file)."""
+    connection = sqlite3.connect(file)
+    try:
+        row = connection.execute("SELECT version_num FROM alembic_version").fetchone()
+    except sqlite3.OperationalError:  # no `alembic_version` table
+        return None
+    finally:
+        connection.close()
+    return row[0] if row else None
+
+
+def _backup_before_migration(file: pathlib.Path, now: datetime) -> None:
+    """If the existing database file has migrations still to run, copy it first to `backups` next to it as
+    `tracker_db_<time>_before-<revision>.db`. A failed copy is raised: the migration must not run without it."""
+    revision = _revision_of(file)
+    if revision is None or revision == ScriptDirectory.from_config(_alembic_config()).get_current_head():
+        return
+    target = file.parent / BACKUP_FOLDER / backup_name(now, f"before-{revision}")
+    try:
+        copy_database(file, target)
+    except Exception as exc:
+        logging.error("No backup before the migration from %s, the database stays as it is: %r", revision, exc)
+        raise
+    logging.info("Database backup before the migration created: %s", target)
+
+
+def create_session_factory(url: str = TRACKER_DATABASE_URL, now: datetime | None = None) -> sessionmaker:
+    """Open the tracker database, migrate it and return a session factory. A database that already exists and has
+    migrations to run is copied first (`now` is the clock of the copy's name; local time)."""
+    file = database_file(url)
+    if file is not None and file.exists():  # before the engine opens (and so creates) the file
+        _backup_before_migration(file, now or datetime.now())
     engine = create_tracker_engine(url)
     migrate(engine)
     return sessionmaker(bind=engine, expire_on_commit=False)
