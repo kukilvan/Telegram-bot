@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import re
+import shutil
 import sqlite3
 import threading
 import time
@@ -382,6 +383,74 @@ def test_when_the_copy_fails_the_migration_does_not_run(tmp_path):
             create_session_factory(url, now=NOW)
 
     assert revision_of(tmp_path / "tracker.db") == "0007"
+
+
+def copies_before(folder: Path, revision: str) -> list[str]:
+    return sorted(p.name for p in folder.glob(f"tracker_db_*_before-{revision}.db"))
+
+
+def start_with_a_failing_migration(url: str, now: datetime) -> None:
+    """A start whose migration fails (rolled back whole, as Alembic's transaction does): Docker repeats it."""
+    with patch("app.tracker.db.migrate", side_effect=RuntimeError("the migration broke")):
+        with pytest.raises(RuntimeError):
+            create_session_factory(url, now=now)
+
+
+def test_a_migration_that_fails_on_every_start_is_copied_before_once(tmp_path, caplog):
+    url = migrated_file(tmp_path / "tracker.db", "0007")
+
+    start_with_a_failing_migration(url, NOW)
+    with caplog.at_level(logging.INFO):
+        start_with_a_failing_migration(url, NOW + timedelta(minutes=1))
+
+    assert copies_before(tmp_path / "backups", "0007") == [f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db"]
+    assert "копия перед миграцией с 0007 уже есть" in caplog.text and "база с тех пор не менялась" in caplog.text
+
+
+def test_a_database_written_to_between_the_starts_is_copied_again(tmp_path):
+    url = migrated_file(tmp_path / "tracker.db", "0007")
+    start_with_a_failing_migration(url, NOW)
+
+    connection = sqlite3.connect(tmp_path / "tracker.db")
+    connection.execute("CREATE TABLE note (text TEXT)")
+    connection.execute("INSERT INTO note VALUES ('a row written by hand')")
+    connection.commit()
+    connection.close()
+    start_with_a_failing_migration(url, NOW + timedelta(minutes=1))
+
+    assert len(copies_before(tmp_path / "backups", "0007")) == 2
+
+
+def test_a_spoiled_copy_before_the_same_revision_does_not_count(tmp_path):
+    url = migrated_file(tmp_path / "tracker.db", "0007")
+    spoiled = put_copy(tmp_path / "backups", f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}_before-0007.db")
+    spoiled.write_bytes(b"not a database " * 100)
+
+    create_session_factory(url, now=NOW)
+
+    assert (tmp_path / "backups" / f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db").exists()
+
+
+def test_only_the_newest_copy_before_the_revision_is_compared(tmp_path):
+    url = migrated_file(tmp_path / "tracker.db", "0007")
+    start_with_a_failing_migration(url, NOW - timedelta(hours=2))  # the same content, but older
+    newer = put_copy(tmp_path / "backups", f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}_before-0007.db")
+    newer.write_bytes(b"not a database " * 100)
+
+    start_with_a_failing_migration(url, NOW)
+
+    assert len(copies_before(tmp_path / "backups", "0007")) == 3
+
+
+def test_a_copy_before_another_revision_does_not_stand_for_this_one(tmp_path):
+    url = migrated_file(tmp_path / "tracker.db", "0007")
+    other = tmp_path / "backups" / f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}_before-0006.db"
+    other.parent.mkdir()
+    shutil.copyfile(tmp_path / "tracker.db", other)  # even with the very same content
+
+    create_session_factory(url, now=NOW)
+
+    assert copies_before(tmp_path / "backups", "0007") == [f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db"]
 
 
 # --- the scheduler job ---------------------------------------------------------------------------

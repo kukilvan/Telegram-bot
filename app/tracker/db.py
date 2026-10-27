@@ -3,8 +3,10 @@
 The schema is created only by Alembic (`app/tracker/migrations`), never by `create_all`.
 """
 
+import hashlib
 import logging
 import pathlib
+import re
 import sqlite3
 import threading
 from datetime import datetime
@@ -152,13 +154,59 @@ def _revision_of(file: pathlib.Path) -> str | None:
     return row[0] if row else None
 
 
+def _dump_hash(file: pathlib.Path) -> str:
+    """SHA-256 of the text dump of a database (the schema and every row), read as a stream. A plain connection, not a
+    read-only one: that would leave the `-wal` and `-shm` files of a WAL copy behind; reading changes nothing."""
+    connection = sqlite3.connect(file)
+    try:
+        dump = hashlib.sha256()
+        for line in connection.iterdump():
+            dump.update(line.encode("utf-8"))
+            dump.update(b"\n")
+        return dump.hexdigest()
+    finally:
+        connection.close()
+
+
+def _newest_copy_before(folder: pathlib.Path, revision: str) -> pathlib.Path | None:
+    """The newest `tracker_db_<time>_before-<revision>.db` in the folder, by the time in its name."""
+    name = re.compile(rf"^tracker_db_(\d{{8}}_\d{{6}})_before-{re.escape(revision)}\.db$")
+    found = []
+    if folder.is_dir():
+        for path in folder.iterdir():
+            match = name.match(path.name)
+            if match is None:
+                continue
+            try:
+                found.append((datetime.strptime(match.group(1), BACKUP_STAMP_FORMAT), path))
+            except ValueError:  # no such date
+                continue
+    return max(found)[1] if found else None
+
+
+def _same_content(file: pathlib.Path, copy: pathlib.Path) -> bool:
+    """The copy holds what the database holds; a copy that does not open or read is not the same."""
+    try:
+        return _dump_hash(copy) == _dump_hash(file)
+    except (sqlite3.Error, OSError):
+        return False
+
+
 def _backup_before_migration(file: pathlib.Path, now: datetime) -> None:
     """If the existing database file has migrations still to run, copy it first to `backups` next to it as
-    `tracker_db_<time>_before-<revision>.db`. A failed copy is raised: the migration must not run without it."""
+    `tracker_db_<time>_before-<revision>.db`. A failed copy is raised: the migration must not run without it.
+
+    A migration that failed is rolled back whole, and Docker starts the process again every minute: when the newest
+    copy before the same revision holds what the database holds, it is the copy, and no new one is made."""
     revision = _revision_of(file)
     if revision is None or revision == ScriptDirectory.from_config(_alembic_config()).get_current_head():
         return
-    target = file.parent / BACKUP_FOLDER / backup_name(now, f"before-{revision}")
+    folder = file.parent / BACKUP_FOLDER
+    earlier = _newest_copy_before(folder, revision)
+    if earlier is not None and _same_content(file, earlier):
+        logging.info("копия перед миграцией с %s уже есть: %s; база с тех пор не менялась", revision, earlier)
+        return
+    target = folder / backup_name(now, f"before-{revision}")
     try:
         copy_database(file, target)
     except Exception as exc:

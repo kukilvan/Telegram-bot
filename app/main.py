@@ -1,28 +1,32 @@
 """Process entry point, `python -m app.main`: the bot, the scheduler and the web in one process (ADR 0007).
 
 Order: log → settings → database → tracker core → web server → scheduler → bot → watchdog (the last four start in
-`app/runtime.py`). A failure before the work begins is reported to the owner in Telegram and exits with code 1.
+`app/runtime.py`). A failure before the work begins exits with code 1 and is reported to the owner in Telegram: the
+same failure at once and then once a day, while Docker starts the process again every minute (`app/startup_report.py`).
 """
 
 import asyncio
 import logging
 import os
 import sys
+from collections.abc import Callable
 from contextlib import suppress
 from datetime import datetime as dt, timezone
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher
+from aiogram.utils.token import TokenValidationError, validate_token
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.bot.error_handler import send_startup_error_sync
 from app.bot.main import add_jobs, build_dispatcher
-from app.bot.tracker_handlers import BOT_COMMANDS, TelegramSender
+from app.bot.tracker_handlers import BOT_COMMANDS, MALFORMED_TOKEN, TelegramSender
 from app.config import Settings, get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
 from app.providers.shikimori import ShikimoriClient
 from app.providers.tmdb import TMDbProvider
 from app.runtime import Health, Runtime
+from app.startup_report import forget_failure, report_failure
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
@@ -39,33 +43,61 @@ WEB_PORT = 8080  # inside the process; the port on the PC is docker compose's bu
 WEB_BIND_HOST = "WEB_BIND_HOST"
 WEB_STOP_GRACE_SECONDS = 5  # the started requests get this long on stop
 WEB_SECRET_FILE = Path("data") / "web_secret"  # the key that signs the session cookie (next to the database)
+STARTUP_FAILURE_FILE = Path("data") / "startup_failure.json"  # the last failure before the start and its report
+EMPTY_ALLOWLIST = (
+    "ALLOWED_TELEGRAM_USER_IDS пуст: бот не запускается открытым для всех. "
+    "Впишите в .env свой номер Telegram (узнать — @userinfobot)"
+)
 
 
 class TelegramPart:
-    """The bot part of the runtime: aiogram's long polling without its own signal handling."""
+    """The bot part of the runtime: aiogram's long polling without its own signal handling. Without a bot (a malformed
+    token) every connect fails with the same words, and the runtime tries again by its rules."""
 
-    def __init__(self, bot: Bot, dispatcher: Dispatcher) -> None:
+    def __init__(self, bot: Bot | None, dispatcher: Dispatcher) -> None:
         self._bot = bot
         self._dispatcher = dispatcher
+        self._receiving_began: Callable[[], None] = lambda: None
+        # once, not per attempt: the dispatcher keeps its handlers
+        dispatcher.startup.register(self._on_startup)
 
     async def connect(self) -> None:
+        if self._bot is None:
+            raise RuntimeError(MALFORMED_TOKEN)
         me = await self._bot.me()
         logging.info("Bot started as @%s", me.username)
         await self._bot.set_my_commands(BOT_COMMANDS)
 
-    async def receive(self) -> None:
+    async def receive(self, started: Callable[[], None]) -> None:
+        # aiogram's `startup` comes after its preparation, right before it asks Telegram for messages
+        self._receiving_began = started
         # The session stays open between the attempts: the queue sends events through it (`TelegramSender`)
         await self._dispatcher.start_polling(self._bot, handle_signals=False, close_bot_session=False)
+
+    async def _on_startup(self) -> None:
+        self._receiving_began()
 
     async def stop(self) -> None:
         with suppress(RuntimeError):  # "Polling is not started": the bot is connecting or waiting to connect again
             await self._dispatcher.stop_polling()
 
     async def close(self) -> None:
-        await self._bot.session.close()
+        if self._bot is not None:
+            await self._bot.session.close()
 
 
-def build_tracker(settings: Settings, bot: Bot) -> Tracker:
+def telegram_bot(token: str) -> Bot | None:
+    """The bot, or None when aiogram refuses the token (empty, no `:`, a space…): the process goes on without it, the
+    web and the polling of sources work. The token itself is never logged."""
+    try:
+        validate_token(token)
+    except TokenValidationError:
+        logging.error(MALFORMED_TOKEN)
+        return None
+    return Bot(token=token)
+
+
+def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
     """The tracker core with its sources; the database is migrated (and copied first) here."""
     tmdb = TMDbProvider()
     return Tracker(
@@ -88,15 +120,14 @@ async def main() -> int:
 
     allowed_ids = settings.allowed_telegram_user_ids
     if not allowed_ids:
-        logging.critical("ALLOWED_TELEGRAM_USER_IDS is empty: refusing to start an open bot")
-        return 1
+        raise RuntimeError(EMPTY_ALLOWLIST)  # a failure before the start, reported as any other
     if settings.owner_chat_id.strip() and settings.owner_chat_id_number is None:
         logging.warning("OWNER_CHAT_ID is not a number; messages for the owner go to the first allowed user")
 
     if len(settings.web_password) < MIN_PASSWORD_LENGTH:
         logging.warning("WEB_PASSWORD не задан или короче %s символов: вход в веб закрыт", MIN_PASSWORD_LENGTH)
 
-    bot = Bot(token=settings.telegram_bot_token)
+    bot = telegram_bot(settings.telegram_bot_token)
     tracker = build_tracker(settings, bot)
 
     health = Health()
@@ -110,17 +141,29 @@ async def main() -> int:
     runtime = Runtime(
         web=server, scheduler=scheduler, bot=TelegramPart(bot, build_dispatcher(tracker, allowed_ids)), health=health,
     )
+    forget_failure(STARTUP_FAILURE_FILE)  # everything is assembled: the start succeeded
     return await runtime.run()
 
 
 def report_startup_error(exc: BaseException) -> None:
-    """Send the failure to the owner over plain HTTP (the bot may not be up); best effort."""
+    """Send the failure to the owner over plain HTTP (the bot may not be up), if it is due; best effort. Nowhere to
+    send it (the settings do not read, no owner's chat) — no report, and the record of the failure stays as it is."""
     try:
         settings = get_settings()
-        if settings.owner_chat is not None:
-            send_startup_error_sync(settings.telegram_bot_token, settings.owner_chat, exc)
     except Exception:
-        pass  # a report that fails must not hide the failure itself
+        return  # the failure is the settings themselves: run() has logged it
+    chat = settings.owner_chat
+    if chat is None:
+        return
+    try:
+        report_failure(
+            exc,
+            send=lambda heading: send_startup_error_sync(settings.telegram_bot_token, chat, exc, heading),
+            file=STARTUP_FAILURE_FILE,
+            now=dt.now(tz=timezone.utc),
+        )
+    except Exception:
+        logging.exception("отчёт о сбое запуска не отправлен")  # it must not hide the failure itself
 
 
 def run() -> int:
@@ -132,7 +175,7 @@ def run() -> int:
         logging.info("остановлено")
         return 0
     except Exception as exc:
-        logging.exception("запуск не удался")
+        logging.critical("запуск не удался", exc_info=True)
         report_startup_error(exc)
         return 1
 

@@ -65,6 +65,9 @@ MAX_LIST_BUTTONS = 50
 _NO_SUCH_KIND = f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново."
 SUMMARY_COMMAND = "summary"
 BOT_COMMANDS = [BotCommand(command=SUMMARY_COMMAND, description="Сводка сейчас")]  # shown in Telegram's «/» menu
+# aiogram refuses to make a bot of such a token; the process starts without one (`app.main`), and the start script
+# looks for these words in the log
+MALFORMED_TOKEN = "токен бота неверного вида — проверьте TELEGRAM_BOT_TOKEN в .env"
 START_TEXT = (
     "👋 Бот работает. Кнопки меню внизу: «Добавить» и «Мои тайтлы» ведут список, «Сводка сейчас» присылает "
     "накопленные события, «Тестовое событие» показывает, как выглядят сообщения, и проверяет правила доставки."
@@ -91,13 +94,16 @@ def actions_markup(actions: Sequence[Action]) -> InlineKeyboardMarkup | None:
 
 
 class TelegramSender:
-    """Delivers tracker messages to the owner's chat."""
+    """Delivers tracker messages to the owner's chat. Without a bot (a malformed token) every send fails, and the
+    queue keeps the event, as with no network."""
 
-    def __init__(self, bot: Bot, chat_id: int) -> None:
+    def __init__(self, bot: Bot | None, chat_id: int) -> None:
         self._bot = bot
         self._chat_id = chat_id
 
     async def send(self, message: str, actions: Sequence[Action] = ()) -> None:
+        if self._bot is None:
+            raise RuntimeError(MALFORMED_TOKEN)
         await self._bot.send_message(chat_id=self._chat_id, text=message, reply_markup=actions_markup(actions))
 
 

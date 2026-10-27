@@ -51,11 +51,18 @@ class FakeWeb:
 
 
 class FakeBot:
-    def __init__(self, steps: list[str], connect_fails: list[bool] | None = None, receive_fails: bool = False) -> None:
+    def __init__(
+        self,
+        steps: list[str],
+        connect_fails: list[bool] | None = None,
+        receive_fails: bool = False,
+        receiving_begins: bool = True,
+    ) -> None:
         self.steps = steps
         self.connects = 0
         self._connect_fails = list(connect_fails or [])
         self._receive_fails = receive_fails
+        self._receiving_begins = receiving_begins  # receiving fails after it began, or at once (no signal)
         self._stopped = asyncio.Event()
 
     async def connect(self) -> None:
@@ -63,7 +70,9 @@ class FakeBot:
         if self._connect_fails and self._connect_fails.pop(0):
             raise ConnectionError("no network")
 
-    async def receive(self) -> None:
+    async def receive(self, started) -> None:
+        if self._receiving_begins:
+            started()
         if self._receive_fails:
             raise RuntimeError("Conflict: terminated by other getUpdates request")
         self.steps.append("receiving")
@@ -296,25 +305,39 @@ def test_a_bot_that_cannot_connect_retries_with_doubling_pauses_while_the_web_an
     assert "ConnectionError: no network" in caplog.text  # with the traceback
 
 
-def test_after_a_successful_connect_the_pause_is_30_seconds_again():
+def bot_pauses(bot: FakeBot, count: int = 4) -> list[float]:
+    """The pauses the runtime takes before connecting again, the first `count` of them."""
     pauses: list[float] = []
     runtime: Runtime
 
     async def recorded_pause(stop, seconds):
         pauses.append(seconds)
-        if len(pauses) == 4:
+        if len(pauses) == count:
             runtime.request_stop()
         await asyncio.sleep(0)
 
     async def scenario():
         nonlocal runtime
-        # fails, fails, connects (and receiving fails: a second instance), fails
-        bot = FakeBot([], connect_fails=[True, True, False, True], receive_fails=True)
         runtime = make_runtime(FakeWeb([]), bot, pause=recorded_pause)
         return await runtime.run()
 
     assert asyncio.run(scenario()) == 0
-    assert pauses == [30, 60, 30, 60]
+    return pauses
+
+
+def test_once_receiving_has_begun_the_pause_is_30_seconds_again():
+    # fails, fails, connects (receiving begins, then fails: a second instance), fails
+    bot = FakeBot([], connect_fails=[True, True, False, True], receive_fails=True)
+
+    assert bot_pauses(bot) == [30, 60, 30, 60]
+
+
+def test_a_connect_alone_does_not_bring_the_pause_back_to_30_seconds():
+    # KI-14: it connects every time, but receiving fails before it begins
+    bot = FakeBot([], connect_fails=[False] * 10, receive_fails=True, receiving_begins=False)
+
+    assert bot_pauses(bot) == [30, 60, 120, 240]
+    assert bot.connects == 4
 
 
 def test_a_stop_while_the_bot_waits_to_connect_again_does_not_wait_out_the_pause():
@@ -473,7 +496,7 @@ CHILD = textwrap.dedent("""
         def __init__(self):
             self.stopped = asyncio.Event()
         async def connect(self): pass
-        async def receive(self): await self.stopped.wait()
+        async def receive(self, started): started(); await self.stopped.wait()
         async def stop(self): self.stopped.set()
         async def close(self): pass
 

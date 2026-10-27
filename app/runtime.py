@@ -54,8 +54,8 @@ class BotPart(Protocol):
     async def connect(self) -> None:
         """Reach Telegram (who am I, the command menu); raises when it cannot."""
 
-    async def receive(self) -> None:
-        """Receive messages until `stop`; raises when receiving fails."""
+    async def receive(self, started: Callable[[], None]) -> None:
+        """Receive messages until `stop`, calling `started` once receiving has begun; raises when receiving fails."""
 
     async def stop(self) -> None:
         """Stop receiving; nothing to do when it does not receive."""
@@ -311,16 +311,21 @@ class Runtime:
 
     async def _run_bot(self) -> None:
         """The bot part does not die of Telegram: no network, a wrong token, a second instance or a bug in a handler —
-        it logs the error and tries again after a pause (30 s, doubling, at most 5 min; 30 s again after it connected).
-        Meanwhile the web and the polling of sources go on."""
+        it logs the error and tries again after a pause (30 s, doubling, at most 5 min; 30 s again once receiving has
+        begun, not merely connected: receiving that fails at once keeps doubling). Meanwhile the web and the polling of
+        sources go on."""
         self.health.bot_running = True
         pause = self._timings.bot_retry_first
+
+        def receiving_began() -> None:
+            nonlocal pause
+            pause = self._timings.bot_retry_first
+
         try:
             while not self._stop_requested.is_set():
                 try:
                     await self._bot.connect()
-                    pause = self._timings.bot_retry_first
-                    await self._bot.receive()
+                    await self._bot.receive(receiving_began)
                     if self._stop_requested.is_set():
                         return
                     raise RuntimeError("приём сообщений закончился без остановки")

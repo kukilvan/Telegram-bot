@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 TELEGRAM_API_URL = "https://api.telegram.org/bot{token}/sendMessage"
 MAX_ERROR_MSG_SIZE = 3500
 ERROR_LOG_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "temp_failure.txt")
+RUNTIME_HEADING = "⚠️ <b>Bot Error</b>"
 
 
 def _format_error_for_telegram(exc: Exception) -> str:
@@ -55,8 +56,8 @@ def _save_error_to_file(exc: Exception) -> None:
         pass  # Best effort
 
 
-async def _send_error_via_http(token: str, chat_id: int | str, text: str) -> bool:
-    """Send error message via Telegram Bot API HTTP endpoint.
+async def _send_error_via_http(token: str, chat_id: int | str, text: str, heading: str = RUNTIME_HEADING) -> bool:
+    """Send error message via Telegram Bot API HTTP endpoint: the heading, then the traceback in <pre>.
 
     Does NOT depend on bot object being initialized.
     Returns True if sent successfully, False otherwise.
@@ -67,7 +68,7 @@ async def _send_error_via_http(token: str, chat_id: int | str, text: str) -> boo
                 TELEGRAM_API_URL.format(token=token),
                 json={
                     "chat_id": chat_id,
-                    "text": f"⚠️ <b>Bot Error</b>\n\n<pre>{text}</pre>",
+                    "text": f"{heading}\n\n<pre>{text}</pre>",
                     "parse_mode": "HTML",
                 },
             )
@@ -84,14 +85,15 @@ async def _send_error_via_http(token: str, chat_id: int | str, text: str) -> boo
         return False
 
 
-def send_startup_error_sync(token: str, chat_id: int, exc: Exception) -> None:
-    """Synchronously send startup error via HTTP (blocking, for use in sys.excepthook)."""
+def send_startup_error_sync(token: str, chat_id: int, exc: Exception, heading: str) -> bool:
+    """Synchronously send startup error via HTTP (blocking: the event loop is gone by then). True when Telegram took
+    it (HTTP 200)."""
     _save_error_to_file(exc)
     text = _format_error_for_telegram(exc)
     try:
-        asyncio.run(_send_error_via_http(token, chat_id, text))
+        return asyncio.run(_send_error_via_http(token, chat_id, text, heading))
     except Exception:
-        pass  # Best effort — don't crash
+        return False  # Best effort — don't crash
 
 
 async def send_runtime_error(token: str, chat_id: int, exc: Exception) -> None:
