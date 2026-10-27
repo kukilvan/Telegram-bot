@@ -2,10 +2,10 @@
 follows from them. What differs by kind (the first seasons, the first check) is asked of the title's poller."""
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 
 from app.tracker import seasons as season_logic
 from app.tracker import sequel_events, storage
@@ -14,7 +14,7 @@ from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.errors import TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ExternalId, Event, MovieRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
-from app.tracker.results import AddResult, DeleteResult, TitleSummary, WatchableSeason, WatchedResult
+from app.tracker.results import AddResult, DeleteResult, Overview, TitleSummary, WatchableSeason, WatchedResult
 from app.tracker.settings_store import SettingsStore
 from app.tracker.sources.dates import parse_date
 
@@ -243,6 +243,18 @@ class Titles:
         with self.ctx.session_factory() as session:
             rows = session.scalars(select(Title).order_by(Title.id))
             return [TitleSummary(t.id, t.kind, t.name, t.year, t.status) for t in rows]
+
+    async def overview(self) -> Overview:
+        return await asyncio.to_thread(self._overview)
+
+    def _overview(self) -> Overview:
+        with self.ctx.session_factory() as session:
+            count = session.scalar(select(func.count(Title.id))) or 0
+            # only a successful check writes `observed_at`, so a failed one does not move it
+            last = session.scalar(select(func.max(SourceSnapshot.observed_at)))
+            tz = self.settings.time_zone(session)  # read here, where it is needed (coding standard 2)
+        local = last.replace(tzinfo=timezone.utc).astimezone(tz) if last is not None else None
+        return Overview(count, local)
 
     async def title_card(self, title_id: int) -> TitleCard | None:
         return await asyncio.to_thread(self._title_card, title_id)

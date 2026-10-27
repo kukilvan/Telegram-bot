@@ -10,6 +10,7 @@ from typing import Any
 
 import httpx
 
+from app.tracker.cards import titles_word
 from app.tracker.movie_events import RETRY_AFTER_FAILURE
 
 SOURCE_FAILED = "source_failure"  # event type
@@ -92,20 +93,12 @@ def message_one(name: str, source: str, reason: str, retry: timedelta = RETRY_AF
     return f"⚠️ Не удалось проверить «{name}»: {why}. Повторю через {_minutes(retry)} мин."
 
 
-def _titles_word(count: int) -> str:
-    if count % 10 == 1 and count % 100 != 11:
-        return "тайтл"
-    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
-        return "тайтла"
-    return "тайтлов"
-
-
 def message_many(source: str, reason: str, titles: Sequence[str], retry: timedelta = RETRY_AFTER_FAILURE) -> str:
     """«⚠️ Не удалось проверить 12 тайтлов: TMDb не ответил вовремя. Дюна, Укрытие, … Повторю через 30 мин.»"""
     why = _REASONS[reason].format(source=source)
     names = ", ".join(titles[:MAX_NAMES]) + (", …" if len(titles) > MAX_NAMES else ".")
     return (
-        f"⚠️ Не удалось проверить {len(titles)} {_titles_word(len(titles))}: {why}. {names} "
+        f"⚠️ Не удалось проверить {len(titles)} {titles_word(len(titles))}: {why}. {names} "
         f"Повторю через {_minutes(retry)} мин."
     )
 

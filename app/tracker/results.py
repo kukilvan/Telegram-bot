@@ -34,6 +34,14 @@ class TitleSummary:
 
 
 @dataclass(frozen=True)
+class Overview:
+    """What the web page says about the whole list: how many titles, and when a source last answered."""
+
+    title_count: int  # every title in the list, the archive included
+    last_check_at: datetime | None  # aware, on the owner's clock; None: no source was ever checked
+
+
+@dataclass(frozen=True)
 class WatchableSeason:
     """A season the owner can mark as watched: it has at least one released episode."""
 

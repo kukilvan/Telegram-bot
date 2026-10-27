@@ -57,12 +57,18 @@ def sign_in(client, next_address="/"):
 
 # ---- the guard ------------------------------------------------------------
 
-@pytest.mark.parametrize("address", ["/", "/list", "/archive", "/search", "/settings", "/status-line", "/nowhere", "/a/b"])
+@pytest.mark.parametrize("address", ["/", "/list", "/archive", "/search", "/settings", "/nowhere", "/a/b"])
 def test_every_closed_address_sends_a_visitor_to_the_login(client, address):
     response = client.get(address)
 
     assert response.status_code == 303
     assert response.headers["location"] == f"/login?next={address}"
+
+
+def test_the_status_line_without_sign_in_is_401_with_the_redirect_header_even_for_a_plain_request(client):
+    response = client.get("/status-line")
+
+    assert response.status_code == 401 and response.headers["HX-Redirect"] == "/login"
 
 
 def test_the_address_to_come_back_to_keeps_the_query(client):

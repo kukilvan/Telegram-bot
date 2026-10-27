@@ -101,7 +101,9 @@ async def main() -> int:
 
     health = Health()
     host = os.environ.get(WEB_BIND_HOST, "").strip() or "127.0.0.1"
-    web_app = create_web_app(health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE)
+    web_app = create_web_app(
+        health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE, tracker=tracker,
+    )
     server = web_server(web_app, host=host, port=WEB_PORT, stop_grace=WEB_STOP_GRACE_SECONDS)
     scheduler = AsyncIOScheduler()
     add_jobs(scheduler, tracker)

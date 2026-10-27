@@ -63,6 +63,15 @@ def format_weekday_date(value: date) -> str:
     return f"{_WEEKDAYS[value.weekday()]}, {value.day} {_SHORT_MONTHS[value.month - 1]}"
 
 
+def titles_word(count: int) -> str:
+    """«тайтл» in the form that follows the number: 1 тайтл, 2 тайтла, 5 тайтлов, 11 тайтлов, 21 тайтл."""
+    if count % 10 == 1 and count % 100 != 11:
+        return "тайтл"
+    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
+        return "тайтла"
+    return "тайтлов"
+
+
 def local_moment(moment: datetime, tz: tzinfo | None) -> datetime:
     """A naive UTC moment as the owner's clock shows it (naive); without a time zone it stays as it is."""
     if tz is None:
@@ -75,6 +84,19 @@ def format_when(moment: datetime, tz: tzinfo | None = None) -> str:
     local = local_moment(moment, tz)
     text = format_weekday_date(local.date())
     return text if tz is None else f"{text} в {local:%H:%M}"
+
+
+def format_past_moment(moment: datetime, now: datetime) -> str:
+    """When something last happened, on the owner's clock (both moments aware, in the same zone): «в 14:05» today,
+    «вчера в 23:10», «26 окт в 09:05» before that, «26 окт 2025 в 09:05» in another year."""
+    local = moment.astimezone(now.tzinfo)
+    days = (now.date() - local.date()).days
+    if days <= 0:
+        return f"в {local:%H:%M}"
+    if days == 1:
+        return f"вчера в {local:%H:%M}"
+    day = f"{local.day} {_SHORT_MONTHS[local.month - 1]}"
+    return f"{day} {local.year} в {local:%H:%M}" if local.year != now.year else f"{day} в {local:%H:%M}"
 
 
 def format_day_month(value: date) -> str:

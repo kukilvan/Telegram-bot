@@ -3,6 +3,7 @@
 import logging
 import time
 from collections.abc import Awaitable, Callable
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
 
@@ -13,7 +14,9 @@ from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
+from app.tracker.core import Tracker
 from app.web import auth
+from app.web.status_line import NO_DATA, status_text
 
 HERE = Path(__file__).resolve().parent
 SESSION_COOKIE = "tracker_session"
@@ -24,6 +27,14 @@ SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "same-origin",
 }
+# The menu: address, name, and the one phrase of the placeholder until the section is built
+SECTIONS = (
+    ("/", "Лента", "Скоро будет: что выходит в ближайшие дни и что вышло недавно (часть 5.3)"),
+    ("/list", "Список", "Скоро будет: все тайтлы с фильтрами по типу и статусу (часть 5.2)"),
+    ("/archive", "Архив", "Скоро будет: просмотренное с поиском и сортировкой по оценке (часть 5.3)"),
+    ("/search", "Поиск", "Скоро будет: поиск с подсказками и добавление (часть 5.2)"),
+    ("/settings", "Настройки", "Скоро будет: часовой пояс, рабочие дни, час сводки, тихие часы (часть 5.4)"),
+)
 NOT_CONFIGURED = ("Вход в приложение не настроен: добавьте в файл .env строку WEB_PASSWORD=… "
                   "(не короче 8 символов) и запустите .\\start-bot.ps1")
 
@@ -40,11 +51,14 @@ def create_web_app(
     password: str = "",
     secret_file: Path | None = None,
     clock: Callable[[], float] = time.monotonic,
+    tracker: Tracker | None = None,
+    now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> FastAPI:
     """The web app. `health` is the process's own report (`Health.report`): it reads neither the database nor the
     network, so `/health` answers even when they are slow. `password` is WEB_PASSWORD (without it, or when it is
     short, the login is closed); `secret_file` keeps the key that signs the session; `clock` times the lock after
-    wrong tries (seconds)."""
+    wrong tries (seconds). `tracker` is the one door into the core (without it the status line has no data); `now`
+    is the wall clock (aware) the status line compares with."""
     # No /docs, /redoc or /openapi.json: they would describe every address to anyone who asks
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     templates = Jinja2Templates(directory=HERE / "templates")
@@ -58,20 +72,35 @@ def create_web_app(
         # Outside the session middleware (the foreign-origin answer) nobody is signed in
         return configured and "session" in request.scope and auth.same(request.session.get("pw"), expected)
 
-    def page(request: Request, name: str, *, status: int = 200, **context: object) -> Response:
+    async def status_line() -> str:
+        """The text of the status line; a database that does not answer must not take the page down."""
+        if tracker is None:
+            return NO_DATA
+        try:
+            overview = await tracker.overview()
+        except Exception:
+            logging.exception("web: no data from the database for the status line")
+            return NO_DATA
+        return status_text(overview.title_count, overview.last_check_at, now())
+
+    async def page(request: Request, name: str, *, status: int = 200, **context: object) -> Response:
         context.setdefault("signed_in", signed_in(request))
+        if context["signed_in"]:  # the menu and the status line belong to the pages behind the sign-in
+            context.setdefault("current", "")
+            context["status"] = await status_line()
+            context["sections"] = SECTIONS
         return templates.TemplateResponse(request, name, context, status_code=status)
 
-    def message(request: Request, heading: str, text: str, status: int) -> Response:
-        return page(request, "message.html", status=status, heading=heading, text=text)
+    async def message(request: Request, heading: str, text: str, status: int) -> Response:
+        return await page(request, "message.html", status=status, heading=heading, text=text)
 
-    def login_page(request: Request, next_address: str, error: str = "", status: int = 200) -> Response:
-        return page(request, "login.html", status=status, next=next_address, error=error)
+    async def login_page(request: Request, next_address: str, error: str = "", status: int = 200) -> Response:
+        return await page(request, "login.html", status=status, signed_in=False, next=next_address, error=error)
 
-    def locked_page(request: Request, next_address: str, seconds: int) -> Response:
+    async def locked_page(request: Request, next_address: str, seconds: int) -> Response:
         minutes = -(-seconds // 60)
         text = f"Слишком много неверных попыток. Вход снова откроется через {minutes} мин."
-        response = login_page(request, next_address, text, status=429)
+        response = await login_page(request, next_address, text, status=429)
         response.headers["Retry-After"] = str(seconds)
         return response
 
@@ -83,13 +112,13 @@ def create_web_app(
         if path == "/health" or path.startswith("/static/"):
             return await call_next(request)
         if not configured:
-            return message(request, "Вход не настроен", NOT_CONFIGURED, 503)
+            return await message(request, "Вход не настроен", NOT_CONFIGURED, 503)
         if signed_in(request):
             request.session["pw"] = expected  # writing it again makes the middleware send a fresh cookie: 30 days from now
             return await call_next(request)
         if path in ("/login", "/logout"):
             return await call_next(request)
-        if request.headers.get("hx-request"):
+        if request.headers.get("hx-request") or path == "/status-line":
             return Response(status_code=401, headers={"HX-Redirect": "/login"})
         target = "/login"
         if request.method == "GET":
@@ -108,7 +137,7 @@ def create_web_app(
         host = request.headers.get("host", "")
         foreign = origin is not None and origin not in (f"http://{host}", f"https://{host}")
         if request.method not in SAFE_METHODS and foreign:
-            response = message(request, "Запрос отклонён", "Запрос с чужой страницы отклонён", 403)
+            response = await message(request, "Запрос отклонён", "Запрос с чужой страницы отклонён", 403)
         else:
             response = await call_next(request)
         response.headers.update(SECURITY_HEADERS)
@@ -125,21 +154,21 @@ def create_web_app(
     async def login_form(request: Request, next: str = "/") -> Response:
         if signed_in(request):
             return RedirectResponse("/", status_code=303)
-        return login_page(request, auth.safe_next(next))
+        return await login_page(request, auth.safe_next(next))
 
     @app.post("/login")
     async def login(request: Request, password_typed: str = Form("", alias="password"), next: str = Form("/")) -> Response:
         target = auth.safe_next(next)
         seconds = guard.locked_for()
         if seconds:
-            return locked_page(request, target, seconds)  # the password is not even looked at
+            return await locked_page(request, target, seconds)  # the password is not even looked at
         if not auth.password_matches(password_typed.strip(), password):
             left = guard.wrong()
             logging.warning("web login: wrong password (%s in a row)", guard.wrong_in_a_row)
             if left == 0:
                 logging.warning("web login blocked for %s min", auth.LOCK_SECONDS // 60)
-                return locked_page(request, target, guard.locked_for())
-            return login_page(request, target, f"Неверный пароль. До блокировки осталось попыток: {left}", status=401)
+                return await locked_page(request, target, guard.locked_for())
+            return await login_page(request, target, f"Неверный пароль. До блокировки осталось попыток: {left}", status=401)
         guard.right()
         logging.info("web login: ok")
         request.session.clear()
@@ -151,13 +180,21 @@ def create_web_app(
         request.session.clear()
         return RedirectResponse("/login", status_code=303)
 
-    @app.get("/")
-    async def feed(request: Request) -> Response:
-        return page(request, "feed.html")
+    @app.get("/status-line")
+    async def status_fragment(request: Request) -> Response:
+        return templates.TemplateResponse(request, "status_line.html", {"status": await status_line()})
+
+    def add_section(address: str, name: str, phrase: str) -> None:
+        @app.get(address, name=name)
+        async def section(request: Request) -> Response:
+            return await page(request, "section.html", current=address, heading=name, phrase=phrase)
+
+    for address, name, phrase in SECTIONS:
+        add_section(address, name, phrase)
 
     @app.exception_handler(404)
     async def not_found(request: Request, exc: HTTPException) -> Response:
-        return message(request, "Страница не найдена", "Такого адреса нет.", 404)
+        return await message(request, "Страница не найдена", "Такого адреса нет.", 404)
 
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
     return app

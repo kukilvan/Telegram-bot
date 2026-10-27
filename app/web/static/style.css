@@ -85,3 +85,17 @@ button {
 }
 
 .error { color: var(--error); margin: 0 0 0.75rem; }
+
+.top { flex-wrap: wrap; }
+
+.menu { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; flex: 1; }
+
+.menu a { color: var(--accent); text-decoration: none; padding: 0.25rem 0; border-bottom: 2px solid transparent; }
+
+.menu a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
+
+.status-line { margin: 0; padding: 0.5rem 1rem; color: var(--muted); font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+
+@media (max-width: 40rem) {
+  .menu { order: 3; flex-basis: 100%; }
+}

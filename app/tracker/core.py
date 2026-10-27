@@ -27,6 +27,7 @@ from app.tracker.results import (
     AddResult,
     DeleteResult,
     DeliveryReport,
+    Overview,
     PollReport,
     SummaryResult,
     TestEventResult,
@@ -39,9 +40,9 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "PollReport", "Sender", "SummaryResult", "TestEventResult",
-    "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent", "UnknownKind",
-    "UnknownSeason", "UnknownTitle", "WatchableSeason", "WatchedResult",
+    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "Overview", "PollReport", "Sender", "SummaryResult",
+    "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent",
+    "UnknownKind", "UnknownSeason", "UnknownTitle", "WatchableSeason", "WatchedResult",
 ]
 
 
@@ -154,6 +155,10 @@ class Tracker:
 
     async def list_titles(self) -> list[TitleSummary]:
         return await self._titles.list_titles()
+
+    async def overview(self) -> Overview:
+        """The line of the web page: how many titles are in the list and when a source last answered."""
+        return await self._titles.overview()
 
     async def title_card(self, title_id: int) -> TitleCard | None:
         return await self._titles.title_card(title_id)
