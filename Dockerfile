@@ -1,20 +1,20 @@
-FROM python:3.12-slim AS base
+FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    WEB_BIND_HOST=0.0.0.0
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /app/data/backups /app/app/logs && chown -R nobody:nogroup /app
-
+# No USER line: the container starts as root only to fix the rights on the mounted data folder, then app.container_start
+# drops them (PUID/PGID) and replaces itself with the application
 EXPOSE 8080
 
-USER nobody
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 CMD ["python", "-m", "app.healthcheck"]
 
-CMD ["python", "-m", "app.bot.main"]
+CMD ["python", "-m", "app.container_start"]

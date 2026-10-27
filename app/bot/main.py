@@ -53,5 +53,5 @@ def add_jobs(scheduler: AsyncIOScheduler, tracker: Tracker) -> None:
 
 if __name__ == "__main__":
     # The bot is no longer a process of its own: it runs with the scheduler and the web in `app.main` (ADR 0007)
-    print("Бот запускается через .\\start-bot.ps1")
+    print("Бот запускается через Docker: .\\start-bot.ps1")
     sys.exit(1)

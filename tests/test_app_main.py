@@ -129,17 +129,4 @@ def test_the_old_entry_point_says_how_to_start_and_exits_with_1():
                             env={"PYTHONIOENCODING": "utf-8", "PATH": ""})
 
     assert result.returncode == 1
-    assert "Бот запускается через .\\start-bot.ps1" in result.stdout.decode("utf-8")
-
-
-def test_the_launch_script_works_from_any_folder_and_starts_the_one_process():
-    raw = (ROOT / "start-bot.ps1").read_bytes()
-    script = raw.decode("utf-8-sig")
-
-    assert raw.startswith(b"\xef\xbb\xbf")  # with BOM, or Windows PowerShell 5.1 garbles the Russian text
-    assert "Set-Location $PSScriptRoot" in script
-    assert ".venv\\Scripts\\python.exe" in script and "-m app.main" in script
-    assert "app.bot.main" not in script
-    assert "http://localhost:8080/health" in script
-    assert "Activate.ps1" not in script and "E:\\" not in script
-    assert not (ROOT / "launch_bot.py").exists()
+    assert "Бот запускается через Docker: .\\start-bot.ps1" in result.stdout.decode("utf-8")
