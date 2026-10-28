@@ -18,6 +18,7 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import EpisodeRecord, Event, MovieRecord, PartRecord, SeasonRecord, SourceSnapshot, Title
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
+from season_helpers import season_id
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)  # a Saturday
 ISRAEL = ZoneInfo("Asia/Jerusalem")
@@ -538,7 +539,7 @@ def test_the_films_stored_with_the_title_follow_the_source(tracker, shikimori, c
 def test_a_new_season_takes_a_waiting_anime_to_in_progress(tracker, shikimori, clock):
     title = add(tracker, JJK)
     for number in (1, 2, 3):
-        run(tracker.set_season_watched(title, number, True))
+        run(tracker.set_season_watched(title, season_id(tracker, title, number), True))
     assert run(tracker.title_card(title)).status == "waiting"
     announce_the_fourth_season(shikimori)
     start_the_fourth_season(shikimori)
@@ -551,14 +552,14 @@ def test_a_new_season_takes_a_waiting_anime_to_in_progress(tracker, shikimori, c
 def test_a_waiting_anime_is_still_polled(tracker, shikimori, clock):
     title = add(tracker, JJK)
     for number in (1, 2, 3):
-        run(tracker.set_season_watched(title, number, True))
+        run(tracker.set_season_watched(title, season_id(tracker, title, number), True))
 
     assert poll_and_deliver(tracker, clock, hours=25).polled == 1
 
 
 def test_an_in_progress_anime_is_still_polled(tracker, shikimori, clock):
     title = add(tracker, JJK)
-    run(tracker.set_season_watched(title, 1, True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), True))
     assert run(tracker.title_card(title)).status == "in_progress"
 
     assert poll_and_deliver(tracker, clock, hours=25).polled == 1

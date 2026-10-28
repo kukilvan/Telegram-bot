@@ -302,7 +302,7 @@ def test_adding_without_htmx_is_a_redirect_to_the_card(tmp_path):
 
 
 def test_a_title_with_seasons_to_mark_asks_to_mark_them(tmp_path):
-    client = make_client(FakeTracker(seasons=[WatchableSeason(1, False)]), tmp_path)
+    client = make_client(FakeTracker(seasons=[WatchableSeason(7, 1, False)]), tmp_path)
 
     client.post("/titles", data={"kind": "series", "external_id": "10"}, headers=HTMX)
 

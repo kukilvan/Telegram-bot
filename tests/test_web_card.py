@@ -21,6 +21,7 @@ from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot
 from app.web import create_web_app
 from app.web.posters import image_sources
+from season_helpers import season_id
 
 WEB = Path(__file__).resolve().parent.parent / "app" / "web"
 PASSWORD = "correct horse battery"
@@ -171,12 +172,12 @@ def test_the_card_of_a_series_lists_the_seasons_with_marks_the_names_and_an_anno
 
 def test_a_ticked_season_is_checked_and_each_box_sends_to_its_own_season(tracker, client):
     series = add(tracker, "series", "10")
-    run(tracker.set_season_watched(series, 2, True))
+    run(tracker.set_season_watched(series, season_id(tracker, series, 2), True))
 
     html = client.get(f"/titles/{series}").text
 
     boxes = re.findall(r'<form method="post" action="([^"]+)" hx-post="[^"]+" hx-trigger="change"[^>]*>\s*<label class="check"><input type="checkbox" name="watched" value="1"( checked)?>', html)
-    assert boxes == [(f"/titles/{series}/seasons/1", ""), (f"/titles/{series}/seasons/2", " checked")]
+    assert boxes == [(f"/titles/{series}/seasons/{season_id(tracker, series, 1)}", ""), (f"/titles/{series}/seasons/{season_id(tracker, series, 2)}", " checked")]
 
 
 def test_the_mark_all_button_goes_when_every_released_season_is_marked(tracker, client):
@@ -223,7 +224,7 @@ def test_a_watched_film_without_a_sequel_check_has_restore_and_delete_and_no_seq
 
 def test_a_closed_series_with_every_season_marked_says_how_to_bring_it_back(tracker, client):
     ended = add(tracker, "series", "11")
-    run(tracker.set_season_watched(ended, 1, True))
+    run(tracker.set_season_watched(ended, season_id(tracker, ended, 1), True))
 
     html = client.get(f"/titles/{ended}").text
 
@@ -286,7 +287,7 @@ def test_a_name_with_markup_is_text_in_every_place_of_the_card(tracker, client):
 def test_a_tick_marks_the_season_and_answers_with_the_fresh_card(tracker, client):
     series = add(tracker, "series", "10")
 
-    answer = client.post(f"/titles/{series}/seasons/1", data={"watched": "1"}, headers=HTMX)
+    answer = client.post(f"/titles/{series}/seasons/{season_id(tracker, series, 1)}", data={"watched": "1"}, headers=HTMX)
 
     assert answer.status_code == 200 and "<html" not in answer.text and 'id="card"' in answer.text
     assert run(tracker.title_card(series)).seasons.watched == (1,)
@@ -296,9 +297,9 @@ def test_a_tick_marks_the_season_and_answers_with_the_fresh_card(tracker, client
 
 def test_taking_the_tick_off_asks_for_the_state_without_the_box(tracker, client):
     series = add(tracker, "series", "10")
-    run(tracker.set_season_watched(series, 1, True))
+    run(tracker.set_season_watched(series, season_id(tracker, series, 1), True))
 
-    answer = client.post(f"/titles/{series}/seasons/1", headers=HTMX)  # an unchecked box sends nothing
+    answer = client.post(f"/titles/{series}/seasons/{season_id(tracker, series, 1)}", headers=HTMX)  # an unchecked box sends nothing
 
     assert answer.status_code == 200 and run(tracker.title_card(series)).seasons.watched == ()
 
@@ -307,7 +308,7 @@ def test_a_double_press_gives_what_the_screen_shows(tracker, client):
     series = add(tracker, "series", "10")
 
     for _ in range(2):
-        client.post(f"/titles/{series}/seasons/1", data={"watched": "1"}, headers=HTMX)
+        client.post(f"/titles/{series}/seasons/{season_id(tracker, series, 1)}", data={"watched": "1"}, headers=HTMX)
 
     assert run(tracker.title_card(series)).seasons.watched == (1,)
 
@@ -315,7 +316,7 @@ def test_a_double_press_gives_what_the_screen_shows(tracker, client):
 def test_the_same_press_without_htmx_is_a_303_to_the_card(tracker, client):
     series = add(tracker, "series", "10")
 
-    answer = client.post(f"/titles/{series}/seasons/1", data={"watched": "1"})
+    answer = client.post(f"/titles/{series}/seasons/{season_id(tracker, series, 1)}", data={"watched": "1"})
 
     assert answer.status_code == 303 and answer.headers["location"] == f"/titles/{series}"
     assert run(tracker.title_card(series)).seasons.watched == (1,)
@@ -324,13 +325,22 @@ def test_the_same_press_without_htmx_is_a_303_to_the_card(tracker, client):
 def test_a_season_that_is_gone_is_the_fresh_card_with_a_line(tracker, client):
     series = add(tracker, "series", "10")
 
-    answer = client.post(f"/titles/{series}/seasons/3", data={"watched": "1"}, headers=HTMX)  # season 3 has nothing out
+    answer = client.post(f"/titles/{series}/seasons/{season_id(tracker, series, 3)}", data={"watched": "1"}, headers=HTMX)  # season 3 has nothing out
     unknown = client.post(f"/titles/{series}/seasons/9", data={"watched": "1"}, headers=HTMX)
 
     for response in (answer, unknown):
         assert response.status_code == 200 and "Этого сезона больше нет — карточка обновлена" in response.text
         assert 'id="card"' in response.text and "<html" not in response.text
     assert run(tracker.title_card(series)).seasons.watched == ()
+
+
+def test_a_box_with_a_season_of_another_title_changes_nothing(tracker, client):
+    first, series = add(tracker, "series", "10"), add(tracker, "series", "11")
+
+    answer = client.post(f"/titles/{series}/seasons/{season_id(tracker, first, 1)}", data={"watched": "1"}, headers=HTMX)
+
+    assert answer.status_code == 200 and "Этого сезона больше нет — карточка обновлена" in answer.text
+    assert run(tracker.title_card(first)).seasons.watched == () and run(tracker.title_card(series)).seasons.watched == ()
 
 
 def test_a_season_that_is_gone_without_htmx_shows_the_line_once_on_the_card(tracker, client):
@@ -509,7 +519,7 @@ def test_the_card_is_a_module_with_a_router_of_its_own_and_the_app_only_assemble
 
     mine = {route.path for route in all_routes(app) if route.endpoint.__module__ == "app.web.card"}
     assert mine == {
-        "/titles/{title_id:int}", "/titles/{title_id:int}/seasons/{number:int}", "/titles/{title_id:int}/released-watched",
+        "/titles/{title_id:int}", "/titles/{title_id:int}/seasons/{season_id:int}", "/titles/{title_id:int}/released-watched",
         "/titles/{title_id:int}/watched", "/titles/{title_id:int}/dropped", "/titles/{title_id:int}/restore",
         "/titles/{title_id:int}/sequels", "/titles/{title_id:int}/delete",
     }

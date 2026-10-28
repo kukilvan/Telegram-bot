@@ -22,6 +22,7 @@ from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.tracker.sources.tmdb_sequels import CollectionPart, SequelSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot
+from season_helpers import season_id
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 JJK, JJK_4 = "40748", "63824"
@@ -242,11 +243,11 @@ def test_marks_of_a_dropped_series_are_kept_and_its_status_stays(tracker, sessio
     ended = add(tracker, "series", "11")
     run(tracker.mark_dropped(ended))
 
-    run(tracker.set_season_watched(ended, 1, True))
+    run(tracker.set_season_watched(ended, season_id(tracker, ended, 1), True))
     assert title(session_factory, ended).status == TitleStatus.DROPPED
-    run(tracker.toggle_season(ended, 2))
+    run(tracker.toggle_season(ended, season_id(tracker, ended, 2)))
     assert title(session_factory, ended).status == TitleStatus.DROPPED  # closed and all marked: still not «Просмотрено»
-    run(tracker.set_season_watched(ended, 2, False))
+    run(tracker.set_season_watched(ended, season_id(tracker, ended, 2), False))
     assert run(tracker.mark_all_released(ended)).changed is True
 
     stored = title(session_factory, ended)
@@ -337,7 +338,7 @@ def test_a_movie_comes_back_wanted_and_followed_with_its_check_due_now(tracker, 
 
 def test_a_dropped_series_comes_back_with_the_status_its_marks_give(tracker, session_factory):
     series = add(tracker, "series", "10")
-    run(tracker.set_season_watched(series, 1, True))
+    run(tracker.set_season_watched(series, season_id(tracker, series, 1), True))
     run(tracker.mark_dropped(series))
 
     assert run(tracker.restore_title(series)).changed is True

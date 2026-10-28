@@ -19,6 +19,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.models import ExternalId, SourceSnapshot, Title
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_series import SeriesSnapshot, Suggestion, parse_show
+from season_helpers import season_id
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "tmdb"
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -261,20 +262,20 @@ def test_seasons_with_released_episodes_can_be_marked_the_announced_one_cannot(t
 def test_marked_seasons_show_on_the_card_and_unmarking_removes_them(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    run(tracker.set_season_watched(result.title_id, 1, True))
-    run(tracker.set_season_watched(result.title_id, 2, True))
+    run(tracker.set_season_watched(result.title_id, season_id(tracker, result.title_id, 1), True))
+    run(tracker.set_season_watched(result.title_id, season_id(tracker, result.title_id, 2), True))
     assert "Просмотрены сезоны: 1, 2" in format_card(run(tracker.title_card(result.title_id)))
     assert [c.watched for c in run(tracker.watchable_seasons(result.title_id))] == [True, True, False]
 
-    run(tracker.set_season_watched(result.title_id, 1, False))
+    run(tracker.set_season_watched(result.title_id, season_id(tracker, result.title_id, 1), False))
     assert "Просмотрены сезоны: 2" in format_card(run(tracker.title_card(result.title_id)))
 
 
 def test_marking_twice_is_harmless(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    run(tracker.set_season_watched(result.title_id, 3, True))
-    run(tracker.set_season_watched(result.title_id, 3, True))
+    run(tracker.set_season_watched(result.title_id, season_id(tracker, result.title_id, 3), True))
+    run(tracker.set_season_watched(result.title_id, season_id(tracker, result.title_id, 3), True))
 
     assert run(tracker.title_card(result.title_id)).seasons.watched == (3,)
 
@@ -287,21 +288,19 @@ def test_marking_an_unknown_title_or_season_is_an_error(tracker):
     result = run(tracker.add_title("series", "125988"))
 
     with pytest.raises(UnknownTitle):
-        run(tracker.set_season_watched(999, 1, True))
+        run(tracker.set_season_watched(999, season_id(tracker, result.title_id, 1), True))
     with pytest.raises(UnknownSeason):
-        run(tracker.set_season_watched(result.title_id, 9, True))
-    with pytest.raises(UnknownSeason):
-        run(tracker.set_season_watched(result.title_id, 0, True))
+        run(tracker.set_season_watched(result.title_id, 999, True))  # no such record (specials are never stored)
 
 
 def test_toggling_a_season_marks_it_and_toggling_again_takes_the_mark_off(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    marked = run(tracker.toggle_season(result.title_id, 2))
+    marked = run(tracker.toggle_season(result.title_id, season_id(tracker, result.title_id, 2)))
     assert [(s.number, s.watched) for s in marked] == [(1, False), (2, True), (3, False)]
     assert "Просмотрены сезоны: 2" in format_card(run(tracker.title_card(result.title_id)))
 
-    unmarked = run(tracker.toggle_season(result.title_id, 2))
+    unmarked = run(tracker.toggle_season(result.title_id, season_id(tracker, result.title_id, 2)))
     assert [(s.number, s.watched) for s in unmarked] == [(1, False), (2, False), (3, False)]
     assert unmarked == run(tracker.watchable_seasons(result.title_id))  # the answer is the list the bot would ask for
 
@@ -310,10 +309,10 @@ def test_toggling_a_season_recalculates_the_status(tracker):
     result = run(tracker.add_title("series", "125988"))
     assert run(tracker.list_titles())[0].status == "want"
 
-    run(tracker.toggle_season(result.title_id, 3))
+    run(tracker.toggle_season(result.title_id, season_id(tracker, result.title_id, 3)))
     assert run(tracker.list_titles())[0].status == "in_progress"
 
-    run(tracker.toggle_season(result.title_id, 3))
+    run(tracker.toggle_season(result.title_id, season_id(tracker, result.title_id, 3)))
     assert run(tracker.list_titles())[0].status == "want"
 
 
@@ -321,11 +320,9 @@ def test_toggling_an_unknown_title_or_season_is_an_error(tracker):
     result = run(tracker.add_title("series", "125988"))
 
     with pytest.raises(UnknownTitle):
-        run(tracker.toggle_season(999, 1))
+        run(tracker.toggle_season(999, season_id(tracker, result.title_id, 1)))
     with pytest.raises(UnknownSeason):
-        run(tracker.toggle_season(result.title_id, 9))
-    with pytest.raises(UnknownSeason):
-        run(tracker.toggle_season(result.title_id, 0))
+        run(tracker.toggle_season(result.title_id, 999))  # no such record (specials are never stored)
     assert all(not s.watched for s in run(tracker.watchable_seasons(result.title_id)))
 
 
@@ -333,7 +330,7 @@ def test_a_season_with_nothing_released_cannot_be_toggled(tracker):
     result = run(tracker.add_title("series", "125988"))  # season 4 is announced: one future episode, nothing out
 
     with pytest.raises(UnknownSeason):
-        run(tracker.toggle_season(result.title_id, 4))
+        run(tracker.toggle_season(result.title_id, season_id(tracker, result.title_id, 4)))
 
     assert run(tracker.title_card(result.title_id)).seasons.watched == ()
 
@@ -342,10 +339,11 @@ def test_toggling_loads_the_title_once(tracker, session_factory):
     from sqlalchemy import event
 
     result = run(tracker.add_title("series", "125988"))
+    first = season_id(tracker, result.title_id, 1)
     statements = []
     event.listen(session_factory.kw["bind"], "before_cursor_execute", lambda *args: statements.append(args[2]))
 
-    run(tracker.toggle_season(result.title_id, 1))
+    run(tracker.toggle_season(result.title_id, first))
 
     season_reads = [s for s in statements if s.lstrip().upper().startswith("SELECT") and "FROM seasons" in s]
     assert len(season_reads) <= 2, season_reads  # one load of the seasons for the status, one for the answer at most
@@ -354,7 +352,7 @@ def test_toggling_loads_the_title_once(tracker, session_factory):
 def test_marking_a_season_while_others_are_unwatched_makes_the_series_in_progress(tracker):
     result = run(tracker.add_title("series", "125988"))
 
-    run(tracker.set_season_watched(result.title_id, 3, True))
+    run(tracker.set_season_watched(result.title_id, season_id(tracker, result.title_id, 3), True))
 
     assert run(tracker.list_titles())[0].status == "in_progress"  # the other seasons are still unwatched; the automatic statuses are in test_tracker_series_statuses
 

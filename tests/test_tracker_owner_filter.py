@@ -37,6 +37,8 @@ CALLBACKS = [
     "tdel:n:1",
     "tdm:open",
     "tdm:abc:go",
+    "tsid:1:1",
+    "tsid:1:done",
     "tsea:1:1",
 ]
 

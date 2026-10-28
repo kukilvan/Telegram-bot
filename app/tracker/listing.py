@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select
 
+from app.tracker import scores
 from app.tracker import seasons as season_logic
 from app.tracker import sequel_events, storage
 from app.tracker.cards import MovieLine, SequelsView, TitleCard, sequel_view
 from app.tracker.context import CoreContext
 from app.tracker.kinds import KINDS, is_seasonal
-from app.tracker.models import MovieRecord, SourceSnapshot, Title, TitleKind, TitleStatus
+from app.tracker.models import MovieRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import ListOrder, Overview, TitleSummary
 from app.tracker.settings_store import SettingsStore
 from app.tracker.sources.dates import parse_date
@@ -24,6 +25,14 @@ if TYPE_CHECKING:
 def _name_key(name: str) -> str:
     """Case does not matter and «ё» is «е»; the code points then put digits first, Latin letters next, Cyrillic last."""
     return name.casefold().replace("ё", "е")
+
+
+def _score(title: Title, records: list[SeasonRecord]) -> scores.ScoreView | None:
+    """The score of the title as the card shows it; None while the title cannot be scored. Only the scores of the
+    marked seasons count: a season without its mark keeps its score unseen."""
+    if not storage.scorable(title, any(r.watched for r in records)):
+        return None
+    return scores.title_view(title.score, (r.score for r in records if r.watched and r.score is not None))
 
 
 class Listing:
@@ -83,12 +92,16 @@ class Listing:
             state = storage.own_state(session, title_id)
             seasons_view = None
             season_rows = ()
-            if is_seasonal(title.kind):
-                loaded = storage.load_seasons(session, title_id)
+            seasonal = is_seasonal(title.kind)
+            loaded = storage.load_seasons(session, title_id) if seasonal else []
+            if seasonal:
                 watched = {record.number for record, _ in loaded if record.watched}
+                marks = {
+                    record.number: season_logic.SeasonMark(record.id, record.watched, record.score) for record, _ in loaded
+                }
                 now, gap = self.ctx.now(), self.settings.part_gap(session)
                 seasons_view = season_logic.summarize((season for _, season in loaded), watched, now, gap)
-                season_rows = season_logic.rows((season for _, season in loaded), watched, now, gap)
+                season_rows = season_logic.rows((season for _, season in loaded), marks, now, gap)
             movies = session.scalars(
                 select(MovieRecord).where(MovieRecord.title_id == title_id).order_by(MovieRecord.id)
             )
@@ -109,6 +122,7 @@ class Listing:
                 overview=title.overview or "",
                 season_rows=season_rows,
                 sequels=self._sequels(session, title),
+                score=_score(title, [record for record, _ in loaded]),
             )
 
     def _sequels(self, session, title: Title) -> SequelsView | None:

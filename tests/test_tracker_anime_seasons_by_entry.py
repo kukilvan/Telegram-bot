@@ -12,13 +12,14 @@ import pytest
 from sqlalchemy import select
 
 from anime_fakes import FakeAniList, FakeShikimori
-from app.tracker.core import Tracker
+from app.tracker.core import Tracker, UnknownSeason
 from app.tracker.db import create_session_factory
 from app.tracker.models import EpisodeRecord, Event, PartRecord, SeasonRecord, Title
 from app.tracker.seasons import Episode, Season
 from app.tracker.series_events import ShowState, detect_events
 from app.tracker import anime_events
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
+from season_helpers import season_id
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)  # a Saturday
 A, B, C, X, D = "101", "102", "103", "104", "105"
@@ -136,8 +137,8 @@ def test_an_entry_inserted_in_the_middle_moves_the_season_after_it_with_its_mark
 ):
     link(shikimori, A, C)
     title = add(tracker, A)
-    run(tracker.toggle_season(title, 1))
-    run(tracker.toggle_season(title, 2))
+    run(tracker.toggle_season(title, season_id(tracker, title, 1)))
+    run(tracker.toggle_season(title, season_id(tracker, title, 2)))
     before = seasons_in_db(session_factory)
     assert status(session_factory) == "waiting"  # everything out is marked
     link(shikimori, A, X)  # Shikimori ties an old finished entry in between
@@ -172,7 +173,7 @@ def test_an_entry_that_stops_being_a_season_lets_the_next_one_take_its_number_an
 ):
     link(shikimori, A, B, C)
     title = add(tracker, A)
-    run(tracker.toggle_season(title, 1))
+    run(tracker.toggle_season(title, season_id(tracker, title, 1)))
     with session_factory.begin() as s:  # the owner has been told about episode 5 of season 2 long ago
         s.add(Event(type="series_episode_out", title_id=title, payload={}, dedup_key=f"anime:{title}:s2:e5:out",
                     detected_at=T0))
@@ -200,7 +201,8 @@ def test_a_season_that_becomes_part_two_of_the_one_before_is_dissolved_and_its_e
 ):
     link(shikimori, A, B)
     title = add(tracker, A)
-    run(tracker.toggle_season(title, 2))
+    run(tracker.toggle_season(title, season_id(tracker, title, 2)))
+    run(tracker.set_season_score(title, season_id(tracker, title, 2), 28))
     before = seasons_in_db(session_factory)
     shikimori.by_id[B]["name"] = "Beta Part 2"
 
@@ -215,7 +217,48 @@ def test_a_season_that_becomes_part_two_of_the_one_before_is_dissolved_and_its_e
         parts = [(p.number, p.first_episode, p.shikimori_id) for p in s.scalars(select(PartRecord).order_by(PartRecord.number))]
     assert parts == [(1, 1, A), (2, 13, B)]
     [warning] = [r.getMessage() for r in caplog.records if "dissolved" in r.getMessage()]
-    assert f"season 2, entry {B}, watched mark: True" in warning
+    assert f"season 2, entry {B}, watched mark: True, score: 28" in warning  # the score goes with the season
+
+
+# --- KI-27: a card or a button opened before the seasons were renumbered ------------------------
+
+
+def test_a_mark_and_a_score_sent_with_the_record_of_a_season_reach_it_after_it_moved_to_another_number(
+    tracker, shikimori, clock, session_factory
+):
+    link(shikimori, A, C)
+    title = add(tracker, A)
+    gamma = season_id(tracker, title, 2)  # the card shows Gamma as season 2
+    link(shikimori, A, X)
+    link(shikimori, X, C)
+    unlink_chain_edge(shikimori, A, C)
+    poll(tracker, clock, hours=12)  # Xi is season 2 now, Gamma season 3
+
+    run(tracker.set_season_watched(title, gamma, True))
+    run(tracker.set_season_score(title, gamma, 29))
+
+    rows = {r.number: (r.id, r.watched, r.score) for r in run(tracker.title_card(title)).season_rows}
+    assert rows[3] == (gamma, True, 29)
+    assert rows[2][1:] == (False, None)  # the season the old number points at now is left alone
+    assert [s.watched for s in run(tracker.toggle_season(title, gamma))] == [False, False, False]
+
+
+def test_a_season_that_dissolved_after_the_card_was_opened_is_an_unknown_season(
+    tracker, shikimori, clock, session_factory
+):
+    link(shikimori, A, B, C)
+    title = add(tracker, A)
+    beta = season_id(tracker, title, 2)
+    shikimori.by_id[B]["duration"] = 5  # a short now, not a season
+    poll(tracker, clock, hours=12)
+
+    with pytest.raises(UnknownSeason):
+        run(tracker.set_season_watched(title, beta, True))
+    with pytest.raises(UnknownSeason):
+        run(tracker.toggle_season(title, beta))
+    with pytest.raises(UnknownSeason):
+        run(tracker.set_season_score(title, beta, 27))
+    assert all(not r.watched for r in run(tracker.title_card(title)).season_rows)
 
 
 # --- an entry the title never had -----------------------------------------------------------------

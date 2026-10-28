@@ -239,7 +239,7 @@ def test_the_old_buttons_of_a_deleted_title_say_it_is_gone(tracker, replies):
     chat.press(callback_of(ask_to_delete(chat, tracker, replies, title_id), "Да, удалить"))
     replies.clear()
 
-    for data in (f"tact:watched:{title_id}", f"tact:card:{title_id}", f"tact:seasons:{title_id}", f"tsea:{title_id}:1"):
+    for data in (f"tact:watched:{title_id}", f"tact:card:{title_id}", f"tact:seasons:{title_id}", f"tsid:{title_id}:1"):
         chat.press(data)
 
     assert callbacks(replies) == ["Этого тайтла больше нет в списке."] * 4

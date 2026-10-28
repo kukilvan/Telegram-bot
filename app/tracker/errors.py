@@ -23,4 +23,10 @@ class SourceFailed(Exception):
 
 
 class UnknownSeason(Exception):
-    """The title has no season with this number (specials, season 0, are not seasons)."""
+    """The title has no such season (a season of another title, one the source took away, or one that cannot be
+    marked because nothing of it is out)."""
+
+
+class CannotScore(Exception):
+    """Only what is watched gets a score: a film in the archive, a season with its mark, a series with a marked season
+    or in the archive."""

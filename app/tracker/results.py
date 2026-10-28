@@ -14,8 +14,10 @@ class AddResult:
 
 
 @dataclass(frozen=True)
-class WatchedResult:
-    changed: bool  # False: the movie was already watched
+class ChangeResult:
+    """What a press on a mark or a score did."""
+
+    changed: bool  # False: the press changed nothing
 
 
 @dataclass(frozen=True)
@@ -54,6 +56,7 @@ class Overview:
 class WatchableSeason:
     """A season the owner can mark as watched: it has at least one released episode."""
 
+    id: int  # the record of the season: what a mark is sent with (the number of an anime season may change)
     number: int
     watched: bool
 

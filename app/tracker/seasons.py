@@ -15,7 +15,7 @@ An anime season is the exception: its parts are separate entries of the source (
 not worked out, and the threshold does not apply to it (a season of one entry is one part, whatever its dates).
 """
 
-from collections.abc import Collection, Iterable
+from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
@@ -204,32 +204,47 @@ def summarize(
 
 
 @dataclass(frozen=True)
-class SeasonRow:
-    """One season as the web card lists it: the owner's mark, and either how far the season has got or its announcement."""
+class SeasonMark:
+    """What the owner keeps on a stored season: its record, the «watched» mark and the score (None: not scored)."""
 
+    id: int
+    watched: bool
+    score: int | None = None
+
+
+@dataclass(frozen=True)
+class SeasonRow:
+    """One season as the web card lists it: the owner's mark and score, and either how far the season has got or its
+    announcement."""
+
+    id: int  # the record of the season: what its mark and score are sent with (the number of an anime season may change)
     number: int
     name: str
     watched: bool
     can_mark: bool  # something is out: only such a season can be marked as watched
     progress: SeasonProgress | None  # a season with something out: the current or the last released part
     announcement: SeasonAnnouncement | None  # a season with nothing out
+    score: int | None = None  # shown only with the mark: a season without it has none, whatever is stored
 
 
 def rows(
-    seasons: Iterable[Season], watched: Collection[int], now: datetime, gap: timedelta = DEFAULT_PART_GAP
+    seasons: Iterable[Season], marks: Mapping[int, SeasonMark], now: datetime, gap: timedelta = DEFAULT_PART_GAP
 ) -> tuple[SeasonRow, ...]:
-    """A row for every season from the first, in order."""
+    """A row for every season from the first, in order; `marks` holds the owner's mark of every season by its number."""
     result = []
     for season in sorted((s for s in seasons if s.number >= 1), key=lambda s: s.number):
         out = season.released(now) > 0
+        mark = marks[season.number]
         result.append(
             SeasonRow(
+                id=mark.id,
                 number=season.number,
                 name=season.name,
-                watched=season.number in watched,
+                watched=mark.watched,
                 can_mark=out,
                 progress=_progress(season, gap, now) if out else None,
                 announcement=None if out else SeasonAnnouncement(season.number, season.first_air_at()),
+                score=mark.score if mark.watched else None,
             )
         )
     return tuple(result)

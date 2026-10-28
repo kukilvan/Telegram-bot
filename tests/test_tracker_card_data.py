@@ -18,6 +18,7 @@ from app.tracker.seasons import Episode, Season
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot, Suggestion, parse_show
+from season_helpers import season_id
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "tmdb"
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -119,20 +120,20 @@ def test_a_season_with_nothing_out_cannot_be_marked_or_unmarked(tracker):
     title = add(tracker, "series", "125988")  # season 4 is announced
 
     with pytest.raises(UnknownSeason):
-        run(tracker.set_season_watched(title, 4, True))
+        run(tracker.set_season_watched(title, season_id(tracker, title, 4), True))
     with pytest.raises(UnknownSeason):
-        run(tracker.set_season_watched(title, 4, False))
+        run(tracker.set_season_watched(title, season_id(tracker, title, 4), False))
     assert card(tracker, title).seasons.watched == ()
 
 
 def test_marking_and_unmarking_ask_for_a_state_so_repeating_changes_nothing(tracker):
     title = add(tracker, "series", "125988")
 
-    run(tracker.set_season_watched(title, 1, True))
-    run(tracker.set_season_watched(title, 1, True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), True))
     assert card(tracker, title).seasons.watched == (1,)
-    run(tracker.set_season_watched(title, 1, False))
-    run(tracker.set_season_watched(title, 1, False))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), False))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), False))
     assert card(tracker, title).seasons.watched == ()
 
 
@@ -158,7 +159,7 @@ def test_mark_all_released_recounts_the_status(tracker):
 
 def test_mark_all_released_keeps_the_marks_there_are_and_a_repeat_changes_nothing(tracker):
     title = add(tracker, "series", "125988")
-    run(tracker.set_season_watched(title, 2, True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 2), True))
 
     first = run(tracker.mark_all_released(title))
     second = run(tracker.mark_all_released(title))
@@ -186,7 +187,7 @@ def test_mark_all_released_of_a_missing_title_is_unknown_title(tracker):
 
 def test_the_card_has_a_row_per_season_with_marks_and_the_announcement(tracker):
     title = add(tracker, "series", "125988")
-    run(tracker.set_season_watched(title, 1, True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), True))
 
     rows = card(tracker, title).season_rows
 
@@ -222,7 +223,7 @@ def test_a_season_that_airs_in_parts_shows_the_current_part_in_its_row():
         Episode(7 + n, datetime(2026, 9, 14) + timedelta(weeks=n)) for n in range(6)
     ))
 
-    [row] = seasons.rows([parted], [], NOW, gap)
+    [row] = seasons.rows([parted], {1: seasons.SeasonMark(7, False)}, NOW, gap)
 
     assert row.progress.part == 2
     assert cards.season_row_text(row).startswith("Сезон 1, часть 2: вышло 6 из 6")
@@ -231,8 +232,11 @@ def test_a_season_that_airs_in_parts_shows_the_current_part_in_its_row():
 def test_rows_skip_specials_and_come_in_order():
     given = [Season(2, "Б", 4, weekly("2026-01-05", 4)), Season(0, "Спешлы", 2, ()), Season(1, "А", 4, weekly("2025-01-05", 4))]
 
-    assert [r.number for r in seasons.rows(given, {1}, NOW)] == [1, 2]
-    assert [r.watched for r in seasons.rows(given, {1}, NOW)] == [True, False]
+    marks = {1: seasons.SeasonMark(11, True, 27), 2: seasons.SeasonMark(12, False, 28)}
+
+    assert [(r.id, r.number) for r in seasons.rows(given, marks, NOW)] == [(11, 1), (12, 2)]
+    assert [r.watched for r in seasons.rows(given, marks, NOW)] == [True, False]
+    assert [r.score for r in seasons.rows(given, marks, NOW)] == [27, None]  # no mark: the stored score is not shown
 
 
 def test_a_season_label_names_the_season_only_when_it_has_a_name_of_its_own():

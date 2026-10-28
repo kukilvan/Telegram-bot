@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind, TitleStatus
+from app.tracker.scores import ScoreView
 from app.tracker.seasons import RELEASED, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
 
 if TYPE_CHECKING:
@@ -86,6 +87,7 @@ class TitleCard:
     overview: str = ""  # the description the source gave; empty for an anime
     season_rows: tuple[SeasonRow, ...] = ()  # series and anime: a row per season, for the web
     sequels: SequelsView | None = None  # a watched movie whose sequels are looked for; for the web
+    score: ScoreView | None = None  # None: the title cannot be scored now (2.3 of the spec of part 5.3), no field
 
 
 def format_date(value: date | None) -> str:

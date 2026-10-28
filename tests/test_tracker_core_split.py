@@ -18,7 +18,10 @@ from app.tracker.pollers.base import Poller
 TRACKER = Path(core.__file__).parent
 MODULES = ("context", "settings_store", "storage", "queue", "titles", "statuses", "listing", "polling", "delivery_service", "test_samples", "core")
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
-PURE = ("dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures", "cards", "kinds")
+PURE = (
+    "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
+    "cards", "kinds", "scores",
+)
 MAX_LINES = 400
 
 
@@ -96,15 +99,18 @@ def test_the_pure_modules_know_nothing_of_the_database():
 def test_the_public_names_of_the_core_stay_importable_from_the_facade():
     for name in (
         "Tracker", "TestSample", "TitleNotFound", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
-        "TitleSummary", "WatchableSeason", "AddResult", "DeleteResult", "WatchedResult", "SummaryResult",
-        "TestEventResult", "DeliveryReport", "PollReport",
+        "TitleSummary", "WatchableSeason", "AddResult", "DeleteResult", "ChangeResult", "SummaryResult",
+        "TestEventResult", "DeliveryReport", "PollReport", "CannotScore", "ScoreView",
     ):
         assert hasattr(core, name), name
 
 
 def test_titles_keeps_searching_adding_deleting_and_following_while_marks_and_rows_have_their_own_modules():
     moved = {
-        "statuses": ("watchable_seasons", "toggle_season", "set_season_watched", "mark_all_released", "mark_watched"),
+        "statuses": (
+            "watchable_seasons", "toggle_season", "set_season_watched", "mark_all_released", "mark_watched",
+            "set_title_score", "set_season_score",
+        ),
         "listing": ("list_titles", "overview", "title_card"),
     }
     titles = (TRACKER / "titles.py").read_text(encoding="utf-8")

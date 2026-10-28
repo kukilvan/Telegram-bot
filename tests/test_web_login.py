@@ -524,4 +524,4 @@ def test_the_glossary_names_the_search_and_settings_screens():
 
     assert "**Поиск**:" in glossary and "В коде: `search`." in glossary
     assert "**Настройки**:" in glossary and "В коде: `settings`." in glossary
-    assert "В коде: `feed`." in glossary and "`feed` (в коде пока нет)" not in glossary
+    assert "В коде: `feed`" in glossary and "`feed` (в коде пока нет)" not in glossary

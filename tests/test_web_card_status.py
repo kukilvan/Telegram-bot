@@ -24,6 +24,7 @@ from app.tracker.sources.tmdb_sequels import CollectionPart, SequelSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot
 from app.web import create_web_app
 from app.web.posters import image_sources
+from season_helpers import season_id
 
 PASSWORD = "correct horse battery"
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -214,7 +215,7 @@ def test_a_dropped_series_keeps_its_check_boxes(tracker, client):
     series = add(tracker, "series", "10")
     run(tracker.mark_dropped(series))
 
-    answer = client.post(f"/titles/{series}/seasons/1", data={"watched": "1"}, headers=HTMX)
+    answer = client.post(f"/titles/{series}/seasons/{season_id(tracker, series, 1)}", data={"watched": "1"}, headers=HTMX)
 
     assert 'name="watched" value="1" checked>' in answer.text and "Статус:</span> Бросил" in answer.text
 
@@ -332,7 +333,7 @@ def test_restore_of_a_watched_film_makes_it_wanted_and_takes_the_sequels_block_a
 
 def test_restore_of_a_dropped_series_gives_the_status_of_its_marks(tracker, client):
     series = add(tracker, "series", "10")
-    run(tracker.set_season_watched(series, 1, True))
+    run(tracker.set_season_watched(series, season_id(tracker, series, 1), True))
     run(tracker.mark_dropped(series))
 
     answer = client.post(f"/titles/{series}/restore", headers=HTMX)

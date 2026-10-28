@@ -16,6 +16,7 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_series import SeriesSnapshot, Suggestion
+from season_helpers import season_id
 
 OWNER, STRANGER = 42, 7
 NOW = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -317,8 +318,47 @@ def test_the_series_card_has_no_watched_button(tracker, replies):
     assert not any("Посмотрел" == b.text.split(" ", 1)[-1] for b in card_message[2])
 
 
+def test_a_season_button_holds_the_record_of_the_season_not_its_number(tracker, replies):
+    chat = Chat_(tracker)
+    add_series(chat, replies, pick="Новичок")  # its only season takes the first record, and nothing of it is out
+    add_series(chat, replies)
+    silo = run(tracker.list_titles())[-1].id
+    buttons = last_message(replies)[2]
+    first = season_id(tracker, silo, 1)
+    assert first != 1 and callback_of(buttons, "Сезон 1") == f"tsid:{silo}:{first}"
+
+    chat.press(callback_of(buttons, "Сезон 1"))
+
+    assert [(s.number, s.watched) for s in run(tracker.watchable_seasons(silo))][0] == (1, True)
+
+
+def test_a_season_button_with_a_season_of_another_title_changes_nothing(tracker, replies):
+    chat = Chat_(tracker)
+    add_series(chat, replies, pick="Новичок")
+    add_series(chat, replies)
+    newcomer, silo = (t.id for t in run(tracker.list_titles()))
+
+    chat.press(f"tsid:{silo}:{season_id(tracker, newcomer, 1)}")
+
+    assert replies[-1] == ("callback", "Такого сезона нет или он ещё не вышел.", None)
+    assert all(not s.watched for s in run(tracker.watchable_seasons(silo)))
+
+
+@pytest.mark.parametrize("data", ["tsea:1:1", "tsea:1:done", "tsea:1:9", "tsea:"])
+def test_an_old_season_button_says_it_is_out_of_date_and_changes_nothing(tracker, replies, data):
+    """Such a button holds the number of the season, which an anime season may have lost since (KI-27)."""
+    chat = Chat_(tracker)
+    add_series(chat, replies)
+    replies.clear()
+
+    chat.press(data)
+
+    assert replies == [("callback", "Эта кнопка устарела — откройте карточку заново", None)]
+    assert all(not s.watched for s in run(tracker.watchable_seasons(1)))
+
+
 def test_marking_a_removed_title_is_answered_not_crashed(tracker, replies):
-    Chat_(tracker).press("tsea:999:1")
+    Chat_(tracker).press("tsid:999:1")
 
     assert replies[-1][0] == "callback" and replies[-1][1]
 
@@ -327,13 +367,13 @@ def test_marking_a_season_that_does_not_exist_is_answered_not_crashed(tracker, r
     chat = Chat_(tracker)
     add_series(chat, replies)
 
-    chat.press("tsea:1:9")
+    chat.press("tsid:1:9")
 
     assert replies[-1][0] == "callback" and replies[-1][1]
     assert all(not s.watched for s in run(tracker.watchable_seasons(1)))
 
 
-@pytest.mark.parametrize("data", ["tsea:1:oops", "tsea:x:1", "tsea:"])
+@pytest.mark.parametrize("data", ["tsid:1:oops", "tsid:x:1", "tsid:"])
 def test_broken_season_buttons_are_answered_not_crashed(tracker, replies, data):
     Chat_(tracker).press(data)
 
@@ -352,6 +392,7 @@ def test_stranger_cannot_add_or_mark_anything(tracker, series, replies, with_mid
 
     stranger.press("tadd:series")
     stranger.press("tpick:series:201")
+    stranger.press("tsid:1:1")
     stranger.press("tsea:1:1")
     stranger.press("tact:seasons:1")
 

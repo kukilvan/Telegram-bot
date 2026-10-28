@@ -17,6 +17,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.models import Event, Title
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_series import SeriesSnapshot
+from season_helpers import season_id
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)  # a Saturday
 
@@ -110,7 +111,7 @@ def add(tracker, source, snapshot):
 
 def mark(tracker, title_id, *numbers, watched=True):
     for number in numbers:
-        run(tracker.set_season_watched(title_id, number, watched))
+        run(tracker.set_season_watched(title_id, season_id(tracker, title_id, number), watched))
 
 
 def status(tracker, title_id):

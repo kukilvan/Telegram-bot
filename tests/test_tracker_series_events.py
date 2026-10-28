@@ -19,6 +19,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.models import EpisodeRecord, Event, SourceSnapshot
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_series import SeriesSnapshot, parse_show
+from season_helpers import season_id
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "tmdb"
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)  # a Saturday
@@ -538,7 +539,7 @@ def test_an_episode_that_lost_its_date_in_the_answer_keeps_it(tracker, source, c
 
 def test_the_owners_watched_marks_survive_a_poll_and_new_episodes_are_stored(tracker, source, clock, session_factory):
     title_id = add(tracker, source, airing())
-    run(tracker.set_season_watched(title_id, 1, True))
+    run(tracker.set_season_watched(title_id, season_id(tracker, title_id, 1), True))
     source.update(show("200", Season(1, "Сезон 1", 12, weekly("2026-09-07", 12)), name="Идущий"))
 
     poll_and_deliver(tracker, clock, days=2)

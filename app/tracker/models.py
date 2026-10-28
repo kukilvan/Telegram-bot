@@ -70,6 +70,9 @@ class Title(TrackerBase):
     failure_notified_at: Mapped[datetime | None] = mapped_column(DateTime)  # last «could not check» notice; None: never
     # the last «Вернуть в список»; None: never brought back. A check of the own source older than this is the baseline
     restored_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # the owner's score in thirds of a point (`scores`): a film's only one, a series' own one over the average of its
+    # seasons; None: not set. It stays when the status changes, even while it is not shown
+    score: Mapped[int | None] = mapped_column(Integer)
 
 
 class ExternalId(TrackerBase):
@@ -101,6 +104,7 @@ class SeasonRecord(TrackerBase):
     name: Mapped[str] = mapped_column(String(255))
     episode_count: Mapped[int | None] = mapped_column(Integer)  # announced by the source; None: unknown
     watched: Mapped[bool] = mapped_column(Boolean)  # the status of a season (announced / airing / released) is not stored: it follows the clock
+    score: Mapped[int | None] = mapped_column(Integer)  # in thirds of a point; None: not set. Kept, unseen, without the mark
 
 
 class EpisodeRecord(TrackerBase):

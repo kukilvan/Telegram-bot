@@ -12,7 +12,7 @@ from app.tracker import progress, series_events
 from app.tracker import seasons as season_logic
 from app.tracker.context import PRIMARY_ROLE
 from app.tracker.kinds import is_seasonal
-from app.tracker.models import EpisodeRecord, ExternalId, PartRecord, SeasonRecord, SourceSnapshot, Title
+from app.tracker.models import ARCHIVE_STATUSES, EpisodeRecord, ExternalId, PartRecord, SeasonRecord, SourceSnapshot, Title
 
 
 def store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> dict[int, SeasonRecord]:
@@ -54,9 +54,9 @@ def relayout_records(
     session, title_id: int, renumber: Mapping[int, int], dissolved: Mapping[int, str | None]
 ) -> None:
     """Bring the stored seasons to the numbering the source has now. A season that starts no season any more is deleted
-    with its episodes and parts (the database cascades), its mark with it, and the log says so. The others keep their
-    record and their mark and get the new number, through temporary ones: no two seasons of a title may share a number
-    even for a moment."""
+    with its episodes and parts (the database cascades), its mark and score with it, and the log says so. The others
+    keep their record, their mark and their score and get the new number, through temporary ones: no two seasons of a
+    title may share a number even for a moment."""
     records = {r.number: r for r in session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id))}
     name = session.get(Title, title_id).name
     for number, entry in dissolved.items():
@@ -64,7 +64,8 @@ def relayout_records(
         if record is None:
             continue
         logging.warning(
-            "Anime season dissolved: title %r, season %s, entry %s, watched mark: %s", name, number, entry, record.watched
+            "Anime season dissolved: title %r, season %s, entry %s, watched mark: %s, score: %s",
+            name, number, entry, record.watched, record.score,
         )
         session.delete(record)
     session.flush()
@@ -99,6 +100,18 @@ def sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season])
         for number, row in stored.items():
             if number not in listed:
                 session.delete(row)
+
+
+def scorable(title: Title, any_marked: bool) -> bool:
+    """Whether the title can be scored, which is also whether its score is shown: a title in the archive, or a series
+    or an anime with a marked season (`any_marked`). A score stays in the database when this stops being true."""
+    return title.status in ARCHIVE_STATUSES or (is_seasonal(title.kind) and any_marked)
+
+
+def any_marked(session, title_id: int) -> bool:
+    """Whether a season of the title has the «watched» mark."""
+    marked = select(SeasonRecord.id).where(SeasonRecord.title_id == title_id, SeasonRecord.watched.is_(True))
+    return session.scalar(select(marked.exists()))
 
 
 def own_snapshot(session, title_id: int) -> SourceSnapshot | None:

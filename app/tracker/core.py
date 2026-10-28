@@ -20,13 +20,16 @@ from app.tracker import delivery
 from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
-from app.tracker.errors import SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
+from app.tracker.errors import (
+    CannotScore, SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle,
+)
 from app.tracker.listing import Listing
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
     AddResult,
+    ChangeResult,
     DeleteResult,
     DeliveryReport,
     ListOrder,
@@ -36,17 +39,18 @@ from app.tracker.results import (
     TestEventResult,
     TitleSummary,
     WatchableSeason,
-    WatchedResult,
 )
+from app.tracker.scores import ScoreView
 from app.tracker.settings_store import SettingsStore
 from app.tracker.statuses import Statuses
 from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "ListOrder", "Overview", "PollReport", "Sender", "SourceFailed",
-    "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent",
-    "UnknownKind", "UnknownSeason", "UnknownTitle", "WatchableSeason", "WatchedResult",
+    "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "ListOrder", "Overview",
+    "PollReport", "ScoreView", "Sender", "SourceFailed", "SummaryResult", "TestEventResult", "TestSample", "TitleCard",
+    "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
+    "WatchableSeason",
 ]
 
 
@@ -136,31 +140,41 @@ class Tracker:
         return await self._titles.add_title(kind, external_id)
 
     async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
-        """Seasons that can be marked as watched, with their marks. A season with nothing released cannot."""
+        """Seasons that can be marked as watched, with their marks and records. A season with nothing released cannot."""
         return await self._statuses.watchable_seasons(title_id)
 
-    async def set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
-        """Mark a season as watched, or take the mark off (the state asked for, not a switch). Marking twice changes
-        nothing; a season with nothing released is an UnknownSeason."""
-        await self._statuses.set_season_watched(title_id, number, watched)
+    async def set_season_watched(self, title_id: int, season_id: int, watched: bool) -> None:
+        """Mark a season (by its record, `SeasonRow.id`) as watched, or take the mark off (the state asked for, not a
+        switch). Marking twice changes nothing; a season with nothing released or of another title is an UnknownSeason."""
+        await self._statuses.set_season_watched(title_id, season_id, watched)
 
-    async def mark_all_released(self, title_id: int) -> WatchedResult:
+    async def mark_all_released(self, title_id: int) -> ChangeResult:
         """«Отметить все вышедшие»: every season with a released episode gets the mark. Returns whether anything changed."""
         return await self._statuses.mark_all_released(title_id)
 
-    async def toggle_season(self, title_id: int, number: int) -> list[WatchableSeason]:
-        """The button of a season: mark it, or take the mark off. Returns the seasons with their marks as they are now."""
-        return await self._statuses.toggle_season(title_id, number)
+    async def toggle_season(self, title_id: int, season_id: int) -> list[WatchableSeason]:
+        """The button of a season (by its record): mark it, or take the mark off. Returns the seasons with their marks
+        as they are now."""
+        return await self._statuses.toggle_season(title_id, season_id)
 
-    async def mark_watched(self, title_id: int) -> WatchedResult:
+    async def set_title_score(self, title_id: int, score: int | None) -> ChangeResult:
+        """The owner's own score of a title, or None to take it off (a series then shows the average of its seasons).
+        Only what is watched gets one: CannotScore otherwise. ValueError for a value off the scale (`scores.SCALE`)."""
+        return await self._statuses.set_title_score(title_id, score)
+
+    async def set_season_score(self, title_id: int, season_id: int, score: int | None) -> ChangeResult:
+        """The score of a season (by its record), or None to take it off. Only a season with its mark gets one."""
+        return await self._statuses.set_season_score(title_id, season_id, score)
+
+    async def mark_watched(self, title_id: int) -> ChangeResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
         return await self._statuses.mark_watched(title_id)
 
-    async def mark_dropped(self, title_id: int) -> WatchedResult:
+    async def mark_dropped(self, title_id: int) -> ChangeResult:
         """«Бросил»: the title goes to the archive, is no longer checked, and its messages not sent yet are dropped."""
         return await self._statuses.mark_dropped(title_id)
 
-    async def restore_title(self, title_id: int) -> WatchedResult:
+    async def restore_title(self, title_id: int) -> ChangeResult:
         """«Вернуть в список»: the title leaves the archive; its first check after that records what it finds silently."""
         return await self._statuses.restore_title(title_id)
 

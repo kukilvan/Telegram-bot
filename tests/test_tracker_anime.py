@@ -18,6 +18,7 @@ from app.tracker.core import SourceFailed, Tracker, TitleNotFound
 from app.tracker.db import create_session_factory
 from app.tracker.models import ExternalId, MovieRecord, PartRecord, SeasonRecord, SourceSnapshot, Title
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
+from season_helpers import season_id
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 ONE_PIECE, JJK, KUSURIYA, ABYSS = "21", "40748", "54492", "34599"
@@ -298,7 +299,7 @@ def test_marking_every_released_season_makes_the_title_wait_for_the_next_one(tra
     title = add(tracker, JJK).title_id
 
     for number in (1, 2, 3):
-        run(tracker.set_season_watched(title, number, True))
+        run(tracker.set_season_watched(title, season_id(tracker, title, number), True))
 
     assert run(tracker.title_card(title)).status == "waiting"
     assert "Просмотрены сезоны: 1, 2, 3" in format_card(run(tracker.title_card(title)))
@@ -307,8 +308,8 @@ def test_marking_every_released_season_makes_the_title_wait_for_the_next_one(tra
 def test_some_seasons_marked_make_the_anime_in_progress(tracker):
     title = add(tracker, KUSURIYA).title_id
 
-    run(tracker.set_season_watched(title, 1, True))
-    run(tracker.set_season_watched(title, 2, True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 1), True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 2), True))
 
     assert run(tracker.title_card(title)).status == "in_progress"  # season 3 is on air and not watched
 
@@ -316,6 +317,6 @@ def test_some_seasons_marked_make_the_anime_in_progress(tracker):
 def test_the_mark_belongs_to_the_season_and_covers_its_parts(tracker):
     title = add(tracker, KUSURIYA).title_id
 
-    run(tracker.set_season_watched(title, 3, True))
+    run(tracker.set_season_watched(title, season_id(tracker, title, 3), True))
 
     assert [(s.number, s.watched) for s in run(tracker.watchable_seasons(title))] == [(1, False), (2, False), (3, True)]

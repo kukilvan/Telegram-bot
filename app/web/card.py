@@ -27,7 +27,7 @@ router = APIRouter()
 
 
 class SeasonLine(NamedTuple):
-    number: int
+    id: int  # the record of the season: the mark is sent with it, so a renumbered anime season keeps its mark
     text: str
     watched: bool
     can_mark: bool  # a season with nothing out has no mark
@@ -92,8 +92,8 @@ def _view(request: Request, card: TitleCard, notice: str = "", sequel_error: str
     seasonal = is_seasonal(card.kind)
     seasons = [
         SeasonLine(
-            r.number, season_row_text(r, card.tz), r.watched, r.can_mark,
-            _address(request, "card_season", title_id=card.id, number=r.number),
+            r.id, season_row_text(r, card.tz), r.watched, r.can_mark,
+            _address(request, "card_season", title_id=card.id, season_id=r.id),
         )
         for r in card.season_rows
     ]
@@ -159,12 +159,13 @@ async def show_card(request: Request, title_id: int) -> Response:
     return await pages.page(request, "card.html", current=_address(request, "list"), **_view(request, card))
 
 
-@router.post("/titles/{title_id:int}/seasons/{number:int}", name="card_season")
+@router.post("/titles/{title_id:int}/seasons/{season_id:int}", name="card_season")
 @pages.guarded
-async def mark_season(request: Request, title_id: int, number: int, watched: str = Form("")) -> Response:
-    """The check mark of a season: the state it is in after the press (the box is checked or not), not a switch, so
-    a double click or a second tab gives what the screen shows."""
-    return await _press(request, title_id, lambda tracker: tracker.set_season_watched(title_id, number, watched == "1"))
+async def mark_season(request: Request, title_id: int, season_id: int, watched: str = Form("")) -> Response:
+    """The check mark of a season, by the record of the season (not its number, which an anime season may lose): the
+    state it is in after the press (the box is checked or not), not a switch, so a double click or a second tab gives
+    what the screen shows."""
+    return await _press(request, title_id, lambda tracker: tracker.set_season_watched(title_id, season_id, watched == "1"))
 
 
 @router.post("/titles/{title_id:int}/released-watched", name="card_released_watched")

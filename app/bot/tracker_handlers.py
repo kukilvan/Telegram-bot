@@ -53,7 +53,11 @@ _ADD_KIND_PREFIX = "tadd:"
 _PICK_PREFIX = "tpick:"
 _CARD_PREFIX = "tcard:"
 _ACTION_PREFIX = "tact:"  # tact:<action name>:<number>, see app.tracker.actions
-_SEASON_PREFIX = "tsea:"  # tsea:<title id>:<season number> flips a mark, tsea:<title id>:done closes the choice
+_SEASON_PREFIX = "tsid:"  # tsid:<title id>:<season record id> flips a mark, tsid:<title id>:done closes the choice
+# the buttons sent before the seasons were known by their records: tsea:<title id>:<season number> (or :done). The number
+# of an anime season may have changed since, so such a button only says it is out of date
+_OLD_SEASON_PREFIX = "tsea:"
+_STALE_SEASON_BUTTON = "Эта кнопка устарела — откройте карточку заново"
 _DONE = "done"
 _DELETE_PREFIX = "tdel:"  # tdel:y:<title id> deletes after the question, tdel:n:<title id> drops it
 _BULK_PREFIX = "tdm:"  # tdm:open starts a selection; tdm:<selection id>:t:<title id> | go | yes | no work on it
@@ -123,7 +127,7 @@ def seasons_markup(title_id: int, seasons: Sequence[WatchableSeason]) -> InlineK
         [
             InlineKeyboardButton(
                 text=f"{'✅ ' if s.watched else ''}Сезон {s.number}",
-                callback_data=f"{_SEASON_PREFIX}{title_id}:{s.number}",
+                callback_data=f"{_SEASON_PREFIX}{title_id}:{s.id}",
             )
         ]
         for s in seasons
@@ -494,13 +498,16 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             return
         await callback.answer()
 
+    async def refuse_old_season_button(callback: CallbackQuery) -> None:
+        await callback.answer(_STALE_SEASON_BUTTON)
+
     async def flip_season(callback: CallbackQuery) -> None:
-        raw_id, _, raw_number = callback.data.removeprefix(_SEASON_PREFIX).partition(":")
+        raw_id, _, raw_season = callback.data.removeprefix(_SEASON_PREFIX).partition(":")
         if not (raw_id.isascii() and raw_id.isdigit()):
             await callback.answer("Эта кнопка больше не работает.")
             return
         title_id = int(raw_id)
-        if raw_number == _DONE:
+        if raw_season == _DONE:
             card = await tracker.title_card(title_id)
             if card is None:
                 await callback.answer(_NOT_IN_LIST)
@@ -509,11 +516,11 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer("Готово")
             await send_card(callback, card)
             return
-        if not (raw_number.isascii() and raw_number.isdigit()):
+        if not (raw_season.isascii() and raw_season.isdigit()):
             await callback.answer("Эта кнопка больше не работает.")
             return
         try:
-            seasons = await tracker.toggle_season(title_id, int(raw_number))
+            seasons = await tracker.toggle_season(title_id, int(raw_season))
         except UnknownTitle:
             await callback.answer(_NOT_IN_LIST)
             return
@@ -693,6 +700,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     router.callback_query.register(answer_delete, F.data.startswith(_DELETE_PREFIX))
     router.callback_query.register(press_selection, F.data.startswith(_BULK_PREFIX))
     router.callback_query.register(flip_season, F.data.startswith(_SEASON_PREFIX))
+    router.callback_query.register(refuse_old_season_button, F.data.startswith(_OLD_SEASON_PREFIX))
 
     dp.include_router(router)
     return router
