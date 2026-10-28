@@ -18,7 +18,8 @@ be watched yet. A title with no released season (just announced) is left alone, 
 Closed means ended or cancelled. A closed show the owner has not started stays «Хочу»: «Досмотреть» means started
 and not finished, and a show that is still wanted keeps being checked, so a return of the show is not missed.
 
-Only the statuses this rule hands out are rewritten; a status the owner sets by hand (a later ticket) is left as it is.
+Only the statuses this rule hands out are rewritten; the status the owner sets by hand, «Бросил», is left as it is:
+the marks of a dropped title are kept, its status and its tracking stay.
 """
 
 from collections.abc import Collection, Iterable

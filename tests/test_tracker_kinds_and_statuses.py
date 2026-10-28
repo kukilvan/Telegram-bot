@@ -11,11 +11,11 @@ from app.tracker import anime_events, cards, movie_events, series_events
 from app.tracker.actions import card_actions
 from app.tracker.db import create_session_factory
 from app.tracker.kinds import KINDS, is_seasonal, seasonal_kinds
-from app.tracker.models import DeliveryItem, DeliveryStatus, Title, TitleKind, TitleStatus
+from app.tracker.models import ARCHIVE_STATUSES, DeliveryItem, DeliveryStatus, Title, TitleKind, TitleStatus
 
 APP = pathlib.Path(__file__).resolve().parent.parent / "app"
 # "watched" is left out: it is also the name of the «Посмотрел» button action (`actions.WATCHED`), which is no status
-RAW_WORDS = {"movie", "series", "anime", "pending", "delivered", "want", "in_progress", "waiting", "to_finish"}
+RAW_WORDS = {"movie", "series", "anime", "pending", "delivered", "want", "in_progress", "waiting", "to_finish", "dropped"}
 # the enums themselves may spell the words (migrations are skipped by the test: they wrote the data)
 ALLOWED_FILES = {pathlib.PurePath("tracker/models.py")}
 # words of Shikimori's own response, not kinds of title of ours: the `kind` of a catalogue entry and the `anime` field of a relation
@@ -24,7 +24,7 @@ SHIKIMORI_WORDS = {(pathlib.PurePath("tracker/sources/shikimori_anime.py"), word
 
 def test_the_enums_keep_the_values_the_database_already_holds():
     assert [k.value for k in TitleKind] == ["movie", "series", "anime"]
-    assert [s.value for s in TitleStatus] == ["want", "in_progress", "waiting", "to_finish", "watched"]
+    assert [s.value for s in TitleStatus] == ["want", "in_progress", "waiting", "to_finish", "watched", "dropped"]
     assert [s.value for s in DeliveryStatus] == ["pending", "delivered"]
 
 
@@ -79,6 +79,22 @@ def test_a_watched_movie_card_offers_only_delete_and_a_wanted_one_also_watched()
 def test_a_card_of_a_seasonal_kind_has_no_watched_button_for_the_whole_title():
     series = cards.TitleCard(1, TitleKind.SERIES, "С", "", None, [], TitleStatus.WANT)
     assert [a.name for a in card_actions(series)] == ["delete"]  # no seasons yet: nothing to mark
+
+
+def test_the_archive_is_the_final_statuses():
+    assert ARCHIVE_STATUSES == {TitleStatus.WATCHED, TitleStatus.DROPPED}
+
+
+def test_dropped_is_a_status_the_season_marks_never_rewrite():
+    from app.tracker import progress
+
+    assert TitleStatus.DROPPED not in progress.AUTOMATIC_STATUSES
+
+
+def test_a_dropped_card_in_the_bot_offers_no_watched_button():
+    movie = cards.TitleCard(1, TitleKind.MOVIE, "Ф", "", None, [], TitleStatus.DROPPED)
+    assert [a.name for a in card_actions(movie)] == ["delete"]
+    assert cards.format_card(movie).splitlines()[0].endswith("· Бросил")
 
 
 def test_columns_hand_out_enum_members():
@@ -151,4 +167,4 @@ def test_the_table_says_what_the_owner_has_always_read():
         ("Аниме", "🎌", "Shikimori"),
     ]
     assert KINDS[TitleKind.ANIME].ask_name == "Напишите название аниме (можно по-русски или по-английски)."
-    assert [cards.STATUS_LABELS[s] for s in TitleStatus] == ["Хочу", "В процессе", "Жду", "Досмотреть", "Просмотрено"]
+    assert [cards.STATUS_LABELS[s] for s in TitleStatus] == ["Хочу", "В процессе", "Жду", "Досмотреть", "Просмотрено", "Бросил"]

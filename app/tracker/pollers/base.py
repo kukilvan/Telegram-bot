@@ -6,6 +6,7 @@ snapshot with the stored one, queues the events and stores the new state. The co
 asks the poller of the kind (the table is in `polling`).
 """
 
+import logging
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
@@ -30,6 +31,8 @@ class DueTitle:
     external_id: str
     snapshot_source: str  # which of the title's snapshots is due: its release source or its sequel source
     sequels: bool  # True: an archived movie, checked only for sequels
+    # True: the first check of the own source since «Вернуть в список»; what it finds is the baseline, no events
+    baseline: bool = False
 
 
 class Poller:
@@ -88,7 +91,11 @@ class Poller:
 
     def record_all(self, due: DueTitle, events: Iterable[Any], previous_look: datetime | None = None) -> int:
         """Queue the detected events of a title; returns how many were new. An event whose fact an earlier version of
-        its key already queued after `previous_look` is not queued again."""
+        its key already queued after `previous_look` is not queued again. The first check after «Вернуть в список»
+        queues nothing: what happened while the title was in the archive is the baseline, as when it is added."""
+        if due.baseline:
+            logging.info("title %s: first check after return, recorded as the baseline", due.id)
+            return 0
         found = 0
         for event in events:
             earlier = getattr(event, "earlier_key", None)

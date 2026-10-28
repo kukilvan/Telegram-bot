@@ -1,12 +1,17 @@
 """Text card of a title: what the owner reads in the bot. Pure formatting, no database."""
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timezone, tzinfo
+from typing import TYPE_CHECKING
 
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.seasons import RELEASED, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
+
+if TYPE_CHECKING:
+    from app.tracker.sequel_events import Sequels  # it formats its dates here: a plain import would go round
 
 STATUS_LABELS = {
     TitleStatus.WANT: "Хочу",
@@ -14,6 +19,7 @@ STATUS_LABELS = {
     TitleStatus.WAITING: "Жду",
     TitleStatus.TO_FINISH: "Досмотреть",
     TitleStatus.WATCHED: "Просмотрено",
+    TitleStatus.DROPPED: "Бросил",
 }
 _WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")
 
@@ -35,6 +41,34 @@ class MovieLine:
 
 
 @dataclass(frozen=True)
+class SequelLine:
+    """A sequel of a watched movie, as the web card lists it."""
+
+    external_id: str  # in the movie source (TMDb)
+    name: str
+    date: date | None  # None: not announced
+    title_id: int | None  # the sequel's title when it is in the list already
+
+
+@dataclass(frozen=True)
+class SequelsView:
+    """The sequels of a watched movie: whether its collection was looked at yet, and the sequels found there."""
+
+    checked: bool
+    lines: tuple[SequelLine, ...] = ()
+
+
+def sequel_view(sequels: "Sequels", checked: bool, listed: Mapping[str, int]) -> SequelsView:
+    """The parts of the collection that are sequels of the movie, by date (the ones with no date last), each with the
+    number of its title when it is in the list (`listed`: id in the movie source → title)."""
+    found = sorted(
+        (part for part in sequels.parts if sequels.is_sequel(part)),
+        key=lambda part: (part.date is None, part.date or date.max),
+    )
+    return SequelsView(checked, tuple(SequelLine(p.id, p.name, p.date, listed.get(p.id)) for p in found))
+
+
+@dataclass(frozen=True)
 class TitleCard:
     id: int
     kind: TitleKind
@@ -51,6 +85,7 @@ class TitleCard:
     poster_path: str | None = None  # as stored: a TMDb file name or a whole address (the web shows it)
     overview: str = ""  # the description the source gave; empty for an anime
     season_rows: tuple[SeasonRow, ...] = ()  # series and anime: a row per season, for the web
+    sequels: SequelsView | None = None  # a watched movie whose sequels are looked for; for the web
 
 
 def format_date(value: date | None) -> str:

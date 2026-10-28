@@ -101,9 +101,9 @@ def sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season])
                 session.delete(row)
 
 
-def own_state(session, title_id: int) -> dict[str, Any]:
-    """State from the title's own source (the archive's sequel snapshot holds no dates)."""
-    snapshot = session.scalar(
+def own_snapshot(session, title_id: int) -> SourceSnapshot | None:
+    """The snapshot of the title's own source: the one of its primary id."""
+    return session.scalar(
         select(SourceSnapshot)
         .join(ExternalId, ExternalId.title_id == SourceSnapshot.title_id)
         .where(
@@ -112,7 +112,28 @@ def own_state(session, title_id: int) -> dict[str, Any]:
             SourceSnapshot.source == ExternalId.source,
         )
     )
+
+
+def own_state(session, title_id: int) -> dict[str, Any]:
+    """State from the title's own source (the archive's sequel snapshot holds no dates)."""
+    snapshot = own_snapshot(session, title_id)
     return snapshot.state if snapshot else {}
+
+
+def sequel_snapshot(session, title_id: int) -> SourceSnapshot | None:
+    """The snapshot of the title's sequel check: any snapshot that is not of its own source (a watched movie has one)."""
+    own_sources = select(ExternalId.source).where(ExternalId.title_id == title_id, ExternalId.role == PRIMARY_ROLE)
+    return session.scalar(
+        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source.not_in(own_sources))
+    )
+
+
+def drop_sequel_check(session, title_id: int) -> None:
+    """Stop looking for the title's sequels: its sequel snapshot goes. The next «Посмотрел» starts the check anew, and
+    its first look again only records the collection."""
+    snapshot = sequel_snapshot(session, title_id)
+    if snapshot is not None:
+        session.delete(snapshot)
 
 
 def stored_snapshot(session, title_id: int, source: str) -> SourceSnapshot:

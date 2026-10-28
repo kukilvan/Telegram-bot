@@ -23,6 +23,11 @@ class TitleStatus(StrEnum):
     WAITING = "waiting"  # «Жду»: everything released is watched, a season is expected
     TO_FINISH = "to_finish"  # «Досмотреть»: the series is closed but not every season is watched
     WATCHED = "watched"  # «Просмотрено»: the title is in the archive
+    DROPPED = "dropped"  # «Бросил»: the owner gave the title up; it is in the archive
+
+
+# the final statuses: a title with one of them is in the archive, its own release is no longer followed
+ARCHIVE_STATUSES = frozenset({TitleStatus.WATCHED, TitleStatus.DROPPED})
 
 
 class DeliveryStatus(StrEnum):
@@ -63,6 +68,8 @@ class Title(TrackerBase):
     added_at: Mapped[datetime] = mapped_column(DateTime)
     status_changed_at: Mapped[datetime] = mapped_column(DateTime)
     failure_notified_at: Mapped[datetime | None] = mapped_column(DateTime)  # last «could not check» notice; None: never
+    # the last «Вернуть в список»; None: never brought back. A check of the own source older than this is the baseline
+    restored_at: Mapped[datetime | None] = mapped_column(DateTime)
 
 
 class ExternalId(TrackerBase):

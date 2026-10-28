@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
 from app.tracker import failures
@@ -76,6 +76,15 @@ class EventQueue:
             return None
         session.add(DeliveryItem(event_id=event.id, status=DeliveryStatus.PENDING, attempts=0, created_at=now))
         return event.id
+
+    @staticmethod
+    def withdraw(session, title_id: int) -> None:
+        """Take the title's entries that were not delivered yet out of the queue (the «could not check» messages too), in
+        a write session; the caller commits. The events stay: their dedup keys keep the same facts from coming again."""
+        events_of_title = select(Event.id).where(Event.title_id == title_id)
+        session.execute(
+            delete(DeliveryItem).where(DeliveryItem.status == DeliveryStatus.PENDING, DeliveryItem.event_id.in_(events_of_title))
+        )
 
     def queue_failure_notices(self, broken: Sequence[tuple[DueTitle, Exception]]) -> int:
         """Queue the «could not check» events of one pass: one per title, and none for a title the owner was told about

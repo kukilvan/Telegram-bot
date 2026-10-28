@@ -52,10 +52,46 @@
 
       {% if closed_note %}<p class="closed-note">{{ closed_note }}</p>{% endif %}
 
+      {% if sequels %}
+      <section class="sequels" aria-labelledby="sequels-heading">
+        <h2 id="sequels-heading">Продолжения</h2>
+        {% if sequels.error %}<p class="error" role="alert">{{ sequels.error }}</p>{% endif %}
+        {% if sequels.sentence %}<p class="hint">{{ sequels.sentence }}</p>{% endif %}
+        {% if sequels.rows %}
+        <ul class="sequel-list">
+          {% for row in sequels.rows %}
+          <li class="sequel-row">
+            <span class="sequel-text"><span class="sequel-name">{{ row.name }}</span> <span class="sequel-date">{{ row.when }}</span></span>
+            {% if row.card %}
+            <a class="row-action button-link" href="{{ row.card }}">В списке</a>
+            {% else %}
+            <form class="row-action" method="post" action="{{ sequels.address }}" hx-post="{{ sequels.address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+              <input type="hidden" name="kind" value="{{ card.kind.value }}">
+              <input type="hidden" name="sequel_id" value="{{ row.external_id }}">
+              {{ busy_button("Следить", "Добавляю…") }}
+            </form>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      {% endif %}
+
       <div class="actions">
         {% if can_mark_watched %}
         <form method="post" action="{{ watched_address }}" hx-post="{{ watched_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
           {{ busy_button("Посмотрел", "Сохраняю…") }}
+        </form>
+        {% endif %}
+        {% if can_drop %}
+        <form method="post" action="{{ dropped_address }}" hx-post="{{ dropped_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button("Бросил", "Сохраняю…") }}
+        </form>
+        {% endif %}
+        {% if can_restore %}
+        <form method="post" action="{{ restore_address }}" hx-post="{{ restore_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button("Вернуть в список", "Сохраняю…") }}
         </form>
         {% endif %}
         <details class="delete">

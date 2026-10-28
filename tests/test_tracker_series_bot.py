@@ -249,6 +249,20 @@ def test_pressing_a_season_marks_it_and_pressing_again_takes_the_mark_off(tracke
     assert [s.watched for s in run(tracker.watchable_seasons(1))] == [False, False, False]
 
 
+def test_a_dropped_series_keeps_its_season_buttons_and_its_status(tracker, replies):
+    chat = Chat_(tracker)
+    add_series(chat, replies)
+    buttons = last_message(replies)[2]
+    run(tracker.mark_dropped(1))
+
+    chat.press(callback_of(buttons, "Сезон 1"))
+
+    assert [(s.number, s.watched) for s in run(tracker.watchable_seasons(1))][0] == (1, True)
+    assert run(tracker.title_card(1)).status == "dropped"
+    chat.press("tcard:1")
+    assert "Бросил" in last_message(replies)[1] and "📺 Просмотренные сезоны" in labels(last_message(replies)[2])
+
+
 def test_a_season_press_is_one_call_to_the_core_and_done_loads_the_card_once(tracker, replies, monkeypatch):
     chat = Chat_(tracker)
     add_series(chat, replies)

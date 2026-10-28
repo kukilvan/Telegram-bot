@@ -239,6 +239,27 @@ def test_the_card_of_a_watched_movie_shows_the_status_and_no_button(tracker, rep
     assert [b.text for b in buttons] == ["🗑 Удалить"]  # nothing left to mark, but the title can still be removed
 
 
+def test_the_card_of_a_dropped_movie_says_so_and_offers_only_delete(tracker, replies):
+    title_id = add(tracker)
+    run(tracker.mark_dropped(title_id))
+
+    Chat_(tracker).press(f"tcard:{title_id}")
+
+    [(_, text, buttons)] = messages(replies)
+    assert text.splitlines()[0] == "🎬 Фильм · Бросил"
+    assert [b.text for b in buttons] == ["🗑 Удалить"]
+
+
+def test_an_old_watched_button_under_a_message_of_a_dropped_movie_still_archives_it(tracker, replies):
+    title_id = add(tracker)
+    run(tracker.mark_dropped(title_id))
+
+    Chat_(tracker).press(f"tact:watched:{title_id}")
+
+    assert run(tracker.title_card(title_id)).status == "watched"
+    assert [r[1] for r in replies if r[0] == "callback"] == ["Отмечено как просмотренное"]
+
+
 def test_pressing_watched_again_says_it_is_already_done(tracker, replies):
     title_id = add(tracker)
     chat = Chat_(tracker)

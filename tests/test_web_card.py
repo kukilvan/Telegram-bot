@@ -129,7 +129,7 @@ def seasons_of(html):
 
 # ---- what the card shows ------------------------------------------------------------------------------------
 
-def test_the_card_of_a_film_has_its_facts_its_dates_and_the_two_buttons(tracker, client):
+def test_the_card_of_a_film_has_its_facts_its_dates_and_its_buttons(tracker, client):
     film = add(tracker, "movie", "1")
 
     page = client.get(f"/titles/{film}")
@@ -142,8 +142,8 @@ def test_the_card_of_a_film_has_its_facts_its_dates_and_the_two_buttons(tracker,
     assert "Пол Атрейдес едет на Арракис." in html
     assert "Премьера в кино: 12 марта 2027" in html and "Цифровой релиз: не объявлена" in html
     assert 'src="https://image.tmdb.org/t/p/w342/dune.jpg"' in html and "poster-large" in html
-    assert buttons(html) == ["Посмотрел", "Да, удалить", "Удалить"]
-    assert "Сезоны" not in html and "Отметить все вышедшие" not in html
+    assert buttons(html) == ["Посмотрел", "Бросил", "Да, удалить", "Удалить"]
+    assert "Сезоны" not in html and "Отметить все вышедшие" not in html and "Продолжения" not in html
 
 
 def test_the_card_is_a_page_with_the_menu_the_list_marked_and_the_title_in_the_tab(tracker, client):
@@ -164,7 +164,7 @@ def test_the_card_of_a_series_lists_the_seasons_with_marks_the_names_and_an_anno
     assert marked[1].startswith("Сезон 2 — Магическая битва: вышло ")
     assert plain == ["Сезон 3 анонсирован, дата не объявлена"]
     assert "<h2 id=\"seasons-heading\">Сезоны</h2>" in html
-    assert buttons(html) == ["Отметить все вышедшие", "Да, удалить", "Удалить"]
+    assert buttons(html) == ["Отметить все вышедшие", "Бросил", "Да, удалить", "Удалить"]
     assert "Посмотрел" not in html and "Премьера в кино" not in html
     assert 'src="https://image.tmdb.org/t/p/w342/run.jpg"' in html and "Сериал про бег." in html
 
@@ -194,7 +194,7 @@ def test_a_series_without_seasons_says_so(tracker, client):
     html = client.get(f"/titles/{empty}").text
 
     assert "Сезонов пока нет" in html and seasons_of(html) == ([], [])
-    assert buttons(html) == ["Да, удалить", "Удалить"]
+    assert buttons(html) == ["Бросил", "Да, удалить", "Удалить"]
 
 
 def test_the_card_of_an_anime_lists_the_seasons_and_all_the_films_of_the_franchise(tracker, client):
@@ -211,13 +211,14 @@ def test_the_card_of_an_anime_lists_the_seasons_and_all_the_films_of_the_franchi
     assert buttons(html)[-2:] == ["Да, удалить", "Удалить"] and "Посмотрел" not in buttons(html)
 
 
-def test_a_watched_film_has_only_the_delete_button(tracker, client):
+def test_a_watched_film_without_a_sequel_check_has_restore_and_delete_and_no_sequels_block(tracker, client):
     film = add(tracker, "movie", "1")
-    run(tracker.mark_watched(film))
+    run(tracker.mark_watched(film))  # this core has no sequel source: there is no check to show
 
     html = client.get(f"/titles/{film}").text
 
-    assert "Статус:</span> Просмотрено" in html and buttons(html) == ["Да, удалить", "Удалить"]
+    assert "Статус:</span> Просмотрено" in html and buttons(html) == ["Вернуть в список", "Да, удалить", "Удалить"]
+    assert "Продолжения" not in html
 
 
 def test_a_closed_series_with_every_season_marked_says_how_to_bring_it_back(tracker, client):
@@ -360,7 +361,7 @@ def test_watched_makes_the_film_watched_and_the_card_shows_it(tracker, client):
     answer = client.post(f"/titles/{film}/watched", headers=HTMX)
 
     assert answer.status_code == 200 and "Статус:</span> Просмотрено" in answer.text
-    assert buttons(answer.text) == ["Да, удалить", "Удалить"]
+    assert buttons(answer.text) == ["Вернуть в список", "Да, удалить", "Удалить"]
     assert run(tracker.title_card(film)).status == "watched"
 
 
@@ -509,7 +510,8 @@ def test_the_card_is_a_module_with_a_router_of_its_own_and_the_app_only_assemble
     mine = {route.path for route in all_routes(app) if route.endpoint.__module__ == "app.web.card"}
     assert mine == {
         "/titles/{title_id:int}", "/titles/{title_id:int}/seasons/{number:int}", "/titles/{title_id:int}/released-watched",
-        "/titles/{title_id:int}/watched", "/titles/{title_id:int}/delete",
+        "/titles/{title_id:int}/watched", "/titles/{title_id:int}/dropped", "/titles/{title_id:int}/restore",
+        "/titles/{title_id:int}/sequels", "/titles/{title_id:int}/delete",
     }
     assert app.url_path_for("card", title_id=5) == "/titles/5"
 

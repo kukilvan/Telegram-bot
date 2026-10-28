@@ -2,24 +2,29 @@
 
 import asyncio
 from datetime import timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select
 
 from app.tracker import seasons as season_logic
-from app.tracker import storage
-from app.tracker.cards import MovieLine, TitleCard
+from app.tracker import sequel_events, storage
+from app.tracker.cards import MovieLine, SequelsView, TitleCard, sequel_view
 from app.tracker.context import CoreContext
 from app.tracker.kinds import KINDS, is_seasonal
-from app.tracker.models import MovieRecord, SourceSnapshot, Title
+from app.tracker.models import MovieRecord, SourceSnapshot, Title, TitleStatus
 from app.tracker.results import Overview, TitleSummary
 from app.tracker.settings_store import SettingsStore
 from app.tracker.sources.dates import parse_date
 
+if TYPE_CHECKING:
+    from app.tracker.polling import Pollers
+
 
 class Listing:
-    def __init__(self, ctx: CoreContext, settings: SettingsStore) -> None:
+    def __init__(self, ctx: CoreContext, settings: SettingsStore, pollers: "Pollers") -> None:
         self.ctx = ctx
         self.settings = settings
+        self.pollers = pollers
 
     async def list_titles(self) -> list[TitleSummary]:
         return await asyncio.to_thread(self._list_titles)
@@ -77,4 +82,14 @@ class Listing:
                 poster_path=title.poster_path,
                 overview=title.overview or "",
                 season_rows=season_rows,
+                sequels=self._sequels(session, title),
             )
+
+    def _sequels(self, session, title: Title) -> SequelsView | None:
+        """The sequels of a watched title whose sequel check is on (a movie), with the ones the list already has."""
+        snapshot = storage.sequel_snapshot(session, title.id) if title.status == TitleStatus.WATCHED else None
+        if snapshot is None:
+            return None
+        sequels = sequel_events.Sequels.from_state(snapshot.state)
+        listed = self.pollers.of(title.kind).known_ids(session, (part.id for part in sequels.parts))
+        return sequel_view(sequels, "parts" in snapshot.state, listed)

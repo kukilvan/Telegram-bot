@@ -88,8 +88,10 @@ class Polling:
         with self.ctx.session_factory() as session:
             # a title's own source is the one of its primary id; any other snapshot is its sequel check
             own = SourceSnapshot.source == ExternalId.source
+            # the own source's first check since «Вернуть в список»: the stored look is older than the return
+            baseline = and_(own, Title.restored_at.is_not(None), SourceSnapshot.observed_at < Title.restored_at)
             rows = session.execute(
-                select(Title.id, Title.kind, Title.name, ExternalId.external_id, SourceSnapshot.source, ~own)
+                select(Title.id, Title.kind, Title.name, ExternalId.external_id, SourceSnapshot.source, ~own, baseline)
                 .join(SourceSnapshot, SourceSnapshot.title_id == Title.id)
                 .join(
                     ExternalId,
@@ -109,7 +111,10 @@ class Polling:
                 )
                 .order_by(Title.id)
             )
-            return [DueTitle(*row) for row in rows]
+            return [
+                DueTitle(title_id, kind, name, external_id, source, bool(sequels), bool(first_after_return))
+                for title_id, kind, name, external_id, source, sequels, first_after_return in rows
+            ]
 
     async def _poll_one(self, due: DueTitle, report: PollReport, broken: list[tuple[DueTitle, Exception]]) -> None:
         try:
@@ -119,8 +124,9 @@ class Polling:
                 raise failures.TitleGone(f"{due.kind}:{due.external_id} is no longer known to the source")
             found = await asyncio.to_thread(poller.apply, due, snapshot)
         except Exception as exc:  # one broken title or source must not stop the pass
-            if not await asyncio.to_thread(self._title_exists, due.id):
-                logging.info("title %s was deleted while it was polled", due.id)  # nothing broke: it is simply gone
+            if not await asyncio.to_thread(self._still_checked, due):
+                # nothing broke: the title was deleted, or its check stopped («Бросил», «Вернуть в список»)
+                logging.info("title %s or its check was removed while it was polled", due.id)
                 return
             logging.warning("polling title %s failed: %s", due.id, repr(exc))
             report.failed += 1
@@ -133,9 +139,14 @@ class Polling:
         report.polled += 1
         report.events += found
 
-    def _title_exists(self, title_id: int) -> bool:
+    def _still_checked(self, due: DueTitle) -> bool:
+        """Whether the snapshot of this check is still there (it goes with its title, and with the sequel check)."""
         with self.ctx.session_factory() as session:
-            return session.get(Title, title_id) is not None
+            return session.scalar(
+                select(SourceSnapshot.id).where(
+                    SourceSnapshot.title_id == due.id, SourceSnapshot.source == due.snapshot_source
+                )
+            ) is not None
 
     async def _tell_owner_about(self, broken: list[tuple[DueTitle, Exception]], report: PollReport) -> None:
         try:

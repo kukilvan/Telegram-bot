@@ -77,7 +77,7 @@ class Tracker:
         self._polling = Polling(ctx, self._queue, pollers)
         self._titles = Titles(ctx, pollers)
         self._statuses = Statuses(ctx, pollers)
-        self._listing = Listing(ctx, self._settings)
+        self._listing = Listing(ctx, self._settings, pollers)
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
 
@@ -154,6 +154,14 @@ class Tracker:
     async def mark_watched(self, title_id: int) -> WatchedResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
         return await self._statuses.mark_watched(title_id)
+
+    async def mark_dropped(self, title_id: int) -> WatchedResult:
+        """«Бросил»: the title goes to the archive, is no longer checked, and its messages not sent yet are dropped."""
+        return await self._statuses.mark_dropped(title_id)
+
+    async def restore_title(self, title_id: int) -> WatchedResult:
+        """«Вернуть в список»: the title leaves the archive; its first check after that records what it finds silently."""
+        return await self._statuses.restore_title(title_id)
 
     async def delete_title(self, title_id: int) -> DeleteResult:
         """Remove a title and everything that belongs to it, in one transaction: all of it or nothing."""

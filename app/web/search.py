@@ -21,7 +21,6 @@ DEFAULT_KIND = TitleKind.MOVIE  # the kind of the very first search
 KIND_KEY = "search_kind"  # the kind of the last search, in the session
 
 TYPE_MORE = "Наберите хотя бы две буквы"
-NO_SUCH_KIND = "Такого типа нет"
 ADDED = "Добавлено в список"
 MARK_SEASONS = "Отметьте сезоны, которые уже посмотрели"
 ALREADY = "Этот тайтл уже в списке"
@@ -68,14 +67,6 @@ def _remembered(request: Request) -> TitleKind:
     return _kind_of(request.session.get(KIND_KEY)) or DEFAULT_KIND
 
 
-def _unreachable(kind: TitleKind) -> str:
-    return f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже"
-
-
-def _not_found(kind: TitleKind) -> str:
-    return f"{KINDS[kind].source_name} больше не знает этот тайтл. Поищите заново"
-
-
 def _nothing(query: str) -> str:
     return f"Ничего не нашлось по запросу «{query}». Попробуйте другое название или другой тип"
 
@@ -91,7 +82,7 @@ async def _found(request: Request, kind: TitleKind | None, raw_query: str) -> di
     query = raw_query.strip()[:MAX_QUERY].strip()
     shown: dict[str, object] = {"query": query, "hint": "", "error": False, "rows": []}
     if kind is None:
-        return {**shown, "hint": NO_SUCH_KIND, "error": True}
+        return {**shown, "hint": pages.NO_SUCH_KIND, "error": True}
     if not query:
         return shown
     if len(query) < MIN_QUERY:
@@ -100,10 +91,10 @@ async def _found(request: Request, kind: TitleKind | None, raw_query: str) -> di
         suggestions = await _tracker(request).search(kind, query)
     except KeyError:  # a kind the core has no source for
         logging.warning("web search: no source for %s", kind)
-        return {**shown, "hint": NO_SUCH_KIND, "error": True}
+        return {**shown, "hint": pages.NO_SUCH_KIND, "error": True}
     except SourceFailed as exc:
         logging.warning("web search: %s failed: %r", exc, exc.__cause__)
-        return {**shown, "hint": _unreachable(kind), "error": True}
+        return {**shown, "hint": pages.unreachable(kind), "error": True}
     if not suggestions:
         return {**shown, "hint": _nothing(query)}
     rows = [
@@ -166,18 +157,18 @@ async def add(request: Request, kind: str = Form(""), external_id: str = Form(""
     (without HTMX: on the search page it came from)."""
     chosen = _kind_of(kind)
     if chosen is None:
-        return await _refused(request, _search_address(request, _remembered(request), q), NO_SUCH_KIND)
+        return await _refused(request, _search_address(request, _remembered(request), q), pages.NO_SUCH_KIND)
     back = _search_address(request, chosen, q)
     tracker = _tracker(request)
     try:
         result = await tracker.add_title(chosen, external_id)
     except KeyError:  # a kind the core has no source for
-        return await _refused(request, back, NO_SUCH_KIND)
+        return await _refused(request, back, pages.NO_SUCH_KIND)
     except TitleNotFound:
-        return await _refused(request, back, _not_found(chosen))
+        return await _refused(request, back, pages.not_found(chosen))
     except SourceFailed as exc:
         logging.warning("web add: %s failed: %r", exc, exc.__cause__)
-        return await _refused(request, back, _unreachable(chosen))
+        return await _refused(request, back, pages.unreachable(chosen))
     pages.notify(request, await _added(tracker, result.title_id) if result.created else ALREADY)
     return pages.go(request, str(request.app.url_path_for("card", title_id=result.title_id)))
 

@@ -15,6 +15,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
 from app.tracker.core import Tracker
+from app.tracker.kinds import KINDS
+from app.tracker.models import TitleKind
 from app.web.status_line import NO_DATA, status_text
 
 if TYPE_CHECKING:
@@ -24,6 +26,7 @@ NOTICE_KEY = "notice"
 NOTICE_LIMIT = 300  # the session lives in a cookie
 TITLE_GONE = "Этого тайтла больше нет в списке"
 FAILED = "Не получилось. Попробуйте ещё раз; подробности — в журнале"
+NO_SUCH_KIND = "Такого типа нет"
 
 
 @dataclass(frozen=True)
@@ -35,6 +38,15 @@ class WebContext:
     now: Callable[[], datetime]  # the wall clock (aware) the status line compares with
     signed_in: Callable[[Request], bool]
     sections: "Sequence[Section]"
+
+
+def unreachable(kind: TitleKind) -> str:
+    """The source of the kind did not answer (any cause: the exact one is in the log)."""
+    return f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже"
+
+
+def not_found(kind: TitleKind) -> str:
+    return f"{KINDS[kind].source_name} больше не знает этот тайтл. Поищите заново"
 
 
 def context_of(request: Request) -> WebContext:

@@ -1,6 +1,6 @@
-"""The owner's marks on a title and the status that follows from them: «Посмотрел», the season marks and
-«Отметить все вышедшие». What differs by kind (the sequel check that starts after «Посмотрел») is asked of the
-title's poller."""
+"""The owner's marks on a title and the status that follows from them: «Посмотрел», «Бросил», «Вернуть в список», the
+season marks and «Отметить все вышедшие». What differs by kind (the sequel check that starts after «Посмотрел») is asked
+of the title's poller; whether a title has seasons, of the table of kinds."""
 
 import asyncio
 from datetime import datetime
@@ -10,7 +10,9 @@ from app.tracker import seasons as season_logic
 from app.tracker import storage
 from app.tracker.context import CoreContext
 from app.tracker.errors import UnknownSeason, UnknownTitle
-from app.tracker.models import SeasonRecord, SourceSnapshot, Title, TitleStatus
+from app.tracker.kinds import is_seasonal
+from app.tracker.models import ARCHIVE_STATUSES, SeasonRecord, SourceSnapshot, Title, TitleStatus
+from app.tracker.queue import EventQueue
 from app.tracker.results import WatchableSeason, WatchedResult
 
 if TYPE_CHECKING:
@@ -129,5 +131,57 @@ class Statuses:
                         next_check_at=sequels.first_check((), {}, now),
                     )
                 )
+            session.commit()
+            return WatchedResult(changed=True)
+
+    # --- «Бросил» and «Вернуть в список» --------------------------------------------------------
+
+    async def mark_dropped(self, title_id: int) -> WatchedResult:
+        """«Бросил», from any status but itself: the title goes to the archive and is no longer checked, not even for
+        sequels, and its messages that have not gone out yet are taken out of the queue. Raises UnknownTitle."""
+        return await asyncio.to_thread(self._mark_dropped, title_id)
+
+    def _mark_dropped(self, title_id: int) -> WatchedResult:
+        now = self.ctx.now()
+        with self.ctx.write_session() as session:
+            title = session.get(Title, title_id)
+            if title is None:
+                raise UnknownTitle(title_id)
+            if title.status == TitleStatus.DROPPED:
+                return WatchedResult(changed=False)
+            title.status = TitleStatus.DROPPED
+            title.status_changed_at = now
+            title.tracking_enabled = False
+            storage.drop_sequel_check(session, title_id)  # a watched movie dropped in a second tab
+            EventQueue.withdraw(session, title_id)
+            session.commit()
+            return WatchedResult(changed=True)
+
+    async def restore_title(self, title_id: int) -> WatchedResult:
+        """«Вернуть в список»: the title leaves the archive. A movie is «Хочу» again; a series or an anime comes back from
+        «Бросил» with the status its season marks give. Its own source is checked within a minute, and that first check
+        is the baseline: what happened while the title was in the archive is recorded without events. A title out of
+        the archive, or a series that is «Просмотрено» (its marks give that status), is left as it is. Raises UnknownTitle."""
+        return await asyncio.to_thread(self._restore_title, title_id)
+
+    def _restore_title(self, title_id: int) -> WatchedResult:
+        now = self.ctx.now()
+        with self.ctx.write_session() as session:
+            title = session.get(Title, title_id)
+            if title is None:
+                raise UnknownTitle(title_id)
+            seasonal = is_seasonal(title.kind)
+            if title.status not in ARCHIVE_STATUSES or (seasonal and title.status == TitleStatus.WATCHED):
+                return WatchedResult(changed=False)
+            title.status = TitleStatus.WANT
+            title.status_changed_at = now
+            title.tracking_enabled = True
+            title.restored_at = now
+            # a movie waits for its own release again; the next «Посмотрел» starts the sequel check anew
+            storage.drop_sequel_check(session, title_id)
+            storage.refresh_status(session, title, now)  # a series: the status its marks give
+            own = storage.own_snapshot(session, title_id)
+            if own is not None:
+                own.next_check_at = now
             session.commit()
             return WatchedResult(changed=True)

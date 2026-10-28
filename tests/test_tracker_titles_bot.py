@@ -278,6 +278,17 @@ def test_list_shows_every_title_and_a_tap_opens_the_card(tracker, replies):
     assert "Дюна: Часть третья" in card and "16 декабря 2026" in card
 
 
+def test_the_list_keeps_a_dropped_title_as_it_was(tracker, replies):
+    chat = Chat_(tracker)
+    add_movie(chat, replies)
+    run(tracker.mark_dropped(1))
+
+    chat.say(MY_TITLES_BUTTON)
+
+    _, _, buttons = replies[-1]
+    assert labels(buttons) == ["🎬 Дюна: Часть вторая (2024)", "🗑 Удалить несколько"]
+
+
 def test_card_of_a_removed_title_is_answered_not_crashed(tracker, replies):
     Chat_(tracker).press("tcard:999")
 
