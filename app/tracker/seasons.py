@@ -201,3 +201,35 @@ def summarize(
         announced=SeasonAnnouncement(after[0].number, after[0].first_air_at()) if after else None,
         watched=tuple(sorted(n for n in watched if n >= 1)),
     )
+
+
+@dataclass(frozen=True)
+class SeasonRow:
+    """One season as the web card lists it: the owner's mark, and either how far the season has got or its announcement."""
+
+    number: int
+    name: str
+    watched: bool
+    can_mark: bool  # something is out: only such a season can be marked as watched
+    progress: SeasonProgress | None  # a season with something out: the current or the last released part
+    announcement: SeasonAnnouncement | None  # a season with nothing out
+
+
+def rows(
+    seasons: Iterable[Season], watched: Collection[int], now: datetime, gap: timedelta = DEFAULT_PART_GAP
+) -> tuple[SeasonRow, ...]:
+    """A row for every season from the first, in order."""
+    result = []
+    for season in sorted((s for s in seasons if s.number >= 1), key=lambda s: s.number):
+        out = season.released(now) > 0
+        result.append(
+            SeasonRow(
+                number=season.number,
+                name=season.name,
+                watched=season.number in watched,
+                can_mark=out,
+                progress=_progress(season, gap, now) if out else None,
+                announcement=None if out else SeasonAnnouncement(season.number, season.first_air_at()),
+            )
+        )
+    return tuple(result)

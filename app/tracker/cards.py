@@ -1,11 +1,12 @@
 """Text card of a title: what the owner reads in the bot. Pure formatting, no database."""
 
+import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone, tzinfo
 
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind, TitleStatus
-from app.tracker.seasons import RELEASED, SeasonsView
+from app.tracker.seasons import RELEASED, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
 
 STATUS_LABELS = {
     TitleStatus.WANT: "Хочу",
@@ -47,6 +48,9 @@ class TitleCard:
     seasons: SeasonsView | None = None  # series and anime
     franchise_movies: tuple[MovieLine, ...] = ()  # anime only
     tz: tzinfo | None = None  # the owner's time zone, where the source gives the hour of an episode (anime)
+    poster_path: str | None = None  # as stored: a TMDb file name or a whole address (the web shows it)
+    overview: str = ""  # the description the source gave; empty for an anime
+    season_rows: tuple[SeasonRow, ...] = ()  # series and anime: a row per season, for the web
 
 
 def format_date(value: date | None) -> str:
@@ -104,25 +108,49 @@ def format_day_month(value: date) -> str:
     return f"{value.day} {_MONTHS[value.month - 1]}"
 
 
+_DEFAULT_SEASON_NAME = re.compile(r"(сезон|season)\s*\d+", re.IGNORECASE)
+
+
+def season_label(number: int, part: int | None = None, name: str = "") -> str:
+    """«Сезон 3, часть 1»; with the season's own name when it is more than «Сезон N»: «Сезон 2 — Магическая битва»."""
+    label = f"Сезон {number}" + (f", часть {part}" if part else "")
+    own = name.strip()
+    return label if not own or _DEFAULT_SEASON_NAME.fullmatch(own) else f"{label} — {own}"
+
+
+def progress_line(current: SeasonProgress, tz: tzinfo | None = None, name: str = "") -> str:
+    """How far the season (or its current part) has got: «Сезон 3, часть 1: вышло 7 из 12, следующая — пн, 12 окт»."""
+    line = f"{season_label(current.number, current.part, name)}: вышло {current.released} из {current.total if current.total else '?'}"
+    if current.status != RELEASED:
+        line += f", следующая — {format_when(current.next_air_at, tz) if current.next_air_at else NOT_ANNOUNCED}"
+    elif current.next_part_at is not None:
+        line += f"; часть {current.next_part} — с {format_day_month(local_moment(current.next_part_at, tz).date())}"
+    return line
+
+
+def announced_line(announced: SeasonAnnouncement, tz: tzinfo | None = None, name: str = "") -> str:
+    """«Сезон 4 анонсирован, премьера 3 апреля 2027» (or «дата не объявлена»)."""
+    when = (
+        f"премьера {format_date(local_moment(announced.first_air_at, tz).date())}"
+        if announced.first_air_at
+        else "дата не объявлена"
+    )
+    return f"{season_label(announced.number, name=name)} анонсирован, {when}"
+
+
+def season_row_text(row: SeasonRow, tz: tzinfo | None = None) -> str:
+    """The line of a season on the web card, with the season's own name."""
+    if row.progress is not None:
+        return progress_line(row.progress, tz, row.name)
+    return announced_line(row.announcement, tz, row.name)
+
+
 def season_lines(view: SeasonsView, tz: tzinfo | None = None) -> list[str]:
     lines = []
     if view.current is not None:
-        current = view.current
-        label = f"Сезон {current.number}" + (f", часть {current.part}" if current.part else "")
-        line = f"{label}: вышло {current.released} из {current.total if current.total else '?'}"
-        if current.status != RELEASED:
-            line += f", следующая — {format_when(current.next_air_at, tz) if current.next_air_at else NOT_ANNOUNCED}"
-        elif current.next_part_at is not None:
-            line += f"; часть {current.next_part} — с {format_day_month(local_moment(current.next_part_at, tz).date())}"
-        lines.append(line)
+        lines.append(progress_line(view.current, tz))
     if view.announced is not None:
-        announced = view.announced
-        when = (
-            f"премьера {format_date(local_moment(announced.first_air_at, tz).date())}"
-            if announced.first_air_at
-            else "дата не объявлена"
-        )
-        lines.append(f"Сезон {announced.number} анонсирован, {when}")
+        lines.append(announced_line(view.announced, tz))
     if not lines:
         lines.append("Сезонов пока нет")
     if view.watched:
@@ -146,6 +174,14 @@ def franchise_movies_line(movies: tuple[MovieLine, ...]) -> str:
     return f"Фильмы франшизы ({len(movies)}), последние: {latest}"
 
 
+def movie_date_lines(card: TitleCard) -> list[str]:
+    """The two dates of a film: «Премьера в кино: 12 марта 2027», «Цифровой релиз: не объявлена»."""
+    return [
+        f"Премьера в кино: {format_date(card.theatrical_date)}",
+        f"Цифровой релиз: {format_date(card.digital_date)}",
+    ]
+
+
 def format_card(card: TitleCard) -> str:
     kind = KINDS[card.kind]
     names = card.name
@@ -161,6 +197,5 @@ def format_card(card: TitleCard) -> str:
         if card.franchise_movies:
             lines.append(franchise_movies_line(card.franchise_movies))
     else:
-        lines.append(f"Премьера в кино: {format_date(card.theatrical_date)}")
-        lines.append(f"Цифровой релиз: {format_date(card.digital_date)}")
+        lines.extend(movie_date_lines(card))
     return "\n".join(lines)

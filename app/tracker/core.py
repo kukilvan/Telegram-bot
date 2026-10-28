@@ -1,8 +1,9 @@
 """Tracker core facade: the only door the bot (and later the web app) uses.
 
 `Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it:
-settings (`settings_store`), the list (`titles`), polling (`polling` and one poller per kind in `pollers/`), the
-delivery queue (`queue`), delivery (`delivery_service`) and test events (`test_samples`). It holds no rules of its own.
+settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards),
+polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`)
+and test events (`test_samples`). It holds no rules of its own.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -20,6 +21,7 @@ from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
+from app.tracker.listing import Listing
 from app.tracker.models import TitleKind
 from app.tracker.polling import Polling, Pollers
 from app.tracker.queue import EventQueue
@@ -36,6 +38,7 @@ from app.tracker.results import (
     WatchedResult,
 )
 from app.tracker.settings_store import SettingsStore
+from app.tracker.statuses import Statuses
 from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
@@ -58,6 +61,8 @@ class Tracker:
     _queue: EventQueue = field(init=False, repr=False)
     _polling: Polling = field(init=False, repr=False)
     _titles: Titles = field(init=False, repr=False)
+    _statuses: Statuses = field(init=False, repr=False)
+    _listing: Listing = field(init=False, repr=False)
     _deliveries: DeliveryService = field(init=False, repr=False)
     _samples: TestSamples = field(init=False, repr=False)
 
@@ -70,7 +75,9 @@ class Tracker:
         self._queue = EventQueue(ctx)
         pollers = Pollers(ctx, self._settings, self._queue, self.sources, self.sequel_sources)
         self._polling = Polling(ctx, self._queue, pollers)
-        self._titles = Titles(ctx, self._settings, pollers)
+        self._titles = Titles(ctx, pollers)
+        self._statuses = Statuses(ctx, pollers)
+        self._listing = Listing(ctx, self._settings)
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
 
@@ -127,19 +134,24 @@ class Tracker:
 
     async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
         """Seasons that can be marked as watched, with their marks. A season with nothing released cannot."""
-        return await self._titles.watchable_seasons(title_id)
+        return await self._statuses.watchable_seasons(title_id)
 
     async def set_season_watched(self, title_id: int, number: int, watched: bool) -> None:
-        """Mark a season as watched, or take the mark off. Marking twice changes nothing."""
-        await self._titles.set_season_watched(title_id, number, watched)
+        """Mark a season as watched, or take the mark off (the state asked for, not a switch). Marking twice changes
+        nothing; a season with nothing released is an UnknownSeason."""
+        await self._statuses.set_season_watched(title_id, number, watched)
+
+    async def mark_all_released(self, title_id: int) -> WatchedResult:
+        """«Отметить все вышедшие»: every season with a released episode gets the mark. Returns whether anything changed."""
+        return await self._statuses.mark_all_released(title_id)
 
     async def toggle_season(self, title_id: int, number: int) -> list[WatchableSeason]:
         """The button of a season: mark it, or take the mark off. Returns the seasons with their marks as they are now."""
-        return await self._titles.toggle_season(title_id, number)
+        return await self._statuses.toggle_season(title_id, number)
 
     async def mark_watched(self, title_id: int) -> WatchedResult:
         """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
-        return await self._titles.mark_watched(title_id)
+        return await self._statuses.mark_watched(title_id)
 
     async def delete_title(self, title_id: int) -> DeleteResult:
         """Remove a title and everything that belongs to it, in one transaction: all of it or nothing."""
@@ -154,14 +166,14 @@ class Tracker:
         return await self._titles.follow_sequel(event_id)
 
     async def list_titles(self) -> list[TitleSummary]:
-        return await self._titles.list_titles()
+        return await self._listing.list_titles()
 
     async def overview(self) -> Overview:
         """The line of the web page: how many titles are in the list and when a source last answered."""
-        return await self._titles.overview()
+        return await self._listing.overview()
 
     async def title_card(self, title_id: int) -> TitleCard | None:
-        return await self._titles.title_card(title_id)
+        return await self._listing.title_card(title_id)
 
     # --- polling --------------------------------------------------------------------------------
 

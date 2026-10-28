@@ -1,0 +1,74 @@
+{# The whole card: the page includes it, and every press on it answers with it again (HTMX puts it in place of
+   `#card`). A plain form sends the same press and is sent back to the card. #}
+{% from "macros.html" import poster, busy_button %}
+<article id="card" class="card">
+  {% if card_notice %}<p class="notice" role="status">{{ card_notice }}</p>{% endif %}
+  <div class="card-layout">
+    {{ poster(card.poster_path, poster_size, icon) }}
+    <div class="card-details">
+      <h1>{{ card.name }}</h1>
+      {% if card.original_name and card.original_name != card.name %}<p class="title-original">{{ card.original_name }}</p>{% endif %}
+      <p class="kind-line">{{ kind_line }}</p>
+      <p class="status"><span class="status-label">Статус:</span> {{ status_label }}</p>
+      {% if card.overview %}<p class="overview">{{ card.overview }}</p>{% endif %}
+
+      {% if seasonal %}
+      <section class="seasons" aria-labelledby="seasons-heading">
+        <h2 id="seasons-heading">Сезоны</h2>
+        {% if mark_all %}
+        <form method="post" action="{{ released_address }}" hx-post="{{ released_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button("Отметить все вышедшие", "Сохраняю…") }}
+        </form>
+        {% endif %}
+        {% if seasons %}
+        <ul class="season-list">
+          {% for season in seasons %}
+          <li>
+            {% if season.can_mark %}
+            <form method="post" action="{{ season.address }}" hx-post="{{ season.address }}" hx-trigger="change" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find input">
+              <label class="check"><input type="checkbox" name="watched" value="1"{% if season.watched %} checked{% endif %}> <span>{{ season.text }}</span></label>
+            </form>
+            {% else %}
+            <p class="season-plain">{{ season.text }}</p>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p>Сезонов пока нет</p>
+        {% endif %}
+        {% if movies %}
+        <h2>Фильмы франшизы</h2>
+        <ul class="movie-list">
+          {% for movie in movies %}<li>{{ movie }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      {% else %}
+      <ul class="dates">
+        {% for line in dates %}<li>{{ line }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if closed_note %}<p class="closed-note">{{ closed_note }}</p>{% endif %}
+
+      <div class="actions">
+        {% if can_mark_watched %}
+        <form method="post" action="{{ watched_address }}" hx-post="{{ watched_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button("Посмотрел", "Сохраняю…") }}
+        </form>
+        {% endif %}
+        <details class="delete">
+          <summary>Удалить</summary>
+          <p>Удалить «{{ card.name }}» со всеми сезонами и событиями?</p>
+          <div class="actions">
+            <form method="post" action="{{ delete_address }}" hx-post="{{ delete_address }}" hx-disabled-elt="find button">
+              {{ busy_button("Да, удалить", "Удаляю…", "danger") }}
+            </form>
+            <a class="button-link" href="{{ address }}">Отмена</a>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+</article>
