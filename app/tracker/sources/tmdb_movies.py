@@ -30,6 +30,8 @@ class Suggestion:
     name: str
     original_name: str
     year: int | None
+    poster_path: str | None = None  # as the title stores it: a TMDb file name or a whole Shikimori address
+    title_id: int | None = None  # the title in the list this suggestion already is; the core fills it in
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             name=item.get("title") or item.get("original_title") or "",
             original_name=item.get("original_title") or item.get("title") or "",
             year=response_year(item.get("release_date")),
+            poster_path=item.get("poster_path") or None,
         )
         for item in results
     ]

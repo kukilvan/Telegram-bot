@@ -15,7 +15,10 @@
      "date": "2020-10-03",
      "year": 2020
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/40748/af4f2db18f17de4d7c6491f6f92cd9d9.jpeg"
+    }
    },
    {
     "id": "38777",
@@ -31,7 +34,8 @@
      "date": "2018-12-03",
      "year": 2018
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": null
    },
    {
     "id": "56243",
@@ -47,7 +51,8 @@
      "date": "2023-08-11",
      "year": 2023
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": null
    },
    {
     "id": "48561",
@@ -63,7 +68,10 @@
      "date": "2021-12-24",
      "year": 2021
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/48561/fd8b173374561dae24fb57d27eba9ae6.jpeg"
+    }
    },
    {
     "id": "51009",
@@ -79,7 +87,10 @@
      "date": "2023-07-06",
      "year": 2023
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/51009/11ae4aeb0046c9587150e3982c8da446.jpeg"
+    }
    },
    {
     "id": "64080",
@@ -95,7 +106,8 @@
      "date": "2026-04-30",
      "year": 2026
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": null
    },
    {
     "id": "62392",
@@ -111,7 +123,8 @@
      "date": "2025-11-07",
      "year": 2025
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": null
    },
    {
     "id": "63824",
@@ -127,7 +140,10 @@
      "date": null,
      "year": null
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/63824/c841de6fbc9534b7057911e02bc11cb6.jpeg"
+    }
    },
    {
     "id": "59654",
@@ -143,7 +159,8 @@
      "date": "2025-05-30",
      "year": 2025
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": null
    },
    {
     "id": "57658",
@@ -159,7 +176,10 @@
      "date": "2026-01-09",
      "year": 2026
     },
-    "franchise": "jujutsu_kaisen"
+    "franchise": "jujutsu_kaisen",
+    "poster": {
+     "originalUrl": "https://shikimori.io/uploads/poster/animes/57658/7fd0d0760734513d62189ff53015546d.jpeg"
+    }
    },
    {
     "id": "52254",
@@ -175,7 +195,8 @@
      "date": "1960-11-26",
      "year": 1960
     },
-    "franchise": null
+    "franchise": null,
+    "poster": null
    },
    {
     "id": "64491",
@@ -191,7 +212,8 @@
      "date": "2026-06-27",
      "year": 2026
     },
-    "franchise": "bang_dream"
+    "franchise": "bang_dream",
+    "poster": null
    },
    {
     "id": "29782",
@@ -207,7 +229,8 @@
      "date": "1943-11-26",
      "year": 1943
     },
-    "franchise": null
+    "franchise": null,
+    "poster": null
    },
    {
     "id": "43555",
@@ -223,7 +246,8 @@
      "date": "2020-10-11",
      "year": 2020
     },
-    "franchise": "dr_stone"
+    "franchise": "dr_stone",
+    "poster": null
    },
    {
     "id": "50098",
@@ -239,7 +263,8 @@
      "date": "2021-10-10",
      "year": 2021
     },
-    "franchise": "86_part"
+    "franchise": "86_part",
+    "poster": null
    }
   ]
  }

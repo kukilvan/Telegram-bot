@@ -102,7 +102,8 @@ def test_the_stubs_come_from_the_one_list_of_sections_and_a_section_without_a_ph
 
     assert [section.code for section in menu.SECTIONS] == ["feed", "list", "archive", "search", "settings"]
     for section in menu.SECTIONS:
-        assert section.phrase and app.url_path_for(section.code) == section.address
+        assert app.url_path_for(section.code) == section.address
+    assert [section.code for section in menu.SECTIONS if section.phrase is None] == ["search"]  # a page of its own
     assert menu.Section._fields == ("address", "code", "label", "phrase")
     assert menu.OpenAddress._fields == ("name", "always")
     assert [(a.name, a.always) for a in menu.OPEN_ADDRESSES] == [

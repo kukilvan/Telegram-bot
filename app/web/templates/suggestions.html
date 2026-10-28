@@ -1,0 +1,24 @@
+{# The place of the suggestions: a hint, a line about what went wrong, or the rows. «Добавить» is a form of its own: what
+   goes wrong with it is said in its place, the other buttons stay. #}
+{% from "macros.html" import title_main, busy_button %}
+{% if hint %}<p class="{{ 'error' if error else 'hint' }}"{% if error %} role="alert"{% endif %}>{{ hint }}</p>{% endif %}
+{% if rows %}
+<ul class="suggestions">
+  {% for row in rows %}
+  <li class="title-row">
+    {{ title_main(row.poster, size, row.icon, row.name, row.original_name, row.year) }}
+    {% if row.card %}
+    <a class="row-action button-link" href="{{ row.card }}">В списке</a>
+    {% else %}
+    <form class="row-action" method="post" action="{{ add_address }}" hx-post="{{ add_address }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button">
+      <input type="hidden" name="kind" value="{{ row.kind }}">
+      <input type="hidden" name="external_id" value="{{ row.external_id }}">
+      <input type="hidden" name="q" value="{{ query }}">
+      {{ busy_button("Добавить", "Добавляю…") }}
+    </form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% if oob %}{% include "kind_note.html" %}{% endif %}

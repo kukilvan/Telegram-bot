@@ -241,3 +241,47 @@ button.danger { background: var(--error); }
 
   .delete summary { justify-content: center; }
 }
+
+/* The search: the switch of the kind, the field with its button, the suggestions under it */
+.kind-switch { display: flex; flex-wrap: wrap; gap: 0 1rem; margin: 0 0 0.5rem; padding: 0; border: 0; }
+
+.kind-switch legend { padding: 0; margin-bottom: 0.25rem; color: var(--muted); }
+
+.kind-option { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; margin: 0; color: var(--text); }
+
+.kind-option input { width: 1.25rem; height: 1.25rem; margin: 0; }
+
+.kind-note { margin: 0 0 0.75rem; color: var(--muted); font-size: 0.9rem; }
+
+.kind-note:empty { display: none; }
+
+.search-line { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+
+input[type="search"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+/* «Ищу…» is seen while the request for the suggestions is on (HTMX puts `htmx-request` on it, see base.html) */
+.searching { display: none; margin: 0 0 0.5rem; color: var(--muted); }
+
+.searching.htmx-request { display: block; }
+
+.hint { color: var(--muted); }
+
+.suggestions { margin: 0; padding: 0; list-style: none; }
+
+.title-row .error { flex: none; max-width: 16rem; margin: 0; }
+
+@media (max-width: 40rem) {
+  .search-line button { width: auto; }
+
+  .title-row .error { max-width: none; width: 100%; }
+}

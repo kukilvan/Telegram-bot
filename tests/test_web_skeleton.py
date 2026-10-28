@@ -26,6 +26,7 @@ WEB = ROOT / "app" / "web"
 PASSWORD = "correct horse battery"
 OPEN_ADDRESSES = {"/login", "/logout", "/health"}  # plus /static/…: the pinned list of what needs no sign-in
 MENU = [("/", "Лента"), ("/list", "Список"), ("/archive", "Архив"), ("/search", "Поиск"), ("/settings", "Настройки")]
+STUBS = [(address, name) for address, name in MENU if address != "/search"]  # the search is a page of its own
 MOSCOW = ZoneInfo("Europe/Moscow")
 NOW = datetime(2026, 10, 27, 15, 30, tzinfo=MOSCOW)
 
@@ -74,7 +75,7 @@ def client(tmp_path):
 
 # ---- the pages ------------------------------------------------------------
 
-@pytest.mark.parametrize("address, name", MENU)
+@pytest.mark.parametrize("address, name", STUBS)
 def test_every_stub_is_a_page_with_the_menu_and_the_current_section_marked(client, address, name):
     response = client.get(address)
 
@@ -89,13 +90,12 @@ def test_every_stub_is_a_page_with_the_menu_and_the_current_section_marked(clien
 
 
 def test_each_stub_says_its_own_phrase(client):
-    phrases = {address: client.get(address).text for address, _ in MENU}
+    phrases = {address: client.get(address).text for address, _ in STUBS}
 
     assert "что выходит в ближайшие дни" in phrases["/"] and "(часть 5.3)" in phrases["/"]
     assert "фильтрами по типу и статусу" in phrases["/list"] and "(часть 5.2)" in phrases["/list"]
     assert "сортировка по оценке" in phrases["/archive"] and "(часть 5.3)" in phrases["/archive"]
     assert "фильтр «Просмотрено» или «Бросил»" in phrases["/archive"]  # until the Archive is built: where to look
-    assert "поиск с подсказками" in phrases["/search"] and "(часть 5.2)" in phrases["/search"]
     assert "час сводки, тихие часы" in phrases["/settings"] and "(часть 5.4)" in phrases["/settings"]
 
 

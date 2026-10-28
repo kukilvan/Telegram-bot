@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.tracker.cards import format_card
-from app.tracker.core import Tracker, TitleNotFound
+from app.tracker.core import SourceFailed, Tracker, TitleNotFound
 from app.tracker.db import create_session_factory
 from app.tracker.models import ExternalId, SourceSnapshot, Title
 from app.tracker.sources.tmdb_movies import MovieSnapshot, Suggestion
@@ -164,8 +164,10 @@ def test_unknown_id_is_reported_and_nothing_is_stored(tracker, session_factory):
 def test_source_failure_is_not_hidden_and_nothing_is_stored(tracker, movies):
     movies.failing = True
 
-    with pytest.raises(ConnectionError):
+    with pytest.raises(SourceFailed) as caught:
         run(tracker.add_title("movie", "693134"))
+
+    assert isinstance(caught.value.__cause__, ConnectionError)  # the cause stays for the log
 
     assert run(tracker.list_titles()) == []
 

@@ -18,6 +18,7 @@ class KindInfo:
     source_name: str  # the service the kind comes from, as error texts name it
     seasonal: bool  # has seasons: the status follows the owner's season marks
     local_times: bool  # the time of an episode is shown on the owner's clock (the source gives the exact moment)
+    search_note: str = ""  # the line under the switch of the search while the kind is chosen; empty: none
 
 
 KINDS: Mapping[TitleKind, KindInfo] = {
@@ -36,6 +37,10 @@ KINDS: Mapping[TitleKind, KindInfo] = {
         source_name="TMDb",
         seasonal=True,
         local_times=False,
+        search_note=(
+            "Аниме лучше искать в «Аниме»: там сезоны и расписание серий точнее. "
+            "Найденное здесь добавится как обычный сериал TMDb"
+        ),
     ),
     TitleKind.ANIME: KindInfo(
         label="Аниме",

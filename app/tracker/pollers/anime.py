@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import Select, select, union_all
 
 from app.tracker import anime_events
 from app.tracker import seasons as season_logic
@@ -42,6 +42,23 @@ class AnimePoller(Poller):
                     shikimori_id=movie.ids.shikimori, mal_id=movie.ids.mal, anilist_id=movie.ids.anilist,
                 )
             )
+
+    def _known(self, wanted: set[str]) -> Select:
+        """An anime is known by its first season and also by every entry stored behind its seasons and films: when
+        Shikimori adds a prequel, the franchise is still the same title (KI-2)."""
+        return union_all(
+            super()._known(wanted),
+            select(PartRecord.shikimori_id, PartRecord.title_id).where(PartRecord.shikimori_id.in_(wanted)),
+            select(MovieRecord.shikimori_id, MovieRecord.title_id).where(MovieRecord.shikimori_id.in_(wanted)),
+        )
+
+    def snapshot_ids(self, snapshot: Any) -> set[str]:
+        """The first season, every part and every film of the chain."""
+        return {
+            snapshot.external_id,
+            *(part.ids.shikimori for part in snapshot.parts),
+            *(movie.ids.shikimori for movie in snapshot.movies),
+        }
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         """Put the anime's two sources together, compare with the stored seasons, queue events, store what is new."""

@@ -29,7 +29,7 @@ SECTIONS = (
         "Скоро будет: поиск и сортировка по оценке (часть 5.3). "
         "Пока просмотренное и брошенное — в Списке, фильтр «Просмотрено» или «Бросил»",
     ),
-    Section("/search", "search", "Поиск", "Скоро будет: поиск с подсказками и добавление (часть 5.2)"),
+    Section("/search", "search", "Поиск", None),
     Section("/settings", "settings", "Настройки", "Скоро будет: часовой пояс, рабочие дни, час сводки, тихие часы (часть 5.4)"),
 )
 # The one list of the addresses that need no sign-in; a page added later is closed without a word here

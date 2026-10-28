@@ -52,6 +52,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             name=item.get("name") or item.get("original_name") or "",
             original_name=item.get("original_name") or item.get("name") or "",
             year=response_year(item.get("first_air_date")),
+            poster_path=item.get("poster_path") or None,
         )
         for item in results
     ]

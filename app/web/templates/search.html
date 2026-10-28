@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Поиск · Трекер релизов{% endblock %}
+{% block content %}
+{# The form asks for the suggestions half a second after the last letter, at a change of the kind and at Enter; a newer
+   request replaces a stale one. Without HTMX, Enter sends the form to this page, which comes with the suggestions. #}
+<section class="card search">
+  <h1>Поиск</h1>
+  <form class="search-form" role="search" method="get" action="{{ current }}" hx-get="{{ suggestions_address }}" hx-trigger="input delay:500ms, submit" hx-target="#suggestions" hx-sync="this:replace" hx-indicator="#searching">
+    <fieldset class="kind-switch">
+      <legend>Что ищем</legend>
+      {% for choice in choices %}
+      <label class="kind-option"><input type="radio" name="kind" value="{{ choice.value }}"{% if choice.checked %} checked{% endif %}> <span>{{ choice.label }}</span></label>
+      {% endfor %}
+    </fieldset>
+    {% include "kind_note.html" %}
+    <label for="query">Название — по-русски или по-английски</label>
+    <div class="search-line">
+      <input id="query" name="q" type="search" value="{{ query }}" maxlength="100" autocomplete="off" autofocus>
+      <button type="submit">Найти</button>
+    </div>
+  </form>
+  <p id="searching" class="searching" role="status">Ищу…</p>
+  <div id="suggestions">{% include "suggestions.html" %}</div>
+</section>
+{% endblock %}

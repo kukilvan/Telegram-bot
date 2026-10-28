@@ -2,17 +2,20 @@
 first check) is asked of the title's poller. The marks and statuses are in `statuses`, the rows and the card in `listing`."""
 
 import asyncio
+import logging
+from dataclasses import replace
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import delete, select
 
 from app.tracker import sequel_events, storage
 from app.tracker.context import PRIMARY_ROLE, CoreContext
-from app.tracker.errors import TitleNotFound, UnknownEvent, UnknownKind, UnknownTitle
+from app.tracker.errors import SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownTitle
 from app.tracker.models import ExternalId, Event, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import AddResult, DeleteResult
 
 if TYPE_CHECKING:
+    from app.tracker.pollers.base import Poller
     from app.tracker.polling import Pollers
 
 
@@ -24,47 +27,54 @@ class Titles:
     # --- adding ---------------------------------------------------------------------------------
 
     async def search(self, kind: TitleKind, query: str) -> list[Any]:
-        """Suggestions for `query` from the source of this kind. Raises KeyError for an unknown kind."""
-        return await self.pollers.of(kind).source.suggest(query)
+        """Suggestions for `query` from the source of this kind, each with the number of its title when the title is in
+        the list already (found after the source answered, in one read). Raises KeyError for an unknown kind and
+        SourceFailed when the source fails."""
+        poller = self.pollers.of(kind)
+        try:
+            suggestions = await poller.source.suggest(query)
+        except Exception as exc:
+            raise SourceFailed(poller.source.source_key) from exc
+        if not suggestions:
+            return suggestions
+        known = await asyncio.to_thread(self._known_ids, poller, [s.external_id for s in suggestions])
+        return [replace(s, title_id=known.get(s.external_id)) for s in suggestions]
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
-        """Put a search result into the list with status «Хочу», or open the title that is already there."""
-        source = self.pollers.of(kind).source
-        existing = await asyncio.to_thread(self._find_title_id, source.source_key, external_id)
-        if existing is not None:
-            return AddResult(existing, created=False)
-        snapshot = await source.snapshot(external_id)
+        """Put a search result into the list with status «Хочу», or open the title that is already there: the one the
+        id names, or the one any id of the fresh snapshot names (an anime by any entry of its chain, KI-2)."""
+        poller = self.pollers.of(kind)
+        known = await asyncio.to_thread(self._known_ids, poller, [external_id])
+        if external_id in known:
+            return AddResult(known[external_id], created=False)
+        source = poller.source
+        try:
+            snapshot = await source.snapshot(external_id)
+        except Exception as exc:
+            raise SourceFailed(source.source_key) from exc
         if snapshot is None:
             raise TitleNotFound(f"{source.source_key}:{external_id}")
-        if snapshot.external_id != external_id:  # the source named the title by another entry (any entry of an anime franchise)
-            existing = await asyncio.to_thread(self._find_title_id, source.source_key, snapshot.external_id)
-            if existing is not None:
-                return AddResult(existing, created=False)
-        return await asyncio.to_thread(self._store_title, kind, source.source_key, snapshot)
+        return await asyncio.to_thread(self._store_title, kind, snapshot)
 
-    def _find_title_id(self, source_key: str, external_id: str) -> int | None:
+    def _known_ids(self, poller: "Poller", ids: list[str]) -> dict[str, int]:
         with self.ctx.session_factory() as session:
-            return self._primary_title_id(session, source_key, external_id)
+            return poller.known_ids(session, ids)
 
-    @staticmethod
-    def _primary_title_id(session, source_key: str, external_id: str) -> int | None:
-        return session.scalar(
-            select(ExternalId.title_id).where(
-                ExternalId.source == source_key,
-                ExternalId.external_id == external_id,
-                ExternalId.role == PRIMARY_ROLE,
-            )
-        )
-
-    def _store_title(self, kind: TitleKind, source_key: str, snapshot: Any) -> AddResult:
+    def _store_title(self, kind: TitleKind, snapshot: Any) -> AddResult:
         now = self.ctx.now()
         poller = self.pollers.of(kind)
+        source_key = poller.source.source_key
         with self.ctx.write_session() as session:
-            # the same title may have been added by a second request while this one waited for the source: the
-            # write session holds the database, so what is seen here stays true until the commit
-            existing = self._primary_title_id(session, source_key, snapshot.external_id)
-            if existing is not None:
-                return AddResult(existing, created=False)
+            # the same title may have been added by a second request while this one waited for the source, or long ago
+            # under another id of the snapshot: the write session holds the database, so what is seen here stays true
+            # until the commit
+            known = sorted(set(poller.known_ids(session, poller.snapshot_ids(snapshot)).values()))
+            if known:
+                if len(known) > 1:
+                    logging.warning(
+                        "%s:%s names the titles %s; the first one is opened", source_key, snapshot.external_id, known
+                    )
+                return AddResult(known[0], created=False)
             title = Title(
                 kind=kind,
                 name=snapshot.name,

@@ -220,6 +220,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
                 name=shown.display_name,
                 original_name=shown.name,
                 year=shown.aired_on.year if shown.aired_on else None,
+                poster_path=shown.poster,
             )
         )
     return suggestions

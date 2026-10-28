@@ -20,7 +20,7 @@ from app.tracker import delivery
 from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
-from app.tracker.errors import TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
+from app.tracker.errors import SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
 from app.tracker.listing import Listing
 from app.tracker.models import TitleKind
 from app.tracker.polling import Polling, Pollers
@@ -43,8 +43,8 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "Overview", "PollReport", "Sender", "SummaryResult",
-    "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent",
+    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "Overview", "PollReport", "Sender", "SourceFailed",
+    "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent",
     "UnknownKind", "UnknownSeason", "UnknownTitle", "WatchableSeason", "WatchedResult",
 ]
 
@@ -125,11 +125,13 @@ class Tracker:
     # --- titles ---------------------------------------------------------------------------------
 
     async def search(self, kind: TitleKind, query: str) -> list[Any]:
-        """Suggestions for `query` from the source of this kind. Raises KeyError for an unknown kind."""
+        """Suggestions for `query` from the source of this kind, each with its poster and the number of its title when
+        it is in the list already. Raises KeyError for an unknown kind, SourceFailed when the source fails."""
         return await self._titles.search(kind, query)
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
-        """Put a search result into the list with status «Хочу», or open the title that is already there."""
+        """Put a search result into the list with status «Хочу», or open the title that is already there (an anime is
+        known by any entry of its chain). Raises SourceFailed when the source fails, TitleNotFound when it has no such title."""
         return await self._titles.add_title(kind, external_id)
 
     async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:

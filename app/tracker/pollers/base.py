@@ -1,8 +1,9 @@
 """What every kind of title does when it is added and when it is polled: one object per kind, one set of actions.
 
-`first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has, and
-`apply` compares a fresh snapshot with the stored one, queues the events and stores the new state. The core never asks
-«which kind is it?»: it asks the poller of the kind (the table is in `polling`).
+`first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has,
+`known_ids` and `snapshot_ids` tell a title already in the list by the ids of the source, and `apply` compares a fresh
+snapshot with the stored one, queues the events and stores the new state. The core never asks «which kind is it?»: it
+asks the poller of the kind (the table is in `polling`).
 """
 
 from collections.abc import Iterable, Sequence
@@ -10,9 +11,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
+from sqlalchemy import Select, select
+
 from app.tracker import seasons as season_logic
-from app.tracker.context import CoreContext
-from app.tracker.models import SeasonRecord, TitleKind
+from app.tracker.context import PRIMARY_ROLE, CoreContext
+from app.tracker.models import ExternalId, SeasonRecord, TitleKind
 
 if TYPE_CHECKING:
     from app.tracker.queue import EventQueue
@@ -51,6 +54,31 @@ class Poller:
 
     def store_extras(self, session, title_id: int, records: dict[int, SeasonRecord], snapshot: Any) -> None:
         """What only this kind keeps beside the seasons (an anime's source entries and franchise films)."""
+
+    # --- knowing a title again ---
+
+    def known_ids(self, session, ids: Iterable[str]) -> dict[str, int]:
+        """Which of these ids of the source name a title of this kind that is in the list: id → the title's number, in
+        one read. An id that names two titles (the source joined two chains) gives the smaller number."""
+        wanted = set(ids)
+        if not wanted:
+            return {}
+        found: dict[str, int] = {}
+        for external_id, title_id in session.execute(self._known(wanted)):
+            found[external_id] = min(title_id, found.get(external_id, title_id))
+        return found
+
+    def _known(self, wanted: set[str]) -> Select:
+        """(id, title) pairs of the titles these ids name. A movie and a series are known by their own id."""
+        return select(ExternalId.external_id, ExternalId.title_id).where(
+            ExternalId.source == self.source.source_key,
+            ExternalId.role == PRIMARY_ROLE,
+            ExternalId.external_id.in_(wanted),
+        )
+
+    def snapshot_ids(self, snapshot: Any) -> set[str]:
+        """Every id of the source a fresh snapshot names: a title known by any of them is the title of the snapshot."""
+        return {snapshot.external_id}
 
     # --- polling a title ---
 

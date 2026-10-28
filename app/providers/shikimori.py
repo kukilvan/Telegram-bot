@@ -255,6 +255,7 @@ class ShikimoriClient:
             nextEpisodeAt
             airedOn { date year }
             franchise
+            poster { originalUrl }
           }
         }
         """

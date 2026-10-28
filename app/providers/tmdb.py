@@ -46,6 +46,8 @@ class TMDbProvider:
         self.backoff_max_retries = int(settings.tmdb_429_max_retries)
 
         # Phase 7.5 pacing state
+        self._clock = time.monotonic  # what the pacing reads and waits with; a test puts its own clock here
+        self._sleep = asyncio.sleep
         self._last_call_at: float | None = None      # monotonic time of last real call
         self._window_calls: deque[float] = deque()   # timestamps inside the rolling 60 s window
 
@@ -70,9 +72,8 @@ class TMDbProvider:
         per-minute cap, so consecutive items are staggered in time instead of
         being fired simultaneously.
         """
-        now = time.monotonic()
-        while self._window_calls and now - self._window_calls[0] >= 60.0:
-            self._window_calls.popleft()
+        now = self._clock()
+        self._forget_old(now)
         wait_interval = (
             self.min_call_interval - (now - self._last_call_at)
             if self._last_call_at is not None else 0.0
@@ -84,25 +85,43 @@ class TMDbProvider:
             wait_cap = 0.0
         delay = max(wait_interval, wait_cap, 0.0)
         if delay > 0:
-            await asyncio.sleep(delay)
-        stamp = time.monotonic()
+            await self._sleep(delay)
+        self._count()
+
+    def _forget_old(self, now: float) -> None:
+        while self._window_calls and now - self._window_calls[0] >= 60.0:
+            self._window_calls.popleft()
+
+    def _count(self) -> None:
+        """A request goes out now: it counts in the window and starts the pause before the next paced one."""
+        stamp = self._clock()
+        self._forget_old(stamp)
         self._last_call_at = stamp
         self._window_calls.append(stamp)
 
-    async def _get(self, path: str, params: dict | None = None) -> httpx.Response | None:
+    async def _get(self, path: str, params: dict | None = None, *, at_once: bool = False) -> httpx.Response | None:
         """One throttled GET with exponential backoff on HTTP 429.
 
         Returns the response, or None if every retry after a persistent 429
         failed (callers degrade to an empty result and move the item to its next slot).
+        `at_once` is the search the owner waits for (the suggestions): it waits neither for the pause nor for the
+        window, but counts in them, so the paced requests after it wait a little longer; a 429 gives None at once,
+        without the retries (they would make the owner wait up to half a minute).
         """
         self.hit_429 = False
         backoff = self.backoff_base_seconds
         for attempt in range(1, self.backoff_max_retries + 1):
-            await self._throttle()
+            if at_once:
+                self._count()
+            else:
+                await self._throttle()
             resp = await self._client.get(path, params=params)
             self.call_count += 1
             if resp.status_code == 429:
                 self.hit_429 = True
+                if at_once:
+                    logging.warning("TMDb 429 on %s; the search is not repeated", path)
+                    return None
                 retry_after_raw = (resp.headers or {}).get("Retry-After")
                 try:
                     wait = float(retry_after_raw)
@@ -112,7 +131,7 @@ class TMDbProvider:
                     "TMDb 429 on %s; backing off %.1fs (attempt %d/%d)",
                     path, max(wait, 0.0), attempt, self.backoff_max_retries,
                 )
-                await asyncio.sleep(max(0.0, wait))
+                await self._sleep(max(0.0, wait))
                 backoff *= 2
                 continue
             return resp
@@ -123,7 +142,8 @@ class TMDbProvider:
         return None
 
     async def search_movie(self, query: str, page: int = 1, strict: bool = False) -> list[dict]:
-        """Search movies by title (RU or EN). Returns raw TMDb results.
+        """Search movies by title (RU or EN). Returns raw TMDb results. Goes at once, ahead of the paced requests
+        (only the suggestions search), and is not repeated on a 429.
 
         Endpoint: GET /search/movie?language=ru&include_adult=false&query={query}
         Auth: api_key as query param (standard TMDb REST auth).
@@ -137,7 +157,7 @@ class TMDbProvider:
             "page": page,
             "query": query,
         }
-        resp = await self._get("/search/movie", params)
+        resp = await self._get("/search/movie", params, at_once=True)
         if resp is None or resp.status_code != 200:
             logging.error("TMDb search_movie failed (HTTP %s)", resp.status_code if resp else 429)
             if strict:
@@ -147,7 +167,8 @@ class TMDbProvider:
         return data.get("results", [])
 
     async def search_tv(self, query: str, page: int = 1, strict: bool = False) -> list[dict]:
-        """Search TV series by title (RU or EN). Returns raw TMDb results.
+        """Search TV series by title (RU or EN). Returns raw TMDb results. Goes at once, ahead of the paced requests
+        (only the suggestions search), and is not repeated on a 429.
 
         Endpoint: GET /search/tv?language=ru&include_adult=false&query={query}
         Auth: api_key as query param (standard TMDb REST auth).
@@ -161,7 +182,7 @@ class TMDbProvider:
             "page": page,
             "query": query,
         }
-        resp = await self._get("/search/tv", params)
+        resp = await self._get("/search/tv", params, at_once=True)
         if resp is None or resp.status_code != 200:
             logging.error("TMDb search_tv failed (HTTP %s)", resp.status_code if resp else 429)
             if strict:

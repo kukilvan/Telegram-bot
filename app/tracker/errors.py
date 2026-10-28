@@ -17,5 +17,10 @@ class UnknownKind(Exception):
     """Sequels are not announced for this kind of title, so there is nothing to follow."""
 
 
+class SourceFailed(Exception):
+    """The source of the kind did not answer, answered with an error or «too often» while the owner searched or added
+    a title. Its own error is the cause (`__cause__`): the log tells it, the owner only learns which source failed."""
+
+
 class UnknownSeason(Exception):
     """The title has no season with this number (specials, season 0, are not seasons)."""

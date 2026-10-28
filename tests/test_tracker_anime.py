@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 from anime_fakes import FakeAniList, FakeShikimori
 from app.tracker.actions import DELETE, card_actions
 from app.tracker.cards import format_card
-from app.tracker.core import Tracker, TitleNotFound
+from app.tracker.core import SourceFailed, Tracker, TitleNotFound
 from app.tracker.db import create_session_factory
 from app.tracker.models import ExternalId, MovieRecord, PartRecord, SeasonRecord, SourceSnapshot, Title
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
@@ -119,8 +119,10 @@ def test_an_unknown_entry_is_reported_and_nothing_is_stored(tracker):
 def test_shikimori_failure_stores_nothing(tracker, shikimori):
     shikimori.broken = True
 
-    with pytest.raises(ConnectionError):
+    with pytest.raises(SourceFailed) as caught:
         add(tracker, JJK)
+
+    assert isinstance(caught.value.__cause__, ConnectionError)  # the cause stays for the log
 
     assert run(tracker.list_titles()) == []
 
