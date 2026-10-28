@@ -68,6 +68,7 @@ input[type="password"] {
 }
 
 button {
+  min-height: 44px;
   padding: 0.5rem 1rem;
   border: 0;
   border-radius: 6px;
@@ -90,12 +91,89 @@ button {
 
 .menu { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; flex: 1; }
 
-.menu a { color: var(--accent); text-decoration: none; padding: 0.25rem 0; border-bottom: 2px solid transparent; }
+.menu a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
 
 .menu a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
 
 .status-line { margin: 0; padding: 0.5rem 1rem; color: var(--muted); font-size: 0.9rem; border-bottom: 1px solid var(--border); }
 
+.notice {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--card);
+}
+
+a { color: var(--accent); }
+
+/* A row of a suggestion or of the list: the poster and the text at the left, the button at the right */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+}
+
+.title-main { display: flex; flex: 1; align-items: center; gap: 0.75rem; min-width: 0; }
+
+.title-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+
+.title-original, .title-year { color: var(--muted); font-size: 0.85rem; }
+
+.row-action { flex: none; margin: 0; }
+
+/* The poster: the kind's icon stands in the frame and the picture lies over it, so a picture that did not load
+   leaves the icon */
+.poster {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+}
+
+.poster-small { width: 3.5rem; aspect-ratio: 2 / 3; font-size: 1.5rem; }
+
+.poster-large { width: 14rem; max-width: 100%; aspect-ratio: 2 / 3; font-size: 4rem; }
+
+.poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+/* A check mark with its caption: pressing the caption presses the mark */
+.check { display: flex; align-items: center; gap: 0.5rem; min-height: 44px; margin: 0; color: var(--text); }
+
+.check input { width: 1.5rem; height: 1.5rem; margin: 0; }
+
+/* «At work»: HTMX puts `htmx-request` on the form that sent the request (its own styles are off, see base.html); the
+   second caption of the button is seen meanwhile, the page makes the button unavailable with `hx-disabled-elt` */
+.busy { display: none; }
+
+.htmx-request .busy { display: inline; }
+
+.htmx-request .idle { display: none; }
+
+button:disabled { opacity: 0.6; cursor: progress; }
+
 @media (max-width: 40rem) {
   .menu { order: 3; flex-basis: 100%; }
+
+  .title-row { flex-wrap: wrap; }
+
+  .row-action, .row-action button { width: 100%; }
+
+  form button, .actions > * { width: 100%; }
+
+  .poster-large { width: 10rem; }
 }

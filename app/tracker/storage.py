@@ -121,6 +121,16 @@ def stored_snapshot(session, title_id: int, source: str) -> SourceSnapshot:
     ).one()
 
 
+def refresh_poster(session, title_id: int, poster_path: str | None) -> None:
+    """A fresh poster from the source replaces the stored one (the source may move its pictures); an empty answer
+    leaves the stored one. Only the polls of the title's own source call it, the sequel check does not."""
+    if not poster_path:
+        return
+    title = session.get(Title, title_id)
+    if title is not None and title.poster_path != poster_path:
+        title.poster_path = poster_path
+
+
 def refresh_status(session, title: Title, now: datetime) -> None:
     """Give a seasonal title the status that follows from its season marks and the state of the show."""
     if not is_seasonal(title.kind):

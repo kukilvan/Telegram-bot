@@ -4,5 +4,6 @@
 <section class="card narrow">
   <h1>{{ heading }}</h1>
   <p>{{ text }}</p>
+  {% if link %}<p><a href="{{ link[0] }}">{{ link[1] }}</a></p>{% endif %}
 </section>
 {% endblock %}

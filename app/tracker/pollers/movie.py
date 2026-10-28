@@ -28,6 +28,7 @@ class MoviePoller(Poller):
         )
         with self.ctx.write_session() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
+            storage.refresh_poster(session, due.id, snapshot.poster_path)
             stored.state = new.to_state()
             stored.observed_at = now
             stored.next_check_at = now + movie_events.check_interval(new, today)

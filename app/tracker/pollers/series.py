@@ -34,6 +34,7 @@ class SeriesPoller(Poller):
             due, series_events.detect_events(due.id, due.name, old, new, observed_at, now, gap), previous_look=observed_at
         )
         with self.ctx.write_session() as session:
+            storage.refresh_poster(session, due.id, snapshot.poster_path)
             storage.sync_seasons(session, due.id, new.seasons)
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             stored.state = new.to_state()

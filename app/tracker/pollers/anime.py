@@ -81,6 +81,7 @@ class AnimePoller(Poller):
         found = self.record_all(due, detected, previous_look=observed_at)
         with self.ctx.write_session() as session:
             storage.relayout_records(session, due.id, layout.renumber, layout.dissolved)
+            storage.refresh_poster(session, due.id, snapshot.poster_path)
             storage.sync_seasons(session, due.id, new.seasons)
             session.flush()
             self._sync_entries(session, due.id, snapshot)

@@ -36,6 +36,7 @@ from app.tracker.sources.tmdb_sequels import TmdbSequelSource
 from app.tracker.sources.tmdb_series import TmdbSeriesSource
 from app.utils.logging_config import setup_logging
 from app.web import MIN_PASSWORD_LENGTH, create_web_app, web_server
+from app.web.posters import image_sources
 
 WEB_PORT = 8080  # inside the process; the port on the PC is docker compose's business
 # Not the owner's setting (not in .env.example): run from .venv on Windows the web must not open to the whole home
@@ -134,6 +135,7 @@ async def main() -> int:
     host = os.environ.get(WEB_BIND_HOST, "").strip() or "127.0.0.1"
     web_app = create_web_app(
         health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE, tracker=tracker,
+        image_sources=image_sources(settings.shikimori_base_url),
     )
     server = web_server(web_app, host=host, port=WEB_PORT, stop_grace=WEB_STOP_GRACE_SECONDS)
     scheduler = AsyncIOScheduler()

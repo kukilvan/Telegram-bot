@@ -1,0 +1,31 @@
+{# The pieces the pages share. A picture comes from `poster_url` (a global of the environment). #}
+
+{# The poster in its frame: the kind's icon stands in the frame and the picture lies over it, so a picture that did not
+   load (no internet, a site that changed its address) leaves the icon. The empty `alt` is on purpose: the title next
+   to it says the same. `size` is a `PosterSize`. #}
+{% macro poster(stored, size, icon) %}
+<span class="poster {{ size.css }}">
+  <span class="poster-icon" aria-hidden="true">{{ icon }}</span>
+  {% set src = poster_url(stored, size) %}
+  {% if src %}<img src="{{ src }}" alt="" width="{{ size.width }}" height="{{ size.height }}" loading="lazy">{% endif %}
+</span>
+{% endmacro %}
+
+{# The title of a row of a suggestion or of the list: the poster, the kind's icon, the name, the original name (smaller)
+   and the year. The page puts the button to the right of it. #}
+{% macro title_main(stored_poster, size, icon, name, original_name, year) %}
+<span class="title-main">
+  {{ poster(stored_poster, size, icon) }}
+  <span class="title-text">
+    <span class="title-name"><span aria-hidden="true">{{ icon }}</span> {{ name }}</span>
+    {% if original_name and original_name != name %}<span class="title-original">{{ original_name }}</span>{% endif %}
+    {% if year %}<span class="title-year">{{ year }}</span>{% endif %}
+  </span>
+</span>
+{% endmacro %}
+
+{# A button of a press that goes to the network: two captions, the second one is seen while the request is on
+   (`htmx-request` is put on the form by HTMX; the page puts `hx-disabled-elt` on the form). #}
+{% macro busy_button(caption, busy_caption, extra_class="") %}
+<button type="submit"{% if extra_class %} class="{{ extra_class }}"{% endif %}><span class="idle">{{ caption }}</span><span class="busy">{{ busy_caption }}</span></button>
+{% endmacro %}

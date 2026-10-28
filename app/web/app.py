@@ -1,8 +1,9 @@
-"""The FastAPI app: the login and the guard in front of every address, the security headers, the pages behind."""
+"""The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages
+behind (each section has a module and a router of its own, `create_web_app` only puts them together)."""
 
 import logging
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
@@ -15,8 +16,9 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.tracker.core import Tracker
-from app.web import auth
-from app.web.status_line import NO_DATA, status_text
+from app.web import auth, menu, pages, posters
+from app.web.menu import OPEN_ADDRESSES, SECTIONS
+from app.web.pages import WebContext
 
 HERE = Path(__file__).resolve().parent
 SESSION_COOKIE = "tracker_session"
@@ -27,24 +29,6 @@ SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "same-origin",
 }
-# The menu: address, the name in code (from CONTEXT.md; it names the route), the label and the one phrase of the
-# placeholder until the section is built
-SECTIONS = (
-    ("/", "feed", "Лента", "Скоро будет: что выходит в ближайшие дни и что вышло недавно (часть 5.3)"),
-    ("/list", "list", "Список", "Скоро будет: все тайтлы с фильтрами по типу и статусу (часть 5.2)"),
-    ("/archive", "archive", "Архив", "Скоро будет: просмотренное с поиском и сортировкой по оценке (часть 5.3)"),
-    ("/search", "search", "Поиск", "Скоро будет: поиск с подсказками и добавление (часть 5.2)"),
-    ("/settings", "settings", "Настройки", "Скоро будет: часовой пояс, рабочие дни, час сводки, тихие часы (часть 5.4)"),
-)
-# The one list of the addresses that need no sign-in. A name ending in "/" is a folder (everything under it). The flag:
-# open even when no password is set (the service ones: Docker and the styles are needed always); `/login` and
-# `/logout` are not — without a password they say "sign-in is not configured"
-OPEN_ADDRESSES = (
-    ("/health", True),
-    ("/static/", True),
-    ("/login", False),
-    ("/logout", False),
-)
 NOT_CONFIGURED = ("Вход в приложение не настроен: добавьте в файл .env строку WEB_PASSWORD=… "
                   "(не короче 8 символов) и запустите .\\start-bot.ps1")
 
@@ -66,12 +50,14 @@ def create_web_app(
     clock: Callable[[], float] = time.monotonic,
     tracker: Tracker | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+    image_sources: Sequence[str] = (),
 ) -> FastAPI:
     """The web app. `health` is the process's own report (`Health.report`): it reads neither the database nor the
     network, so `/health` answers even when they are slow. `password` is WEB_PASSWORD (without it, or when it is
     short, the login is closed); `secret_file` keeps the key that signs the session; `clock` times the lock after
     wrong tries (seconds). `tracker` is the one door into the core (without it the status line has no data); `now`
-    is the wall clock (aware) the status line compares with."""
+    is the wall clock (aware) the status line compares with. `image_sources` are the sites pictures may be loaded
+    from (`posters.image_sources`); without them the page loads none."""
     # No /docs, /redoc or /openapi.json: they would describe every address to anyone who asks
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     templates = Jinja2Templates(directory=HERE / "templates")
@@ -79,36 +65,25 @@ def create_web_app(
     key = auth.load_key(secret_file) if configured else b""
     expected = auth.fingerprint(key, password) if configured else ""
     guard = auth.LoginGuard(clock)
+    security_headers = {**SECURITY_HEADERS}
+    if image_sources:
+        security_headers["Content-Security-Policy"] += "; img-src 'self' " + " ".join(image_sources)
 
     def signed_in(request: Request) -> bool:
         # The cookie is signed and has a lifetime (SessionMiddleware); the fingerprint dies with the password.
         # Outside the session middleware (the foreign-origin answer) nobody is signed in
         return configured and "session" in request.scope and auth.same(request.session.get("pw"), expected)
 
-    async def status_line() -> str:
-        """The text of the status line; a database that does not answer must not take the page down."""
-        if tracker is None:
-            return NO_DATA
-        try:
-            overview = await tracker.overview()
-        except Exception:
-            logging.exception("web: no data from the database for the status line")
-            return NO_DATA
-        return status_text(overview.title_count, overview.last_check_at, now())
-
-    async def page(request: Request, name: str, *, status: int = 200, **context: object) -> Response:
-        context.setdefault("signed_in", signed_in(request))
-        if context["signed_in"]:  # the menu and the status line belong to the pages behind the sign-in
-            context.setdefault("current", "")
-            context["status"] = await status_line()
-            context["sections"] = SECTIONS
-        return templates.TemplateResponse(request, name, context, status_code=status)
+    templates.env.globals["poster_url"] = posters.poster_url
+    app.state.web = WebContext(templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS)
 
     async def message(request: Request, heading: str, text: str, status: int) -> Response:
-        return await page(request, "message.html", status=status, heading=heading, text=text)
+        return await pages.message_page(request, heading, text, status)
 
     async def login_page(request: Request, next_address: str, error: str = "", status: int = 200) -> Response:
-        return await page(request, "login.html", status=status, signed_in=False, next=next_address, error=error)
+        return await pages.page(
+            request, "login.html", status_code=status, signed_in=False, next=next_address, error=error
+        )
 
     async def locked_page(request: Request, next_address: str, seconds: int) -> Response:
         minutes = -(-seconds // 60)
@@ -153,7 +128,7 @@ def create_web_app(
             response = await message(request, "Запрос отклонён", "Запрос с чужой страницы отклонён", 403)
         else:
             response = await call_next(request)
-        response.headers.update(SECURITY_HEADERS)
+        response.headers.update(security_headers)
         if not _is_open(request.url.path):
             response.headers["Cache-Control"] = "no-store"  # after the sign-out "Back" must not show a page
         return response
@@ -195,15 +170,9 @@ def create_web_app(
 
     @app.get("/status-line")
     async def status_fragment(request: Request) -> Response:
-        return templates.TemplateResponse(request, "status_line.html", {"status": await status_line()})
+        return pages.fragment(request, "status_line.html", status=await pages.status_line(request))
 
-    def add_section(address: str, code: str, label: str, phrase: str) -> None:
-        @app.get(address, name=code)
-        async def section(request: Request) -> Response:
-            return await page(request, "section.html", current=address, heading=label, phrase=phrase)
-
-    for address, code, label, phrase in SECTIONS:
-        add_section(address, code, label, phrase)
+    app.include_router(menu.router)
 
     @app.exception_handler(404)
     async def not_found(request: Request, exc: HTTPException) -> Response:

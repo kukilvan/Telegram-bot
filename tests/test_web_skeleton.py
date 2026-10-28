@@ -19,6 +19,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.models import SourceSnapshot, Title, TitleKind, TitleStatus
 from app.web import create_web_app
 from app.web.status_line import NO_DATA, status_text
+from web_helpers import all_routes
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "app" / "web"
@@ -92,7 +93,8 @@ def test_each_stub_says_its_own_phrase(client):
 
     assert "что выходит в ближайшие дни" in phrases["/"] and "(часть 5.3)" in phrases["/"]
     assert "фильтрами по типу и статусу" in phrases["/list"] and "(часть 5.2)" in phrases["/list"]
-    assert "сортировкой по оценке" in phrases["/archive"] and "(часть 5.3)" in phrases["/archive"]
+    assert "сортировка по оценке" in phrases["/archive"] and "(часть 5.3)" in phrases["/archive"]
+    assert "фильтр «Просмотрено» или «Бросил»" in phrases["/archive"]  # until the Archive is built: where to look
     assert "поиск с подсказками" in phrases["/search"] and "(часть 5.2)" in phrases["/search"]
     assert "час сводки, тихие часы" in phrases["/settings"] and "(часть 5.4)" in phrases["/settings"]
 
@@ -343,7 +345,7 @@ def test_every_address_of_the_app_but_the_pinned_open_ones_is_closed_without_a_s
         return {"secret": 1}
 
     anonymous = TestClient(app, follow_redirects=False)
-    addresses = {route.path for route in app.routes if getattr(route, "methods", None) and "GET" in route.methods}
+    addresses = {route.path for route in all_routes(app) if "GET" in route.methods}
 
     assert {"/", "/list", "/archive", "/search", "/settings", "/status-line", "/future-page"} <= addresses
     for address in sorted(addresses - OPEN_ADDRESSES):

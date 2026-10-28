@@ -13,8 +13,8 @@
     <span class="site-name">Трекер релизов</span>
     {% if signed_in %}
     <nav class="menu" aria-label="Разделы">
-      {% for address, _, name, _ in sections %}
-      <a href="{{ address }}"{% if address == current %} aria-current="page"{% endif %}>{{ name }}</a>
+      {% for section in sections %}
+      <a href="{{ section.address }}"{% if section.address == current %} aria-current="page"{% endif %}>{{ section.label }}</a>
       {% endfor %}
     </nav>
     <form method="post" action="/logout">
@@ -24,6 +24,7 @@
   </header>
   {% if signed_in %}{% include "status_line.html" %}{% endif %}
   <main>
+    {% if notice %}<p class="notice" role="status">{{ notice }}</p>{% endif %}
     {% block content %}{% endblock %}
   </main>
 </body>
