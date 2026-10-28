@@ -294,3 +294,42 @@ input[type="search"] {
 
   .title-row .error { max-width: none; width: 100%; }
 }
+
+/* The list: the three rows of filter links, the rows, the strip for deleting several */
+.filters { display: flex; flex-wrap: wrap; gap: 0 0.25rem; margin: 0 0 0.25rem; }
+
+.filters a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.6rem;
+  border-bottom: 2px solid transparent;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.filters a[aria-current="true"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
+
+.shown { margin: 0.5rem 0; color: var(--muted); }
+
+.title-list { margin: 0; padding: 0; list-style: none; }
+
+.row-link, .pick { flex: 1; min-width: 0; gap: 0.75rem; align-items: center; color: var(--text); text-decoration: none; }
+
+.row-link { display: flex; min-height: 44px; }
+
+.pick { margin: 0; }
+
+.row-status { flex: none; color: var(--muted); font-size: 0.9rem; }
+
+.delete-bar { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-start; }
+
+.delete-bar .question { flex-basis: 100%; margin: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 40rem) {
+  .row-link, .pick { flex-wrap: wrap; }
+
+  .row-status { width: 100%; }
+
+  .delete-bar > button, .delete-bar > .button-link { width: 100%; }
+}

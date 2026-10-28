@@ -13,6 +13,7 @@ from app.tracker.models import TitleKind
 @dataclass(frozen=True)
 class KindInfo:
     label: str  # «Фильм»
+    plural: str  # «Фильмы»: the filter of the list
     icon: str  # in the list, on the card and at the start of an event message
     ask_name: str  # the request that follows «Добавить» and the choice of this kind
     source_name: str  # the service the kind comes from, as error texts name it
@@ -24,6 +25,7 @@ class KindInfo:
 KINDS: Mapping[TitleKind, KindInfo] = {
     TitleKind.MOVIE: KindInfo(
         label="Фильм",
+        plural="Фильмы",
         icon="🎬",
         ask_name="Напишите название фильма (можно по-русски или по-английски).",
         source_name="TMDb",
@@ -32,6 +34,7 @@ KINDS: Mapping[TitleKind, KindInfo] = {
     ),
     TitleKind.SERIES: KindInfo(
         label="Сериал",
+        plural="Сериалы",
         icon="📺",
         ask_name="Напишите название сериала (можно по-русски или по-английски).",
         source_name="TMDb",
@@ -44,6 +47,7 @@ KINDS: Mapping[TitleKind, KindInfo] = {
     ),
     TitleKind.ANIME: KindInfo(
         label="Аниме",
+        plural="Аниме",
         icon="🎌",
         ask_name="Напишите название аниме (можно по-русски или по-английски).",
         source_name="Shikimori",

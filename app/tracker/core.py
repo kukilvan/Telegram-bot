@@ -9,7 +9,7 @@ Clock, sender and sources come from outside, so tests can replace all three. An 
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
 """
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, time, timezone, tzinfo
 from typing import Any
@@ -22,13 +22,14 @@ from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle
 from app.tracker.listing import Listing
-from app.tracker.models import TitleKind
+from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
     AddResult,
     DeleteResult,
     DeliveryReport,
+    ListOrder,
     Overview,
     PollReport,
     SummaryResult,
@@ -43,7 +44,7 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "Overview", "PollReport", "Sender", "SourceFailed",
+    "AddResult", "Clock", "DeleteResult", "DeliveryReport", "ListOrder", "Overview", "PollReport", "Sender", "SourceFailed",
     "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent",
     "UnknownKind", "UnknownSeason", "UnknownTitle", "WatchableSeason", "WatchedResult",
 ]
@@ -175,8 +176,15 @@ class Tracker:
         """The same for an old button, which holds only the number of the announcement."""
         return await self._titles.follow_sequel(event_id)
 
-    async def list_titles(self) -> list[TitleSummary]:
-        return await self._listing.list_titles()
+    async def list_titles(
+        self,
+        kind: TitleKind | None = None,
+        statuses: Collection[TitleStatus] | None = None,
+        order: ListOrder | None = None,
+    ) -> list[TitleSummary]:
+        """The rows of the list, filtered by kind and by a set of statuses (None: all), in the given order (without
+        one: as the titles were added, which is the bot's list)."""
+        return await self._listing.list_titles(kind, statuses, order)
 
     async def overview(self) -> Overview:
         """The line of the web page: how many titles are in the list and when a source last answered."""

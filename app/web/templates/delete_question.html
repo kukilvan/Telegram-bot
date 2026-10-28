@@ -1,0 +1,14 @@
+{# The question that takes the place of the strip, and the one page of it when there is no HTMX. The form sends exactly
+   the numbers that were asked about, and the filters. «Отмена» brings the strip back (HTMX) or goes to the rows. #}
+{% from "macros.html" import busy_button %}
+<div id="delete-bar" class="delete-bar">
+  <p class="question">{{ question.text }}</p>
+  <div class="actions">
+    <form method="post" action="{{ question.delete_address }}" hx-post="{{ question.delete_address }}" hx-disabled-elt="find button">
+      {% for title_id in question.ids %}<input type="hidden" name="id" value="{{ title_id }}">{% endfor %}
+      {% for name, value in question.hidden.items() %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+      {{ busy_button("Да, удалить", "Удаляю…", "danger") }}
+    </form>
+    <a class="button-link" href="{{ question.back_address }}" hx-get="{{ question.selection_address }}" hx-include="#selection-form" hx-target="#delete-bar" hx-swap="outerHTML">Отмена</a>
+  </div>
+</div>

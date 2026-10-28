@@ -31,7 +31,7 @@ def test_the_enums_keep_the_values_the_database_already_holds():
 @pytest.mark.parametrize("kind", list(TitleKind))
 def test_every_kind_has_every_property_filled(kind):
     info = KINDS[kind]
-    assert info.label and info.icon and info.ask_name and info.source_name
+    assert info.label and info.plural and info.icon and info.ask_name and info.source_name
     assert isinstance(info.seasonal, bool)
 
 

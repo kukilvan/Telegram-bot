@@ -1,0 +1,8 @@
+{# The strip under the rows while the owner ticks titles to delete: the button with the number (not available while
+   nothing is ticked) and «Отмена». HTMX swaps it for a new one at every tick. Where there is no script the button does
+   nothing; the plain one in `noscript` sends the form of the rows to the question. #}
+<div id="delete-bar" class="delete-bar">
+  <button type="button" hx-get="{{ bar.confirm_address }}" hx-include="#selection-form" hx-target="#delete-bar" hx-swap="outerHTML"{% if not bar.count %} disabled{% endif %}>Удалить выбранные ({{ bar.count }})</button>
+  <a class="button-link" href="{{ bar.cancel_address }}">Отмена</a>
+  {% if bar.initial %}<noscript><button type="submit" form="selection-form">Удалить выбранные</button></noscript>{% endif %}
+</div>

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from enum import StrEnum
 
 from app.tracker.models import TitleKind, TitleStatus
 
@@ -22,6 +23,13 @@ class DeleteResult:
     name: str  # the title that was removed, for the message to the owner
 
 
+class ListOrder(StrEnum):
+    """The order of the rows of the list."""
+
+    ADDED = "added"  # the title added last first; the same moment: the larger number first
+    NAME = "name"  # by name, case and «ё» ignored: digits, then Latin, then Cyrillic; the same name: the smaller number first
+
+
 @dataclass(frozen=True)
 class TitleSummary:
     """One row of the list."""
@@ -31,6 +39,7 @@ class TitleSummary:
     name: str
     year: int | None
     status: TitleStatus
+    poster_path: str | None = None  # as the title stores it (a TMDb file name or a whole address); the web turns it into a picture
 
 
 @dataclass(frozen=True)
