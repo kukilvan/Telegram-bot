@@ -69,3 +69,15 @@ def test_the_check_uses_only_the_standard_library_and_the_port_inside():
 
     assert "http://127.0.0.1:8080/health" in source and "TIMEOUT_SECONDS = 5" in source
     assert "import app" not in source and "from app" not in source and "httpx" not in source
+
+
+def test_a_proxy_in_the_environment_does_not_stand_between_the_check_and_the_port(serve, monkeypatch):
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        closed = f"http://127.0.0.1:{sock.getsockname()[1]}"  # nobody listens there
+    for name in ("HTTP_PROXY", "http_proxy", "HTTPS_PROXY", "https_proxy", "ALL_PROXY", "all_proxy"):
+        monkeypatch.setenv(name, closed)
+    monkeypatch.setenv("NO_PROXY", "")
+    monkeypatch.setenv("no_proxy", "")
+
+    assert healthcheck.check(serve(200)) is None

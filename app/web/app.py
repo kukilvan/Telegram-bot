@@ -27,22 +27,35 @@ SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "same-origin",
 }
-# The menu: address, name, and the one phrase of the placeholder until the section is built
+# The menu: address, the name in code (from CONTEXT.md; it names the route), the label and the one phrase of the
+# placeholder until the section is built
 SECTIONS = (
-    ("/", "Лента", "Скоро будет: что выходит в ближайшие дни и что вышло недавно (часть 5.3)"),
-    ("/list", "Список", "Скоро будет: все тайтлы с фильтрами по типу и статусу (часть 5.2)"),
-    ("/archive", "Архив", "Скоро будет: просмотренное с поиском и сортировкой по оценке (часть 5.3)"),
-    ("/search", "Поиск", "Скоро будет: поиск с подсказками и добавление (часть 5.2)"),
-    ("/settings", "Настройки", "Скоро будет: часовой пояс, рабочие дни, час сводки, тихие часы (часть 5.4)"),
+    ("/", "feed", "Лента", "Скоро будет: что выходит в ближайшие дни и что вышло недавно (часть 5.3)"),
+    ("/list", "list", "Список", "Скоро будет: все тайтлы с фильтрами по типу и статусу (часть 5.2)"),
+    ("/archive", "archive", "Архив", "Скоро будет: просмотренное с поиском и сортировкой по оценке (часть 5.3)"),
+    ("/search", "search", "Поиск", "Скоро будет: поиск с подсказками и добавление (часть 5.2)"),
+    ("/settings", "settings", "Настройки", "Скоро будет: часовой пояс, рабочие дни, час сводки, тихие часы (часть 5.4)"),
+)
+# The one list of the addresses that need no sign-in. A name ending in "/" is a folder (everything under it). The flag:
+# open even when no password is set (the service ones: Docker and the styles are needed always); `/login` and
+# `/logout` are not — without a password they say "sign-in is not configured"
+OPEN_ADDRESSES = (
+    ("/health", True),
+    ("/static/", True),
+    ("/login", False),
+    ("/logout", False),
 )
 NOT_CONFIGURED = ("Вход в приложение не настроен: добавьте в файл .env строку WEB_PASSWORD=… "
                   "(не короче 8 символов) и запустите .\\start-bot.ps1")
 
 
-def _is_open(path: str) -> bool:
-    """The addresses that need no sign-in. The one list: everything else, even an address that does not exist, is
-    closed — a new page needs no change here."""
-    return path in ("/login", "/logout", "/health") or path.startswith("/static/")
+def _is_open(path: str, *, always: bool = False) -> bool:
+    """Whether the address needs no sign-in (`always`: and no configured password either), by `OPEN_ADDRESSES`.
+    Everything else, even an address that does not exist, is closed — a new page needs no change here."""
+    return any(
+        (path.startswith(name) if name.endswith("/") else path == name) and (flag or not always)
+        for name, flag in OPEN_ADDRESSES
+    )
 
 
 def create_web_app(
@@ -109,14 +122,14 @@ def create_web_app(
     @app.middleware("http")
     async def guard_sign_in(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         path = request.url.path
-        if path == "/health" or path.startswith("/static/"):
+        if _is_open(path, always=True):
             return await call_next(request)
         if not configured:
             return await message(request, "Вход не настроен", NOT_CONFIGURED, 503)
+        if _is_open(path):
+            return await call_next(request)
         if signed_in(request):
             request.session["pw"] = expected  # writing it again makes the middleware send a fresh cookie: 30 days from now
-            return await call_next(request)
-        if path in ("/login", "/logout"):
             return await call_next(request)
         if request.headers.get("hx-request") or path == "/status-line":
             return Response(status_code=401, headers={"HX-Redirect": "/login"})
@@ -184,13 +197,13 @@ def create_web_app(
     async def status_fragment(request: Request) -> Response:
         return templates.TemplateResponse(request, "status_line.html", {"status": await status_line()})
 
-    def add_section(address: str, name: str, phrase: str) -> None:
-        @app.get(address, name=name)
+    def add_section(address: str, code: str, label: str, phrase: str) -> None:
+        @app.get(address, name=code)
         async def section(request: Request) -> Response:
-            return await page(request, "section.html", current=address, heading=name, phrase=phrase)
+            return await page(request, "section.html", current=address, heading=label, phrase=phrase)
 
-    for address, name, phrase in SECTIONS:
-        add_section(address, name, phrase)
+    for address, code, label, phrase in SECTIONS:
+        add_section(address, code, label, phrase)
 
     @app.exception_handler(404)
     async def not_found(request: Request, exc: HTTPException) -> Response:

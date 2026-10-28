@@ -13,7 +13,7 @@
     <span class="site-name">Трекер релизов</span>
     {% if signed_in %}
     <nav class="menu" aria-label="Разделы">
-      {% for address, name, _ in sections %}
+      {% for address, _, name, _ in sections %}
       <a href="{{ address }}"{% if address == current %} aria-current="page"{% endif %}>{{ name }}</a>
       {% endfor %}
     </nav>

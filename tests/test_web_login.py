@@ -468,3 +468,60 @@ def test_the_stylesheet_has_no_outside_addresses():
     css = (Path(__file__).resolve().parent.parent / "app" / "web" / "static" / "style.css").read_text(encoding="utf-8")
 
     assert "http" not in css and "@import" not in css
+
+
+# ---- the one list of open addresses ---------------------------------------
+
+def test_the_guard_and_the_no_store_header_take_the_open_addresses_from_one_place(secret_file, clock, monkeypatch):
+    from app.web import app as web_app
+
+    app = make_app(secret_file, clock)
+
+    @app.get("/future-page")
+    async def future():
+        return {"ok": 1}
+
+    client = TestClient(app, follow_redirects=False)
+    assert client.get("/future-page").status_code == 303  # closed until the one list says otherwise
+    assert client.get("/future-page").headers.get("cache-control") == "no-store"
+
+    monkeypatch.setattr(web_app, "OPEN_ADDRESSES", (*web_app.OPEN_ADDRESSES, ("/future-page", False)))
+
+    opened = client.get("/future-page")
+    assert opened.status_code == 200 and "cache-control" not in opened.headers  # the guard and the header agree
+
+
+def test_without_a_password_only_the_service_addresses_are_open(secret_file, clock):
+    client = TestClient(make_app(secret_file, clock, password=""), follow_redirects=False)
+
+    assert client.get("/health").status_code == 200
+    assert client.get("/static/style.css").status_code == 200
+    for response in (client.get("/login"), client.post("/logout"), client.get("/"), client.get("/nowhere")):
+        assert response.status_code == 503 and "Вход не настроен" in response.text
+
+
+def test_a_signed_in_visit_to_the_login_does_not_renew_the_session(client):
+    sign_in(client)
+
+    response = client.get("/login")
+
+    assert response.status_code == 303 and response.headers["location"] == "/"
+    assert "set-cookie" not in response.headers  # nothing to renew there: the visit only sends the owner on
+
+
+def test_the_sections_are_named_in_code_by_the_glossary(secret_file, clock):
+    app = make_app(secret_file, clock)
+
+    assert app.url_path_for("feed") == "/"
+    for name in ("list", "archive", "search", "settings"):
+        assert app.url_path_for(name) == f"/{name}"
+    names = {route.name for route in app.routes if getattr(route, "methods", None)}
+    assert not [name for name in names if re.search("[А-Яа-я]", name)]
+
+
+def test_the_glossary_names_the_search_and_settings_screens():
+    glossary = (Path(__file__).resolve().parent.parent / "CONTEXT.md").read_text(encoding="utf-8")
+
+    assert "**Поиск**:" in glossary and "В коде: `search`." in glossary
+    assert "**Настройки**:" in glossary and "В коде: `settings`." in glossary
+    assert "В коде: `feed`." in glossary and "`feed` (в коде пока нет)" not in glossary

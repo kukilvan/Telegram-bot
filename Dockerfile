@@ -15,6 +15,6 @@ COPY . .
 # drops them (PUID/PGID) and replaces itself with the application
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 CMD ["python", "-m", "app.healthcheck"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --start-interval=2s --retries=3 CMD ["python", "-m", "app.healthcheck"]
 
 CMD ["python", "-m", "app.container_start"]
