@@ -12,7 +12,7 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Form, Request, Response
 
 from app.tracker.cards import STATUS_LABELS, titles_word
-from app.tracker.core import ListOrder, Tracker, UnknownTitle
+from app.tracker.core import ListOrder, UnknownTitle
 from app.tracker.kinds import KINDS
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from app.web import pages
@@ -20,7 +20,6 @@ from app.web.posters import LIST_SIZE
 
 ALL_STATUSES = "all"  # the value of `status` for the whole list, the archive included
 MAX_NAMES = 10  # the names a question or a line names; the rest is «и ещё N»
-MAX_ID_DIGITS = 12  # a longer number is no title of ours
 SELECT = "1"  # the value of `select`
 
 EMPTY_LIST = "В списке пока ничего нет."
@@ -94,13 +93,6 @@ class Row(NamedTuple):
     status: str  # the label
 
 
-def _tracker(request: Request) -> Tracker:
-    tracker = pages.context_of(request).tracker
-    if tracker is None:
-        raise RuntimeError("the web app has no tracker")
-    return tracker
-
-
 def _address(request: Request, filters: Filters, *, select: bool = False) -> str:
     params = filters.params()
     if select:
@@ -143,7 +135,7 @@ def _ids(raw: Sequence[str]) -> list[int]:
     found: list[int] = []
     for text in raw:
         text = text.strip()
-        if text.isascii() and text.isdigit() and len(text) <= MAX_ID_DIGITS and int(text) not in found:
+        if text.isascii() and text.isdigit() and len(text) <= pages.MAX_ID_DIGITS and int(text) not in found:
             found.append(int(text))
     return found
 
@@ -179,7 +171,7 @@ def _bar(request: Request, filters: Filters, count: int, *, initial: bool = Fals
 @pages.guarded
 async def show_list(request: Request, kind: str = "", status: str = "", order: str = "", select: str = "") -> Response:
     filters = Filters.parse(kind, status, order)
-    tracker = _tracker(request)
+    tracker = pages.tracker_of(request)
     titles = await tracker.list_titles(filters.kind, filters.statuses(), filters.order)
     empty = ""
     if not titles:
@@ -237,7 +229,7 @@ async def confirm(request: Request, kind: str = "", status: str = "", order: str
 
 async def _names(request: Request, ids: Sequence[int]) -> dict[int, str]:
     """The names of the titles of these numbers that are in the list, in the order of the numbers."""
-    named = {t.id: t.name for t in await _tracker(request).list_titles()}
+    named = {t.id: t.name for t in await pages.tracker_of(request).list_titles()}
     return {i: named[i] for i in ids if i in named}
 
 
@@ -254,7 +246,7 @@ async def delete(
     fails does not stop the others. Back to the list with the same filters and a line about what happened."""
     filters = Filters.parse(kind, status, order)
     asked = _ids(ids)
-    tracker = _tracker(request)
+    tracker = pages.tracker_of(request)
     names = await _names(request, asked)
     deleted: list[str] = []
     failed: list[str] = []

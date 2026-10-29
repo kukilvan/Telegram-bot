@@ -306,7 +306,7 @@ def test_the_pages_work_without_the_internet_the_only_script_is_ours(client):
 
 # ---- rule 10: the web is a thin shell -------------------------------------
 
-ALLOWED_TRACKER_MODULES = {"core", "cards", "kinds", "models"}  # the facade and the pure modules without a database
+ALLOWED_TRACKER_MODULES = {"core", "cards", "kinds", "models", "scores"}  # the facade and the pure modules without a database
 FORBIDDEN_ROOTS = {"sqlalchemy", "alembic"}
 
 

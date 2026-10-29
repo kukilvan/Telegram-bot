@@ -29,3 +29,16 @@
 {% macro busy_button(caption, busy_caption, extra_class="") %}
 <button type="submit"{% if extra_class %} class="{{ extra_class }}"{% endif %}><span class="idle">{{ caption }}</span><span class="busy">{{ busy_caption }}</span></button>
 {% endmacro %}
+
+{# The list of a score (`field` is a `ScoreField`): it sends the choice as soon as it is made and the page puts the
+   fresh card in place of the old one; the list is unavailable while the request is on. Without HTMX it saves nothing. #}
+{% macro score_select(field, caption) %}
+<form class="score" method="post" action="{{ field.address }}" hx-post="{{ field.address }}" hx-trigger="change" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find select">
+  <label>{{ caption }}
+    <select name="score">
+      {% for choice in field.choices %}<option value="{{ choice.value }}"{% if choice.selected %} selected{% endif %}>{{ choice.label }}</option>{% endfor %}
+    </select>
+  </label>
+  {% if field.note %}<span class="score-note">{{ field.note }}</span>{% endif %}
+</form>
+{% endmacro %}

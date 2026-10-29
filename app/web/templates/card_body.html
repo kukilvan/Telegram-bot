@@ -1,6 +1,6 @@
 {# The whole card: the page includes it, and every press on it answers with it again (HTMX puts it in place of
    `#card`). A plain form sends the same press and is sent back to the card. #}
-{% from "macros.html" import poster, busy_button %}
+{% from "macros.html" import poster, busy_button, score_select %}
 <article id="card" class="card">
   {% if card_notice %}<p class="notice" role="status">{{ card_notice }}</p>{% endif %}
   <div class="card-layout">
@@ -10,6 +10,7 @@
       {% if card.original_name and card.original_name != card.name %}<p class="title-original">{{ card.original_name }}</p>{% endif %}
       <p class="kind-line">{{ kind_line }}</p>
       <p class="status"><span class="status-label">Статус:</span> {{ status_label }}</p>
+      {% if score %}{{ score_select(score, "Оценка") }}{% endif %}
       {% if card.overview %}<p class="overview">{{ card.overview }}</p>{% endif %}
 
       {% if seasonal %}
@@ -23,7 +24,7 @@
         {% if seasons %}
         <ul class="season-list">
           {% for season in seasons %}
-          <li>
+          <li class="season-item">
             {% if season.can_mark %}
             <form method="post" action="{{ season.address }}" hx-post="{{ season.address }}" hx-trigger="change" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find input">
               <label class="check"><input type="checkbox" name="watched" value="1"{% if season.watched %} checked{% endif %}> <span>{{ season.text }}</span></label>
@@ -31,6 +32,7 @@
             {% else %}
             <p class="season-plain">{{ season.text }}</p>
             {% endif %}
+            {% if season.score %}{{ score_select(season.score, "Оценка") }}{% endif %}
           </li>
           {% endfor %}
         </ul>

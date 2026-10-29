@@ -216,7 +216,7 @@ def test_without_a_message_a_failure_goes_to_the_log_only(tracker, series, teleg
 
     assert telegram.of("answer") == [("answer", ADDING)]
     assert texts(telegram) == []
-    assert any("adding a title failed" in r.getMessage() for r in caplog.records)
+    assert any("adding a title failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)
 
 
 # --- «Следить» -----------------------------------------------------------------------------------------
@@ -278,4 +278,4 @@ def test_following_without_a_message_goes_to_the_log_only(tracker, movies, teleg
 
     assert telegram.of("answer") == [("answer", ADDING)]
     assert texts(telegram) == []
-    assert any("following a sequel failed" in r.getMessage() for r in caplog.records)
+    assert any("following a sequel failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)

@@ -312,7 +312,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         try:
             suggestions = await tracker.search(kind, query)
         except Exception as exc:  # the source is a network client: tell the owner, keep the bot alive
-            logging.warning("title search failed: %s", repr(exc))
+            logging.warning("title search failed: %r, cause: %r", exc, exc.__cause__)
             await message.answer(f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже.")
             return
         if not suggestions:
@@ -348,7 +348,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await tell_failure(callback, f"Не нашёл такой тайтл в {KINDS[kind].source_name}, попробуйте поискать заново.")
             return
         except Exception as exc:
-            logging.warning("adding a title failed: %s", repr(exc))
+            logging.warning("adding a title failed: %r, cause: %r", exc, exc.__cause__)
             await tell_failure(callback, f"Не удалось получить данные из {KINDS[kind].source_name}. Попробуйте чуть позже.")
             return
         heading = "✅ Добавлено в список" if result.created else "Уже в списке"
@@ -482,7 +482,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await tell_failure(callback, "Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
             return
         except Exception as exc:
-            logging.warning("following a sequel failed: %s", repr(exc))
+            logging.warning("following a sequel failed: %r, cause: %r", exc, exc.__cause__)
             await tell_failure(callback, "Не удалось получить данные из TMDb. Попробуйте чуть позже.")
             return
         await drop_pressed_button(callback)

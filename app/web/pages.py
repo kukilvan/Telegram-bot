@@ -14,7 +14,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
-from app.tracker.core import Tracker
+from app.tracker.core import SourceFailed, Tracker
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web.status_line import NO_DATA, status_text
@@ -27,6 +27,8 @@ NOTICE_LIMIT = 300  # the session lives in a cookie
 TITLE_GONE = "Этого тайтла больше нет в списке"
 FAILED = "Не получилось. Попробуйте ещё раз; подробности — в журнале"
 NO_SUCH_KIND = "Такого типа нет"
+REFRESH = "Обновить"
+MAX_ID_DIGITS = 12  # a longer number in an address is no title or season of ours
 
 
 @dataclass(frozen=True)
@@ -40,8 +42,10 @@ class WebContext:
     sections: "Sequence[Section]"
 
 
-def unreachable(kind: TitleKind) -> str:
-    """The source of the kind did not answer (any cause: the exact one is in the log)."""
+def source_failed(kind: TitleKind, exc: SourceFailed, doing: str) -> str:
+    """The source of the kind did not answer: the log gets what `doing` was and the cause, the owner a sentence that
+    names the source (any cause: the exact one is in the log)."""
+    logging.warning("web %s: %s failed: %r", doing, exc, exc.__cause__)
     return f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже"
 
 
@@ -51,6 +55,20 @@ def not_found(kind: TitleKind) -> str:
 
 def context_of(request: Request) -> WebContext:
     return request.app.state.web
+
+
+def tracker_of(request: Request) -> Tracker:
+    """The core the page asks. A web app made without one has only the pages that need none."""
+    tracker = context_of(request).tracker
+    if tracker is None:
+        raise RuntimeError("the web app has no tracker")
+    return tracker
+
+
+def is_id(number: int) -> bool:
+    """Whether a number of an address (a title, a season) can be one of ours. A longer one is no title, and the database
+    cannot be asked about it: the core is not asked, and the page says the title is gone (KI-25)."""
+    return 0 <= number < 10**MAX_ID_DIGITS
 
 
 def is_htmx(request: Request) -> bool:
@@ -127,17 +145,17 @@ async def title_gone(request: Request) -> Response:
     return await message_page(request, "Тайтла нет", TITLE_GONE, 404, link=link)
 
 
-async def failed(request: Request) -> Response:
+async def failed(request: Request, refresh: str | None = None) -> Response:
+    """«Не получилось». With the address of the page (`refresh`) the sentence ends in a link «Обновить» to it."""
+    link = None if refresh is None else (refresh, REFRESH)
     if is_htmx(request):
-        return fragment(request, "failed.html", text=FAILED)
-    return await message_page(request, "Не получилось", FAILED, 500)
+        return fragment(request, "failed.html", text=FAILED, link=link)
+    return await message_page(request, "Не получилось", FAILED, 500, link=link)
 
 
-def guarded(handler: Callable[..., Awaitable[Response]]) -> Callable[..., Awaitable[Response]]:
-    """A handler under the net: an error nobody expected goes to the log with its traceback, and the owner gets a
-    sentence (a fragment for HTMX, a page with a `500` otherwise) instead of an empty place. What the framework
-    itself answers with (`HTTPException`) is let through."""
-
+def _net(
+    handler: Callable[..., Awaitable[Response]], refresh: tuple[str, ...] | None
+) -> Callable[..., Awaitable[Response]]:
     @functools.wraps(handler)
     async def wrapper(request: Request, *args: object, **kwargs: object) -> Response:
         try:
@@ -146,6 +164,23 @@ def guarded(handler: Callable[..., Awaitable[Response]]) -> Callable[..., Awaita
             raise
         except Exception:
             logging.exception("web: unexpected error in %s %s", request.method, request.url.path)
-            return await failed(request)
+            address = None
+            if refresh is not None:
+                name, *names = refresh
+                address = str(request.app.url_path_for(name, **{n: request.path_params[n] for n in names}))
+            return await failed(request, address)
 
     return wrapper
+
+
+def guarded(handler: Callable[..., Awaitable[Response]]) -> Callable[..., Awaitable[Response]]:
+    """A handler under the net: an error nobody expected goes to the log with its traceback, and the owner gets a
+    sentence (a fragment for HTMX, a page with a `500` otherwise) instead of an empty place. What the framework
+    itself answers with (`HTTPException`) is let through."""
+    return _net(handler, None)
+
+
+def guarded_with_refresh(route: str, *params: str) -> Callable[[Callable[..., Awaitable[Response]]], Callable[..., Awaitable[Response]]]:
+    """`guarded`, and the sentence ends in «Обновить»: a link to the page of the route `route` (its address takes the
+    path parameters `params` of the request, such as the number of the title)."""
+    return lambda handler: _net(handler, (route, *params))

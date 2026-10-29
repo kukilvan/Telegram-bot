@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone, tzinfo
 from typing import TYPE_CHECKING
 
+from app.tracker import scores
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.scores import ScoreView
@@ -229,6 +230,9 @@ def format_card(card: TitleCard) -> str:
         lines.append(f"Год: {card.year}")
     if card.genres:
         lines.append(f"Жанры: {', '.join(card.genres)}")
+    if card.score is not None and card.score.shown is not None:
+        average = " (среднее по сезонам)" if card.score.by_seasons else ""
+        lines.append(f"Оценка: {scores.label(card.score.shown)}{average}")
     if card.seasons is not None:
         lines.extend(season_lines(card.seasons, card.tz))
         if card.franchise_movies:

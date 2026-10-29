@@ -49,13 +49,6 @@ class Row(NamedTuple):
     card: str | None  # the card of the title when it is in the list already
 
 
-def _tracker(request: Request) -> Tracker:
-    tracker = pages.context_of(request).tracker
-    if tracker is None:
-        raise RuntimeError("the web app has no tracker")
-    return tracker
-
-
 def _kind_of(raw: str | None) -> TitleKind | None:
     try:
         return TitleKind(raw)
@@ -88,13 +81,12 @@ async def _found(request: Request, kind: TitleKind | None, raw_query: str) -> di
     if len(query) < MIN_QUERY:
         return {**shown, "hint": TYPE_MORE}
     try:
-        suggestions = await _tracker(request).search(kind, query)
+        suggestions = await pages.tracker_of(request).search(kind, query)
     except KeyError:  # a kind the core has no source for
         logging.warning("web search: no source for %s", kind)
         return {**shown, "hint": pages.NO_SUCH_KIND, "error": True}
     except SourceFailed as exc:
-        logging.warning("web search: %s failed: %r", exc, exc.__cause__)
-        return {**shown, "hint": pages.unreachable(kind), "error": True}
+        return {**shown, "hint": pages.source_failed(kind, exc, "search"), "error": True}
     if not suggestions:
         return {**shown, "hint": _nothing(query)}
     rows = [
@@ -159,7 +151,7 @@ async def add(request: Request, kind: str = Form(""), external_id: str = Form(""
     if chosen is None:
         return await _refused(request, _search_address(request, _remembered(request), q), pages.NO_SUCH_KIND)
     back = _search_address(request, chosen, q)
-    tracker = _tracker(request)
+    tracker = pages.tracker_of(request)
     try:
         result = await tracker.add_title(chosen, external_id)
     except KeyError:  # a kind the core has no source for
@@ -167,8 +159,7 @@ async def add(request: Request, kind: str = Form(""), external_id: str = Form(""
     except TitleNotFound:
         return await _refused(request, back, pages.not_found(chosen))
     except SourceFailed as exc:
-        logging.warning("web add: %s failed: %r", exc, exc.__cause__)
-        return await _refused(request, back, pages.unreachable(chosen))
+        return await _refused(request, back, pages.source_failed(chosen, exc, "add"))
     pages.notify(request, await _added(tracker, result.title_id) if result.created else ALREADY)
     return pages.go(request, str(request.app.url_path_for("card", title_id=result.title_id)))
 
