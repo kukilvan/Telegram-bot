@@ -108,8 +108,10 @@ def test_env_example_has_only_used_keys_each_with_a_russian_comment():
         previous = lines[number - 1] if number else ""
         assert previous.startswith("#") and re.search("[А-Яа-я]", previous), f"{key}: no Russian comment above it"
 
-    # WEB_PORT is read by docker compose, PUID and PGID by app/container_start.py (not by Settings)
-    used = {name.upper() for name in Settings.model_fields} | {"ALLOWED_TELEGRAM_USER_IDS", "WEB_PORT", "PUID", "PGID"}
+    # WEB_PORT and WEB_HOST are read by docker compose, PUID and PGID by app/container_start.py (not by Settings)
+    used = {name.upper() for name in Settings.model_fields} | {
+        "ALLOWED_TELEGRAM_USER_IDS", "WEB_PORT", "WEB_HOST", "PUID", "PGID",
+    }
     assert set(keys) <= used
     assert "BOT_TIMEZONE" in keys and any("Europe/Moscow" in line for line in lines)
     assert not {name.upper() for name in REMOVED_SETTINGS} & set(keys)
