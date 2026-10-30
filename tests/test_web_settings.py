@@ -115,6 +115,9 @@ def test_the_form_is_a_plain_post_with_a_label_for_every_field_and_the_seven_day
     assert '<button type="submit">Сохранить</button>' in html
     assert "Новые правила действуют сразу, в том числе для того, что уже ждёт отправки" in html
     assert 'type="time" name="summary_at"' in html and 'type="number" name="part_gap_weeks"' in html
+    # the field of the parts sits inside its sentence, under the name the refusal uses («Части сезона: …»)
+    parts = re.search(r"<legend>Части сезона</legend>(.*?)</fieldset>", html, re.S).group(1)
+    assert re.search(r'>Делить сезон на части после перерыва в</label>\s*<input id="part_gap_weeks"[^>]*>\s*<span>недель</span>', parts)
 
 
 def test_the_page_shows_what_is_stored_and_says_the_log_keeps_the_zone_of_the_launch_file(client, tracker):
@@ -283,7 +286,7 @@ def test_the_field_the_core_names_is_marked_and_the_others_are_not(client, overr
 def test_the_first_error_is_the_one_the_page_names(client):
     html = refused_page(client, summary_at="25:00", part_gap_weeks="99").text
 
-    assert "Час сводки: время пишется так" in html and "Части сезона" not in html
+    assert "Час сводки: время пишется так" in html and "Части сезона: число недель" not in html
 
 
 def test_a_form_with_no_fields_at_all_is_refused_by_the_core_not_dropped_by_the_page(client, tracker):

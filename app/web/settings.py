@@ -65,7 +65,7 @@ async def _show(
     return await pages.page(
         request, "settings.html", status_code=400 if error is not None else 200, current="/settings",
         zones=zones, days=days, shown=shown, log_note=log_note, now_line=view.now_line,
-        error_text=error.text if error is not None else "", invalid={error.field: True} if error is not None else {},
+        telegram_state=pages.telegram_note(request) or CONNECTED, error_text=error.text if error is not None else "", invalid={error.field: True} if error is not None else {},
     )
 
 

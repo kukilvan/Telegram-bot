@@ -39,11 +39,15 @@
       <p class="hint">Одинаковое время в обоих полях — без тихих часов</p>
     </fieldset>
 
-    <div class="field">
-      <label for="part_gap_weeks">Делить сезон на части после перерыва в (недель)</label>
-      <input id="part_gap_weeks" type="number" name="part_gap_weeks" min="1" max="52" step="1" value="{{ shown.part_gap_weeks }}"{% if invalid.part_gap_weeks %} class="invalid" aria-invalid="true"{% endif %}>
+    <fieldset class="field">
+      <legend>Части сезона</legend>
+      <div class="part-gap">
+        <label for="part_gap_weeks">Делить сезон на части после перерыва в</label>
+        <input id="part_gap_weeks" type="number" name="part_gap_weeks" min="1" max="52" step="1" value="{{ shown.part_gap_weeks }}"{% if invalid.part_gap_weeks %} class="invalid" aria-invalid="true"{% endif %}>
+        <span>недель</span>
+      </div>
       <p class="hint">Сериал ушёл на перерыв посреди сезона — вторая половина выходит отдельной частью. У аниме части берутся из Shikimori, это число на них не влияет</p>
-    </div>
+    </fieldset>
 
     <button type="submit">Сохранить</button>
     <p class="hint">Новые правила действуют сразу, в том числе для того, что уже ждёт отправки</p>
@@ -53,6 +57,6 @@
   <p class="now-line">{{ now_line }}</p>
 
   <h2>Бот в Telegram</h2>
-  <p class="telegram-state">{{ telegram_note or "Подключён" }}</p>
+  <p class="telegram-state">{{ telegram_state }}</p>
 </section>
 {% endblock %}

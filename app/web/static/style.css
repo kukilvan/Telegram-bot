@@ -120,6 +120,9 @@ a { color: var(--accent); }
 
 .back { margin: 0 0 0.75rem; }
 
+/* The main way back in the window of the app on an iPhone: as easy to press as a button */
+.back a { display: inline-flex; align-items: center; min-height: 44px; }
+
 /* A row of a suggestion or of the list: the poster and the text at the left, the button at the right */
 .title-row {
   display: flex;
@@ -388,17 +391,20 @@ select, input[type="time"], input[type="number"] {
 
 .settings-form select { width: 100%; max-width: 26rem; }
 
-.days, .quiet { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; }
+.days, .quiet, .part-gap { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; }
+
+/* One sentence with the field inside: «… перерыва в [6] недель» */
+.part-gap { gap: 0 0.5rem; color: var(--muted); }
 
 .day { gap: 0.4rem; }
 
 .day input { width: 1.5rem; height: 1.5rem; }
 
-.quiet label { margin: 0; }
+.quiet label, .part-gap label { margin: 0; }
 
 .quiet input { width: 8rem; }
 
-.settings-form input[type="number"] { width: 8rem; }
+.settings-form input[type="number"] { width: 5rem; }
 
 .invalid { border-color: var(--error); outline: 1px solid var(--error); }
 
