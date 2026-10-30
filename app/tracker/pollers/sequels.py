@@ -28,8 +28,8 @@ class SequelPoller(Poller):
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
-            first_look = "parts" not in stored.state
             old = sequel_events.Sequels.from_state(stored.state)
+        first_look = not old.checked
         new = sequel_events.Sequels.from_state(snapshot.state()).keeping_known(old)
         found = 0
         if not first_look:  # the first look only records what the collection holds now

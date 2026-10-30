@@ -2,11 +2,11 @@
 snapshots, and its status that follows from them. Helpers on a session someone else opened; the caller commits."""
 
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import Select, select
 
 from app.tracker import progress, series_events
 from app.tracker import seasons as season_logic
@@ -30,6 +30,18 @@ def store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]
     return records
 
 
+def _season(record: SeasonRecord, episodes: Iterable[EpisodeRecord], parts: Sequence[PartRecord]) -> season_logic.Season:
+    """A stored season as the rules see it; `parts` in the order of their numbers."""
+    return season_logic.Season(
+        number=record.number,
+        name=record.name,
+        expected=record.episode_count,
+        episodes=tuple(sorted((season_logic.Episode(e.number, e.air_at) for e in episodes), key=lambda e: e.number)),
+        cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count, p.shikimori_id) for p in parts),
+        source_id=parts[0].shikimori_id if parts else None,  # the first part (smallest number) starts the season
+    )
+
+
 def load_seasons(session, title_id: int) -> list[tuple[SeasonRecord, season_logic.Season]]:
     records = session.scalars(select(SeasonRecord).where(SeasonRecord.title_id == title_id).order_by(SeasonRecord.number))
     loaded = []
@@ -38,15 +50,26 @@ def load_seasons(session, title_id: int) -> list[tuple[SeasonRecord, season_logi
         parts = session.scalars(
             select(PartRecord).where(PartRecord.season_id == record.id).order_by(PartRecord.number)
         ).all()
-        season = season_logic.Season(
-            number=record.number,
-            name=record.name,
-            expected=record.episode_count,
-            episodes=tuple(sorted((season_logic.Episode(e.number, e.air_at) for e in episodes), key=lambda e: e.number)),
-            cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count, p.shikimori_id) for p in parts),
-            source_id=parts[0].shikimori_id if parts else None,  # the first part (smallest number) starts the season
-        )
-        loaded.append((record, season))
+        loaded.append((record, _season(record, episodes, parts)))
+    return loaded
+
+
+def load_seasons_of(session, title_ids: Select) -> dict[int, list[season_logic.Season]]:
+    """The seasons of many titles (`title_ids`: a select of their numbers), in order, from three reads whatever their
+    number: title → its seasons."""
+    records = session.scalars(
+        select(SeasonRecord).where(SeasonRecord.title_id.in_(title_ids)).order_by(SeasonRecord.title_id, SeasonRecord.number)
+    ).all()
+    season_ids = select(SeasonRecord.id).where(SeasonRecord.title_id.in_(title_ids))
+    episodes: dict[int, list[EpisodeRecord]] = {}
+    for episode in session.scalars(select(EpisodeRecord).where(EpisodeRecord.season_id.in_(season_ids))):
+        episodes.setdefault(episode.season_id, []).append(episode)
+    parts: dict[int, list[PartRecord]] = {}
+    for part in session.scalars(select(PartRecord).where(PartRecord.season_id.in_(season_ids)).order_by(PartRecord.number)):
+        parts.setdefault(part.season_id, []).append(part)
+    loaded: dict[int, list[season_logic.Season]] = {}
+    for record in records:
+        loaded.setdefault(record.title_id, []).append(_season(record, episodes.get(record.id, ()), parts.get(record.id, [])))
     return loaded
 
 

@@ -234,8 +234,10 @@ def add_title(tracker, status=TitleStatus.WANT):
 
 
 def add_snapshot(tracker, title_id, source, observed_at):
+    """A check the source answered: its state is never empty (an empty one is the sequel check before it, KI-10)."""
+    state = {"theatrical_date": None, "digital_date": None}
     with tracker.session_factory() as session:
-        session.add(SourceSnapshot(title_id=title_id, source=source, state={}, observed_at=observed_at, next_check_at=None))
+        session.add(SourceSnapshot(title_id=title_id, source=source, state=state, observed_at=observed_at, next_check_at=None))
         session.commit()
 
 

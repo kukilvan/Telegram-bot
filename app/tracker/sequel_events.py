@@ -33,12 +33,15 @@ class Part:
 class Sequels:
     own_date: date | None = None
     parts: tuple[Part, ...] = ()
+    # the collection was looked at: the source has answered once. «Посмотрел» stores an empty state before that
+    checked: bool = True
 
     @classmethod
     def from_state(cls, state: dict[str, Any]) -> "Sequels":
         return cls(
             own_date=parse_date(state.get("own_date")),
             parts=tuple(Part(p["id"], p["title"], parse_date(p.get("date"))) for p in state.get("parts", [])),
+            checked="parts" in state,  # every answer stores the parts, if only an empty list
         )
 
     def to_state(self) -> dict[str, Any]:

@@ -1,7 +1,8 @@
 """Tracker core facade: the only door the bot (and later the web app) uses.
 
 `Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it:
-settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards),
+settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards, `feed`
+for what comes out and what happened),
 polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`)
 and test events (`test_samples`). It holds no rules of its own.
 
@@ -23,6 +24,8 @@ from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import (
     CannotScore, SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle,
 )
+from app.tracker.feed import FeedReader
+from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, RecentRow, SequelOffer, UpcomingRow
 from app.tracker.listing import Listing
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
@@ -47,10 +50,10 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "ListOrder", "Overview",
-    "PollReport", "ScoreView", "Sender", "SourceFailed", "SummaryResult", "TestEventResult", "TestSample", "TitleCard",
-    "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
-    "WatchableSeason",
+    "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay", "FeedTitle",
+    "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SequelOffer", "SourceFailed",
+    "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
+    "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason",
 ]
 
 
@@ -68,6 +71,7 @@ class Tracker:
     _titles: Titles = field(init=False, repr=False)
     _statuses: Statuses = field(init=False, repr=False)
     _listing: Listing = field(init=False, repr=False)
+    _feed: FeedReader = field(init=False, repr=False)
     _deliveries: DeliveryService = field(init=False, repr=False)
     _samples: TestSamples = field(init=False, repr=False)
 
@@ -83,6 +87,7 @@ class Tracker:
         self._titles = Titles(ctx, pollers)
         self._statuses = Statuses(ctx, pollers)
         self._listing = Listing(ctx, self._settings, pollers)
+        self._feed = FeedReader(ctx, self._settings, pollers)
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
 
@@ -213,6 +218,11 @@ class Tracker:
 
     async def title_card(self, title_id: int) -> TitleCard | None:
         return await self._listing.title_card(title_id)
+
+    async def feed(self) -> Feed:
+        """The feed: what comes out from today on («Скоро» by days for two weeks, then «Позже») and the events of the
+        last week («Недавно»), with the buttons of each row decided."""
+        return await self._feed.feed()
 
     # --- polling --------------------------------------------------------------------------------
 

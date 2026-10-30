@@ -105,6 +105,12 @@ def format_weekday_date(value: date) -> str:
     return f"{_WEEKDAYS[value.weekday()]}, {value.day} {_SHORT_MONTHS[value.month - 1]}"
 
 
+def name_key(name: str) -> str:
+    """The order «по названию»: case does not matter and «ё» is «е»; the code points then put digits first, Latin
+    letters next, Cyrillic last."""
+    return name.casefold().replace("ё", "е")
+
+
 def titles_word(count: int) -> str:
     """«тайтл» in the form that follows the number: 1 тайтл, 2 тайтла, 5 тайтлов, 11 тайтлов, 21 тайтл."""
     if count % 10 == 1 and count % 100 != 11:

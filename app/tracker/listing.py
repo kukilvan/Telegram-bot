@@ -13,7 +13,7 @@ from app.tracker import sequel_events, storage
 from app.tracker.genres import key as genre_key
 from app.tracker.genres import keys_of as genre_keys
 from app.tracker.genres import merge as merge_genres
-from app.tracker.cards import MovieLine, SequelsView, TitleCard, sequel_view
+from app.tracker.cards import MovieLine, SequelsView, TitleCard, name_key, sequel_view
 from app.tracker.context import CoreContext
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import MovieRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
@@ -23,11 +23,6 @@ from app.tracker.sources.dates import parse_date
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
-
-
-def _name_key(name: str) -> str:
-    """Case does not matter and «ё» is «е»; the code points then put digits first, Latin letters next, Cyrillic last."""
-    return name.casefold().replace("ё", "е")
 
 
 def _exact(view: scores.ScoreView | None):
@@ -101,7 +96,7 @@ class Listing:
             titles = self._matching(titles, query, genre)
             views = self._scores(session, titles)  # one reading for every row, not one for each title
         if order == ListOrder.NAME:
-            titles.sort(key=lambda t: (_name_key(t.name), t.id))
+            titles.sort(key=lambda t: (name_key(t.name), t.id))
         elif order == ListOrder.ARCHIVED:
             titles.sort(key=lambda t: (t.status_changed_at, t.id), reverse=True)
         elif order == ListOrder.SCORE:
@@ -118,10 +113,10 @@ class Listing:
 
     @staticmethod
     def _matching(titles: list[Title], query: str | None, genre: str | None) -> list[Title]:
-        needle = _name_key(query.strip()) if query else ""
+        needle = name_key(query.strip()) if query else ""
         wanted = genre_key(genre) if genre else ""
         if needle:
-            titles = [t for t in titles if needle in _name_key(t.name) or needle in _name_key(t.original_name or "")]
+            titles = [t for t in titles if needle in name_key(t.name) or needle in name_key(t.original_name or "")]
         if wanted:
             titles = [t for t in titles if wanted in genre_keys(t.genres)]
         return titles
@@ -152,8 +147,11 @@ class Listing:
     def _overview(self) -> Overview:
         with self.ctx.session_factory() as session:
             count = session.scalar(select(func.count(Title.id))) or 0
-            # only a successful check writes `observed_at`, so a failed one does not move it
-            last = session.scalar(select(func.max(SourceSnapshot.observed_at)))
+            # only a successful check writes `observed_at`, so a failed one does not move it. The empty state «Посмотрел»
+            # stores for the sequel check before its source has answered (`Sequels.checked`) is no check (KI-10)
+            last = session.scalar(
+                select(func.max(SourceSnapshot.observed_at)).where(func.json(SourceSnapshot.state) != "{}")
+            )
             tz = self.settings.time_zone(session)  # read here, where it is needed (coding standard 2)
         local = last.replace(tzinfo=timezone.utc).astimezone(tz) if last is not None else None
         return Overview(count, local)
@@ -209,4 +207,4 @@ class Listing:
             return None
         sequels = sequel_events.Sequels.from_state(snapshot.state)
         listed = self.pollers.of(title.kind).known_ids(session, (part.id for part in sequels.parts))
-        return sequel_view(sequels, "parts" in snapshot.state, listed)
+        return sequel_view(sequels, sequels.checked, listed)
