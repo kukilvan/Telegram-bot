@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import search_box %}
+{% block title %}Архив · Трекер релизов{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Архив</h1>
+  {{ search_box(form_address, results_address, form_hidden, query) }}
+  <div id="results">{% include "archive_results.html" %}</div>
+</section>
+{% endblock %}

@@ -195,10 +195,17 @@ class Tracker:
         kind: TitleKind | None = None,
         statuses: Collection[TitleStatus] | None = None,
         order: ListOrder | None = None,
+        query: str | None = None,
+        genre: str | None = None,
     ) -> list[TitleSummary]:
-        """The rows of the list, filtered by kind and by a set of statuses (None: all), in the given order (without
-        one: as the titles were added, which is the bot's list)."""
-        return await self._listing.list_titles(kind, statuses, order)
+        """The rows of the list, filtered by kind, by a set of statuses (None: all), by a part of the name (`query`) and
+        by a merged genre (`genre`, as `genres` names it), in the given order (without one: as the titles were added,
+        which is the bot's list)."""
+        return await self._listing.list_titles(kind, statuses, order, query, genre)
+
+    async def genres(self, kind: TitleKind | None = None, statuses: Collection[TitleStatus] | None = None) -> list[str]:
+        """The merged genres of the titles under a kind and a set of statuses, by name in alphabetical order."""
+        return await self._listing.genres(kind, statuses)
 
     async def overview(self) -> Overview:
         """The line of the web page: how many titles are in the list and when a source last answered."""

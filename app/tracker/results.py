@@ -30,6 +30,8 @@ class ListOrder(StrEnum):
 
     ADDED = "added"  # the title added last first; the same moment: the larger number first
     NAME = "name"  # by name, case and «ё» ignored: digits, then Latin, then Cyrillic; the same name: the smaller number first
+    SCORE = "score"  # by the shown score, the exact one, the highest first; no score last; the same: the later change of status, then the larger number
+    ARCHIVED = "archived"  # the latest change of status first (for the archive, the day it went there); the same: the larger number first
 
 
 @dataclass(frozen=True)
@@ -42,6 +44,8 @@ class TitleSummary:
     year: int | None
     status: TitleStatus
     poster_path: str | None = None  # as the title stores it (a TMDb file name or a whole address); the web turns it into a picture
+    score: int | None = None  # what the owner reads: the own score, else the average of the seasons to the nearest step; None: none shown
+    score_by_seasons: bool = False  # `score` is the average of the seasons
 
 
 @dataclass(frozen=True)

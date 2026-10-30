@@ -103,19 +103,12 @@ def test_the_stubs_come_from_the_one_list_of_sections_and_a_section_without_a_ph
     assert [section.code for section in menu.SECTIONS] == ["feed", "list", "archive", "search", "settings"]
     for section in menu.SECTIONS:
         assert app.url_path_for(section.code) == section.address
-    assert [section.code for section in menu.SECTIONS if section.phrase is None] == ["list", "search"]  # pages of their own
+    assert [section.code for section in menu.SECTIONS if section.phrase is None] == ["list", "archive", "search"]  # pages of their own
     assert menu.Section._fields == ("address", "code", "label", "phrase")
     assert menu.OpenAddress._fields == ("name", "always")
     assert [(a.name, a.always) for a in menu.OPEN_ADDRESSES] == [
         ("/health", True), ("/static/", True), ("/login", False), ("/logout", False),
     ]
-
-
-def test_the_archive_stub_says_where_the_viewed_and_dropped_are_meanwhile(tmp_path):
-    html = signed_in(make_app(tmp_path)).get("/archive").text
-
-    assert "Скоро будет: поиск и сортировка по оценке (часть 5.3)." in html
-    assert "Пока просмотренное и брошенное — в Списке, фильтр «Просмотрено» или «Бросил»" in html
 
 
 # ---- the security header and the sites of pictures ---------------------------------------------------

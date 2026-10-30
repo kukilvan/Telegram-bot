@@ -1,0 +1,29 @@
+{% from "macros.html" import row_tail, title_main %}
+<nav class="filters" aria-label="Тип">
+  {% for link in kinds %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
+</nav>
+<nav class="filters" aria-label="Жанр">
+  {% for link in genres %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
+</nav>
+<nav class="filters" aria-label="Статус">
+  {% for link in statuses %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
+</nav>
+<nav class="filters" aria-label="Порядок">
+  {% for link in orders %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
+</nav>
+
+{% if empty %}
+<p class="hint">{% if searched %}{{ empty }} «{{ query }}» <a href="{{ reset_query_address }}">Сбросить поиск</a>{% elif archive_empty %}{{ empty }}{% else %}{{ empty }} <a href="{{ reset_address }}">Сбросить фильтры</a>{% endif %}</p>
+{% else %}
+<p class="shown">{{ shown }}</p>
+<ul class="title-list">
+  {% for row in rows %}
+  <li class="title-row">
+    <a class="row-link" href="{{ row.address }}">
+      {{ title_main(row.poster, size, row.icon, row.name, "", row.year) }}
+      {{ row_tail(row) }}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

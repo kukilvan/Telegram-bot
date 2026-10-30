@@ -20,7 +20,7 @@ MODULES = ("context", "settings_store", "storage", "queue", "titles", "statuses"
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
     "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
-    "cards", "kinds", "scores",
+    "cards", "kinds", "scores", "genres",
 )
 MAX_LINES = 400
 
@@ -111,7 +111,7 @@ def test_titles_keeps_searching_adding_deleting_and_following_while_marks_and_ro
             "watchable_seasons", "toggle_season", "set_season_watched", "mark_all_released", "mark_watched",
             "set_title_score", "set_season_score",
         ),
-        "listing": ("list_titles", "overview", "title_card"),
+        "listing": ("list_titles", "genres", "overview", "title_card"),
     }
     titles = (TRACKER / "titles.py").read_text(encoding="utf-8")
 

@@ -16,7 +16,7 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.tracker.core import Tracker
-from app.web import auth, card, menu, pages, posters, search, title_list
+from app.web import archive, auth, card, menu, pages, posters, search, title_list
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
 
@@ -173,6 +173,7 @@ def create_web_app(
         return pages.fragment(request, "status_line.html", status=await pages.status_line(request))
 
     app.include_router(card.router)
+    app.include_router(archive.router)
     app.include_router(search.router)
     app.include_router(title_list.router)
     app.include_router(menu.router)

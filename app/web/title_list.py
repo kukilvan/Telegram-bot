@@ -1,15 +1,15 @@
-"""The list: the rows with a filter by kind and by status and an order (links, so «Назад» and bookmarks work), the mode
-of choosing, in which several titles are deleted at once after a question on the page. The filters live in the address
-(`kind`, `status`, `order`); a value nobody knows counts as none. The mode is `select=1`. Rules: section 5 of the spec of
-part 5.2."""
+"""The list: the rows with a search by name, a filter by kind and by status and an order (links, so «Назад» and bookmarks
+work), the mode of choosing, in which several titles are deleted at once after a question on the page. The filters live
+in the address (`kind`, `status`, `order`, and `q` for the search); a value nobody knows counts as none. The mode is
+`select=1`. Rules: section 5 of the spec of part 5.2 and 5.2, 5.5 of the spec of part 5.3."""
 
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
-from typing import NamedTuple
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, Request, Response
+from fastapi.responses import RedirectResponse
 
 from app.tracker.cards import STATUS_LABELS, titles_word
 from app.tracker.core import ListOrder, UnknownTitle
@@ -17,6 +17,7 @@ from app.tracker.kinds import KINDS
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from app.web import pages
 from app.web.posters import LIST_SIZE
+from app.web.title_rows import Link, clean_query, rows
 
 ALL_STATUSES = "all"  # the value of `status` for the whole list, the archive included
 MAX_NAMES = 10  # the names a question or a line names; the rest is «и ещё N»
@@ -24,6 +25,7 @@ SELECT = "1"  # the value of `select`
 
 EMPTY_LIST = "В списке пока ничего нет."
 NOTHING_FITS = "Под этот фильтр ничего не подходит"
+NOTHING_FOUND = "Ничего не нашлось по запросу"
 ALL_GONE = "Этих тайтлов уже нет в списке"
 
 router = APIRouter()
@@ -36,9 +38,10 @@ class Filters:
     kind: TitleKind | None = None
     status: str | None = None
     order: ListOrder = ListOrder.ADDED
+    query: str = ""
 
     @staticmethod
-    def parse(kind: str = "", status: str = "", order: str = "") -> "Filters":
+    def parse(kind: str = "", status: str = "", order: str = "", q: str = "") -> "Filters":
         try:
             chosen_kind = TitleKind(kind) if kind else None
         except ValueError:
@@ -51,7 +54,7 @@ class Filters:
             chosen_order = ListOrder(order) if order else ListOrder.ADDED
         except ValueError:
             chosen_order = ListOrder.ADDED
-        return Filters(chosen_kind, chosen_status, chosen_order)
+        return Filters(chosen_kind, chosen_status, chosen_order, clean_query(q))
 
     def statuses(self) -> frozenset[TitleStatus] | None:
         """The set the core is asked for; None: every status."""
@@ -65,7 +68,7 @@ class Filters:
     def unfiltered(self) -> bool:
         return self.kind is None and self.status == ALL_STATUSES
 
-    def params(self) -> dict[str, str]:
+    def params(self, *, with_query: bool = True) -> dict[str, str]:
         """What stands in the address: only what differs from the default."""
         shown: dict[str, str] = {}
         if self.kind is not None:
@@ -74,23 +77,9 @@ class Filters:
             shown["status"] = self.status
         if self.order != ListOrder.ADDED:
             shown["order"] = self.order.value
+        if with_query and self.query:
+            shown["q"] = self.query
         return shown
-
-
-class Link(NamedTuple):
-    label: str
-    address: str
-    current: bool
-
-
-class Row(NamedTuple):
-    address: str  # the card
-    id: int
-    poster: str | None
-    icon: str
-    name: str
-    year: int | None
-    status: str  # the label
 
 
 def _address(request: Request, filters: Filters, *, select: bool = False) -> str:
@@ -99,16 +88,6 @@ def _address(request: Request, filters: Filters, *, select: bool = False) -> str
         params["select"] = SELECT
     base = str(request.app.url_path_for("list"))
     return f"{base}?{urlencode(params)}" if params else base
-
-
-def _rows(request: Request, titles: Sequence) -> list[Row]:
-    return [
-        Row(
-            str(request.app.url_path_for("card", title_id=t.id)), t.id, t.poster_path, KINDS[t.kind].icon, t.name, t.year,
-            STATUS_LABELS[t.status],
-        )
-        for t in titles
-    ]
 
 
 def _filter_links(request: Request, filters: Filters) -> tuple[list[Link], list[Link], list[Link]]:
@@ -167,45 +146,80 @@ def _bar(request: Request, filters: Filters, count: int, *, initial: bool = Fals
     }
 
 
-@router.get("/list", name="list")
-@pages.guarded
-async def show_list(request: Request, kind: str = "", status: str = "", order: str = "", select: str = "") -> Response:
-    filters = Filters.parse(kind, status, order)
+async def _view(request: Request, filters: Filters, selecting: bool) -> dict[str, object]:
+    """What the page and the fragment of the results show: the links, the rows or the sentence that stands for them."""
     tracker = pages.tracker_of(request)
-    titles = await tracker.list_titles(filters.kind, filters.statuses(), filters.order)
+    titles = await tracker.list_titles(filters.kind, filters.statuses(), filters.order, filters.query or None)
     empty = ""
     if not titles:
-        # nothing under the filter, and an empty list is a different sentence from a filter nothing fits
-        empty = NOTHING_FITS if not filters.unfiltered and await tracker.list_titles() else EMPTY_LIST
+        if filters.query:
+            empty = NOTHING_FOUND
+        else:
+            # nothing under the filter, and an empty list is a different sentence from a filter nothing fits
+            empty = NOTHING_FITS if not filters.unfiltered and await tracker.list_titles() else EMPTY_LIST
     kinds, statuses, orders = _filter_links(request, filters)
-    selecting = select == SELECT and bool(titles)
+    selecting = selecting and bool(titles)
+    return {
+        "kinds": kinds, "statuses": statuses, "orders": orders, "rows": rows(request, titles), "size": LIST_SIZE,
+        "shown": f"Показано {len(titles)} {titles_word(len(titles))}", "empty": empty,
+        "empty_is_list": empty == EMPTY_LIST, "searched": empty == NOTHING_FOUND, "query": filters.query,
+        "search_address": str(request.app.url_path_for("search")),
+        "reset_address": _address(request, Filters(status=ALL_STATUSES)),
+        "reset_query_address": _address(request, replace(filters, query="")),
+        "selecting": selecting, "select_address": _address(request, filters, select=True),
+        "cancel_address": _address(request, filters),
+        "selection_address": str(request.app.url_path_for("list_selection")), "hidden": filters.params(),
+        "bar": _bar(request, filters, 0, initial=True),
+    }
+
+
+@router.get("/list", name="list")
+@pages.guarded
+async def show_list(
+    request: Request, kind: str = "", status: str = "", order: str = "", q: str = "", select: str = ""
+) -> Response:
+    filters = Filters.parse(kind, status, order, q)
+    selecting = select == SELECT
     return await pages.page(
         request, "title_list.html", current=str(request.app.url_path_for("list")),
-        kinds=kinds, statuses=statuses, orders=orders, rows=_rows(request, titles), size=LIST_SIZE,
-        shown=f"Показано {len(titles)} {titles_word(len(titles))}", empty=empty,
-        empty_is_list=empty == EMPTY_LIST, search_address=str(request.app.url_path_for("search")),
-        reset_address=_address(request, Filters(status=ALL_STATUSES)),
-        selecting=selecting, select_address=_address(request, filters, select=True), cancel_address=_address(request, filters),
-        selection_address=str(request.app.url_path_for("list_selection")), hidden=filters.params(),
-        bar=_bar(request, filters, 0, initial=True),
+        results_address=str(request.app.url_path_for("list_results")), form_address=str(request.app.url_path_for("list")),
+        form_hidden={**filters.params(with_query=False), **({"select": SELECT} if selecting else {})},
+        **await _view(request, filters, selecting),
     )
+
+
+@router.get("/list/results", name="list_results")
+@pages.guarded
+async def results(
+    request: Request, kind: str = "", status: str = "", order: str = "", q: str = "", select: str = ""
+) -> Response:
+    """The part of the page under the search field, for the search as the letters come. The address of the page with
+    this query goes to the browser (`HX-Push-Url`), so «Назад» and a bookmark keep it."""
+    filters = Filters.parse(kind, status, order, q)
+    selecting = select == SELECT
+    address = _address(request, filters, select=selecting)
+    if not pages.is_htmx(request):
+        return RedirectResponse(address, status_code=303)
+    response = pages.fragment(request, "title_list_results.html", **await _view(request, filters, selecting))
+    response.headers["HX-Push-Url"] = address
+    return response
 
 
 @router.get("/list/selection", name="list_selection")
 @pages.guarded
-async def selection(request: Request, kind: str = "", status: str = "", order: str = "") -> Response:
+async def selection(request: Request, kind: str = "", status: str = "", order: str = "", q: str = "") -> Response:
     """The strip with the number of the ticked rows (HTMX asks for it at every tick)."""
-    filters = Filters.parse(kind, status, order)
+    filters = Filters.parse(kind, status, order, q)
     count = len(_ids(request.query_params.getlist("id")))
     return pages.fragment(request, "delete_bar.html", bar=_bar(request, filters, count))
 
 
 @router.get("/list/confirm", name="list_confirm")
 @pages.guarded
-async def confirm(request: Request, kind: str = "", status: str = "", order: str = "") -> Response:
+async def confirm(request: Request, kind: str = "", status: str = "", order: str = "", q: str = "") -> Response:
     """The question before deleting the ticked titles, with their names. The strip turns into it; without HTMX it is a
     page of its own."""
-    filters = Filters.parse(kind, status, order)
+    filters = Filters.parse(kind, status, order, q)
     names = await _names(request, _ids(request.query_params.getlist("id")))
     if not names:  # nothing ticked, or what was ticked is gone
         if pages.is_htmx(request):
@@ -241,10 +255,11 @@ async def delete(
     kind: str = Form(""),
     status: str = Form(""),
     order: str = Form(""),
+    q: str = Form(""),
 ) -> Response:
     """«Да, удалить»: the titles asked about go one by one, as in the bot — one that is gone already is skipped, one that
     fails does not stop the others. Back to the list with the same filters and a line about what happened."""
-    filters = Filters.parse(kind, status, order)
+    filters = Filters.parse(kind, status, order, q)
     asked = _ids(ids)
     tracker = pages.tracker_of(request)
     names = await _names(request, asked)

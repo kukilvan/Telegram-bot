@@ -42,3 +42,22 @@
   {% if field.note %}<span class="score-note">{{ field.note }}</span>{% endif %}
 </form>
 {% endmacro %}
+
+{# The right side of a row of titles: the score (an average of the seasons has «ср.» in front of it) and the status. #}
+{% macro row_tail(row) %}
+{% if row.score %}<span class="row-score">{{ row.score }}</span>{% endif %}<span class="row-status">{{ row.status }}</span>
+{% endmacro %}
+
+{# The search by name over the rows of the list or of the archive: the rows and the links under it (`#results`) are asked
+   for 300 ms after the last letter, a newer request replaces an older one. Without HTMX the form sends the page itself.
+   `hidden` are the filters the search keeps. #}
+{% macro search_box(action, results_address, hidden, query) %}
+<form class="find-form" role="search" method="get" action="{{ action }}" hx-get="{{ results_address }}" hx-trigger="input delay:300ms, submit" hx-target="#results" hx-sync="this:replace">
+  {% for name, value in hidden.items() %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+  <label for="title-query">Название</label>
+  <div class="search-line">
+    <input id="title-query" name="q" type="search" value="{{ query }}" maxlength="100" autocomplete="off">
+    <button type="submit">Найти</button>
+  </div>
+</form>
+{% endmacro %}
