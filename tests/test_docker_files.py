@@ -19,10 +19,10 @@ def _script(name: str) -> str:
 
 # ---- docker-compose.yml ---------------------------------------------------
 
-def test_compose_publishes_the_port_only_on_this_pc_and_mounts_only_data():
+def test_compose_publishes_the_port_only_on_this_pc_unless_the_owner_opens_it_and_mounts_only_data():
     compose = _text("docker-compose.yml")
 
-    assert '"127.0.0.1:${WEB_PORT:-8080}:8080"' in compose
+    assert '"${WEB_HOST:-127.0.0.1}:${WEB_PORT:-8080}:8080"' in compose  # closed by default (ADR 0008)
     assert len(re.findall(r"^\s+- \./", compose, re.MULTILINE)) == 1
     assert "./data:/app/data" in compose
     assert "./logs" not in compose
@@ -143,7 +143,7 @@ def test_stop_and_logs_scripts_call_compose_from_any_folder():
 def test_env_example_has_the_docker_settings():
     example = _text(".env.example")
 
-    for line in ("WEB_PORT=8080", "PUID=1000", "PGID=1000"):
+    for line in ("WEB_PORT=8080", "WEB_HOST=127.0.0.1", "PUID=1000", "PGID=1000"):
         assert line in example
 
 
