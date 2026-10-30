@@ -1,1 +1,4 @@
-<p id="status-line" class="status-line" hx-get="/status-line" hx-trigger="every 60s" hx-swap="outerHTML">{{ status }}</p>
+<div id="status-line" class="status-block" hx-get="/status-line" hx-trigger="every 60s" hx-swap="outerHTML">
+  <p class="status-line">{{ status }}</p>
+  {% if telegram_note %}<p class="status-line status-warning">{{ telegram_note }}</p>{% endif %}
+</div>

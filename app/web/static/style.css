@@ -102,7 +102,11 @@ button {
 
 .menu a[aria-current="page"] { color: var(--text); font-weight: 600; border-bottom-color: var(--accent); }
 
-.status-line { margin: 0; padding: 0.5rem 1rem; color: var(--muted); font-size: 0.9rem; border-bottom: 1px solid var(--border); }
+.status-block { border-bottom: 1px solid var(--border); }
+
+.status-line { margin: 0; padding: 0.5rem 1rem; color: var(--muted); font-size: 0.9rem; }
+
+.status-warning { color: var(--error); }
 
 .notice {
   margin: 0 0 1rem;
@@ -362,3 +366,38 @@ input[type="search"] {
 
   .delete-bar > button, .delete-bar > .button-link { width: 100%; }
 }
+
+/* The settings: one column of fields with a hint under each, the boxes of the days wrap */
+.settings-form .field { display: block; margin: 0 0 1rem; padding: 0; border: 0; min-width: 0; }
+
+.settings-form legend { padding: 0; margin-bottom: 0.25rem; color: var(--muted); }
+
+.settings-form .hint { margin: 0.25rem 0 0; font-size: 0.9rem; }
+
+select, input[type="time"], input[type="number"] {
+  min-height: 44px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.settings-form select { width: 100%; max-width: 26rem; }
+
+.days, .quiet { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; }
+
+.day { gap: 0.4rem; }
+
+.day input { width: 1.5rem; height: 1.5rem; }
+
+.quiet label { margin: 0; }
+
+.quiet input { width: 8rem; }
+
+.settings-form input[type="number"] { width: 8rem; }
+
+.invalid { border-color: var(--error); outline: 1px solid var(--error); }
+
+.now-line, .telegram-state { margin: 0 0 0.5rem; }

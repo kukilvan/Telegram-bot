@@ -72,6 +72,7 @@ class Health:
         self.scheduler_mark_stale = scheduler_mark_stale
         self.stopping = False
         self.bot_running = False  # waiting to connect again counts as running: Telegram is not part of health
+        self.telegram_down = False  # the last try to connect or to receive failed (the web says so); not part of health
         self.scheduler_running = False
         self.scheduler_mark: float | None = None
 
@@ -320,6 +321,7 @@ class Runtime:
         def receiving_began() -> None:
             nonlocal pause
             pause = self._timings.bot_retry_first
+            self.health.telegram_down = False
 
         try:
             while not self._stop_requested.is_set():
@@ -332,6 +334,7 @@ class Runtime:
                 except Exception:
                     if self._stop_requested.is_set():
                         return
+                    self.health.telegram_down = True
                     logger.error("бот: нет связи с Telegram, повтор через %d с", pause, exc_info=True)
                 await self._pause(self._stop_requested, pause)
                 pause = min(pause * 2, self._timings.bot_retry_max)

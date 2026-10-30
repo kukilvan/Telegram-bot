@@ -17,7 +17,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.tracker.core import Tracker
-from app.web import archive, auth, card, feed, menu, pages, posters, search, title_list
+from app.web import archive, auth, card, feed, pages, posters, search, settings, title_list
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
 
@@ -72,13 +72,15 @@ def create_web_app(
     tracker: Tracker | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     image_sources: Sequence[str] = (),
+    telegram_down: Callable[[], bool] = lambda: False,
 ) -> FastAPI:
     """The web app. `health` is the process's own report (`Health.report`): it reads neither the database nor the
     network, so `/health` answers even when they are slow. `password` is WEB_PASSWORD (without it, or when it is
     short, the login is closed); `secret_file` keeps the key that signs the session; `clock` times the lock after
     wrong tries (seconds). `tracker` is the one door into the core (without it the status line has no data); `now`
     is the wall clock (aware) the status line compares with. `image_sources` are the sites pictures may be loaded
-    from (`posters.image_sources`); without them the page loads none."""
+    from (`posters.image_sources`); without them the page loads none. `telegram_down` tells whether the bot has no
+    connection to Telegram (the line under the status line); the web knows nothing of the runtime or of aiogram."""
     # No /docs, /redoc or /openapi.json: they would describe every address to anyone who asks
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     templates = Jinja2Templates(directory=HERE / "templates")
@@ -96,7 +98,9 @@ def create_web_app(
         return configured and "session" in request.scope and auth.same(request.session.get("pw"), expected)
 
     templates.env.globals["poster_url"] = posters.poster_url
-    app.state.web = WebContext(templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS)
+    app.state.web = WebContext(
+        templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS, telegram_down=telegram_down
+    )
 
     async def message(request: Request, heading: str, text: str, status: int) -> Response:
         return await pages.message_page(request, heading, text, status)
@@ -191,14 +195,14 @@ def create_web_app(
 
     @app.get("/status-line")
     async def status_fragment(request: Request) -> Response:
-        return pages.fragment(request, "status_line.html", status=await pages.status_line(request))
+        return pages.fragment(request, "status_line.html", **await pages.status_parts(request))
 
     app.include_router(card.router)
     app.include_router(feed.router)
     app.include_router(archive.router)
     app.include_router(search.router)
     app.include_router(title_list.router)
-    app.include_router(menu.router)
+    app.include_router(settings.router)
 
     @app.exception_handler(404)
     async def not_found(request: Request, exc: HTTPException) -> Response:

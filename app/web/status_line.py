@@ -1,10 +1,12 @@
-"""The line at the top of every page: how many titles are in the list and when the sources were last checked."""
+"""The line at the top of every page: how many titles are in the list and when the sources were last checked; under it,
+while the bot is not connected to Telegram, the sentence that says so."""
 
 from datetime import datetime
 
 from app.tracker.cards import format_past_moment, titles_word
 
 NO_DATA = "нет данных из базы"
+TELEGRAM_DOWN = "Бот не подключён к Telegram — сообщения не приходят. Проверьте интернет и токен в файле .env; подробности — в журнале"
 
 
 def status_text(title_count: int, last_check_at: datetime | None, now: datetime) -> str:

@@ -17,7 +17,7 @@ from starlette.exceptions import HTTPException
 from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownKind
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
-from app.web.status_line import NO_DATA, status_text
+from app.web.status_line import NO_DATA, TELEGRAM_DOWN, status_text
 
 if TYPE_CHECKING:
     from app.web.menu import Section
@@ -40,6 +40,7 @@ class WebContext:
     now: Callable[[], datetime]  # the wall clock (aware) the status line compares with
     signed_in: Callable[[Request], bool]
     sections: "Sequence[Section]"
+    telegram_down: Callable[[], bool] = lambda: False  # whether the bot has no connection to Telegram (the runtime knows)
 
 
 def report_source_failure(kind: TitleKind, exc: SourceFailed, doing: str) -> str:
@@ -102,13 +103,24 @@ async def status_line(request: Request) -> str:
     return status_text(overview.title_count, overview.last_check_at, web.now())
 
 
+async def status_parts(request: Request) -> dict[str, str]:
+    """What the status line template needs: the text and, while the bot is not connected to Telegram, its sentence
+    (empty otherwise). The sentence does not depend on the core."""
+    return {"status": await status_line(request), "telegram_note": telegram_note(request)}
+
+
+def telegram_note(request: Request) -> str:
+    """The sentence «Бот не подключён к Telegram…» while the bot is not connected, an empty string otherwise."""
+    return TELEGRAM_DOWN if context_of(request).telegram_down() else ""
+
+
 async def page(request: Request, name: str, *, status_code: int = 200, **context: object) -> Response:
     """A whole page. The menu, the status line and the notice belong to the pages behind the sign-in."""
     web = context_of(request)
     context.setdefault("signed_in", web.signed_in(request))
     if context["signed_in"]:
         context.setdefault("current", "")
-        context["status"] = await status_line(request)
+        context.update(await status_parts(request))
         context["sections"] = web.sections
         context["notice"] = _take_notice(request)
     return web.templates.TemplateResponse(request, name, context, status_code=status_code)

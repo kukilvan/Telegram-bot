@@ -48,21 +48,22 @@ SENTENCE = "Этого тайтла больше нет в списке"
 
 # ---- the pages are modules with routers; create_web_app only assembles -----------------------------
 
-def test_the_app_module_only_assembles_the_stubs_and_the_pages_are_routers_of_their_own(tmp_path):
+def test_the_app_module_only_assembles_and_the_pages_are_routers_of_their_own(tmp_path):
     app = make_app(tmp_path)
 
     own = {route.path for route in all_routes(app) if route.endpoint.__module__ == "app.web.app"}
-    stubs = {route.path for route in all_routes(app) if route.endpoint.__module__ == "app.web.menu"}
+    sections = {route.path: route.endpoint.__module__ for route in all_routes(app) if route.path in {s.address for s in menu.SECTIONS}}
 
     assert own == {"/health", "/login", "/logout", "/status-line"}  # no page in create_web_app
-    assert stubs == {section.address for section in menu.SECTIONS if section.phrase is not None}
+    assert set(sections) == {section.address for section in menu.SECTIONS}
+    assert "app.web.menu" not in sections.values() and not hasattr(menu, "router")  # no stub left in the menu
 
 
 def test_the_web_modules_of_the_part_are_in_the_import_check_of_rule_10():
     names = {path.stem for path in WEB.glob("*.py")}
 
-    assert {"app", "menu", "pages", "posters", "auth", "status_line", "server", "filters"} <= names
-    for stem in ("menu", "pages", "posters", "filters"):
+    assert {"app", "menu", "pages", "posters", "auth", "status_line", "server", "filters", "settings"} <= names
+    for stem in ("menu", "pages", "posters", "filters", "settings"):
         for node in ast.walk(ast.parse((WEB / f"{stem}.py").read_text(encoding="utf-8"))):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 module = getattr(node, "module", None) or node.names[0].name
@@ -97,14 +98,13 @@ def test_every_address_of_every_method_but_the_open_ones_is_closed_without_a_sig
     assert seen >= 8
 
 
-def test_the_stubs_come_from_the_one_list_of_sections_and_a_section_without_a_phrase_has_no_stub(tmp_path):
+def test_every_section_of_the_menu_is_a_route_by_its_code_and_none_has_a_phrase(tmp_path):
     app = make_app(tmp_path)
 
     assert [section.code for section in menu.SECTIONS] == ["feed", "list", "archive", "search", "settings"]
     for section in menu.SECTIONS:
         assert app.url_path_for(section.code) == section.address
-    assert [section.code for section in menu.SECTIONS if section.phrase is None] == ["feed", "list", "archive", "search"]  # pages of their own
-    assert menu.Section._fields == ("address", "code", "label", "phrase")
+    assert menu.Section._fields == ("address", "code", "label")
     assert menu.OpenAddress._fields == ("name", "always")
     assert [(a.name, a.always) for a in menu.OPEN_ADDRESSES] == [
         ("/health", True), ("/static/", True), ("/login", False), ("/logout", False),

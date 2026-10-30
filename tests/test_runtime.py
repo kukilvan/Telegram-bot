@@ -355,6 +355,87 @@ def test_a_stop_while_the_bot_waits_to_connect_again_does_not_wait_out_the_pause
     assert code == 0 and took < 2
 
 
+def test_telegram_is_not_down_at_first_and_a_failed_connect_says_so_until_receiving_begins():
+    states: list[bool] = []
+    runtime: Runtime
+
+    async def recorded_pause(stop, seconds):
+        states.append(runtime.health.telegram_down)  # looked at the moment the bot waits to connect again
+        if len(states) == 2:
+            runtime.request_stop()
+        await asyncio.sleep(0)
+
+    async def scenario():
+        nonlocal runtime
+        runtime = make_runtime(FakeWeb([]), FakeBot([], connect_fails=[True, True]), pause=recorded_pause)
+        before = runtime.health.telegram_down
+        await runtime.run()
+        return before
+
+    assert asyncio.run(scenario()) is False
+    assert states == [True, True]
+
+
+def test_the_beginning_of_receiving_takes_the_warning_away():
+    seen: dict[str, bool] = {}
+    runtime: Runtime
+
+    class WatchingBot(FakeBot):
+        async def receive(self, started) -> None:
+            seen["before"] = runtime.health.telegram_down  # the first connect failed: the warning stands
+            started()
+            seen["after"] = runtime.health.telegram_down
+            runtime.request_stop()
+            await super().receive(started)
+
+    async def scenario():
+        nonlocal runtime
+        runtime = make_runtime(
+            FakeWeb([]), WatchingBot([], connect_fails=[True]), pause=lambda stop, seconds: asyncio.sleep(0)
+        )
+        await runtime.run()
+
+    asyncio.run(scenario())
+
+    assert seen == {"before": True, "after": False}
+
+
+def test_a_receiving_that_fails_after_it_began_says_so_again():
+    states: list[bool] = []
+    runtime: Runtime
+
+    async def recorded_pause(stop, seconds):
+        states.append(runtime.health.telegram_down)
+        if len(states) == 2:
+            runtime.request_stop()
+        await asyncio.sleep(0)
+
+    async def scenario():
+        nonlocal runtime
+        runtime = make_runtime(FakeWeb([]), FakeBot([], receive_fails=True), pause=recorded_pause)
+        await runtime.run()
+
+    asyncio.run(scenario())
+
+    assert states == [True, True]
+
+
+def test_the_stop_does_not_touch_the_warning_and_health_does_not_report_it():
+    async def scenario():
+        runtime = make_runtime(FakeWeb([]), FakeBot([], connect_fails=[True] * 10))
+        run = asyncio.create_task(runtime.run())
+        await wait_for(lambda: runtime.health.telegram_down)
+        report = runtime.health.report()
+        runtime.request_stop()
+        await run
+        return runtime.health.telegram_down, report
+
+    down_after_stop, report = asyncio.run(scenario())
+
+    assert down_after_stop is True  # the connect in progress ended by the stop is not a new fault, nor a recovery
+    assert "telegram" not in str(report)
+
+
 # ---- /health --------------------------------------------------------------
 
 class Clock:

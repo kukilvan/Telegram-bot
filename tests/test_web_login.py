@@ -98,13 +98,11 @@ def test_the_open_addresses_are_exactly_the_pinned_list(client):
         assert client.get(address).status_code == 303, address
 
 
-def test_the_signed_in_see_the_stub_and_404_for_other_addresses(client):
+def test_the_signed_in_see_the_menu_and_404_for_other_addresses(client):
     sign_in(client)
 
-    feed = client.get("/settings")
     missing = client.get("/nowhere")
 
-    assert feed.status_code == 200 and "Лента" in feed.text and "Выйти" in feed.text
     assert missing.status_code == 404 and "Страница не найдена" in missing.text
 
 
@@ -228,7 +226,7 @@ def test_the_lock_does_not_touch_who_is_signed_in(client):
     for _ in range(5):
         client.post("/login", data={"password": WRONG})
 
-    assert client.get("/settings").status_code == 200
+    assert client.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login
 
 
 def test_the_log_tells_the_tries_without_the_password(client, clock, caplog):
@@ -265,7 +263,7 @@ def test_the_cookie_is_http_only_lax_and_lives_30_days(client):
 def test_every_answer_renews_the_cookie(client):
     sign_in(client)
 
-    assert "max-age=2592000" in client.get("/settings").headers["set-cookie"].lower()
+    assert "max-age=2592000" in client.get("/nowhere").headers["set-cookie"].lower()
 
 
 def test_the_session_survives_a_new_client_and_a_new_app_with_the_same_key_file(secret_file, clock):
@@ -276,7 +274,7 @@ def test_the_session_survives_a_new_client_and_a_new_app_with_the_same_key_file(
     second = TestClient(make_app(secret_file, clock), follow_redirects=False)  # the app restarted, the file stayed
     second.cookies.set("tracker_session", cookie)
 
-    assert second.get("/settings").status_code == 200
+    assert second.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login
 
 
 def test_the_key_file_is_made_once_with_owner_only_rights(secret_file, clock):
@@ -297,7 +295,7 @@ def test_without_a_key_file_to_read_or_make_the_key_lives_in_memory_and_the_log_
 
     assert "ключ сессий" in caplog.text
     sign_in(client)
-    assert client.get("/settings").status_code == 200
+    assert client.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login
 
 
 def test_a_broken_key_file_is_not_overwritten(secret_file, clock, caplog):
@@ -342,7 +340,7 @@ def test_a_cookie_older_than_30_days_is_not_accepted(secret_file, clock, monkeyp
     client = TestClient(make_app(secret_file, clock), follow_redirects=False)
     real = time_module.time()
     sign_in(client)
-    assert client.get("/settings").status_code == 200
+    assert client.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login
 
     monkeypatch.setattr(time_module, "time", lambda: real + 30 * 24 * 3600 + 60)
 
@@ -395,7 +393,7 @@ def test_a_post_from_a_foreign_origin_is_refused(client):
     for origin in ("https://evil.example", "http://testserver.evil.example", "null", "http://evil.example"):
         response = client.post("/logout", headers={"Origin": origin})
         assert response.status_code == 403 and "Запрос с чужой страницы отклонён" in response.text, origin
-    assert client.get("/settings").status_code == 200  # nothing was signed out
+    assert client.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login  # nothing was signed out
 
 
 def test_a_foreign_origin_cannot_even_try_passwords(client):
@@ -436,7 +434,7 @@ def test_security_headers_are_on_every_answer(client):
 def test_pages_behind_the_login_are_not_cached(client):
     sign_in(client)
 
-    assert client.get("/settings").headers["Cache-Control"] == "no-store"
+    assert client.get("/nowhere").headers["Cache-Control"] == "no-store"
     assert client.get("/nowhere").headers["Cache-Control"] == "no-store"
     assert "cache-control" not in client.get("/health").headers
     assert "cache-control" not in client.get("/static/style.css").headers
@@ -496,7 +494,7 @@ def test_without_a_password_only_the_service_addresses_are_open(secret_file, clo
 
     assert client.get("/health").status_code == 200
     assert client.get("/static/style.css").status_code == 200
-    for response in (client.get("/login"), client.post("/logout"), client.get("/settings"), client.get("/nowhere")):
+    for response in (client.get("/login"), client.post("/logout"), client.get("/nowhere")):
         assert response.status_code == 503 and "Вход не настроен" in response.text
 
 

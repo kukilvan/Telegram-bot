@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Настройки · Трекер релизов{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Настройки</h1>
+  {% if error_text %}<p class="error" role="alert">{{ error_text }}</p>{% endif %}
+  <form class="settings-form" method="post" action="/settings">
+    <div class="field">
+      <label for="timezone">Часовой пояс</label>
+      <select id="timezone" name="timezone"{% if invalid.timezone %} class="invalid" aria-invalid="true"{% endif %}>
+        {% for zone in zones %}<option value="{{ zone.value }}"{% if zone.selected %} selected{% endif %}>{{ zone.label }}</option>{% endfor %}
+      </select>
+      {% if log_note %}<p class="hint">{{ log_note }}</p>{% endif %}
+    </div>
+
+    <fieldset class="field">
+      <legend>Рабочие дни</legend>
+      <div class="days">
+        {% for day in days %}
+        <label class="check day"><input type="checkbox" name="workday" value="{{ day.value }}"{% if day.checked %} checked{% endif %}> {{ day.label }}</label>
+        {% endfor %}
+      </div>
+      <p class="hint">В рабочий день события ждут часа сводки и приходят одной сводкой, в выходной — сразу. Тихие часы действуют в любой день</p>
+    </fieldset>
+
+    <div class="field">
+      <label for="summary_at">Час сводки</label>
+      <input id="summary_at" type="time" name="summary_at" value="{{ shown.summary_at }}"{% if invalid.summary_at %} class="invalid" aria-invalid="true"{% endif %}>
+    </div>
+
+    <fieldset class="field">
+      <legend>Тихие часы</legend>
+      <div class="quiet">
+        <label for="quiet_from">с</label>
+        <input id="quiet_from" type="time" name="quiet_from" value="{{ shown.quiet_from }}"{% if invalid.quiet %} class="invalid" aria-invalid="true"{% endif %}>
+        <label for="quiet_until">до</label>
+        <input id="quiet_until" type="time" name="quiet_until" value="{{ shown.quiet_until }}"{% if invalid.quiet %} class="invalid" aria-invalid="true"{% endif %}>
+      </div>
+      <p class="hint">Одинаковое время в обоих полях — без тихих часов</p>
+    </fieldset>
+
+    <div class="field">
+      <label for="part_gap_weeks">Делить сезон на части после перерыва в (недель)</label>
+      <input id="part_gap_weeks" type="number" name="part_gap_weeks" min="1" max="52" step="1" value="{{ shown.part_gap_weeks }}"{% if invalid.part_gap_weeks %} class="invalid" aria-invalid="true"{% endif %}>
+      <p class="hint">Сериал ушёл на перерыв посреди сезона — вторая половина выходит отдельной частью. У аниме части берутся из Shikimori, это число на них не влияет</p>
+    </div>
+
+    <button type="submit">Сохранить</button>
+    <p class="hint">Новые правила действуют сразу, в том числе для того, что уже ждёт отправки</p>
+  </form>
+
+  <h2>Сейчас</h2>
+  <p class="now-line">{{ now_line }}</p>
+
+  <h2>Бот в Telegram</h2>
+  <p class="telegram-state">{{ telegram_note or "Подключён" }}</p>
+</section>
+{% endblock %}

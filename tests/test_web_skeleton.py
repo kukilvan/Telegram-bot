@@ -1,4 +1,4 @@
-"""The web skeleton: the menu and the five stub pages, the status line fed by `Tracker.overview()`, HTMX, and the rule
+"""The web skeleton: the menu, the status line fed by `Tracker.overview()`, HTMX, and the rule
 that a page reaches the core only through the facade (coding standard 10)."""
 
 import ast
@@ -26,7 +26,6 @@ WEB = ROOT / "app" / "web"
 PASSWORD = "correct horse battery"
 OPEN_ADDRESSES = {"/login", "/logout", "/health"}  # plus /static/…: the pinned list of what needs no sign-in
 MENU = [("/", "Лента"), ("/list", "Список"), ("/archive", "Архив"), ("/search", "Поиск"), ("/settings", "Настройки")]
-STUBS = [(address, name) for address, name in MENU if address not in ("/", "/search", "/list", "/archive")]  # these are pages of their own
 MOSCOW = ZoneInfo("Europe/Moscow")
 NOW = datetime(2026, 10, 27, 15, 30, tzinfo=MOSCOW)
 
@@ -75,24 +74,15 @@ def client(tmp_path):
 
 # ---- the pages ------------------------------------------------------------
 
-@pytest.mark.parametrize("address, name", STUBS)
-def test_every_stub_is_a_page_with_the_menu_and_the_current_section_marked(client, address, name):
-    response = client.get(address)
+def test_a_page_has_the_whole_menu_and_no_section_marked_when_it_belongs_to_none(client):
+    response = client.get("/nowhere")  # the common page: every section of the menu is a page of its own module now
 
     html = response.text
-    assert response.status_code == 200 and f"<h1>{name}</h1>" in html and "Скоро будет" in html
     assert '<html lang="ru">' in html and 'name="viewport"' in html and "Трекер релизов" in html
-    for other_address, other_name in MENU:
-        assert f'<a href="{other_address}"' in html and other_name in html
-    assert html.count('aria-current="page"') == 1
-    assert f'<a href="{address}" aria-current="page">{name}</a>' in html
+    for address, name in MENU:
+        assert f'<a href="{address}"' in html and name in html
+    assert 'aria-current="page"' not in html
     assert 'action="/logout"' in html and "Выйти" in html
-
-
-def test_each_stub_says_its_own_phrase(client):
-    phrases = {address: client.get(address).text for address, _ in STUBS}
-
-    assert "час сводки, тихие часы" in phrases["/settings"] and "(часть 5.4)" in phrases["/settings"]
 
 
 def test_the_page_not_found_is_in_the_common_template_with_no_section_marked(client):
@@ -122,7 +112,7 @@ def test_a_failed_login_page_of_the_signed_in_has_no_menu_either(client):
 # ---- the status line ------------------------------------------------------
 
 def test_the_status_line_is_in_every_page_and_polls_itself(client):
-    html = client.get("/settings").text
+    html = client.get("/nowhere").text
 
     assert "В списке 12 тайтлов · последняя проверка источников в 14:05" in html
     assert 'hx-get="/status-line"' in html and 'hx-trigger="every 60s"' in html and 'hx-swap="outerHTML"' in html
@@ -158,10 +148,10 @@ def test_a_database_that_does_not_answer_gives_a_line_and_a_page_not_a_500(tmp_p
     client = make_client(FakeTracker(error=RuntimeError("database is locked")), tmp_path)
 
     with caplog.at_level(logging.ERROR):
-        page = client.get("/settings")
+        page = client.get("/nowhere")
         fragment = client.get("/status-line")
 
-    assert page.status_code == 200 and NO_DATA in page.text and "Лента" in page.text
+    assert page.status_code == 404 and NO_DATA in page.text and "Лента" in page.text
     assert fragment.status_code == 200 and NO_DATA in fragment.text
     assert any("no data from the database" in record.getMessage() for record in caplog.records)
 
@@ -169,7 +159,7 @@ def test_a_database_that_does_not_answer_gives_a_line_and_a_page_not_a_500(tmp_p
 def test_without_a_tracker_the_line_says_there_is_no_data(tmp_path):
     client = make_client(None, tmp_path)
 
-    assert NO_DATA in client.get("/settings").text
+    assert NO_DATA in client.get("/nowhere").text
 
 
 @pytest.mark.parametrize("count, word", [(0, "тайтлов"), (1, "тайтл"), (2, "тайтла"), (4, "тайтла"), (5, "тайтлов"),
@@ -290,14 +280,14 @@ def test_the_pages_load_htmx_from_the_project_and_the_file_is_served(client):
 
 
 def test_the_new_templates_keep_to_the_content_security_policy():
-    for name in ("base.html", "section.html", "status_line.html"):
+    for name in ("base.html", "status_line.html"):
         text = (WEB / "templates" / name).read_text(encoding="utf-8")
         assert not re.search(r"<script(?![^>]*\bsrc=\"/static/)", text), name
         assert "style=" not in text and "http://" not in text and "https://" not in text, name
 
 
 def test_the_pages_work_without_the_internet_the_only_script_is_ours(client):
-    html = client.get("/settings").text
+    html = client.get("/nowhere").text
 
     assert re.findall(r'<script[^>]*src="([^"]*)"', html) == ["/static/htmx.min.js"]
     assert re.findall(r'<link[^>]*href="([^"]*)"', html) == ["/static/style.css"]
