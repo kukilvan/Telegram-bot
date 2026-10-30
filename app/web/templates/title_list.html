@@ -4,7 +4,8 @@
 {% block content %}
 <section class="card">
   <h1>Список</h1>
-  {{ search_box(form_address, results_address, form_hidden, query) }}
+  {# the ticked rows (mode of choosing) go with the search, so the rows that stay found stay ticked #}
+  {{ search_box(form_address, results_address, form_hidden, query, "#selection-form input[name=id]") }}
   <div id="results">{% include "title_list_results.html" %}</div>
 </section>
 {% endblock %}

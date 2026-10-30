@@ -299,6 +299,120 @@ def test_the_strip_ignores_what_is_not_a_number(client):
     assert "Удалить выбранные (1)" in answer.text
 
 
+# ---- the search in the mode of choosing (KI-31) ------------------------------------------------------------------
+
+@pytest.fixture
+def three(session_factory):
+    """Дюна 1, Дюна: часть вторая 2, Аватар 3 (want, newest last)."""
+    return [
+        put(session_factory, "Дюна", minutes=0),
+        put(session_factory, "Дюна: часть вторая", minutes=1),
+        put(session_factory, "Аватар", minutes=2),
+    ]
+
+
+def ticked(html):
+    """The numbers of the rows that stand ticked."""
+    return [int(n) for n in re.findall(r'<input type="checkbox" name="id" value="(\d+)" checked>', html)]
+
+
+def rows_of(html):
+    return [int(n) for n in re.findall(r'<input type="checkbox" name="id" value="(\d+)"', html)]
+
+
+def search(client, q, *ids, **filters):
+    params = [("select", "1"), ("q", q), *[(name, value) for name, value in filters.items()], *[("id", i) for i in ids]]
+    return client.get("/list/results", params=params, headers=HTMX)
+
+
+def test_the_search_keeps_the_tick_of_a_row_it_still_finds_and_drops_the_one_it_took_away(client, three):
+    first, second, third = three
+
+    answer = search(client, "дюн", first, second)  # ticked: 1 and 2; the search keeps 1 and 2 …
+    narrowed = search(client, "часть", first, second)  # … and now only 2
+    other = search(client, "а", first, third)  # ticked 1 and 3: all three rows have «а», 1 and 3 stay ticked
+
+    assert rows_of(answer.text) == [second, first] and ticked(answer.text) == [second, first]
+    assert rows_of(narrowed.text) == [second] and ticked(narrowed.text) == [second]
+    assert ticked(other.text) == [third, first] and "Удалить выбранные (2)" in other.text
+
+
+def test_the_ticked_one_the_search_left_and_the_one_it_added_are_told_apart(client, three):
+    first, second, third = three
+
+    answer = search(client, "ава", first, second)  # ticked 1 and 2, the search finds only 3
+
+    assert rows_of(answer.text) == [third] and ticked(answer.text) == []
+    assert "Удалить выбранные (0)" in answer.text and re.search(r"<button[^>]* disabled>", answer.text)
+
+
+def test_the_strip_counts_the_ticked_among_the_shown_rows(client, three):
+    first, second, third = three
+
+    answer = search(client, "дюн", first, third)  # 1 is found, 3 is not
+
+    assert "Удалить выбранные (1)" in answer.text and ticked(answer.text) == [first]
+
+
+def test_the_search_request_carries_the_ticked_rows_and_one_query(client, three):
+    html = client.get("/list?select=1&q=дюн&kind=movie").text
+    search_form = re.search(r'<form class="find-form".*?</form>', html, re.S).group(0)
+
+    assert 'hx-include="#selection-form input[name=id]"' in search_form and 'hx-get="/list/results"' in search_form
+    # the form of the search holds its own field «q» and the filters, not the ticked rows and not a second «q»
+    assert search_form.count('name="q"') == 1 and 'name="id"' not in search_form
+    assert '<input type="hidden" name="kind" value="movie">' in search_form
+    assert '<input type="hidden" name="select" value="1">' in search_form
+    assert 'type="hidden" name="q"' not in search_form
+    assert 'id="selection-form"' in html  # the ticked rows are in the form the selector points at
+
+
+def test_the_search_outside_the_mode_has_no_ticks_and_ignores_the_numbers(client, three):
+    answer = client.get("/list/results", params=[("q", "дюн"), ("id", three[0])], headers=HTMX)
+
+    assert "checkbox" not in answer.text and "Удалить выбранные" not in answer.text and "Удалить несколько" in answer.text
+
+
+def test_the_search_keeps_the_filters_and_the_mode_in_the_address_it_pushes(client, three):
+    answer = search(client, "дюн", three[0], kind="movie", status="all", order="name")
+
+    assert answer.headers["HX-Push-Url"] == "/list?kind=movie&status=all&order=name&q=%D0%B4%D1%8E%D0%BD&select=1"
+    assert ticked(answer.text) == [three[0]]
+
+
+def test_a_search_that_finds_nothing_in_the_mode_keeps_the_mode_in_the_address(client, three):
+    answer = search(client, "ничего такого", three[0])
+
+    assert "Ничего не нашлось по запросу" in answer.text and "checkbox" not in answer.text
+    assert answer.headers["HX-Push-Url"].endswith("&select=1") or "select=1" in answer.headers["HX-Push-Url"]
+
+
+def test_after_a_search_the_question_and_the_deleting_touch_only_what_is_shown_and_ticked(client, session_factory, three):
+    first, second, third = three
+    found = search(client, "дюн", first, third)  # the rows 1 and 2 are shown; 1 is ticked, 3 is not shown any more
+    shown_rows = rows_of(found.text)
+
+    asked = client.get("/list/confirm", params=[("id", n) for n in ticked(found.text)], headers=HTMX)  # the form of the rows sends these
+    client.post("/list/delete", data={"id": [str(n) for n in ticked(found.text)]})
+
+    assert shown_rows == [second, first] and ticked(found.text) == [first]
+    assert "Удалить 1 тайтл" in asked.text and "«Дюна»" in asked.text and "Аватар" not in asked.text
+    assert remaining(session_factory) == ["Аватар", "Дюна: часть вторая"]
+
+
+def test_without_htmx_the_search_in_the_mode_is_the_plain_form_and_the_ticks_are_gone(client, three):
+    answer = client.get("/list/results", params=[("select", "1"), ("q", "дюн"), ("id", three[0])])
+
+    assert answer.status_code == 303 and answer.headers["location"] == "/list?q=%D0%B4%D1%8E%D0%BD&select=1"
+    assert ticked(client.get(answer.headers["location"]).text) == []
+
+
+def test_the_numbers_of_the_search_are_read_like_those_of_the_strip(client, three):
+    answer = search(client, "дюн", "abc", "-1", "9" * 40, three[0], three[0])
+
+    assert ticked(answer.text) == [three[0]] and "Удалить выбранные (1)" in answer.text
+
+
 # ---- the question ------------------------------------------------------------------------------------------------
 
 def test_the_question_names_the_titles_and_holds_exactly_those_numbers(client, mixed):

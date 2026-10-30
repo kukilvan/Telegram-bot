@@ -12,11 +12,8 @@ from typing import Any, NamedTuple
 from fastapi import APIRouter, Form, Request, Response
 
 from app.tracker.cards import format_date, format_weekday_date
-from app.tracker.core import (
-    Feed, FeedDay, RecentRow, SourceFailed, TitleNotFound, UnknownKind, UnknownTitle, UpcomingRow,
-)
+from app.tracker.core import Feed, FeedDay, RecentRow, UnknownTitle, UpcomingRow
 from app.tracker.kinds import KINDS
-from app.tracker.models import TitleKind
 from app.web import pages
 from app.web.posters import LIST_SIZE
 
@@ -159,13 +156,5 @@ async def mark_watched(request: Request, title_id: int) -> Response:
 async def follow_sequel(request: Request, kind: str = Form(""), sequel_id: str = Form("")) -> Response:
     """«Следить» under an announced sequel: the sequel joins the list, and its row now says «В списке». What went wrong
     is a line on top of the fresh feed."""
-    notice = ""
-    try:
-        await pages.tracker_of(request).follow_sequel_of(kind, sequel_id)
-    except (UnknownKind, KeyError):  # no such kind, or one without sequels or a source
-        notice = pages.NO_SUCH_KIND
-    except TitleNotFound:
-        notice = pages.not_found(TitleKind(kind))
-    except SourceFailed as exc:
-        notice = pages.source_failed(TitleKind(kind), exc, "follow")
+    notice = await pages.try_follow_sequel(request, kind, sequel_id)
     return await _pressed(request, notice)

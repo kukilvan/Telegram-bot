@@ -9,23 +9,22 @@ from dataclasses import dataclass, replace
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, Request, Response
-from fastapi.responses import RedirectResponse
 
 from app.tracker.cards import STATUS_LABELS, titles_word
-from app.tracker.core import ListOrder, UnknownTitle
-from app.tracker.kinds import KINDS
+from app.tracker.core import ListOrder, Tracker, UnknownTitle
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from app.web import pages
+from app.web.filters import NOTHING_FOUND, empty_phrase, kind_links, parse_choice, results_answer
 from app.web.posters import LIST_SIZE
 from app.web.title_rows import Link, clean_query, rows
 
 ALL_STATUSES = "all"  # the value of `status` for the whole list, the archive included
 MAX_NAMES = 10  # the names a question or a line names; the rest is «и ещё N»
 SELECT = "1"  # the value of `select`
+ORDERS = (("Сначала новые", ListOrder.ADDED), ("По названию", ListOrder.NAME))  # the order of the list; the first is the default
+ORDER_CHOICES = tuple(order for _, order in ORDERS)
 
 EMPTY_LIST = "В списке пока ничего нет."
-NOTHING_FITS = "Под этот фильтр ничего не подходит"
-NOTHING_FOUND = "Ничего не нашлось по запросу"
 ALL_GONE = "Этих тайтлов уже нет в списке"
 
 router = APIRouter()
@@ -42,19 +41,11 @@ class Filters:
 
     @staticmethod
     def parse(kind: str = "", status: str = "", order: str = "", q: str = "") -> "Filters":
-        try:
-            chosen_kind = TitleKind(kind) if kind else None
-        except ValueError:
-            chosen_kind = None
-        try:
-            chosen_status = TitleStatus(status).value if status != ALL_STATUSES else ALL_STATUSES
-        except ValueError:
-            chosen_status = None
-        try:
-            chosen_order = ListOrder(order) if order else ListOrder.ADDED
-        except ValueError:
-            chosen_order = ListOrder.ADDED
-        return Filters(chosen_kind, chosen_status, chosen_order, clean_query(q))
+        chosen = parse_choice(TitleStatus, status)
+        chosen_status = ALL_STATUSES if status == ALL_STATUSES else (None if chosen is None else chosen.value)
+        # the order of the archive («По оценке», «Сначала недавние») is no order of the list: it counts as none
+        chosen_order = parse_choice(ListOrder, order, allowed=ORDER_CHOICES, default=ListOrder.ADDED)
+        return Filters(parse_choice(TitleKind, kind), chosen_status, chosen_order, clean_query(q))
 
     def statuses(self) -> frozenset[TitleStatus] | None:
         """The set the core is asked for; None: every status."""
@@ -97,15 +88,11 @@ def _filter_links(request: Request, filters: Filters) -> tuple[list[Link], list[
     def link(label: str, changed: Filters, current: bool) -> Link:
         return Link(label, _address(request, changed), current)
 
-    kinds = [link("Все", replace(filters, kind=None), filters.kind is None)]
-    kinds += [link(KINDS[k].plural, replace(filters, kind=k), filters.kind == k) for k in TitleKind]
+    kinds = kind_links(filters.kind, lambda kind: _address(request, replace(filters, kind=kind)))
     statuses = [link("Без архива", replace(filters, status=None), filters.status is None)]
     statuses += [link(STATUS_LABELS[s], replace(filters, status=s.value), filters.status == s.value) for s in TitleStatus]
     statuses.append(link("Весь список", replace(filters, status=ALL_STATUSES), filters.status == ALL_STATUSES))
-    orders = [
-        link("Сначала новые", replace(filters, order=ListOrder.ADDED), filters.order == ListOrder.ADDED),
-        link("По названию", replace(filters, order=ListOrder.NAME), filters.order == ListOrder.NAME),
-    ]
+    orders = [link(label, replace(filters, order=order), filters.order == order) for label, order in ORDERS]
     return kinds, statuses, orders
 
 
@@ -146,19 +133,27 @@ def _bar(request: Request, filters: Filters, count: int, *, initial: bool = Fals
     }
 
 
-async def _view(request: Request, filters: Filters, selecting: bool) -> dict[str, object]:
-    """What the page and the fragment of the results show: the links, the rows or the sentence that stands for them."""
+async def _list_has_titles(tracker: Tracker) -> bool:
+    return bool(await tracker.list_titles())
+
+
+async def _view(
+    request: Request, filters: Filters, selecting: bool, ticked: frozenset[int] = frozenset()
+) -> dict[str, object]:
+    """What the page and the fragment of the results show: the links, the rows or the sentence that stands for them.
+    `ticked` are the rows ticked before the search changed the rows: those still among the rows stay ticked."""
     tracker = pages.tracker_of(request)
     titles = await tracker.list_titles(filters.kind, filters.statuses(), filters.order, filters.query or None)
     empty = ""
     if not titles:
-        if filters.query:
-            empty = NOTHING_FOUND
-        else:
-            # nothing under the filter, and an empty list is a different sentence from a filter nothing fits
-            empty = NOTHING_FITS if not filters.unfiltered and await tracker.list_titles() else EMPTY_LIST
+        empty = await empty_phrase(
+            query=filters.query, unfiltered=filters.unfiltered,
+            anything=lambda: _list_has_titles(tracker), nothing_at_all=EMPTY_LIST,
+        )
     kinds, statuses, orders = _filter_links(request, filters)
+    address = _address(request, filters, select=selecting)  # the mode is kept even when this search finds nothing
     selecting = selecting and bool(titles)
+    shown_ticked = frozenset(t.id for t in titles if t.id in ticked)  # a row the search took away loses its tick
     return {
         "kinds": kinds, "statuses": statuses, "orders": orders, "rows": rows(request, titles), "size": LIST_SIZE,
         "shown": f"Показано {len(titles)} {titles_word(len(titles))}", "empty": empty,
@@ -169,7 +164,8 @@ async def _view(request: Request, filters: Filters, selecting: bool) -> dict[str
         "selecting": selecting, "select_address": _address(request, filters, select=True),
         "cancel_address": _address(request, filters),
         "selection_address": str(request.app.url_path_for("list_selection")), "hidden": filters.params(),
-        "bar": _bar(request, filters, 0, initial=True),
+        "ticked": shown_ticked, "address": address,
+        "bar": _bar(request, filters, len(shown_ticked), initial=True),
     }
 
 
@@ -193,16 +189,16 @@ async def show_list(
 async def results(
     request: Request, kind: str = "", status: str = "", order: str = "", q: str = "", select: str = ""
 ) -> Response:
-    """The part of the page under the search field, for the search as the letters come. The address of the page with
-    this query goes to the browser (`HX-Push-Url`), so «Назад» and a bookmark keep it."""
+    """The part of the page under the search field, for the search as the letters come. In the mode of choosing the
+    request carries the numbers of the ticked rows (`id`, only those): the ones still among the rows found stay ticked,
+    and the strip counts them (KI-31)."""
     filters = Filters.parse(kind, status, order, q)
     selecting = select == SELECT
-    address = _address(request, filters, select=selecting)
-    if not pages.is_htmx(request):
-        return RedirectResponse(address, status_code=303)
-    response = pages.fragment(request, "title_list_results.html", **await _view(request, filters, selecting))
-    response.headers["HX-Push-Url"] = address
-    return response
+    ticked = frozenset(_ids(request.query_params.getlist("id"))) if selecting else frozenset()
+    return await results_answer(
+        request, "title_list_results.html", _address(request, filters, select=selecting),
+        lambda: _view(request, filters, selecting, ticked),
+    )
 
 
 @router.get("/list/selection", name="list_selection")

@@ -9,11 +9,12 @@ from pathlib import Path
 from urllib.parse import quote
 
 from fastapi import FastAPI, Form, Request, Response
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.tracker.core import Tracker
 from app.web import archive, auth, card, feed, menu, pages, posters, search, title_list
@@ -40,6 +41,26 @@ def _is_open(path: str, *, always: bool = False) -> bool:
         (path.startswith(name) if name.endswith("/") else path == name) and (flag or not always)
         for name, flag in OPEN_ADDRESSES
     )
+
+
+class HeadAsGet:
+    """`HEAD` for every address that answers `GET`: the same code and headers, no body. Done here once and not at every
+    route (FastAPI routes of `GET` do not take `HEAD`); an external monitor asks `/health` this way."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["method"] != "HEAD":
+            await self.app(scope, receive, send)
+            return
+
+        async def without_body(message: Message) -> None:
+            if message["type"] == "http.response.body":
+                message = {"type": "http.response.body", "body": b"", "more_body": message.get("more_body", False)}
+            await send(message)
+
+        await self.app({**scope, "method": "GET"}, receive, without_body)
 
 
 def create_web_app(
@@ -182,6 +203,30 @@ def create_web_app(
     @app.exception_handler(404)
     async def not_found(request: Request, exc: HTTPException) -> Response:
         return await message(request, "Страница не найдена", "Такого адреса нет.", 404)
+
+    @app.exception_handler(405)
+    async def not_allowed(request: Request, exc: HTTPException) -> Response:
+        # a press-only address opened from the address bar (`/logout`): the common page, and `Allow` as the framework gave it
+        link = (str(request.app.url_path_for("feed")), "Открыть Ленту")
+        response = await pages.message_page(
+            request, "Так не открывается", "Этот адрес работает только по кнопке на странице", 405, link=link
+        )
+        response.headers.update(exc.headers or {})
+        return response
+
+    @app.exception_handler(Exception)
+    async def server_error(request: Request, exc: Exception) -> Response:
+        # Runs in the outermost layer of Starlette, outside the middleware above: the headers are put on here. The
+        # traceback goes to the log from the server, which gets the exception once this answer is sent
+        try:
+            response = await message(request, "Не получилось", pages.FAILED, 500)
+        except Exception:
+            logging.exception("web: the page of the 500 could not be built")
+            response = PlainTextResponse(pages.FAILED, status_code=500)
+        response.headers.update({**security_headers, "Cache-Control": "no-store"})
+        return response
+
+    app.add_middleware(HeadAsGet)  # the last one added is the outermost: a `HEAD` is a `GET` for all the layers inside
 
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
     return app

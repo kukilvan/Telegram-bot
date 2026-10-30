@@ -1,13 +1,7 @@
-{% from "macros.html" import row_tail, title_main %}
-<nav class="filters" aria-label="Тип">
-  {% for link in kinds %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
-</nav>
-<nav class="filters" aria-label="Статус">
-  {% for link in statuses %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
-</nav>
-<nav class="filters" aria-label="Порядок">
-  {% for link in orders %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
-</nav>
+{% from "macros.html" import filter_row, row_tail, title_main %}
+{{ filter_row("Тип", kinds) }}
+{{ filter_row("Статус", statuses) }}
+{{ filter_row("Порядок", orders) }}
 
 {% if empty %}
 <p class="hint">{% if searched %}{{ empty }} «{{ query }}» <a href="{{ reset_query_address }}">Сбросить поиск</a>{% elif empty_is_list %}{{ empty }} <a href="{{ search_address }}">Найдите тайтл в Поиске</a>{% else %}{{ empty }} <a href="{{ reset_address }}">Сбросить фильтры</a>{% endif %}</p>
@@ -23,7 +17,7 @@
     {% for row in rows %}
     <li class="title-row">
       <label class="check pick">
-        <input type="checkbox" name="id" value="{{ row.id }}">
+        <input type="checkbox" name="id" value="{{ row.id }}"{% if row.id in ticked %} checked{% endif %}>
         {{ title_main(row.poster, size, row.icon, row.name, "", row.year) }}
         {{ row_tail(row) }}
       </label>

@@ -14,7 +14,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
-from app.tracker.core import SourceFailed, Tracker
+from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownKind
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web.status_line import NO_DATA, status_text
@@ -42,15 +42,29 @@ class WebContext:
     sections: "Sequence[Section]"
 
 
-def source_failed(kind: TitleKind, exc: SourceFailed, doing: str) -> str:
-    """The source of the kind did not answer: the log gets what `doing` was and the cause, the owner a sentence that
-    names the source (any cause: the exact one is in the log)."""
+def report_source_failure(kind: TitleKind, exc: SourceFailed, doing: str) -> str:
+    """The source of the kind did not answer: writes to the log what `doing` was and the cause, and returns the sentence
+    for the owner that names the source (any cause: the exact one is in the log)."""
     logging.warning("web %s: %s failed: %r", doing, exc, exc.__cause__)
     return f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже"
 
 
 def not_found(kind: TitleKind) -> str:
     return f"{KINDS[kind].source_name} больше не знает этот тайтл. Поищите заново"
+
+
+async def try_follow_sequel(request: Request, kind: str, sequel_id: str) -> str:
+    """«Следить» at a sequel (the card and the feed press it): asks the core and returns the sentence of what went wrong,
+    or an empty string when the sequel joined the list. A source that did not answer is written to the log."""
+    try:
+        await tracker_of(request).follow_sequel_of(kind, sequel_id)
+    except (UnknownKind, KeyError):  # no such kind, or one without sequels or a source
+        return NO_SUCH_KIND
+    except TitleNotFound:
+        return not_found(TitleKind(kind))
+    except SourceFailed as exc:
+        return report_source_failure(TitleKind(kind), exc, "follow")
+    return ""
 
 
 def context_of(request: Request) -> WebContext:
@@ -153,7 +167,7 @@ async def failed(request: Request, refresh: str | None = None) -> Response:
     return await message_page(request, "Не получилось", FAILED, 500, link=link)
 
 
-def _net(
+def _under_net(
     handler: Callable[..., Awaitable[Response]], refresh: tuple[str, ...] | None
 ) -> Callable[..., Awaitable[Response]]:
     @functools.wraps(handler)
@@ -177,10 +191,10 @@ def guarded(handler: Callable[..., Awaitable[Response]]) -> Callable[..., Awaita
     """A handler under the net: an error nobody expected goes to the log with its traceback, and the owner gets a
     sentence (a fragment for HTMX, a page with a `500` otherwise) instead of an empty place. What the framework
     itself answers with (`HTTPException`) is let through."""
-    return _net(handler, None)
+    return _under_net(handler, None)
 
 
 def guarded_with_refresh(route: str, *params: str) -> Callable[[Callable[..., Awaitable[Response]]], Callable[..., Awaitable[Response]]]:
     """`guarded`, and the sentence ends in «Обновить»: a link to the page of the route `route` (its address takes the
     path parameters `params` of the request, such as the number of the title)."""
-    return lambda handler: _net(handler, (route, *params))
+    return lambda handler: _under_net(handler, (route, *params))

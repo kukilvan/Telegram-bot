@@ -86,7 +86,7 @@ async def _found(request: Request, kind: TitleKind | None, raw_query: str) -> di
         logging.warning("web search: no source for %s", kind)
         return {**shown, "hint": pages.NO_SUCH_KIND, "error": True}
     except SourceFailed as exc:
-        return {**shown, "hint": pages.source_failed(kind, exc, "search"), "error": True}
+        return {**shown, "hint": pages.report_source_failure(kind, exc, "search"), "error": True}
     if not suggestions:
         return {**shown, "hint": _nothing(query)}
     rows = [
@@ -159,7 +159,7 @@ async def add(request: Request, kind: str = Form(""), external_id: str = Form(""
     except TitleNotFound:
         return await _refused(request, back, pages.not_found(chosen))
     except SourceFailed as exc:
-        return await _refused(request, back, pages.source_failed(chosen, exc, "add"))
+        return await _refused(request, back, pages.report_source_failure(chosen, exc, "add"))
     pages.notify(request, await _added(tracker, result.title_id) if result.created else ALREADY)
     return pages.go(request, str(request.app.url_path_for("card", title_id=result.title_id)))
 

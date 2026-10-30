@@ -61,8 +61,8 @@ def test_the_app_module_only_assembles_the_stubs_and_the_pages_are_routers_of_th
 def test_the_web_modules_of_the_part_are_in_the_import_check_of_rule_10():
     names = {path.stem for path in WEB.glob("*.py")}
 
-    assert {"app", "menu", "pages", "posters", "auth", "status_line", "server"} <= names
-    for stem in ("menu", "pages", "posters"):
+    assert {"app", "menu", "pages", "posters", "auth", "status_line", "server", "filters"} <= names
+    for stem in ("menu", "pages", "posters", "filters"):
         for node in ast.walk(ast.parse((WEB / f"{stem}.py").read_text(encoding="utf-8"))):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 module = getattr(node, "module", None) or node.names[0].name

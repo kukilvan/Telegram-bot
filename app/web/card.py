@@ -12,10 +12,10 @@ from app.tracker.cards import (
 )
 from app.tracker import scores
 from app.tracker.core import (
-    CannotScore, ScoreView, SourceFailed, TitleNotFound, Tracker, UnknownKind, UnknownSeason, UnknownTitle,
+    CannotScore, ScoreView, Tracker, UnknownSeason, UnknownTitle,
 )
 from app.tracker.kinds import KINDS, is_seasonal
-from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
+from app.tracker.models import ARCHIVE_STATUSES, TitleStatus
 from app.web import pages
 from app.web.posters import CARD_SIZE
 
@@ -293,15 +293,7 @@ async def follow_sequel(request: Request, title_id: int, kind: str = Form(""), s
     row now says «В списке» (several sequels can be followed one after another). What went wrong is a line in the block."""
     if not pages.is_id(title_id):
         return await pages.title_gone(request)
-    error = ""
-    try:
-        await pages.tracker_of(request).follow_sequel_of(kind, sequel_id)
-    except (UnknownKind, KeyError):  # no such kind, or one without sequels or a source
-        error = pages.NO_SUCH_KIND
-    except TitleNotFound:
-        error = pages.not_found(TitleKind(kind))
-    except SourceFailed as exc:
-        error = pages.source_failed(TitleKind(kind), exc, "follow")
+    error = await pages.try_follow_sequel(request, kind, sequel_id)
     if error and not pages.is_htmx(request):
         pages.notify(request, error)
     address = _address(request, "card", title_id=title_id)

@@ -48,11 +48,19 @@
 {% if row.score %}<span class="row-score">{{ row.score }}</span>{% endif %}<span class="row-status">{{ row.status }}</span>
 {% endmacro %}
 
+{# A row of links of a filter (`links` are `Link`s): the one that is chosen is marked. #}
+{% macro filter_row(label, links) %}
+<nav class="filters" aria-label="{{ label }}">
+  {% for link in links %}<a href="{{ link.address }}"{% if link.current %} aria-current="true"{% endif %}>{{ link.label }}</a>{% endfor %}
+</nav>
+{% endmacro %}
+
 {# The search by name over the rows of the list or of the archive: the rows and the links under it (`#results`) are asked
    for 300 ms after the last letter, a newer request replaces an older one. Without HTMX the form sends the page itself.
-   `hidden` are the filters the search keeps. #}
-{% macro search_box(action, results_address, hidden, query) %}
-<form class="find-form" role="search" method="get" action="{{ action }}" hx-get="{{ results_address }}" hx-trigger="input delay:300ms, submit" hx-target="#results" hx-sync="this:replace">
+   `hidden` are the filters the search keeps. `carries` is a selector of what else the request carries (the list: the
+   ticked rows, so the search does not lose them). #}
+{% macro search_box(action, results_address, hidden, query, carries="") %}
+<form class="find-form" role="search" method="get" action="{{ action }}" hx-get="{{ results_address }}" hx-trigger="input delay:300ms, submit" hx-target="#results" hx-sync="this:replace"{% if carries %} hx-include="{{ carries }}"{% endif %}>
   {% for name, value in hidden.items() %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
   <label for="title-query">Название</label>
   <div class="search-line">

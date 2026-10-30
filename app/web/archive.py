@@ -6,25 +6,23 @@ from dataclasses import dataclass, replace
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Request, Response
-from fastapi.responses import RedirectResponse
 
 from app.tracker.cards import STATUS_LABELS, titles_word
-from app.tracker.core import ListOrder
-from app.tracker.kinds import KINDS
+from app.tracker.core import ListOrder, Tracker
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from app.web import pages
+from app.web.filters import NOTHING_FOUND, empty_phrase, kind_links, parse_choice, results_answer
 from app.web.posters import LIST_SIZE
 from app.web.title_rows import Link, clean_query, rows
 
 ARCHIVE_EMPTY = "В архиве пока ничего нет. Сюда попадает просмотренное и брошенное"
-NOTHING_FITS = "Под этот фильтр ничего не подходит"
-NOTHING_FOUND = "Ничего не нашлось по запросу"
 
 ORDERS = (  # the links of the row of orders; the first one is the default
     ("По оценке", ListOrder.SCORE),
     ("Сначала недавние", ListOrder.ARCHIVED),
     ("По названию", ListOrder.NAME),
 )
+ORDER_CHOICES = tuple(order for _, order in ORDERS)
 ARCHIVE_ORDER = [status for status in TitleStatus if status in ARCHIVE_STATUSES]  # the order of the row of statuses
 
 router = APIRouter()
@@ -42,18 +40,11 @@ class Filters:
 
     @staticmethod
     def parse(q: str = "", kind: str = "", genre: str = "", status: str = "", order: str = "") -> "Filters":
-        try:
-            chosen_kind = TitleKind(kind) if kind else None
-        except ValueError:
-            chosen_kind = None
-        try:
-            chosen_status = TitleStatus(status) if status else None
-        except ValueError:
-            chosen_status = None
-        if chosen_status not in ARCHIVE_STATUSES:
-            chosen_status = None
-        orders = {order_.value: order_ for _, order_ in ORDERS}
-        return Filters(clean_query(q), chosen_kind, genre.strip() or None, chosen_status, orders.get(order, ListOrder.SCORE))
+        return Filters(
+            clean_query(q), parse_choice(TitleKind, kind), genre.strip() or None,
+            parse_choice(TitleStatus, status, allowed=ARCHIVE_STATUSES),
+            parse_choice(ListOrder, order, allowed=ORDER_CHOICES, default=ListOrder.SCORE),
+        )
 
     def statuses(self) -> frozenset[TitleStatus]:
         return frozenset({self.status}) if self.status is not None else ARCHIVE_STATUSES
@@ -90,14 +81,17 @@ def _filter_links(request: Request, filters: Filters, genres: list[str]) -> tupl
     def link(label: str, changed: Filters, current: bool) -> Link:
         return Link(label, _address(request, changed), current)
 
-    kinds = [link("Все", replace(filters, kind=None), filters.kind is None)]
-    kinds += [link(KINDS[k].plural, replace(filters, kind=k), filters.kind == k) for k in TitleKind]
+    kinds = kind_links(filters.kind, lambda kind: _address(request, replace(filters, kind=kind)))
     genre_links = [link("Все жанры", replace(filters, genre=None), filters.genre is None)]
     genre_links += [link(genre, replace(filters, genre=genre), filters.genre == genre) for genre in genres]
     statuses = [link("Весь архив", replace(filters, status=None), filters.status is None)]
     statuses += [link(STATUS_LABELS[s], replace(filters, status=s), filters.status == s) for s in ARCHIVE_ORDER]
     orders = [link(label, replace(filters, order=order), filters.order == order) for label, order in ORDERS]
     return kinds, genre_links, statuses, orders
+
+
+async def _archive_has_titles(tracker: Tracker) -> bool:
+    return bool(await tracker.list_titles(statuses=ARCHIVE_STATUSES))
 
 
 async def _view(request: Request, filters: Filters) -> dict[str, object]:
@@ -112,11 +106,10 @@ async def _view(request: Request, filters: Filters) -> dict[str, object]:
     )
     empty = ""
     if not titles:
-        if filters.query:
-            empty = NOTHING_FOUND
-        else:
-            archive_empty = filters.unfiltered or not await tracker.list_titles(statuses=ARCHIVE_STATUSES)
-            empty = ARCHIVE_EMPTY if archive_empty else NOTHING_FITS
+        empty = await empty_phrase(
+            query=filters.query, unfiltered=filters.unfiltered,
+            anything=lambda: _archive_has_titles(tracker), nothing_at_all=ARCHIVE_EMPTY,
+        )
     kinds, genre_links, statuses, orders = _filter_links(request, filters, genres)
     return {
         "kinds": kinds, "genres": genre_links, "statuses": statuses, "orders": orders,
@@ -151,9 +144,6 @@ async def results(
     """The part of the page under the search field, for the search as the letters come. The address of the page with
     this query goes to the browser (`HX-Push-Url`), so «Назад» and a bookmark keep it."""
     filters = Filters.parse(q, kind, genre, status, order)
-    if not pages.is_htmx(request):
-        return RedirectResponse(_address(request, filters), status_code=303)
-    view = await _view(request, filters)
-    response = pages.fragment(request, "archive_results.html", **view)
-    response.headers["HX-Push-Url"] = str(view["address"])
-    return response
+    return await results_answer(
+        request, "archive_results.html", _address(request, filters), lambda: _view(request, filters)
+    )
