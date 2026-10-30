@@ -22,7 +22,7 @@ from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import (
-    CannotScore, SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle,
+    CannotScore, SettingsRefused, SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, RecentRow, SequelOffer, UpcomingRow
@@ -38,22 +38,25 @@ from app.tracker.results import (
     ListOrder,
     Overview,
     PollReport,
+    SettingsView,
     SummaryResult,
     TestEventResult,
     TitleSummary,
     WatchableSeason,
+    ZoneOption,
 )
 from app.tracker.scores import ScoreView
-from app.tracker.settings_store import SettingsStore
+from app.tracker.settings_store import SettingsChange, SettingsStore
 from app.tracker.statuses import Statuses
 from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
     "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay", "FeedTitle",
-    "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SequelOffer", "SourceFailed",
-    "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
-    "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason",
+    "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SequelOffer", "SettingsChange",
+    "SettingsRefused", "SettingsView", "SourceFailed", "SummaryResult", "TestEventResult", "TestSample", "TitleCard",
+    "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
+    "UpcomingRow", "WatchableSeason", "ZoneOption",
 ]
 
 
@@ -131,6 +134,15 @@ class Tracker:
         await self._settings.set_delivery_rules(
             tz_name=tz_name, workdays=workdays, summary_at=summary_at, quiet_from=quiet_from, quiet_until=quiet_until
         )
+
+    async def settings(self) -> SettingsView:
+        """The settings page in one read: every setting, the zone list and the line «Сейчас»."""
+        return await self._settings.settings()
+
+    async def save_settings(self, change: SettingsChange) -> None:
+        """Store the whole settings form: all of it, or nothing when a value is wrong (SettingsRefused names the first
+        one, in the order of the form). The rules apply from the next pass of the delivery queue."""
+        await self._settings.save_settings(change)
 
     # --- titles ---------------------------------------------------------------------------------
 

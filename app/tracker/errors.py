@@ -30,3 +30,13 @@ class UnknownSeason(Exception):
 class CannotScore(Exception):
     """Only what is watched gets a score: a film in the archive, a season with its mark, a series with a marked season
     or in the archive."""
+
+
+class SettingsRefused(Exception):
+    """The settings form was refused and nothing was stored. `field` names the setting to point at (`"timezone"`,
+    `"workdays"`, `"summary_at"`, `"quiet"`, `"part_gap_weeks"`); `text` is the phrase for the owner."""
+
+    def __init__(self, field: str, text: str) -> None:
+        super().__init__(text)
+        self.field = field
+        self.text = text

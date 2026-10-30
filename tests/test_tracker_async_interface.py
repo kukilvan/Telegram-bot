@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from app.tracker.core import Tracker
+from app.tracker.core import SettingsChange, Tracker
 from app.tracker.db import create_session_factory
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -43,7 +43,10 @@ def test_no_public_method_that_opens_a_database_session_is_an_ordinary_function(
 
 @pytest.mark.parametrize(
     "name",
-    ["title_card", "list_titles", "watchable_seasons", "delivery_rules", "delivery_check_moment", "part_gap_weeks", "record_event"],
+    [
+        "title_card", "list_titles", "watchable_seasons", "delivery_rules", "delivery_check_moment", "part_gap_weeks",
+        "record_event", "settings", "save_settings",
+    ],
 )
 def test_the_methods_that_used_to_read_in_the_callers_thread_are_coroutines(name):
     assert inspect.iscoroutinefunction(getattr(Tracker, name))
@@ -74,6 +77,10 @@ def test_the_database_work_of_a_read_runs_off_the_event_loop_thread():
     async def scenario():
         await tracker.list_titles()
         await tracker.delivery_rules()
+        view = await tracker.settings()
+        await tracker.save_settings(
+            SettingsChange("", view.workdays, view.summary_at, view.quiet_from, view.quiet_until, str(view.part_gap_weeks))
+        )
         return threading.current_thread()
 
     loop_thread = asyncio.run(scenario())

@@ -144,6 +144,32 @@ class DeliveryRules:
         return single, summary
 
 
+def now_line(rules: DeliveryRules, moment: datetime) -> str:
+    """«Сейчас чт, 29 окт, 22:10 — тихие часы: событие придёт сводкой завтра в 07:30»: what the rules would do with an
+    event that appears at this naive UTC moment, in the owner's time. The state is judged in the order of `release`."""
+    local = rules.local(moment)
+    if rules.is_quiet(local):
+        state = "тихие часы"
+    elif rules.is_workday(local):
+        state = "рабочий день, до часа сводки" if local.time() < rules.summary_at else "рабочий день"
+    else:
+        state = "выходной"
+    release, waited = rules.release(moment)
+    if not waited:
+        when = "сразу"
+    else:
+        out = rules.local(release)
+        days = (out.date() - local.date()).days
+        at = format_time(out.time())
+        if days <= 0:
+            when = f"сводкой в {at}"
+        elif days == 1:
+            when = f"сводкой завтра в {at}"
+        else:
+            when = f"сводкой в {format_weekday_date(out.date())} в {at}"
+    return f"Сейчас {format_weekday_date(local.date())}, {format_time(local.time())} — {state}: событие придёт {when}"
+
+
 @dataclass(frozen=True)
 class Pending:
     """An event waiting in the delivery queue, with its text as the owner would read it."""

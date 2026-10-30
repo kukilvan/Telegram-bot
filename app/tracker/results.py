@@ -94,3 +94,27 @@ class PollReport:
     failed: int = 0
     events: int = 0  # new events found (already queued for delivery)
     notices: int = 0  # «could not check» messages queued for the owner
+
+
+@dataclass(frozen=True)
+class ZoneOption:
+    """One choice of the time zone list: the name that is stored and the text the owner reads."""
+
+    name: str  # «Asia/Jerusalem»
+    label: str  # «Asia/Jerusalem (UTC+2)»: with today's offset
+
+
+@dataclass(frozen=True)
+class SettingsView:
+    """What the settings page shows: the stored values (the defaults where nothing is stored) and the line «Сейчас»."""
+
+    tz_name: str | None  # the zone chosen in the settings; None: none chosen, the one of the launch file (`.env`) works
+    default_tz_name: str  # the zone of the launch file
+    zones: tuple[ZoneOption, ...]  # the choices, by name; a stored zone outside the usual list is one of them
+    default_label: str  # «Как в файле настроек запуска: Asia/Jerusalem (UTC+2)»: the first line of the list
+    workdays: frozenset[int]  # weekday numbers, Monday is 0
+    summary_at: str  # «15:00»
+    quiet_from: str  # «21:00»
+    quiet_until: str  # «07:30»
+    part_gap_weeks: int
+    now_line: str  # what the stored rules would do with an event at this minute

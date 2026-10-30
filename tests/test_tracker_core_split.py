@@ -23,7 +23,7 @@ MODULES = (
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
     "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
-    "cards", "kinds", "scores", "genres", "feed_rows",
+    "cards", "kinds", "scores", "genres", "feed_rows", "zones",
 )
 MAX_LINES = 400
 
@@ -104,7 +104,7 @@ def test_the_public_names_of_the_core_stay_importable_from_the_facade():
         "Tracker", "TestSample", "TitleNotFound", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
         "TitleSummary", "WatchableSeason", "AddResult", "DeleteResult", "ChangeResult", "SummaryResult",
         "TestEventResult", "DeliveryReport", "PollReport", "CannotScore", "ScoreView", "Feed", "FeedDay", "FeedTitle",
-        "UpcomingRow", "RecentRow", "SequelOffer",
+        "UpcomingRow", "RecentRow", "SequelOffer", "SettingsView", "SettingsChange", "SettingsRefused", "ZoneOption",
     ):
         assert hasattr(core, name), name
 
