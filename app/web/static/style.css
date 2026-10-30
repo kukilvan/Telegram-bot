@@ -341,7 +341,21 @@ input[type="search"] {
 
 .delete-bar .question { flex-basis: 100%; margin: 0; overflow-wrap: anywhere; }
 
+/* The feed: the blocks «Скоро», «Позже», «Недавно», a heading for each day, rows like the list's with what comes out
+   (or the message) in them and the time, the button or the link at the right */
+.feed-block h2 { margin: 1rem 0 0.25rem; font-size: 1.15rem; }
+
+.feed-day { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.95rem; font-weight: 600; }
+
+.feed-text { flex: 0 1 14rem; min-width: 0; overflow-wrap: anywhere; color: var(--muted); font-size: 0.9rem; }
+
+.feed-headline { overflow-wrap: anywhere; }
+
+.row-time { flex: none; font-weight: 600; }
+
 @media (max-width: 40rem) {
+  .feed-text { flex-basis: 100%; }
+
   .row-link, .pick { flex-wrap: wrap; }
 
   .row-status { width: 100%; }

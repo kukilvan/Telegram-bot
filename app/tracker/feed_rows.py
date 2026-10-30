@@ -82,6 +82,7 @@ class Feed:
     later: tuple[UpcomingRow, ...]  # «Позже»: the nearest date of each title that has nothing in «Скоро»
     recent: tuple[FeedDay, ...]  # «Недавно»: from today back, only the days that have something
     has_titles: bool  # the list holds at least one title
+    today: date  # the date on the owner's clock the days are counted from («Сегодня», «Завтра», «Вчера»)
 
 
 @dataclass(frozen=True)

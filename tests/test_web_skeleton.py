@@ -26,7 +26,7 @@ WEB = ROOT / "app" / "web"
 PASSWORD = "correct horse battery"
 OPEN_ADDRESSES = {"/login", "/logout", "/health"}  # plus /static/…: the pinned list of what needs no sign-in
 MENU = [("/", "Лента"), ("/list", "Список"), ("/archive", "Архив"), ("/search", "Поиск"), ("/settings", "Настройки")]
-STUBS = [(address, name) for address, name in MENU if address not in ("/search", "/list", "/archive")]  # these are pages of their own
+STUBS = [(address, name) for address, name in MENU if address not in ("/", "/search", "/list", "/archive")]  # these are pages of their own
 MOSCOW = ZoneInfo("Europe/Moscow")
 NOW = datetime(2026, 10, 27, 15, 30, tzinfo=MOSCOW)
 
@@ -92,7 +92,6 @@ def test_every_stub_is_a_page_with_the_menu_and_the_current_section_marked(clien
 def test_each_stub_says_its_own_phrase(client):
     phrases = {address: client.get(address).text for address, _ in STUBS}
 
-    assert "что выходит в ближайшие дни" in phrases["/"] and "(часть 5.3)" in phrases["/"]
     assert "час сводки, тихие часы" in phrases["/settings"] and "(часть 5.4)" in phrases["/settings"]
 
 
@@ -123,7 +122,7 @@ def test_a_failed_login_page_of_the_signed_in_has_no_menu_either(client):
 # ---- the status line ------------------------------------------------------
 
 def test_the_status_line_is_in_every_page_and_polls_itself(client):
-    html = client.get("/").text
+    html = client.get("/settings").text
 
     assert "В списке 12 тайтлов · последняя проверка источников в 14:05" in html
     assert 'hx-get="/status-line"' in html and 'hx-trigger="every 60s"' in html and 'hx-swap="outerHTML"' in html
@@ -159,7 +158,7 @@ def test_a_database_that_does_not_answer_gives_a_line_and_a_page_not_a_500(tmp_p
     client = make_client(FakeTracker(error=RuntimeError("database is locked")), tmp_path)
 
     with caplog.at_level(logging.ERROR):
-        page = client.get("/")
+        page = client.get("/settings")
         fragment = client.get("/status-line")
 
     assert page.status_code == 200 and NO_DATA in page.text and "Лента" in page.text
@@ -170,7 +169,7 @@ def test_a_database_that_does_not_answer_gives_a_line_and_a_page_not_a_500(tmp_p
 def test_without_a_tracker_the_line_says_there_is_no_data(tmp_path):
     client = make_client(None, tmp_path)
 
-    assert NO_DATA in client.get("/").text
+    assert NO_DATA in client.get("/settings").text
 
 
 @pytest.mark.parametrize("count, word", [(0, "тайтлов"), (1, "тайтл"), (2, "тайтла"), (4, "тайтла"), (5, "тайтлов"),
@@ -298,7 +297,7 @@ def test_the_new_templates_keep_to_the_content_security_policy():
 
 
 def test_the_pages_work_without_the_internet_the_only_script_is_ours(client):
-    html = client.get("/").text
+    html = client.get("/settings").text
 
     assert re.findall(r'<script[^>]*src="([^"]*)"', html) == ["/static/htmx.min.js"]
     assert re.findall(r'<link[^>]*href="([^"]*)"', html) == ["/static/style.css"]

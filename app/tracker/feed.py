@@ -52,7 +52,7 @@ class FeedReader:
             soon, later = feed_rows.upcoming(self._pieces(session, titles, shown, tz, gap, today), today)
             events = self._events(session, titles, shown, tz, today)
             listed = self._listed(session, events)
-        return Feed(soon, later, feed_rows.recent(events, today, listed), has_titles=bool(titles))
+        return Feed(soon, later, feed_rows.recent(events, today, listed), has_titles=bool(titles), today=today)
 
     @staticmethod
     def _pieces(

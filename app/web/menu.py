@@ -22,7 +22,7 @@ class OpenAddress(NamedTuple):
 
 
 SECTIONS = (
-    Section("/", "feed", "Лента", "Скоро будет: что выходит в ближайшие дни и что вышло недавно (часть 5.3)"),
+    Section("/", "feed", "Лента", None),
     Section("/list", "list", "Список", None),
     Section("/archive", "archive", "Архив", None),
     Section("/search", "search", "Поиск", None),

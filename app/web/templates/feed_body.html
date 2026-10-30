@@ -1,0 +1,89 @@
+{# The whole feed under the heading: the page includes it, and every press on it answers with it again (HTMX puts it in
+   place of `#feed`). A plain form sends the same press and is sent back to the page. The core has decided what each row
+   shows and which buttons it has: nothing here compares a kind or a status. #}
+{% from "macros.html" import title_main, poster, busy_button %}
+
+{% macro coming(line) %}
+<li class="title-row">
+  <a class="row-link" href="{{ line.address }}">
+    {{ title_main(line.poster, size, line.icon, line.name, "", None) }}
+    <span class="feed-text">{{ line.text }}</span>
+    {% if line.when %}<span class="row-time">{{ line.when }}</span>{% endif %}
+  </a>
+</li>
+{% endmacro %}
+
+<div id="feed">
+  {% if feed_notice %}<p class="notice" role="status">{{ feed_notice }}</p>{% endif %}
+
+  {% if empty_list %}
+  <p class="hint">{{ empty_text }} <a href="{{ search_address }}">Найдите тайтл в Поиске</a></p>
+  {% else %}
+
+  <section class="feed-block" aria-labelledby="soon-heading">
+    <h2 id="soon-heading">Скоро</h2>
+    {% if soon %}
+    {% for day in soon %}
+    <h3 class="feed-day">{{ day.label }}</h3>
+    <ul class="title-list">
+      {% for line in day.lines %}{{ coming(line) }}{% endfor %}
+    </ul>
+    {% endfor %}
+    {% else %}
+    <p class="hint">{{ nothing_soon }}{% if not later %}. <a href="{{ search_address }}">Найдите тайтл в Поиске</a>{% endif %}</p>
+    {% endif %}
+  </section>
+
+  {% if later %}
+  <section class="feed-block" aria-labelledby="later-heading">
+    <h2 id="later-heading">Позже</h2>
+    <ul class="title-list">
+      {% for line in later %}{{ coming(line) }}{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="feed-block" aria-labelledby="recent-heading">
+    <h2 id="recent-heading">Недавно</h2>
+    {% if recent %}
+    {% for day in recent %}
+    <h3 class="feed-day">{{ day.label }}</h3>
+    <ul class="title-list">
+      {% for line in day.lines %}
+      <li class="title-row">
+        <a class="row-link" href="{{ line.address }}">
+          <span class="title-main">
+            {{ poster(line.poster, size, line.icon) }}
+            <span class="title-text">
+              <span class="feed-headline">{{ line.text }}</span>
+              {% for detail in line.details %}<span class="title-original">{{ detail }}</span>{% endfor %}
+            </span>
+          </span>
+        </a>
+        {% if line.watched %}
+        <form class="row-action" method="post" action="{{ line.watched }}" hx-post="{{ line.watched }}" hx-target="#feed" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button("Посмотрел", "Сохраняю…") }}
+        </form>
+        {% endif %}
+        {% if line.follow %}
+        {% if line.follow.listed %}
+        <a class="row-action button-link" href="{{ line.follow.listed }}">В списке</a>
+        {% else %}
+        <form class="row-action" method="post" action="{{ sequels_address }}" hx-post="{{ sequels_address }}" hx-target="#feed" hx-swap="outerHTML" hx-disabled-elt="find button">
+          <input type="hidden" name="kind" value="{{ line.follow.kind }}">
+          <input type="hidden" name="sequel_id" value="{{ line.follow.sequel_id }}">
+          {{ busy_button("Следить", "Добавляю…") }}
+        </form>
+        {% endif %}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endfor %}
+    {% else %}
+    <p class="hint">{{ nothing_recent }}</p>
+    {% endif %}
+  </section>
+
+  {% endif %}
+</div>

@@ -421,7 +421,7 @@ def test_follow_is_offered_under_a_sequel_announcement_with_its_title_when_the_l
 def test_an_empty_list_has_an_empty_feed(tracker):
     result = feed(tracker)
 
-    assert result == feed_rows.Feed((), (), (), has_titles=False)
+    assert result == feed_rows.Feed((), (), (), has_titles=False, today=TODAY)
 
 
 def test_a_list_with_nothing_coming_and_nothing_found(tracker, session_factory):
@@ -429,7 +429,7 @@ def test_a_list_with_nothing_coming_and_nothing_found(tracker, session_factory):
 
     result = feed(tracker)
 
-    assert result == feed_rows.Feed((), (), (), has_titles=True)
+    assert result == feed_rows.Feed((), (), (), has_titles=True, today=TODAY)
 
 
 # --- one read ---------------------------------------------------------------------------------------------------------
