@@ -4,6 +4,7 @@ a redirect to the card). The buttons follow the kind and the status (table 4.3 o
 
 from collections.abc import Awaitable, Callable
 from typing import NamedTuple
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Form, Request, Response
 
@@ -17,6 +18,7 @@ from app.tracker.core import (
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ARCHIVE_STATUSES, TitleStatus
 from app.web import pages
+from app.web.menu import SECTIONS
 from app.web.posters import CARD_SIZE
 
 NOT_IN_LIST = "Этого тайтла нет в списке"
@@ -27,6 +29,9 @@ CANNOT_SCORE = "Оценку ставят только просмотренно�
 BY_SEASONS = "По сезонам"
 CLOSED_NOTE = "Все вышедшие сезоны просмотрены, сериал закрыт. Чтобы вернуть его в список, снимите галочку сезона"
 NO_SEQUELS = "Продолжений пока нет. Проверяю раз в неделю"
+
+# The pages a card is opened from: «← Назад» leads back to one of them (a card is not one, nor is Настройки)
+BACK_ADDRESSES = frozenset(section.address for section in SECTIONS if section.code != "settings")
 
 router = APIRouter()
 refreshing = pages.guarded_with_refresh("card", "title_id")  # an unexpected error on the card ends in «Обновить»
@@ -69,6 +74,11 @@ class SequelsBlock(NamedTuple):
     rows: list[SequelRow]
     address: str  # where «Следить» is sent
     error: str  # what went wrong with the last «Следить»; empty: nothing
+
+
+class BackLink(NamedTuple):
+    address: str
+    label: str
 
 
 def _address(request: Request, name: str, **path: int) -> str:
@@ -121,6 +131,18 @@ def _title_score(request: Request, card: TitleCard, view: ScoreView) -> ScoreFie
         return ScoreField(address, _steps(view.own, "—"), "")
     mean = "пока нет" if view.average is None else scores.label(scores.rounded(view.average))
     return ScoreField(address, _steps(view.own, f"{BY_SEASONS}: {mean}"), "среднее по сезонам" if view.own is None else "")
+
+
+def _back_link(request: Request, card: TitleCard) -> BackLink:
+    """«← Назад» to the page the card was opened from, with its filters and search (the `Referer`: same site, one of the
+    pages of the menu), or else to the Список, and for a title of the archive to the Архив. The window of the app on an
+    iPhone has no browser «Back»."""
+    parts = urlsplit(request.headers.get("referer", ""))
+    if parts.scheme in ("http", "https") and parts.netloc == request.headers.get("host") and parts.path in BACK_ADDRESSES:
+        return BackLink(parts.path + (f"?{parts.query}" if parts.query else ""), "← Назад")
+    if card.status in ARCHIVE_STATUSES:
+        return BackLink(_address(request, "archive"), "← Архив")
+    return BackLink(_address(request, "list"), "← Список")
 
 
 def _view(request: Request, card: TitleCard, notice: str = "", sequel_error: str = "") -> dict[str, object]:
@@ -211,7 +233,9 @@ async def show_card(request: Request, title_id: int) -> Response:
     if card is None:
         link = (_address(request, "list"), "Открыть Список")
         return await pages.message_page(request, "Тайтла нет", NOT_IN_LIST, 404, link=link)
-    return await pages.page(request, "card.html", current=_address(request, "list"), **_view(request, card))
+    return await pages.page(
+        request, "card.html", current=_address(request, "list"), back=_back_link(request, card), **_view(request, card)
+    )
 
 
 def _of_season(season_id: int, act: Callable[[Tracker], Awaitable[object]]) -> Callable[[Tracker], Awaitable[object]]:

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ card.name }} · Трекер релизов{% endblock %}
 {% block content %}
+<p class="back"><a href="{{ back.address }}">{{ back.label }}</a></p>
 {% include "card_body.html" %}
 {% endblock %}

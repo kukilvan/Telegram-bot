@@ -118,6 +118,8 @@ button {
 
 a { color: var(--accent); }
 
+.back { margin: 0 0 0.75rem; }
+
 /* A row of a suggestion or of the list: the poster and the text at the left, the button at the right */
 .title-row {
   display: flex;

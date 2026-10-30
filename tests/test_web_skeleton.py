@@ -290,7 +290,9 @@ def test_the_pages_work_without_the_internet_the_only_script_is_ours(client):
     html = client.get("/nowhere").text
 
     assert re.findall(r'<script[^>]*src="([^"]*)"', html) == ["/static/htmx.min.js"]
-    assert re.findall(r'<link[^>]*href="([^"]*)"', html) == ["/static/style.css"]
+    links = re.findall(r'<link[^>]*href="([^"]*)"', html)
+    assert links[-1] == "/static/style.css"
+    assert all(link.startswith("/static/") for link in links)  # the style, the install file and the icons: all our own
 
 
 # ---- rule 10: the web is a thin shell -------------------------------------

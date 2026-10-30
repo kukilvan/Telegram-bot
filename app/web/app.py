@@ -2,6 +2,7 @@
 behind (each section has a module and a router of its own, `create_web_app` only puts them together)."""
 
 import logging
+import mimetypes
 import time
 from collections.abc import Awaitable, Callable, Sequence
 from datetime import datetime, timezone
@@ -22,6 +23,7 @@ from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
 
 HERE = Path(__file__).resolve().parent
+mimetypes.add_type("application/manifest+json", ".webmanifest")  # the installed app's file: not every system knows it
 SESSION_COOKIE = "tracker_session"
 SESSION_SECONDS = 30 * 24 * 60 * 60  # from the last request: every answer renews the cookie
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
