@@ -1,0 +1,264 @@
+[
+ {
+  "id": 1942,
+  "alternative_names": [
+   {
+    "id": 173745,
+    "comment": "Alternative title",
+    "name": "Witcher III"
+   },
+   {
+    "id": 2427,
+    "comment": "Russian Title",
+    "name": "Ведьмак 3: Дикая охота"
+   },
+   {
+    "id": 2495,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon"
+   },
+   {
+    "id": 71879,
+    "comment": "Chinese title - simplified",
+    "name": "巫师3：狂猎"
+   },
+   {
+    "id": 51941,
+    "comment": "Alternative spelling",
+    "name": "The Witcher III: Wild Hunt"
+   },
+   {
+    "id": 74560,
+    "comment": "Alternative title",
+    "name": "Witcher 3"
+   },
+   {
+    "id": 74561,
+    "comment": "Acronym",
+    "name": "TW3"
+   },
+   {
+    "id": 121895,
+    "comment": "Chinese title - traditional",
+    "name": "巫師3：狂獵"
+   },
+   {
+    "id": 179756,
+    "comment": "Windows Executable",
+    "name": "redprelauncher.exe"
+   },
+   {
+    "id": 256031,
+    "comment": "Czech title",
+    "name": "Zaklínač 3: Divoký hon"
+   },
+   {
+    "id": 276816,
+    "comment": "Alternative title",
+    "name": "Вещерът 3 - Дивият лов"
+   },
+   {
+    "id": 282455,
+    "comment": "Japanese title - stylized",
+    "name": "ウィッチャー３　ワイルドハント"
+   },
+   {
+    "id": 276919,
+    "comment": "Alternative title",
+    "name": "Вещерът 3: Дивият лов"
+   }
+  ],
+  "cover": {
+   "id": 480513,
+   "image_id": "coaarl"
+  },
+  "external_games": [
+   {
+    "id": 1935171,
+    "uid": "B00T3SPV36",
+    "external_game_source": 20
+   },
+   {
+    "id": 189745,
+    "uid": "UCprFOIVpCqQLUMsWBNwt0PQ",
+    "url": "https://gaming.youtube.com/game/UCprFOIVpCqQLUMsWBNwt0PQ",
+    "external_game_source": 10
+   },
+   {
+    "id": 1934807,
+    "uid": "B00WTI2HV6",
+    "external_game_source": 20
+   },
+   {
+    "id": 1931970,
+    "uid": "B00WTI3SGO",
+    "external_game_source": 20
+   },
+   {
+    "id": 3222322,
+    "uid": "B00R119Y44",
+    "external_game_source": 20
+   },
+   {
+    "id": 1937739,
+    "uid": "B00KNZNVLM",
+    "external_game_source": 20
+   },
+   {
+    "id": 119254,
+    "uid": "41484",
+    "url": "https://www.giantbomb.com/games/3030-41484/",
+    "external_game_source": 3
+   },
+   {
+    "id": 1928370,
+    "uid": "B07SH3D6HT",
+    "url": "https://amazon.com/dp/B07SH3D6HT",
+    "external_game_source": 20
+   },
+   {
+    "id": 211029,
+    "uid": "BR765873CQJD",
+    "url": "https://www.xbox.com/en-us/games/store/the-witcher-3-wild-hunt/BR765873CQJD",
+    "external_game_source": 11
+   },
+   {
+    "id": 11306,
+    "uid": "292030",
+    "url": "https://store.steampowered.com/app/292030",
+    "external_game_source": 1
+   },
+   {
+    "id": 3223128,
+    "uid": "B078JDW2XH",
+    "external_game_source": 20
+   },
+   {
+    "id": 78478,
+    "uid": "1207664663",
+    "url": "https://www.gog.com/en/game/the_witcher_3_wild_hunt",
+    "external_game_source": 5
+   },
+   {
+    "id": 2067884,
+    "uid": "1207664643",
+    "url": "https://www.gog.com/en/game/the_witcher_3_wild_hunt_game",
+    "external_game_source": 5
+   },
+   {
+    "id": 246257,
+    "uid": "115977",
+    "url": "https://www.twitch.tv/directory/game/The Witcher 3: Wild Hunt",
+    "external_game_source": 14
+   },
+   {
+    "id": 2176359,
+    "uid": "204794",
+    "url": "https://store.playstation.com/en-us/concept/204794",
+    "external_game_source": 36
+   }
+  ],
+  "first_release_date": 1431993600,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "The Witcher 3: Wild Hunt",
+  "platforms": [
+   169,
+   48,
+   508,
+   6,
+   167,
+   49,
+   130
+  ],
+  "release_dates": [
+   {
+    "id": 974208,
+    "date": 1431993600,
+    "human": "May 19, 2015",
+    "m": 5,
+    "platform": 48,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 974209,
+    "date": 1670976000,
+    "human": "Dec 14, 2022",
+    "m": 12,
+    "platform": 167,
+    "y": 2022,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 974210,
+    "date": 1431993600,
+    "human": "May 19, 2015",
+    "m": 5,
+    "platform": 49,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 974211,
+    "date": 1670976000,
+    "human": "Dec 14, 2022",
+    "m": 12,
+    "platform": 169,
+    "y": 2022,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 974206,
+    "date": 1611792000,
+    "human": "Jan 28, 2021",
+    "m": 1,
+    "platform": 130,
+    "y": 2021,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 974207,
+    "date": 1431993600,
+    "human": "May 19, 2015",
+    "m": 5,
+    "platform": 6,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 974212,
+    "date": 1790640000,
+    "human": "Sep 29, 2026",
+    "m": 9,
+    "platform": 508,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "summary": "The Witcher 3: Wild Hunt is an open-world action role-playing game developed by CD Projekt Red.\n\nSet in a dark fantasy world, the game follows Geralt of Rivia, a monster hunter searching for his adopted daughter, Ciri, while navigating political conflicts and supernatural threats. Gameplay features exploration, combat, character progression, and branching narratives shaped by player choices. Widely acclaimed for its writing, world-building, and depth, it is considered one of the most influential RPGs of its generation.",
+  "game_type": 0
+ }
+]

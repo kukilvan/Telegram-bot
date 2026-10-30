@@ -1,0 +1,178 @@
+[
+ {
+  "id": 228525,
+  "alternative_names": [
+   {
+    "id": 118119,
+    "comment": "Alternative title",
+    "name": "Hades 2"
+   },
+   {
+    "id": 178774,
+    "comment": "Windows Executable",
+    "name": "Hades2.exe"
+   }
+  ],
+  "cover": {
+   "id": 493341,
+   "image_id": "coaknx"
+  },
+  "external_games": [
+   {
+    "id": 3222167,
+    "uid": "B0FQXS1YK3",
+    "external_game_source": 20
+   },
+   {
+    "id": 3164946,
+    "uid": "9PCR3Z2MSM4T",
+    "url": "https://www.microsoft.com/en-us/p/-1-/9PCR3Z2MSM4T",
+    "external_game_source": 54
+   },
+   {
+    "id": 3171337,
+    "uid": "10018449",
+    "url": "https://store.playstation.com/en-us/concept/10018449",
+    "external_game_source": 36
+   },
+   {
+    "id": 2636814,
+    "uid": "adbc94588a184ce3a6122a19aae940ae",
+    "url": "https://store.epicgames.com/en-US/p/hades-ii",
+    "external_game_source": 26
+   },
+   {
+    "id": 2665941,
+    "uid": "1145350",
+    "url": "https://store.steampowered.com/app/1145350",
+    "external_game_source": 1
+   },
+   {
+    "id": 2632738,
+    "uid": "376500771",
+    "url": "https://www.twitch.tv/directory/game/Hades%20II",
+    "external_game_source": 14
+   }
+  ],
+  "first_release_date": 1758758400,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 25,
+    "name": "Hack and slash/Beat 'em up"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   },
+   {
+    "id": 32,
+    "name": "Indie"
+   }
+  ],
+  "name": "Hades II",
+  "platforms": [
+   169,
+   508,
+   6,
+   167,
+   14,
+   130
+  ],
+  "release_dates": [
+   {
+    "id": 655046,
+    "date": 1729036800,
+    "human": "Oct 16, 2024",
+    "m": 10,
+    "platform": 14,
+    "y": 2024,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 591682,
+    "date": 1714953600,
+    "human": "May 06, 2024",
+    "m": 5,
+    "platform": 6,
+    "y": 2024,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 800771,
+    "date": 1758758400,
+    "human": "Sep 25, 2025",
+    "m": 9,
+    "platform": 14,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 800772,
+    "date": 1758758400,
+    "human": "Sep 25, 2025",
+    "m": 9,
+    "platform": 130,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 800773,
+    "date": 1758758400,
+    "human": "Sep 25, 2025",
+    "m": 9,
+    "platform": 508,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 800774,
+    "date": 1758758400,
+    "human": "Sep 25, 2025",
+    "m": 9,
+    "platform": 6,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 893566,
+    "date": 1776124800,
+    "human": "Apr 14, 2026",
+    "m": 4,
+    "platform": 169,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 893567,
+    "date": 1776124800,
+    "human": "Apr 14, 2026",
+    "m": 4,
+    "platform": 167,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "summary": "Battle beyond the Underworld using dark sorcery to take on the Titan of Time in this bewitching sequel to the award-winning rogue-like dungeon crawler.",
+  "game_type": 0
+ }
+]

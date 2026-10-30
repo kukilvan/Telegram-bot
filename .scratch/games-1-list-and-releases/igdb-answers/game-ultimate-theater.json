@@ -1,0 +1,77 @@
+[
+ {
+  "id": 367400,
+  "alternative_names": [
+   {
+    "id": 196899,
+    "comment": "Windows Executable",
+    "name": "UltimateTheaterSimulator.exe"
+   }
+  ],
+  "cover": {
+   "id": 498159,
+   "image_id": "coaodr"
+  },
+  "external_games": [
+   {
+    "id": 3110017,
+    "uid": "275953216",
+    "url": "https://www.twitch.tv/directory/game/Ultimate%20Theater%20Simulator",
+    "external_game_source": 14
+   },
+   {
+    "id": 2974100,
+    "uid": "1541370",
+    "url": "https://store.steampowered.com/app/1541370",
+    "external_game_source": 1
+   }
+  ],
+  "first_release_date": 1761696000,
+  "genres": [
+   {
+    "id": 13,
+    "name": "Simulator"
+   }
+  ],
+  "name": "Ultimate Theater Simulator",
+  "platforms": [
+   6,
+   167,
+   14
+  ],
+  "release_dates": [
+   {
+    "id": 819902,
+    "date": 1761696000,
+    "human": "Oct 29, 2025",
+    "m": 10,
+    "platform": 6,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 897154,
+    "human": "TBD",
+    "platform": 167,
+    "status": 6,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 929624,
+    "date": 1765238400,
+    "human": "Dec 09, 2025",
+    "m": 12,
+    "platform": 14,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "summary": "Ultimate Theater Simulator is a first-person cinema management game where you screen movies, serve snacks, hire staff, handle chaos, and grow your dream theater from the ground up.",
+  "game_type": 0
+ }
+]
