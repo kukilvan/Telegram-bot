@@ -29,7 +29,12 @@ class UnknownSeason(Exception):
 
 class CannotScore(Exception):
     """Only what is watched gets a score: a film in the archive, a season with its mark, a series with a marked season
-    or in the archive."""
+    or in the archive. `title_id` is the title; `season_id` the record of the season when the score was a season's."""
+
+    def __init__(self, title_id: int, season_id: int | None = None) -> None:
+        super().__init__(title_id if season_id is None else f"{title_id}:{season_id}")
+        self.title_id = title_id
+        self.season_id = season_id
 
 
 class SettingsRefused(Exception):

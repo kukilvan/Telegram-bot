@@ -2,15 +2,16 @@
 the sentence of an empty page and the answer with the results under the search field. What differs stays with the
 pages: their own `Filters` (the fields are not the same) and their own rows of links. Rules: 6.1 of the spec of part 5.4."""
 
-from collections.abc import Awaitable, Callable, Collection, Mapping
+from collections.abc import Awaitable, Callable, Collection, Mapping, Sequence
 from enum import Enum
 from typing import TypeVar
 
 from fastapi import Request, Response
 from fastapi.responses import RedirectResponse
 
+from app.tracker.core import ListOrder, Tracker
 from app.tracker.kinds import KINDS
-from app.tracker.models import TitleKind
+from app.tracker.models import ARCHIVE_STATUSES, TitleKind
 from app.web import pages
 from app.web.title_rows import Link
 
@@ -18,6 +19,7 @@ NOTHING_FITS = "Под этот фильтр ничего не подходит"
 NOTHING_FOUND = "Ничего не нашлось по запросу"
 
 Choice = TypeVar("Choice", bound=Enum)
+Filters = TypeVar("Filters")  # the filters of a page: each page has its own class
 
 
 def parse_choice(
@@ -30,6 +32,20 @@ def parse_choice(
     except ValueError:
         return default
     return chosen if allowed is None or chosen in allowed else default
+
+
+def order_choices(orders: Sequence[tuple[str, ListOrder]]) -> tuple[ListOrder, ...]:
+    """The orders a page's row of order links offers (`(label, order)`): what its address may name."""
+    return tuple(order for _, order in orders)
+
+
+def linker(address_of: Callable[[Filters], str]) -> Callable[[str, Filters, bool], Link]:
+    """`link(label, changed, current)` for a page's rows of links: the address of the page with the `changed` filters."""
+
+    def link(label: str, changed: Filters, current: bool) -> Link:
+        return Link(label, address_of(changed), current)
+
+    return link
 
 
 def kind_links(current: TitleKind | None, address_of: Callable[[TitleKind | None], str]) -> list[Link]:
@@ -53,15 +69,25 @@ async def empty_phrase(
     return NOTHING_FITS
 
 
+async def list_has_titles(tracker: Tracker) -> bool:
+    """Whether the list holds a title at all, archive and all."""
+    return bool(await tracker.list_titles())
+
+
+async def archive_has_titles(tracker: Tracker) -> bool:
+    """Whether the archive holds a title at all."""
+    return bool(await tracker.list_titles(statuses=ARCHIVE_STATUSES))
+
+
 async def results_answer(
-    request: Request, template: str, page_address: str, view: Callable[[], Awaitable[Mapping[str, object]]]
+    request: Request, template: str, page_address: str, view: Callable[[], Awaitable[tuple[str, Mapping[str, object]]]]
 ) -> Response:
     """The part of the page under the search field, for the search as the letters come. Without HTMX it is the page
-    (`page_address`: 303). The view holds the address of the page with this query (`address`), and it goes to the browser
-    (`HX-Push-Url`), so «Назад» and a bookmark keep the query."""
+    (`page_address`: 303). The view gives the address of the page with this query and what the template shows; the
+    address goes to the browser (`HX-Push-Url`), so «Назад» and a bookmark keep the query."""
     if not pages.is_htmx(request):
         return RedirectResponse(page_address, status_code=303)
-    shown = await view()
+    address, shown = await view()
     response = pages.fragment(request, template, **shown)
-    response.headers["HX-Push-Url"] = str(shown["address"])
+    response.headers["HX-Push-Url"] = address
     return response

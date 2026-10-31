@@ -40,6 +40,14 @@ def _season(session, title_id: int, season_id: int) -> SeasonRecord:
     return record
 
 
+def _move(title: Title, status: TitleStatus, now: datetime, *, tracking: bool) -> None:
+    """The title gets a status the owner asked for: the status, the moment it changed and whether the title is still
+    followed (its own source checked) go together."""
+    title.status = status
+    title.status_changed_at = now
+    title.tracking_enabled = tracking
+
+
 def _watchable(loaded: list[tuple[SeasonRecord, season_logic.Season]], now: datetime) -> list[WatchableSeason]:
     """The seasons with something released, with the owner's marks: the ones that can be marked."""
     return [
@@ -137,9 +145,7 @@ class Statuses:
             title = _title(session, title_id)
             if title.status == TitleStatus.WATCHED:
                 return ChangeResult(changed=False)
-            title.status = TitleStatus.WATCHED
-            title.status_changed_at = now
-            title.tracking_enabled = False  # its own release is no longer followed
+            _move(title, TitleStatus.WATCHED, now, tracking=False)  # its own release is no longer followed
             sequels = self.pollers.sequels_of(title.kind)
             if sequels is not None:
                 # an empty state means "not looked at yet": the first check records the collection as it is,
@@ -166,9 +172,7 @@ class Statuses:
             title = _title(session, title_id)
             if title.status == TitleStatus.DROPPED:
                 return ChangeResult(changed=False)
-            title.status = TitleStatus.DROPPED
-            title.status_changed_at = now
-            title.tracking_enabled = False
+            _move(title, TitleStatus.DROPPED, now, tracking=False)
             storage.drop_sequel_check(session, title_id)  # a watched movie dropped in a second tab
             EventQueue.withdraw(session, title_id)
             session.commit()
@@ -188,9 +192,7 @@ class Statuses:
             seasonal = is_seasonal(title.kind)
             if title.status not in ARCHIVE_STATUSES or (seasonal and title.status == TitleStatus.WATCHED):
                 return ChangeResult(changed=False)
-            title.status = TitleStatus.WANT
-            title.status_changed_at = now
-            title.tracking_enabled = True
+            _move(title, TitleStatus.WANT, now, tracking=True)
             title.restored_at = now
             # a movie waits for its own release again; the next «Посмотрел» starts the sequel check anew
             storage.drop_sequel_check(session, title_id)
@@ -205,7 +207,7 @@ class Statuses:
 
     async def set_title_score(self, title_id: int, score: int | None) -> ChangeResult:
         """The owner's own score of the title: a value of the scale, or None to take it off (a series or an anime then
-        shows the average of its seasons again). A value only while the title can be scored (`storage.scorable`):
+        shows the average of its seasons again). A value only while the title can be scored (`scores.scorable`):
         CannotScore otherwise; taking it off always works. Raises UnknownTitle, and ValueError for a value off the
         scale (the caller's mistake)."""
         if score is not None:
@@ -215,7 +217,7 @@ class Statuses:
     def _set_title_score(self, title_id: int, score: int | None) -> ChangeResult:
         with self.ctx.write_session() as session:
             title = _title(session, title_id)
-            if score is not None and not storage.scorable(title, storage.any_marked(session, title_id)):
+            if score is not None and not scores.scorable(title, storage.any_marked(session, title_id)):
                 raise CannotScore(title_id)
             changed = title.score != score
             title.score = score
@@ -235,7 +237,7 @@ class Statuses:
             _title(session, title_id)
             record = _season(session, title_id, season_id)
             if score is not None and not record.watched:
-                raise CannotScore(f"{title_id}:{season_id}")
+                raise CannotScore(title_id, season_id)
             changed = record.score != score
             record.score = score
             session.commit()

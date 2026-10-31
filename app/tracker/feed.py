@@ -7,15 +7,14 @@ titles come in one read each. Today is the date on the owner's clock (`SettingsS
 
 import asyncio
 from collections.abc import Iterable, Mapping
-from datetime import date, datetime, time, timedelta, timezone, tzinfo
+from datetime import date, datetime, time, timedelta, tzinfo
 from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
-from app.tracker import failures, feed_rows, sequel_events, storage
+from app.tracker import delivery, failures, feed_rows, sequel_events, storage
 from app.tracker.cards import local_moment
-from app.tracker.context import PRIMARY_ROLE, CoreContext
-from app.tracker.delivery_service import format_event
+from app.tracker.context import PRIMARY_ROLE, CoreContext, naive_utc
 from app.tracker.feed_rows import Feed, FeedEvent, FeedTitle, Piece
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import (
@@ -26,11 +25,6 @@ from app.tracker.settings_store import SettingsStore
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
-
-
-def _utc(day: date, tz: tzinfo) -> datetime:
-    """The start of a day on the owner's clock as a naive UTC moment, like everything stored."""
-    return datetime.combine(day, time(0)).replace(tzinfo=tz).astimezone(timezone.utc).replace(tzinfo=None)
 
 
 class FeedReader:
@@ -94,7 +88,8 @@ class FeedReader:
     ) -> list[FeedEvent]:
         """The events of the last days that belong to a title in the list (a test event has none), «could not check»
         left out, whatever the title's status and whether the event went out yet."""
-        since = _utc(today - timedelta(days=feed_rows.RECENT_DAYS - 1), tz)
+        first_day = today - timedelta(days=feed_rows.RECENT_DAYS - 1)
+        since = naive_utc(datetime.combine(first_day, time(0), tzinfo=tz))  # the day starts on the owner's clock
         events = session.scalars(
             select(Event).where(
                 Event.title_id.is_not(None),  # a test event belongs to no title
@@ -104,7 +99,8 @@ class FeedReader:
         )
         return [
             FeedEvent(
-                e.id, e.type, shown[e.title_id], titles[e.title_id].status, format_event(e), e.payload,
+                e.id, e.type, shown[e.title_id], titles[e.title_id].status,
+                delivery.format_event(e.type, e.payload), e.payload,
                 local_moment(e.detected_at, tz),
             )
             for e in events

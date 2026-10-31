@@ -1,7 +1,7 @@
 # 01: Уборка ядра по пожеланиям ревью 5.3 и 5.4
 
 **Сложность:** средний
-**Статус:** открыт
+**Статус:** ждёт проверки
 
 Спека: `../spec.md`, раздел 13 (всё), раздел 16 (правило 7 в `docs/coding-standards.md`). Термины — `CONTEXT.md`, стандарты — `docs/coding-standards.md` (правила 1, 5, 6, 7). Пожелания пришли из `.scratch/web-3-feed-archive-scores/review.md` и `.scratch/web-4-settings-pwa/review.md`.
 

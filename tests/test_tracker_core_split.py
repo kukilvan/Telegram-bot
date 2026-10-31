@@ -23,7 +23,7 @@ MODULES = (
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
     "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
-    "cards", "kinds", "scores", "genres", "feed_rows", "zones",
+    "cards", "kinds", "scores", "text", "genres", "feed_rows", "zones",
 )
 MAX_LINES = 400
 

@@ -19,6 +19,8 @@ from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
+from app.tracker import scores
+
 ANNOUNCED = "announced"  # no episode is out yet
 AIRING = "airing"  # some episodes are out and more are to come (or the total is unknown)
 RELEASED = "released"  # every episode is out
@@ -244,7 +246,7 @@ def rows(
                 can_mark=out,
                 progress=_progress(season, gap, now) if out else None,
                 announcement=None if out else SeasonAnnouncement(season.number, season.first_air_at()),
-                score=mark.score if mark.watched else None,
+                score=scores.season_score(mark.watched, mark.score),
             )
         )
     return tuple(result)

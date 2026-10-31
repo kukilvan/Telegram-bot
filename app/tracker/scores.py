@@ -13,6 +13,9 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from fractions import Fraction
 
+from app.tracker.kinds import is_seasonal
+from app.tracker.models import ARCHIVE_STATUSES, Title
+
 LOWEST, HIGHEST = 3, 30  # «1» and «10»
 SCALE = tuple(range(HIGHEST, LOWEST - 1, -1))  # from the highest down: the order of the choices
 _MODIFIERS = {-1: "−", 0: "", 1: "+"}  # the minus sign is U+2212, as the owner writes it
@@ -59,3 +62,28 @@ def title_view(own: int | None, seasons: Iterable[int]) -> ScoreView:
     if own is not None:
         return ScoreView(own, mean, own, by_seasons=False)
     return ScoreView(None, mean, None if mean is None else rounded(mean), by_seasons=mean is not None)
+
+
+# --- which score is seen ---------------------------------------------------------------------------------
+# One rule for the card, the list and the archive. A score stays in the database when it stops being seen.
+
+
+def scorable(title: Title, any_marked: bool) -> bool:
+    """Whether the title can be scored, which is also whether its score is shown: a title in the archive, or a series
+    or an anime with a marked season (`any_marked`)."""
+    return title.status in ARCHIVE_STATUSES or (is_seasonal(title.kind) and any_marked)
+
+
+def season_score(watched: bool, score: int | None) -> int | None:
+    """The score of a season as it is shown: only a season with its «watched» mark has one."""
+    return score if watched else None
+
+
+def visible(title: Title, seasons: Iterable[tuple[bool, int | None]]) -> ScoreView | None:
+    """The score of the title as the owner sees it; None while the title cannot be scored. `seasons` are the
+    «watched» marks and the scores of its stored seasons: only the scores of the marked ones count."""
+    marks = list(seasons)
+    if not scorable(title, any(watched for watched, _ in marks)):
+        return None
+    shown = (season_score(watched, score) for watched, score in marks)
+    return title_view(title.score, (score for score in shown if score is not None))

@@ -165,7 +165,8 @@ def test_the_labels_of_the_scale_are_built_from_the_modifier_not_from_status_wor
     literals = {n.value for n in ast.walk(ast.parse(source)) if isinstance(n, ast.Constant) and isinstance(n.value, str)}
 
     assert not literals & {status.value for status in TitleStatus}
-    assert "TitleStatus" not in source and "models" not in source  # the scale knows nothing of statuses
+    for scale_function in (scores.check, scores.label, scores.average, scores.rounded):  # the scale knows no statuses
+        assert "Status" not in inspect.getsource(scale_function)
 
 
 # --- a film ---------------------------------------------------------------------------------------

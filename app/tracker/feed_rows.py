@@ -17,9 +17,10 @@ from typing import Any
 
 from app.tracker import delivery
 from app.tracker.actions import FOLLOW, WATCHED, event_actions
-from app.tracker.cards import local_moment, name_key, season_label
+from app.tracker.cards import local_moment, season_label
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.seasons import Part, Season
+from app.tracker.text import key as text_key
 
 UPCOMING_DAYS = 14  # «Скоро»: today and the 13 days after it
 RECENT_DAYS = 7  # «Недавно»: today and the 6 days before it
@@ -71,16 +72,18 @@ class RecentRow:
 
 
 @dataclass(frozen=True)
-class FeedDay:
+class FeedDay[Row]:
+    """The rows of one day: `UpcomingRow` in «Скоро», `RecentRow` in «Недавно»."""
+
     day: date
-    rows: tuple[Any, ...]  # `UpcomingRow` in «Скоро», `RecentRow` in «Недавно»
+    rows: tuple[Row, ...]
 
 
 @dataclass(frozen=True)
 class Feed:
-    upcoming: tuple[FeedDay, ...]  # «Скоро»: from today on, only the days that have something
+    upcoming: tuple[FeedDay[UpcomingRow], ...]  # «Скоро»: from today on, only the days that have something
     later: tuple[UpcomingRow, ...]  # «Позже»: the nearest date of each title that has nothing in «Скоро»
-    recent: tuple[FeedDay, ...]  # «Недавно»: from today back, only the days that have something
+    recent: tuple[FeedDay[RecentRow], ...]  # «Недавно»: from today back, only the days that have something
     has_titles: bool  # the list holds at least one title
     today: date  # the date on the owner's clock the days are counted from («Сегодня», «Завтра», «Вчера»)
 
@@ -191,10 +194,12 @@ def _rows(pieces: Iterable[Piece]) -> list[UpcomingRow]:
 
 def _in_day(row: UpcomingRow) -> tuple[Any, ...]:
     """Rows without an hour first, by name (as «По названию» of the list), then the ones with an hour, by the hour."""
-    return (row.at is not None, row.at or time(0), name_key(row.title.name), row.title.id)
+    return (row.at is not None, row.at or time(0), text_key(row.title.name), row.title.id)
 
 
-def upcoming(pieces: Iterable[Piece], today: date) -> tuple[tuple[FeedDay, ...], tuple[UpcomingRow, ...]]:
+def upcoming(
+    pieces: Iterable[Piece], today: date
+) -> tuple[tuple[FeedDay[UpcomingRow], ...], tuple[UpcomingRow, ...]]:
     """(«Скоро», «Позже»). «Скоро» holds the days from today to today + 13 that have something; «Позже» the nearest day
     after them of each title that has nothing in «Скоро», by date, then by name."""
     last = today + timedelta(days=UPCOMING_DAYS - 1)
@@ -211,7 +216,7 @@ def upcoming(pieces: Iterable[Piece], today: date) -> tuple[tuple[FeedDay, ...],
                 later[row.title.id] = row
     return (
         tuple(FeedDay(day, tuple(sorted(days[day], key=_in_day))) for day in sorted(days)),
-        tuple(sorted(later.values(), key=lambda r: (r.day, name_key(r.title.name), r.title.id))),
+        tuple(sorted(later.values(), key=lambda r: (r.day, text_key(r.title.name), r.title.id))),
     )
 
 
@@ -243,7 +248,9 @@ def _recent_row(unit: delivery.Unit, events: Mapping[int, FeedEvent], listed: Ma
     return RecentRow(latest.title, headline, tuple(d for d in details if d), latest.at, watched, follow)
 
 
-def recent(events: Iterable[FeedEvent], today: date, listed: Mapping[tuple[TitleKind, str], int]) -> tuple[FeedDay, ...]:
+def recent(
+    events: Iterable[FeedEvent], today: date, listed: Mapping[tuple[TitleKind, str], int]
+) -> tuple[FeedDay[RecentRow], ...]:
     """«Недавно»: the days from today back to today − 6 that have something, the latest first; in a day the latest event
     first. Episodes of one season of a title found on one day are one row, as in the summary. `listed` gives the title
     of a sequel the list has already."""

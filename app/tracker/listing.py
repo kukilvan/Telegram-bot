@@ -3,6 +3,7 @@
 import asyncio
 from collections.abc import Collection
 from datetime import timezone
+from fractions import Fraction
 from typing import TYPE_CHECKING
 
 from sqlalchemy import func, select
@@ -10,10 +11,11 @@ from sqlalchemy import func, select
 from app.tracker import scores
 from app.tracker import seasons as season_logic
 from app.tracker import sequel_events, storage
-from app.tracker.genres import key as genre_key
+from app.tracker.cards import MovieLine, SequelsView, TitleCard, sequel_view
+from app.tracker.genres import key_of as genre_key
 from app.tracker.genres import keys_of as genre_keys
 from app.tracker.genres import merge as merge_genres
-from app.tracker.cards import MovieLine, SequelsView, TitleCard, name_key, sequel_view
+from app.tracker.text import key as text_key
 from app.tracker.context import CoreContext
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import MovieRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
@@ -25,19 +27,11 @@ if TYPE_CHECKING:
     from app.tracker.polling import Pollers
 
 
-def _exact(view: scores.ScoreView | None):
+def _exact(view: scores.ScoreView | None) -> int | Fraction | None:
     """The exact value that orders the rows by score: the own score, else the exact average; None: none shown."""
     if view is None:
         return None
     return view.own if view.own is not None else view.average
-
-
-def _score(title: Title, records: list[SeasonRecord]) -> scores.ScoreView | None:
-    """The score of the title as the card shows it; None while the title cannot be scored. Only the scores of the
-    marked seasons count: a season without its mark keeps its score unseen."""
-    if not storage.scorable(title, any(r.watched for r in records)):
-        return None
-    return scores.title_view(title.score, (r.score for r in records if r.watched and r.score is not None))
 
 
 class Listing:
@@ -96,7 +90,7 @@ class Listing:
             titles = self._matching(titles, query, genre)
             views = self._scores(session, titles)  # one reading for every row, not one for each title
         if order == ListOrder.NAME:
-            titles.sort(key=lambda t: (name_key(t.name), t.id))
+            titles.sort(key=lambda t: (text_key(t.name), t.id))
         elif order == ListOrder.ARCHIVED:
             titles.sort(key=lambda t: (t.status_changed_at, t.id), reverse=True)
         elif order == ListOrder.SCORE:
@@ -113,10 +107,10 @@ class Listing:
 
     @staticmethod
     def _matching(titles: list[Title], query: str | None, genre: str | None) -> list[Title]:
-        needle = name_key(query.strip()) if query else ""
+        needle = text_key(query.strip()) if query else ""
         wanted = genre_key(genre) if genre else ""
         if needle:
-            titles = [t for t in titles if needle in name_key(t.name) or needle in name_key(t.original_name or "")]
+            titles = [t for t in titles if needle in text_key(t.name) or needle in text_key(t.original_name or "")]
         if wanted:
             titles = [t for t in titles if wanted in genre_keys(t.genres)]
         return titles
@@ -132,14 +126,7 @@ class Listing:
         )
         for title_id, watched, score in rows:
             seasons.setdefault(title_id, []).append((watched, score))
-        views: dict[int, scores.ScoreView | None] = {}
-        for t in titles:
-            marks = seasons.get(t.id, [])
-            if not storage.scorable(t, any(watched for watched, _ in marks)):
-                views[t.id] = None
-            else:
-                views[t.id] = scores.title_view(t.score, (s for watched, s in marks if watched and s is not None))
-        return views
+        return {t.id: scores.visible(t, seasons.get(t.id, [])) for t in titles}
 
     async def overview(self) -> Overview:
         return await asyncio.to_thread(self._overview)
@@ -197,7 +184,7 @@ class Listing:
                 overview=title.overview or "",
                 season_rows=season_rows,
                 sequels=self._sequels(session, title),
-                score=_score(title, [record for record, _ in loaded]),
+                score=scores.visible(title, [(record.watched, record.score) for record, _ in loaded]),
             )
 
     def _sequels(self, session, title: Title) -> SequelsView | None:

@@ -19,7 +19,7 @@ in a message of their own alike.
 """
 
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from typing import Any
@@ -168,6 +168,13 @@ def now_line(rules: DeliveryRules, moment: datetime) -> str:
         else:
             when = f"сводкой в {format_weekday_date(out.date())} в {at}"
     return f"Сейчас {format_weekday_date(local.date())}, {format_time(local.time())} — {state}: событие придёт {when}"
+
+
+def format_event(event_type: str, payload: Mapping[str, Any]) -> str:
+    """Text of the message the owner receives for an event of this type with this payload."""
+    if event_type == "test":
+        return f"🧪 {payload['text']}"
+    return payload.get("text", event_type)
 
 
 @dataclass(frozen=True)

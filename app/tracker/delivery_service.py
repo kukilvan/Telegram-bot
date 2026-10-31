@@ -24,13 +24,6 @@ MAX_SUMMARY_BUTTONS = 10  # buttons of the events inside a summary; «Следи
 BUTTON_NAME_LIMIT = 30
 
 
-def format_event(event: Event) -> str:
-    """Text of the message the owner receives for an event."""
-    if event.type == "test":
-        return f"🧪 {event.payload['text']}"
-    return event.payload.get("text", event.type)
-
-
 class DeliveryService:
     def __init__(self, ctx: CoreContext, settings: SettingsStore) -> None:
         self.ctx = ctx
@@ -92,7 +85,10 @@ class DeliveryService:
             if only is not None:
                 query = query.where(Event.id.in_(only))
             pending = [
-                delivery.Pending(item_id, event.id, event.type, event.title_id, format_event(event), event.payload, created)
+                delivery.Pending(
+                    item_id, event.id, event.type, event.title_id, delivery.format_event(event.type, event.payload),
+                    event.payload, created,
+                )
                 for item_id, created, event in session.execute(query)
             ]
             ids = {p.title_id for p in pending if p.title_id is not None}

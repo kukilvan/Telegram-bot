@@ -7,7 +7,7 @@ part 5.3."""
 
 from collections.abc import Callable
 from datetime import date, timedelta
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 from fastapi import APIRouter, Form, Request, Response
 
@@ -91,8 +91,8 @@ def _happened(request: Request, row: RecentRow) -> Line:
     return Line(_card(request, title.id), title.poster_path, KINDS[title.kind].icon, "", row.headline, row.details, "", watched, follow)
 
 
-def _days(
-    days: tuple[FeedDay, ...], label: Callable[[date, date], str], make: Callable[[Request, Any], Line],
+def _days[Row](
+    days: tuple[FeedDay[Row], ...], label: Callable[[date, date], str], make: Callable[[Request, Row], Line],
     request: Request, today: date,
 ) -> list[Day]:
     return [Day(label(day.day, today), [make(request, row) for row in day.rows]) for day in days]

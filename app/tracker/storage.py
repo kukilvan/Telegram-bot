@@ -12,7 +12,7 @@ from app.tracker import progress, series_events
 from app.tracker import seasons as season_logic
 from app.tracker.context import PRIMARY_ROLE
 from app.tracker.kinds import is_seasonal
-from app.tracker.models import ARCHIVE_STATUSES, EpisodeRecord, ExternalId, PartRecord, SeasonRecord, SourceSnapshot, Title
+from app.tracker.models import EpisodeRecord, ExternalId, PartRecord, SeasonRecord, SourceSnapshot, Title
 
 
 def store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> dict[int, SeasonRecord]:
@@ -123,12 +123,6 @@ def sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season])
         for number, row in stored.items():
             if number not in listed:
                 session.delete(row)
-
-
-def scorable(title: Title, any_marked: bool) -> bool:
-    """Whether the title can be scored, which is also whether its score is shown: a title in the archive, or a series
-    or an anime with a marked season (`any_marked`). A score stays in the database when this stops being true."""
-    return title.status in ARCHIVE_STATUSES or (is_seasonal(title.kind) and any_marked)
 
 
 def any_marked(session, title_id: int) -> bool:

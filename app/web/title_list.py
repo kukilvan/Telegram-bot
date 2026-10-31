@@ -11,10 +11,12 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Form, Request, Response
 
 from app.tracker.cards import STATUS_LABELS, titles_word
-from app.tracker.core import ListOrder, Tracker, UnknownTitle
+from app.tracker.core import ListOrder, UnknownTitle
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from app.web import pages
-from app.web.filters import NOTHING_FOUND, empty_phrase, kind_links, parse_choice, results_answer
+from app.web.filters import (
+    NOTHING_FOUND, empty_phrase, kind_links, linker, list_has_titles, order_choices, parse_choice, results_answer,
+)
 from app.web.posters import LIST_SIZE
 from app.web.title_rows import Link, clean_query, rows
 
@@ -22,7 +24,6 @@ ALL_STATUSES = "all"  # the value of `status` for the whole list, the archive in
 MAX_NAMES = 10  # the names a question or a line names; the rest is «и ещё N»
 SELECT = "1"  # the value of `select`
 ORDERS = (("Сначала новые", ListOrder.ADDED), ("По названию", ListOrder.NAME))  # the order of the list; the first is the default
-ORDER_CHOICES = tuple(order for _, order in ORDERS)
 
 EMPTY_LIST = "В списке пока ничего нет."
 ALL_GONE = "Этих тайтлов уже нет в списке"
@@ -44,7 +45,7 @@ class Filters:
         chosen = parse_choice(TitleStatus, status)
         chosen_status = ALL_STATUSES if status == ALL_STATUSES else (None if chosen is None else chosen.value)
         # the order of the archive («По оценке», «Сначала недавние») is no order of the list: it counts as none
-        chosen_order = parse_choice(ListOrder, order, allowed=ORDER_CHOICES, default=ListOrder.ADDED)
+        chosen_order = parse_choice(ListOrder, order, allowed=order_choices(ORDERS), default=ListOrder.ADDED)
         return Filters(parse_choice(TitleKind, kind), chosen_status, chosen_order, clean_query(q))
 
     def statuses(self) -> frozenset[TitleStatus] | None:
@@ -85,9 +86,7 @@ def _filter_links(request: Request, filters: Filters) -> tuple[list[Link], list[
     """The three rows of links. Each link is the address of the list with one thing changed; choosing leaves the mode
     of choosing (what was ticked would not fit the new rows)."""
 
-    def link(label: str, changed: Filters, current: bool) -> Link:
-        return Link(label, _address(request, changed), current)
-
+    link = linker(lambda changed: _address(request, changed))
     kinds = kind_links(filters.kind, lambda kind: _address(request, replace(filters, kind=kind)))
     statuses = [link("Без архива", replace(filters, status=None), filters.status is None)]
     statuses += [link(STATUS_LABELS[s], replace(filters, status=s.value), filters.status == s.value) for s in TitleStatus]
@@ -133,28 +132,25 @@ def _bar(request: Request, filters: Filters, count: int, *, initial: bool = Fals
     }
 
 
-async def _list_has_titles(tracker: Tracker) -> bool:
-    return bool(await tracker.list_titles())
-
-
 async def _view(
     request: Request, filters: Filters, selecting: bool, ticked: frozenset[int] = frozenset()
-) -> dict[str, object]:
-    """What the page and the fragment of the results show: the links, the rows or the sentence that stands for them.
-    `ticked` are the rows ticked before the search changed the rows: those still among the rows stay ticked."""
+) -> tuple[str, dict[str, object]]:
+    """The address of the list with this query and what the page and the fragment of the results show: the links, the
+    rows or the sentence that stands for them. `ticked` are the rows ticked before the search changed the rows: those
+    still among the rows stay ticked."""
     tracker = pages.tracker_of(request)
     titles = await tracker.list_titles(filters.kind, filters.statuses(), filters.order, filters.query or None)
     empty = ""
     if not titles:
         empty = await empty_phrase(
             query=filters.query, unfiltered=filters.unfiltered,
-            anything=lambda: _list_has_titles(tracker), nothing_at_all=EMPTY_LIST,
+            anything=lambda: list_has_titles(tracker), nothing_at_all=EMPTY_LIST,
         )
     kinds, statuses, orders = _filter_links(request, filters)
     address = _address(request, filters, select=selecting)  # the mode is kept even when this search finds nothing
     selecting = selecting and bool(titles)
     shown_ticked = frozenset(t.id for t in titles if t.id in ticked)  # a row the search took away loses its tick
-    return {
+    return address, {
         "kinds": kinds, "statuses": statuses, "orders": orders, "rows": rows(request, titles), "size": LIST_SIZE,
         "shown": f"Показано {len(titles)} {titles_word(len(titles))}", "empty": empty,
         "empty_is_list": empty == EMPTY_LIST, "searched": empty == NOTHING_FOUND, "query": filters.query,
@@ -164,7 +160,7 @@ async def _view(
         "selecting": selecting, "select_address": _address(request, filters, select=True),
         "cancel_address": _address(request, filters),
         "selection_address": str(request.app.url_path_for("list_selection")), "hidden": filters.params(),
-        "ticked": shown_ticked, "address": address,
+        "ticked": shown_ticked,
         "bar": _bar(request, filters, len(shown_ticked), initial=True),
     }
 
@@ -176,11 +172,11 @@ async def show_list(
 ) -> Response:
     filters = Filters.parse(kind, status, order, q)
     selecting = select == SELECT
+    _, view = await _view(request, filters, selecting)
     return await pages.page(
         request, "title_list.html", current=str(request.app.url_path_for("list")),
         results_address=str(request.app.url_path_for("list_results")), form_address=str(request.app.url_path_for("list")),
-        form_hidden={**filters.params(with_query=False), **({"select": SELECT} if selecting else {})},
-        **await _view(request, filters, selecting),
+        form_hidden={**filters.params(with_query=False), **({"select": SELECT} if selecting else {})}, **view,
     )
 
 

@@ -3,10 +3,12 @@ no database. Synonyms of different sources («Боевик», «Экшен») st
 
 from collections.abc import Iterable
 
+from app.tracker.text import key as text_key
 
-def key(genre: str) -> str:
-    """What makes two writings one genre: case does not matter, «ё» is «е», spaces at the ends do not count."""
-    return genre.strip().casefold().replace("ё", "е")
+
+def key_of(genre: str) -> str:
+    """What makes two writings one genre: `text.key` of the genre without the spaces at its ends."""
+    return text_key(genre.strip())
 
 
 def label(writings: Iterable[str]) -> str:
@@ -18,7 +20,7 @@ def label(writings: Iterable[str]) -> str:
 
 def keys_of(genres: Iterable[object]) -> set[str]:
     """The keys of the genres a title stores; whatever is not a name is left out."""
-    return {key(g) for g in genres if isinstance(g, str) and g.strip()}
+    return {key_of(g) for g in genres if isinstance(g, str) and g.strip()}
 
 
 def merge(genre_lists: Iterable[Iterable[object]]) -> list[str]:
@@ -27,5 +29,5 @@ def merge(genre_lists: Iterable[Iterable[object]]) -> list[str]:
     for genres in genre_lists:
         for genre in genres:
             if isinstance(genre, str) and genre.strip():
-                writings.setdefault(key(genre), []).append(genre)
+                writings.setdefault(key_of(genre), []).append(genre)
     return sorted((label(w) for w in writings.values()), key=lambda name: (name.casefold(), name))
