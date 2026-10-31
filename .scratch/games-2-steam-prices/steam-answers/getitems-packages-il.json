@@ -1,0 +1,680 @@
+{
+ "response": {
+  "store_items": [
+   {
+    "item_type": 0,
+    "id": 10,
+    "success": 1,
+    "visible": true,
+    "name": "Counter-Strike",
+    "store_url_path": "app/10/CounterStrike",
+    "store_url_slug": "CounterStrike",
+    "appid": 10,
+    "type": 0,
+    "content_descriptorids": [
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      1,
+      49,
+      36,
+      37
+     ],
+     "feature_categoryids": [
+      66,
+      68,
+      69,
+      75,
+      8,
+      62
+     ]
+    },
+    "release": {
+     "steam_release_date": 973065600
+    },
+    "best_purchase_option": {
+     "packageid": 7,
+     "purchase_option_name": "Counter-Strike: Condition Zero",
+     "final_price_in_cents": "3649",
+     "formatted_final_price": "₪36.49",
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 2,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 7,
+      "purchase_option_name": "Counter-Strike: Condition Zero",
+      "final_price_in_cents": "3649",
+      "formatted_final_price": "₪36.49",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 2,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "bundleid": 236,
+      "purchase_option_name": "Counter-Strike Complete",
+      "final_price_in_cents": "4744",
+      "formatted_final_price": "₪47.44",
+      "bundle_discount_pct": 35,
+      "price_before_bundle_discount": "7298",
+      "formatted_price_before_bundle_discount": "₪72.98",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 4,
+      "must_purchase_as_set": true,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 35
+     },
+     {
+      "bundleid": 235,
+      "purchase_option_name": "Counter-Strike 1 Anthology",
+      "final_price_in_cents": "5426",
+      "formatted_final_price": "₪54.26",
+      "bundle_discount_pct": 40,
+      "price_before_bundle_discount": "9046",
+      "formatted_price_before_bundle_discount": "₪90.46",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 6,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 40
+     },
+     {
+      "bundleid": 232,
+      "purchase_option_name": "Valve Complete Pack",
+      "final_price_in_cents": "42554",
+      "formatted_final_price": "₪425.54",
+      "bundle_discount_pct": 10,
+      "price_before_bundle_discount": "47284",
+      "formatted_price_before_bundle_discount": "₪472.84",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 20,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 10
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 1530,
+    "success": 1,
+    "visible": true,
+    "name": "Multiwinia",
+    "store_url_path": "app/1530/Multiwinia",
+    "store_url_slug": "Multiwinia",
+    "appid": 1530,
+    "type": 0,
+    "related_items": {
+     "demo_appid": [
+      1540
+     ],
+     "demos": [
+      {
+       "appid": 1540,
+       "show_above_purchase": false
+      }
+     ]
+    },
+    "categories": {
+     "supported_player_categoryids": [
+      2,
+      1,
+      49,
+      36,
+      47,
+      9,
+      38,
+      48
+     ],
+     "feature_categoryids": [
+      22,
+      62
+     ]
+    },
+    "release": {
+     "steam_release_date": 1221843600,
+     "original_release_date": 1221807600,
+     "linux_release_date": 1360715340
+    },
+    "best_purchase_option": {
+     "packageid": 1002,
+     "purchase_option_name": "Multiwinia",
+     "final_price_in_cents": "4395",
+     "formatted_final_price": "₪43.95",
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 1002,
+      "purchase_option_name": "Multiwinia",
+      "final_price_in_cents": "4395",
+      "formatted_final_price": "₪43.95",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 978,
+      "purchase_option_name": "Multiwinia + Darwinia",
+      "final_price_in_cents": "6295",
+      "formatted_final_price": "₪62.95",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 2,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 14002,
+      "purchase_option_name": "Introversion Classics Pack",
+      "final_price_in_cents": "11095",
+      "formatted_final_price": "₪110.95",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 4,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "bundleid": 1905,
+      "purchase_option_name": "Introversion Game Bundle",
+      "final_price_in_cents": "15130",
+      "formatted_final_price": "₪151.30",
+      "bundle_discount_pct": 25,
+      "price_before_bundle_discount": "20175",
+      "formatted_price_before_bundle_discount": "₪201.75",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 5,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 25
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 1930,
+    "success": 1,
+    "visible": true,
+    "name": "Two Worlds Epic Edition",
+    "store_url_path": "app/1930/Two_Worlds_Epic_Edition",
+    "store_url_slug": "Two_Worlds_Epic_Edition",
+    "appid": 1930,
+    "type": 0,
+    "categories": {
+     "supported_player_categoryids": [
+      2,
+      1,
+      49,
+      36,
+      9,
+      38,
+      27
+     ],
+     "feature_categoryids": [
+      29,
+      62
+     ],
+     "controller_categoryids": [
+      18
+     ]
+    },
+    "release": {
+     "steam_release_date": 1241074800
+    },
+    "best_purchase_option": {
+     "packageid": 1589,
+     "purchase_option_name": "Two Worlds - Epic Edition",
+     "final_price_in_cents": "1678",
+     "original_price_in_cents": "5595",
+     "formatted_final_price": "₪16.78",
+     "formatted_original_price": "₪55.95",
+     "discount_pct": 70,
+     "active_discounts": [
+      {
+       "discount_amount": "3917",
+       "discount_description": "#discount_desc_preset_special",
+       "discount_end_date": 1793556000
+      }
+     ],
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 1589,
+      "purchase_option_name": "Two Worlds - Epic Edition",
+      "final_price_in_cents": "1678",
+      "original_price_in_cents": "5595",
+      "formatted_final_price": "₪16.78",
+      "formatted_original_price": "₪55.95",
+      "discount_pct": 70,
+      "active_discounts": [
+       {
+        "discount_amount": "3917",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 18163,
+      "purchase_option_name": "Two Worlds Collection",
+      "final_price_in_cents": "4248",
+      "original_price_in_cents": "16995",
+      "formatted_final_price": "₪42.48",
+      "formatted_original_price": "₪169.95",
+      "discount_pct": 75,
+      "active_discounts": [
+       {
+        "discount_amount": "12747",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 3,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "bundleid": 10027,
+      "purchase_option_name": "Two Worlds Epic Deluxe Edition",
+      "final_price_in_cents": "1964",
+      "original_price_in_cents": "6552",
+      "formatted_final_price": "₪19.64",
+      "formatted_original_price": "₪65.52",
+      "discount_pct": 70,
+      "bundle_discount_pct": 20,
+      "price_before_bundle_discount": "8190",
+      "formatted_price_before_bundle_discount": "₪81.90",
+      "active_discounts": [
+       {
+        "discount_amount": "3917",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1817",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": true,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 76
+     },
+     {
+      "bundleid": 10028,
+      "purchase_option_name": "Two Worlds 1 Epic Edition Complete",
+      "final_price_in_cents": "3013",
+      "original_price_in_cents": "10904",
+      "formatted_final_price": "₪30.13",
+      "formatted_original_price": "₪109.04",
+      "discount_pct": 72,
+      "bundle_discount_pct": 30,
+      "price_before_bundle_discount": "15580",
+      "formatted_price_before_bundle_discount": "₪155.80",
+      "active_discounts": [
+       {
+        "discount_amount": "3917",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2587",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2956",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1817",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 81
+     },
+     {
+      "bundleid": 20537,
+      "purchase_option_name": "Easter Egg Bundle",
+      "final_price_in_cents": "7625",
+      "original_price_in_cents": "21480",
+      "formatted_final_price": "₪76.25",
+      "formatted_original_price": "₪214.80",
+      "discount_pct": 65,
+      "bundle_discount_pct": 60,
+      "price_before_bundle_discount": "53700",
+      "formatted_price_before_bundle_discount": "₪537.00",
+      "active_discounts": [
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "3917",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "7767",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2772",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "6507",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1298",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2772",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2213",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 13,
+      "must_purchase_as_set": true,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 86
+     },
+     {
+      "bundleid": 29898,
+      "purchase_option_name": "Easter Egg+ Bundle",
+      "final_price_in_cents": "7625",
+      "original_price_in_cents": "21480",
+      "formatted_final_price": "₪76.25",
+      "formatted_original_price": "₪214.80",
+      "discount_pct": 65,
+      "bundle_discount_pct": 60,
+      "price_before_bundle_discount": "53700",
+      "formatted_price_before_bundle_discount": "₪537.00",
+      "active_discounts": [
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "3917",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "6507",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2772",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2772",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1298",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1848",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "7767",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2213",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 13,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 86
+     },
+     {
+      "bundleid": 12972,
+      "purchase_option_name": "Two Worlds Universe",
+      "final_price_in_cents": "13564",
+      "original_price_in_cents": "46630",
+      "formatted_final_price": "₪135.64",
+      "formatted_original_price": "₪466.30",
+      "discount_pct": 71,
+      "bundle_discount_pct": 25,
+      "price_before_bundle_discount": "62180",
+      "formatted_price_before_bundle_discount": "₪621.80",
+      "active_discounts": [
+       {
+        "discount_amount": "3917",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "6507",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2772",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "3357",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "3357",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "4687",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1537",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1817",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1817",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1295",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2065",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1295",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1817",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "2956",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1537",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1537",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       },
+       {
+        "discount_amount": "1817",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793556000
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 3,
+      "must_purchase_as_set": true,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 78
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   }
+  ]
+ }
+}
