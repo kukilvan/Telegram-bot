@@ -23,7 +23,7 @@ MODULES = (
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
     "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
-    "cards", "kinds", "scores", "text", "genres", "feed_rows", "zones", "platforms", "games", "game_events",
+    "cards", "kinds", "scores", "text", "genres", "feed_rows", "zones", "platforms", "games", "game_events", "game_rows",
 )
 MAX_LINES = 400
 
@@ -89,7 +89,9 @@ def test_every_kind_has_one_poller_with_the_same_set_of_actions():
     assert set(polling.POLLER_CLASSES) == set(TitleKind) == set(kinds.KINDS)
     for kind, poller_class in polling.POLLER_CLASSES.items():
         assert issubclass(poller_class, Poller), kind
-        for action in ("snapshot_to_add", "first_seasons", "first_check", "store_extras", "apply"):
+        for action in (
+            "snapshot_to_add", "first_seasons", "first_check", "store_extras", "apply", "feed_pieces", "card_part",
+        ):
             assert callable(getattr(poller_class, action)), (kind, action)
 
 

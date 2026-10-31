@@ -1,26 +1,46 @@
 """An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the
 source entries behind the seasons and the franchise films are kept beside them."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import replace
 from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Select, select, union_all
 
-from app.tracker import anime_events
+from app.tracker import anime_events, feed_rows
 from app.tracker import seasons as season_logic
 from app.tracker import series_events, storage
+from app.tracker.cards import CardPart, MovieLine
+from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
 from app.tracker.models import MovieRecord, PartRecord, SeasonRecord, Title
-from app.tracker.pollers.base import DueTitle, Poller
+from app.tracker.pollers.base import DueTitle
+from app.tracker.pollers.seasonal import SeasonalPoller
 
 
-class AnimePoller(Poller):
+class AnimePoller(SeasonalPoller):
     def first_seasons(self, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
         """An anime's episodes are put together from both its sources."""
         return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now)
 
-    def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
-        return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
+    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
+        """The episodes, and the films of the franchises that are not out yet."""
+        pieces = super().feed_pieces(session, shown, basis)
+        coming = session.execute(
+            select(MovieRecord.title_id, MovieRecord.name, MovieRecord.aired_on).where(
+                MovieRecord.title_id.in_(self._active()), MovieRecord.released.is_(False), MovieRecord.aired_on >= basis.today
+            )
+        )
+        for title_id, name, aired_on in coming:
+            if title_id in shown:
+                pieces += feed_rows.franchise_pieces(shown[title_id], [(name, aired_on)], basis.today)
+        return pieces
+
+    def card_part(self, session, title: Title) -> CardPart:
+        """The seasons, and the films of the franchise."""
+        movies = session.scalars(select(MovieRecord).where(MovieRecord.title_id == title.id).order_by(MovieRecord.id))
+        franchise = tuple(MovieLine(m.name, m.aired_on, m.released) for m in movies)
+        return replace(super().card_part(session, title), franchise_movies=franchise)
 
     def store_extras(self, session, title_id: int, records: dict[int, SeasonRecord], snapshot: Any) -> None:
         """The source entries behind an anime's seasons (one per part, with their ids) and its franchise movies."""

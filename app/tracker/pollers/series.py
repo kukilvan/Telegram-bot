@@ -7,15 +7,13 @@ from typing import Any
 from app.tracker import seasons as season_logic
 from app.tracker import series_events, storage
 from app.tracker.models import Title
-from app.tracker.pollers.base import DueTitle, Poller
+from app.tracker.pollers.base import DueTitle
+from app.tracker.pollers.seasonal import SeasonalPoller
 
 
-class SeriesPoller(Poller):
+class SeriesPoller(SeasonalPoller):
     def first_seasons(self, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
         return snapshot.seasons
-
-    def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
-        return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()

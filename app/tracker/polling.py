@@ -39,7 +39,9 @@ POLLER_CLASSES: Mapping[TitleKind, type[Poller]] = {
 
 
 class Pollers:
-    """The pollers of the kinds the core has a source for, and the sequel pollers of the kinds that have a sequel source."""
+    """The pollers of the kinds the core has a source for, and the sequel pollers of the kinds that have a sequel source.
+    What the owner reads (the feed, the card) is asked of the poller of any kind, with a source or without: it reads
+    only the database."""
 
     def __init__(
         self,
@@ -49,9 +51,10 @@ class Pollers:
         sources: Mapping[TitleKind, Any],
         sequel_sources: Mapping[TitleKind, Any],
     ) -> None:
-        self._release = {
-            kind: POLLER_CLASSES[kind](kind, source, ctx, settings, queue) for kind, source in sources.items()
+        self._every = {
+            kind: poller_class(kind, sources.get(kind), ctx, settings, queue) for kind, poller_class in POLLER_CLASSES.items()
         }
+        self._release = {kind: self._every[kind] for kind in sources}
         self._sequels = {
             kind: SequelPoller(kind, source, ctx, settings, queue, release_source=sources.get(kind))
             for kind, source in sequel_sources.items()
@@ -60,6 +63,10 @@ class Pollers:
     def of(self, kind: TitleKind) -> Poller:
         """The poller of the kind's own release. KeyError when the core has no source for the kind."""
         return self._release[kind]
+
+    def reader_of(self, kind: TitleKind) -> Poller:
+        """The poller of the kind for what the owner reads; every kind has one, whether the core has its source or not."""
+        return self._every[kind]
 
     def sequels_of(self, kind: TitleKind) -> SequelPoller | None:
         return self._sequels.get(kind)

@@ -150,6 +150,20 @@ def own_state(session, title_id: int) -> dict[str, Any]:
     return snapshot.state if snapshot else {}
 
 
+def own_states_of(session, title_ids: Select) -> dict[int, dict[str, Any]]:
+    """The states of the own sources of many titles (`title_ids`: a select of their numbers), in one read: title → state."""
+    rows = session.execute(
+        select(SourceSnapshot.title_id, SourceSnapshot.state)
+        .join(ExternalId, ExternalId.title_id == SourceSnapshot.title_id)
+        .where(
+            ExternalId.role == PRIMARY_ROLE,
+            SourceSnapshot.source == ExternalId.source,
+            SourceSnapshot.title_id.in_(title_ids),
+        )
+    )
+    return {title_id: state for title_id, state in rows}
+
+
 def sequel_snapshot(session, title_id: int) -> SourceSnapshot | None:
     """The snapshot of the title's sequel check: any snapshot that is not of its own source (a watched movie has one)."""
     own_sources = select(ExternalId.source).where(ExternalId.title_id == title_id, ExternalId.role == PRIMARY_ROLE)

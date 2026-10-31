@@ -1,4 +1,5 @@
-"""What the owner reads of the list: its rows, the numbers of the whole list and the card of a title."""
+"""What the owner reads of the list: its rows, the numbers of the whole list and the card of a title. The part of a card
+that depends on the kind (a film's dates, the seasons, a game's platforms) is given by the poller of the kind."""
 
 import asyncio
 from collections.abc import Collection
@@ -9,19 +10,16 @@ from typing import TYPE_CHECKING
 from sqlalchemy import func, select
 
 from app.tracker import scores
-from app.tracker import seasons as season_logic
 from app.tracker import sequel_events, storage
-from app.tracker.cards import MovieLine, SequelsView, TitleCard, sequel_view
+from app.tracker.cards import SequelsView, TitleCard, sequel_view
 from app.tracker.genres import key_of as genre_key
 from app.tracker.genres import keys_of as genre_keys
 from app.tracker.genres import merge as merge_genres
 from app.tracker.text import key as text_key
 from app.tracker.context import CoreContext
-from app.tracker.kinds import KINDS, is_seasonal
-from app.tracker.models import MovieRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
+from app.tracker.models import SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import ListOrder, Overview, TitleSummary
 from app.tracker.settings_store import SettingsStore
-from app.tracker.sources.dates import parse_date
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
@@ -151,22 +149,7 @@ class Listing:
             title = session.get(Title, title_id)
             if title is None:
                 return None
-            state = storage.own_state(session, title_id)
-            seasons_view = None
-            season_rows = ()
-            seasonal = is_seasonal(title.kind)
-            loaded = storage.load_seasons(session, title_id) if seasonal else []
-            if seasonal:
-                watched = {record.number for record, _ in loaded if record.watched}
-                marks = {
-                    record.number: season_logic.SeasonMark(record.id, record.watched, record.score) for record, _ in loaded
-                }
-                now, gap = self.ctx.now(), self.settings.part_gap(session)
-                seasons_view = season_logic.summarize((season for _, season in loaded), watched, now, gap)
-                season_rows = season_logic.rows((season for _, season in loaded), marks, now, gap)
-            movies = session.scalars(
-                select(MovieRecord).where(MovieRecord.title_id == title_id).order_by(MovieRecord.id)
-            )
+            part = self.pollers.reader_of(title.kind).card_part(session, title)
             return TitleCard(
                 id=title.id,
                 kind=title.kind,
@@ -175,16 +158,11 @@ class Listing:
                 year=title.year,
                 genres=list(title.genres),
                 status=title.status,
-                theatrical_date=parse_date(state.get("theatrical_date")),
-                digital_date=parse_date(state.get("digital_date")),
-                seasons=seasons_view,
-                franchise_movies=tuple(MovieLine(m.name, m.aired_on, m.released) for m in movies),
-                tz=self.settings.time_zone(session) if KINDS[title.kind].local_times else None,
                 poster_path=title.poster_path,
                 overview=title.overview or "",
-                season_rows=season_rows,
                 sequels=self._sequels(session, title),
-                score=scores.visible(title, [(record.watched, record.score) for record, _ in loaded]),
+                score=self._scores(session, [title])[title.id],
+                **part.fields(),
             )
 
     def _sequels(self, session, title: Title) -> SequelsView | None:

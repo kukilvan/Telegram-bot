@@ -4,6 +4,8 @@ last week. Pure functions, no database: `feed` reads what they need and hands it
 What comes out is cut into pieces, one per thing on a day («Сезон 2, серии 5–8», «Премьера в кино»); the pieces of one
 title on one day make its row, joined by «; ». A day is the source's date as it is, except for a kind whose source gives
 the exact moment (`KINDS[…].local_times`, anime): there it is the day on the owner's clock, and the row gets the hour.
+Which pieces a title has is decided by the poller of its kind (`pollers/`); a game's are cut in `game_rows`. An
+approximate date («4 квартал 2026») stands on the last day of its period and only ever in «Позже».
 
 What happened is the log of events with the texts of the bot's messages; episodes of one season found on one day are
 folded into one line by the rule of the summary (`delivery.fold`). Which buttons a row of an event has is decided here,
@@ -48,6 +50,7 @@ class UpcomingRow:
     day: date
     text: str
     at: time | None = None  # on the owner's clock, where the source gives the moment (anime); None: the day only
+    when: str = ""  # an approximate date («4 квартал 2026»; `day` is the end of its period); empty: the day is exact
 
 
 @dataclass(frozen=True)
@@ -97,6 +100,17 @@ class Piece:
     at: time | None
     order: tuple[int, ...]  # where it stands in its row
     text: str
+    when: str = ""  # an approximate date: `day` is the end of its period, and the piece never goes to «Скоро»
+
+
+@dataclass(frozen=True)
+class FeedBasis:
+    """What every kind cuts its pieces by, read once for the whole feed: the owner's time zone, the break that splits a
+    season into parts and the date on the owner's clock."""
+
+    tz: tzinfo
+    gap: timedelta
+    today: date
 
 
 @dataclass(frozen=True)
@@ -179,16 +193,17 @@ def franchise_pieces(title: FeedTitle, movies: Iterable[tuple[str, date]], today
 
 
 def _rows(pieces: Iterable[Piece]) -> list[UpcomingRow]:
-    """One row per title and day, its pieces in order."""
-    grouped: dict[tuple[int, date], list[Piece]] = {}
+    """One row per title and day (and approximate date), its pieces in order."""
+    grouped: dict[tuple[int, date, str], list[Piece]] = {}
     for piece in pieces:
-        grouped.setdefault((piece.title.id, piece.day), []).append(piece)
+        grouped.setdefault((piece.title.id, piece.day, piece.when), []).append(piece)
     rows = []
     for members in grouped.values():
         members.sort(key=lambda p: p.order)
         hours = [p.at for p in members if p.at is not None]
         first = members[0]
-        rows.append(UpcomingRow(first.title, first.day, "; ".join(p.text for p in members), min(hours) if hours else None))
+        text = "; ".join(p.text for p in members)
+        rows.append(UpcomingRow(first.title, first.day, text, min(hours) if hours else None, first.when))
     return rows
 
 
@@ -200,18 +215,19 @@ def _in_day(row: UpcomingRow) -> tuple[Any, ...]:
 def upcoming(
     pieces: Iterable[Piece], today: date
 ) -> tuple[tuple[FeedDay[UpcomingRow], ...], tuple[UpcomingRow, ...]]:
-    """(«Скоро», «Позже»). «Скоро» holds the days from today to today + 13 that have something; «Позже» the nearest day
-    after them of each title that has nothing in «Скоро», by date, then by name."""
+    """(«Скоро», «Позже»). «Скоро» holds the days from today to today + 13 that have something, exact days only; «Позже»
+    the nearest row after them (or of an approximate date, however near the end of its period) of each title that has
+    nothing in «Скоро», by date, then by name."""
     last = today + timedelta(days=UPCOMING_DAYS - 1)
     rows = _rows(pieces)
-    soon = [row for row in rows if row.day <= last]
+    soon = [row for row in rows if row.day <= last and not row.when]
     days: dict[date, list[UpcomingRow]] = {}
     for row in soon:
         days.setdefault(row.day, []).append(row)
     near = {row.title.id for row in soon}
     later: dict[int, UpcomingRow] = {}
     for row in rows:
-        if row.day > last and row.title.id not in near:
+        if (row.day > last or row.when) and row.title.id not in near:
             if row.title.id not in later or row.day < later[row.title.id].day:
                 later[row.title.id] = row
     return (

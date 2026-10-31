@@ -42,7 +42,7 @@ class Line(NamedTuple):
     name: str  # «Скоро» and «Позже»: the title; empty in «Недавно» (the text of the event names it)
     text: str  # what comes out, or the first line of the message
     details: tuple[str, ...]  # the other lines of the message, smaller
-    when: str  # «в 18:00» in «Скоро»; the whole date in «Позже»; empty: nothing to say
+    when: str  # «в 18:00» in «Скоро»; the whole date in «Позже» (or the approximate one); empty: nothing to say
     watched: str  # the address of «Посмотрел»; empty: no button
     follow: Follow | None
 
@@ -71,10 +71,11 @@ def _card(request: Request, title_id: int) -> str:
 
 
 def _coming(request: Request, row: UpcomingRow, *, date_too: bool = False) -> Line:
-    """A row of «Скоро» (the hour of an anime at the right) or of «Позже» (`date_too`: the whole date there)."""
+    """A row of «Скоро» (the hour of an anime at the right) or of «Позже» (`date_too`: the whole date there, or the
+    approximate one: «4 квартал 2026»)."""
     title = row.title
     if date_too:
-        when = format_date(row.day)
+        when = row.when or format_date(row.day)
     else:
         when = "" if row.at is None else f"в {row.at:%H:%M}"
     return Line(_card(request, title.id), title.poster_path, KINDS[title.kind].icon, title.name, row.text, (), when, "", None)

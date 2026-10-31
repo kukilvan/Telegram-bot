@@ -1,8 +1,10 @@
 """The feed (`Tracker.feed()`): one read of the database for «Скоро», «Позже» and «Недавно». How the rows read and
-which buttons they have is decided by the pure `feed_rows`; this module only gathers what it needs.
+which buttons they have is decided by the pure `feed_rows`; what comes out of a title is cut by the poller of its kind
+(`Poller.feed_pieces`): this module groups the titles by kind and asks each poller once.
 
 The number of reads does not grow with the number of titles: the seasons, episodes, parts, dates and events of all
-titles come in one read each. Today is the date on the owner's clock (`SettingsStore.time_zone`, read here).
+titles come in one read each. Today is the date on the owner's clock; the time zone, the break between parts and today
+are read here once (`SettingsStore`) and handed to the pollers.
 """
 
 import asyncio
@@ -12,15 +14,11 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
-from app.tracker import delivery, failures, feed_rows, sequel_events, storage
+from app.tracker import delivery, failures, feed_rows, sequel_events
 from app.tracker.cards import local_moment
-from app.tracker.context import PRIMARY_ROLE, CoreContext, naive_utc
-from app.tracker.feed_rows import Feed, FeedEvent, FeedTitle, Piece
-from app.tracker.kinds import KINDS, is_seasonal
-from app.tracker.models import (
-    ARCHIVE_STATUSES, Event, ExternalId, MovieRecord, SourceSnapshot, Title, TitleKind,
-)
-from app.tracker.movie_events import MovieDates
+from app.tracker.context import CoreContext, naive_utc
+from app.tracker.feed_rows import Feed, FeedBasis, FeedEvent, FeedTitle, Piece
+from app.tracker.models import ARCHIVE_STATUSES, Event, Title, TitleKind
 from app.tracker.settings_store import SettingsStore
 
 if TYPE_CHECKING:
@@ -39,47 +37,26 @@ class FeedReader:
     def _feed(self) -> Feed:
         with self.ctx.session_factory() as session:
             tz = self.settings.time_zone(session)  # read here, where it is needed (coding standard 2)
-            gap = self.settings.part_gap(session)
-            today = local_moment(self.ctx.now(), tz).date()
+            basis = FeedBasis(tz, self.settings.part_gap(session), local_moment(self.ctx.now(), tz).date())
             titles = {t.id: t for t in session.scalars(select(Title))}
             shown = {t.id: FeedTitle(t.id, t.kind, t.name, t.poster_path) for t in titles.values()}
-            soon, later = feed_rows.upcoming(self._pieces(session, titles, shown, tz, gap, today), today)
-            events = self._events(session, titles, shown, tz, today)
+            soon, later = feed_rows.upcoming(self._pieces(session, titles, shown, basis), basis.today)
+            events = self._events(session, titles, shown, tz, basis.today)
             listed = self._listed(session, events)
-        return Feed(soon, later, feed_rows.recent(events, today, listed), has_titles=bool(titles), today=today)
+        return Feed(soon, later, feed_rows.recent(events, basis.today, listed), has_titles=bool(titles), today=basis.today)
 
-    @staticmethod
     def _pieces(
-        session, titles: Mapping[int, Title], shown: Mapping[int, FeedTitle], tz: tzinfo, gap: timedelta, today: date
+        self, session, titles: Mapping[int, Title], shown: Mapping[int, FeedTitle], basis: FeedBasis
     ) -> list[Piece]:
-        """What comes out from today on, of the titles that are not in the archive."""
-        active = select(Title.id).where(Title.status.not_in(ARCHIVE_STATUSES))
+        """What comes out from today on, of the titles that are not in the archive: the poller of each kind cuts the
+        pieces of all its titles at once."""
+        by_kind: dict[TitleKind, dict[int, FeedTitle]] = {}
+        for title in titles.values():
+            if title.status not in ARCHIVE_STATUSES:
+                by_kind.setdefault(title.kind, {})[title.id] = shown[title.id]
         pieces: list[Piece] = []
-        for title_id, seasons in storage.load_seasons_of(session, active).items():
-            title = titles[title_id]
-            if is_seasonal(title.kind):
-                local = tz if KINDS[title.kind].local_times else None  # the source gives the moment, not only the day
-                pieces += feed_rows.season_pieces(shown[title_id], seasons, gap, local, today)
-        own_states = session.execute(
-            select(SourceSnapshot.title_id, SourceSnapshot.state)
-            .join(ExternalId, ExternalId.title_id == SourceSnapshot.title_id)
-            .where(
-                ExternalId.role == PRIMARY_ROLE,
-                SourceSnapshot.source == ExternalId.source,
-                SourceSnapshot.title_id.in_(active),
-            )
-        )
-        for title_id, state in own_states:
-            if not is_seasonal(titles[title_id].kind):
-                dates = MovieDates.from_state(state)
-                pieces += feed_rows.movie_pieces(shown[title_id], dates.theatrical, dates.digital, today)
-        coming_movies = session.execute(
-            select(MovieRecord.title_id, MovieRecord.name, MovieRecord.aired_on).where(
-                MovieRecord.title_id.in_(active), MovieRecord.released.is_(False), MovieRecord.aired_on >= today
-            )
-        )
-        for title_id, name, aired_on in coming_movies:
-            pieces += feed_rows.franchise_pieces(shown[title_id], [(name, aired_on)], today)
+        for kind, of_kind in by_kind.items():
+            pieces += self.pollers.reader_of(kind).feed_pieces(session, of_kind, basis)
         return pieces
 
     @staticmethod

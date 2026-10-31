@@ -37,7 +37,7 @@ def reported(mine: Collection[Platform], playing: Mapping[str, bool]) -> tuple[P
     return tuple(platform for platform in Platform if platform in mine and playing.get(platform.value, True))
 
 
-def _older_reported(platform: Platform, told: Collection[Platform]) -> bool:
+def older_tells(platform: Platform, told: Collection[Platform]) -> bool:
     """The older platform whose date this one took is itself a platform the owner is told about (Switch 2 ← Switch):
     that one gives the message."""
     older = PLATFORMS[platform].older
@@ -145,7 +145,7 @@ def detect_events(
 
         def event(kind: str, key: str, dated: PlatformDate | None, data: dict[str, Any], earlier: str | None = None):
             via = dated.version_of if dated is not None else None
-            if via and _older_reported(platform, told):
+            if via and older_tells(platform, told):
                 return  # the older platform tells it
             data = {"name": name, "platform": platform.value, "via": via or "", **data}
             text = message(kind, name, [(platform, data["via"])], data)

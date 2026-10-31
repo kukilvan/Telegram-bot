@@ -3,18 +3,22 @@ platforms of «Мои платформы» marked «играю здесь», and
 
 A game is added with the Russian texts of Steam (`snapshot_to_add`); the polls take IGDB alone, and the name and the
 description stay as they were added (like a film's). Every platform of the tracker the game is on gets its row; the
-mark is set where the platform is one of «Мои платформы» at that moment (spec 6.3 of part 6.1).
+mark is set where the platform is one of «Мои платформы» at that moment (spec 6.3 of part 6.1). The feed and the card
+show the dates of the country of the stores as it is now: the feed only the platforms the owner is told about, the
+card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1).
 """
 
-from collections.abc import Sequence
+from collections.abc import Collection, Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import Select, select
 
-from app.tracker import game_events, games, storage
+from app.tracker import game_events, game_rows, games, storage
 from app.tracker import seasons as season_logic
-from app.tracker.models import GamePlatformRecord, SeasonRecord
+from app.tracker.cards import CardPart, local_moment
+from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
+from app.tracker.models import GamePlatformRecord, SeasonRecord, Title
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
 
@@ -26,6 +30,19 @@ def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Plat
     for platform in Platform:
         if platform.value not in stored and games.has_platform(game, platform):
             session.add(GamePlatformRecord(title_id=title_id, platform=platform.value, playing=platform in mine))
+
+
+def _marks(session, title_ids: Select | Collection[int]) -> dict[int, dict[str, bool]]:
+    """The marks «играю здесь» of games (a select of their numbers, or the numbers), in one read: title → platform → mark."""
+    rows = session.execute(
+        select(GamePlatformRecord.title_id, GamePlatformRecord.platform, GamePlatformRecord.playing).where(
+            GamePlatformRecord.title_id.in_(title_ids)
+        )
+    )
+    marks: dict[int, dict[str, bool]] = {}
+    for title_id, platform, playing in rows:
+        marks.setdefault(title_id, {})[platform] = playing
+    return marks
 
 
 class GamePoller(Poller):
@@ -42,6 +59,31 @@ class GamePoller(Poller):
         """The platforms of the game, each with the mark «играю здесь» where it is one of «Мои платформы» now."""
         _new_rows(session, title_id, snapshot.game, self.settings.my_platforms_in(session))
 
+    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
+        country = self.settings.store_country_in(session)
+        mine = self.settings.my_platforms_in(session)
+        marks = _marks(session, self._active())
+        pieces: list[Piece] = []
+        for title_id, state in storage.own_states_of(session, self._active()).items():
+            if title_id in shown:
+                told = game_events.reported(mine, marks.get(title_id, {}))
+                game = games.GameState.from_state(state)
+                pieces += game_rows.feed_pieces(shown[title_id], game, told, country, basis.today)
+        return pieces
+
+    def card_part(self, session, title: Title) -> CardPart:
+        game = games.GameState.from_state(storage.own_state(session, title.id))
+        country = self.settings.store_country_in(session)
+        mine = self.settings.my_platforms_in(session)
+        today = local_moment(self.ctx.now(), self.settings.time_zone(session)).date()
+        marks = _marks(session, [title.id]).get(title.id, {})
+        rows = game_rows.platform_rows(game, mine, marks, country, today)
+        return CardPart(
+            platforms=rows,
+            store_links=game_rows.store_links(game, mine, country, title.original_name or title.name),
+            platform_note=game_rows.platform_note(game, rows),
+        )
+
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()
         today = now.date()
@@ -52,13 +94,7 @@ class GamePoller(Poller):
             country = self.settings.store_country_in(session)
             mine = self.settings.my_platforms_in(session)
             # the marks as they are when the check starts: one set while it runs counts from the next check (as KI-22)
-            playing = dict(
-                session.execute(
-                    select(GamePlatformRecord.platform, GamePlatformRecord.playing).where(
-                        GamePlatformRecord.title_id == due.id
-                    )
-                ).all()
-            )
+            playing = _marks(session, [due.id]).get(due.id, {})
         new = games.carry_over(old, snapshot.game)
         told = game_events.reported(mine, playing)
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them

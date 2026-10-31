@@ -1,5 +1,6 @@
 """Text card of a title: what the owner reads in the bot. Pure formatting, no database."""
 
+import dataclasses
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -72,6 +73,43 @@ def sequel_view(sequels: "Sequels", checked: bool, listed: Mapping[str, int]) ->
 
 
 @dataclass(frozen=True)
+class PlatformRow:
+    """A platform of «Мои платформы» the game is on, as its card lists it."""
+
+    platform: str  # the value of `Platform`: the address of the mark
+    text: str  # «PS5 — 27 марта 2015 (версия для PS4)»
+    playing: bool  # the mark «играю здесь»
+
+
+@dataclass(frozen=True)
+class StoreLink:
+    """Where the game is sold: the web shows `label`, the bot `store` with the address."""
+
+    label: str  # «Открыть в Steam»
+    store: str  # «Steam»
+    url: str
+
+
+@dataclass(frozen=True)
+class CardPart:
+    """What a card holds that depends on the kind of the title: the poller of the kind gives it, so neither the card
+    nor the list asks which kind it is. The names are the ones of `TitleCard`."""
+
+    theatrical_date: date | None = None
+    digital_date: date | None = None
+    seasons: SeasonsView | None = None
+    franchise_movies: tuple[MovieLine, ...] = ()
+    tz: tzinfo | None = None
+    season_rows: tuple[SeasonRow, ...] = ()
+    platforms: tuple[PlatformRow, ...] = ()
+    store_links: tuple[StoreLink, ...] = ()
+    platform_note: str = ""
+
+    def fields(self) -> dict[str, object]:
+        return {field.name: getattr(self, field.name) for field in dataclasses.fields(self)}
+
+
+@dataclass(frozen=True)
 class TitleCard:
     id: int
     kind: TitleKind
@@ -90,6 +128,9 @@ class TitleCard:
     season_rows: tuple[SeasonRow, ...] = ()  # series and anime: a row per season, for the web
     sequels: SequelsView | None = None  # a watched movie whose sequels are looked for; for the web
     score: ScoreView | None = None  # None: the title cannot be scored now (2.3 of the spec of part 5.3), no field
+    platforms: tuple[PlatformRow, ...] = ()  # a game: the platforms of «Мои платформы» it is on, in the order of the table
+    store_links: tuple[StoreLink, ...] = ()  # a game: Steam and PlayStation Store, where the owner's platforms have them
+    platform_note: str = ""  # a game without such platforms: why the list of platforms is empty
 
 
 def format_date(value: date | None) -> str:
@@ -221,6 +262,16 @@ def movie_date_lines(card: TitleCard) -> list[str]:
     ]
 
 
+def platform_lines(card: TitleCard) -> list[str]:
+    """The platforms of a game, an unmarked one «(не отмечена)», or the line that says why there are none; then the
+    stores as text: «Steam: https://…»."""
+    lines = [row.text + ("" if row.playing else " (не отмечена)") for row in card.platforms]
+    if not lines:
+        lines.append(card.platform_note)
+    lines.extend(f"{link.store}: {link.url}" for link in card.store_links)
+    return lines
+
+
 def format_card(card: TitleCard) -> str:
     kind = KINDS[card.kind]
     names = card.name
@@ -238,6 +289,8 @@ def format_card(card: TitleCard) -> str:
         lines.extend(season_lines(card.seasons, card.tz))
         if card.franchise_movies:
             lines.append(franchise_movies_line(card.franchise_movies))
+    elif card.platforms or card.platform_note:  # a game always has one of the two
+        lines.extend(platform_lines(card))
     else:
         lines.extend(movie_date_lines(card))
     return "\n".join(lines)

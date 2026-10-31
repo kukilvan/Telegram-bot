@@ -2,12 +2,13 @@
 
 `snapshot_to_add`, `first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has,
 `known_ids` and `snapshot_ids` tell a title already in the list by the ids of the source, and `apply` compares a fresh
-snapshot with the stored one, queues the events and stores the new state. The core never asks «which kind is it?»: it
-asks the poller of the kind (the table is in `polling`).
+snapshot with the stored one, queues the events and stores the new state. What the owner reads is asked of the poller
+too: `feed_pieces` cuts what comes out of all the titles of the kind, `card_part` gives what a card holds that depends
+on the kind. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
 """
 
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -15,8 +16,10 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy import Select, select
 
 from app.tracker import seasons as season_logic
+from app.tracker.cards import CardPart
 from app.tracker.context import PRIMARY_ROLE, CoreContext
-from app.tracker.models import ExternalId, SeasonRecord, TitleKind
+from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
+from app.tracker.models import ARCHIVE_STATUSES, ExternalId, SeasonRecord, Title, TitleKind
 
 if TYPE_CHECKING:
     from app.tracker.queue import EventQueue
@@ -90,6 +93,21 @@ class Poller:
     def snapshot_ids(self, snapshot: Any) -> set[str]:
         """Every id of the source a fresh snapshot names: a title known by any of them is the title of the snapshot."""
         return {snapshot.external_id}
+
+    # --- what the owner reads ---
+
+    def _active(self) -> Select:
+        """The numbers of the titles of this kind that are not in the archive: whose dates the feed shows."""
+        return select(Title.id).where(Title.kind == self.kind, Title.status.not_in(ARCHIVE_STATUSES))
+
+    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
+        """What comes out from `basis.today` on, of all the titles of this kind that are not in the archive (`shown`:
+        how their rows show them), in a number of reads that does not grow with the number of titles."""
+        return []
+
+    def card_part(self, session, title: Title) -> CardPart:
+        """What the card of the title holds that depends on its kind."""
+        return CardPart()
 
     # --- polling a title ---
 
