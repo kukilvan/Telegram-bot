@@ -49,6 +49,7 @@ class Row(NamedTuple):
     poster: str | None
     icon: str
     card: str | None  # the card of the title when it is in the list already
+    details: str  # the line under the name: the platforms of a game («ПК, PS5»); empty: none
 
 
 def _kind_of(raw: str | None) -> TitleKind | None:
@@ -96,7 +97,7 @@ async def _found(request: Request, kind: TitleKind | None, raw_query: str) -> di
     rows = [
         Row(
             kind.value, s.external_id, s.name, s.original_name, s.year, s.poster_path, KINDS[kind].icon,
-            None if s.title_id is None else str(request.app.url_path_for("card", title_id=s.title_id)),
+            None if s.title_id is None else str(request.app.url_path_for("card", title_id=s.title_id)), s.details or "",
         )
         for s in suggestions[:MAX_SUGGESTIONS]
     ]

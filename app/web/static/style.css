@@ -136,7 +136,7 @@ a { color: var(--accent); }
 
 .title-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
 
-.title-original, .title-year { color: var(--muted); font-size: 0.85rem; }
+.title-original, .title-year, .title-details { color: var(--muted); font-size: 0.85rem; }
 
 .row-action { flex: none; margin: 0; }
 
@@ -207,6 +207,9 @@ button:disabled { opacity: 0.6; cursor: progress; }
 
 .season-plain { display: flex; align-items: center; min-height: 44px; padding-left: 2rem; margin: 0; color: var(--muted); }
 
+/* «Платформы» of a game: the rows are marks like those of the seasons; the stores are links that look like buttons */
+.store-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; padding: 0; list-style: none; }
+
 .closed-note { padding: 0.6rem 0.9rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
 
 /* «Продолжения» of a watched film: the name and the date on the left, «В списке» or «Следить» on the right */
@@ -268,7 +271,7 @@ button.danger { background: var(--error); }
 
   .card-layout .poster { align-self: center; }
 
-  .delete summary, .button-link, .actions details { width: 100%; }
+  .delete summary, .button-link, .actions details, .store-links li { width: 100%; }
 
   .delete summary { justify-content: center; }
 }

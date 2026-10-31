@@ -1,6 +1,8 @@
-"""The card of a title: what is known of it, the season marks, the sequels of a watched film and the buttons. Every
-press asks the core and answers with the whole card fresh (HTMX puts it in the place of the old one; a plain form gets
-a redirect to the card). The buttons follow the kind and the status (table 4.3 of the spec of part 5.2)."""
+"""The card of a title: what is known of it, the season marks, the platforms of a game with their marks «играю
+здесь», the sequels of a watched film and the buttons. Every press asks the core and answers with the whole card fresh
+(HTMX puts it in the place of the old one; a plain form gets a redirect to the card). The buttons follow the table of
+kinds and the status (table 4.3 of the spec of part 5.2, 9.2 of the spec of part 6.1); what the card holds, its data
+decide: the template compares no kind and no status."""
 
 from collections.abc import Awaitable, Callable
 from typing import NamedTuple
@@ -13,7 +15,7 @@ from app.tracker.cards import (
 )
 from app.tracker import scores
 from app.tracker.core import (
-    CannotScore, ScoreView, Tracker, UnknownSeason, UnknownTitle,
+    CannotScore, ScoreView, Tracker, UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ARCHIVE_STATUSES, TitleStatus
@@ -24,6 +26,9 @@ from app.web.posters import CARD_SIZE
 NOT_IN_LIST = "Этого тайтла нет в списке"
 ALREADY_GONE = "Этого тайтла уже нет в списке"
 SEASON_GONE = "Этого сезона больше нет — карточка обновлена"
+PLATFORM_GONE = "Этой платформы у игры больше нет — карточка обновлена"
+PLATFORMS_HINT = "Галочка — «играю здесь»: о выходе на отмеченных платформах придёт сообщение"
+SETTINGS_WORD = "Настройках"  # in the line of a game on none of the owner's platforms: a link to the settings
 NO_SUCH_SCORE = "Такой оценки нет"
 CANNOT_SCORE = "Оценку ставят только просмотренному — карточка обновлена"
 BY_SEASONS = "По сезонам"
@@ -58,6 +63,30 @@ class SeasonLine(NamedTuple):
     can_mark: bool  # a season with nothing out has no mark
     address: str  # where the mark is sent
     score: ScoreField | None  # only a season with its mark has one
+
+
+class PlatformLine(NamedTuple):
+    text: str  # «PS5 — 27 марта 2015 (версия для PS4)»
+    playing: bool  # the mark «играю здесь»
+    address: str  # where the mark is sent
+
+
+class NotePart(NamedTuple):
+    text: str
+    link: str  # the address the piece leads to; empty: plain text
+
+
+class StoreLine(NamedTuple):
+    label: str  # «Открыть в Steam»
+    url: str
+
+
+class PlatformsBlock(NamedTuple):
+    """«Платформы» of a game: the rows with their marks, or the line of why there are none; the links to the stores."""
+
+    lines: list[PlatformLine]
+    note: list[NotePart]  # empty: there are rows
+    stores: list[StoreLine]
 
 
 class SequelRow(NamedTuple):
@@ -111,6 +140,30 @@ def _sequels(request: Request, card: TitleCard, view: SequelsView, error: str) -
     return SequelsBlock(sentence, rows, _address(request, "card_sequels", title_id=card.id), error)
 
 
+def _note_parts(request: Request, note: str) -> list[NotePart]:
+    """The line of why a game lists no platform, with «Настройках» as a link to them where it says so."""
+    before, word, after = note.partition(SETTINGS_WORD)
+    if not word:
+        return [NotePart(note, "")]
+    parts = [NotePart(before, ""), NotePart(word, _address(request, "settings"))]
+    return parts + [NotePart(after, "")] if after else parts
+
+
+def _platforms(request: Request, card: TitleCard) -> PlatformsBlock | None:
+    """The block of a game, which always has either rows or the line of why there are none; other kinds have none."""
+    if not (card.platforms or card.platform_note):
+        return None
+    lines = [
+        PlatformLine(
+            row.text, row.playing,
+            str(request.app.url_path_for("card_platform", title_id=card.id, platform=row.platform)),
+        )
+        for row in card.platforms
+    ]
+    note = [] if lines else _note_parts(request, card.platform_note)
+    return PlatformsBlock(lines, note, [StoreLine(link.label, link.url) for link in card.store_links])
+
+
 def _steps(current: int | None, first: str) -> list[ScoreChoice]:
     """The choices of a list: the first row (it takes the score off), then the scale from the highest down."""
     return [ScoreChoice("", first, current is None)] + [
@@ -146,8 +199,13 @@ def _back_link(request: Request, card: TitleCard) -> BackLink:
 
 
 def _view(request: Request, card: TitleCard, notice: str = "", sequel_error: str = "") -> dict[str, object]:
-    """What the card template shows, in the words of the page. The buttons follow the kind and the status."""
+    """What the card template shows, in the words of the page. The buttons follow the table of kinds and the status
+    (9.2 of the spec of part 6.1): «Начал играть» from «Хочу»; the button of the final status from «Хочу» and
+    «В процессе»; «Бросил» out of the archive; «Вернуть в список» from «Бросил» and from the final status of a kind with
+    its button."""
+    kind = KINDS[card.kind]
     seasonal = is_seasonal(card.kind)
+    platforms = _platforms(request, card)
     seasons = [
         SeasonLine(
             r.id, season_row_text(r, card.tz), r.watched, r.can_mark,
@@ -168,14 +226,18 @@ def _view(request: Request, card: TitleCard, notice: str = "", sequel_error: str
         "seasons": seasons,
         "mark_all": any(r.can_mark and not r.watched for r in card.season_rows),
         "movies": [movie_line(m) for m in card.franchise_movies],
-        "dates": [] if seasonal else movie_date_lines(card),
-        "can_mark_watched": not seasonal and card.status == TitleStatus.WANT,
+        "platforms": platforms,
+        "platforms_hint": PLATFORMS_HINT,
+        "dates": [] if seasonal or platforms is not None else movie_date_lines(card),
+        "start_press": kind.start_press if card.status == TitleStatus.WANT else "",
+        "finish_press": kind.finish_press if card.status in (TitleStatus.WANT, TitleStatus.IN_PROGRESS) else "",
         "can_drop": card.status not in ARCHIVE_STATUSES,
         # a series that is «Просмотрено» comes back by taking a mark off: its marks gave it that status
-        "can_restore": card.status == TitleStatus.DROPPED or (not seasonal and card.status == TitleStatus.WATCHED),
+        "can_restore": card.status == TitleStatus.DROPPED or bool(kind.finish_press and card.status == kind.finished),
         "closed_note": CLOSED_NOTE if seasonal and card.status == TitleStatus.WATCHED else "",
         "sequels": None if card.sequels is None else _sequels(request, card, card.sequels, sequel_error),
         "address": _address(request, "card", title_id=card.id),
+        "started_address": _address(request, "card_started", title_id=card.id),
         "watched_address": _address(request, "card_watched", title_id=card.id),
         "dropped_address": _address(request, "card_dropped", title_id=card.id),
         "restore_address": _address(request, "card_restore", title_id=card.id),
@@ -196,8 +258,9 @@ async def _fresh_card(request: Request, title_id: int, notice: str = "", sequel_
 async def _press(
     request: Request, title_id: int, act: Callable[[Tracker], Awaitable[object]], *, refused: str = ""
 ) -> Response:
-    """A press on the card: `act` asks the core. The title gone is the fragment of 1.4; a season that is gone, a score
-    nobody can set now or one off the scale (`refused`: the core is not asked) is the fresh card with a line about it."""
+    """A press on the card: `act` asks the core. The title gone is the fragment of 1.4; a season or a platform that is
+    gone, a score nobody can set now or one off the scale (`refused`: the core is not asked) is the fresh card with a
+    line about it."""
     if not pages.is_id(title_id):
         return await pages.title_gone(request)
     notice = refused
@@ -208,6 +271,8 @@ async def _press(
             return await pages.title_gone(request)
         except UnknownSeason:
             notice = SEASON_GONE
+        except UnknownPlatform:
+            notice = PLATFORM_GONE
         except CannotScore:
             notice = CANNOT_SCORE
     if notice and not pages.is_htmx(request):
@@ -259,6 +324,15 @@ async def mark_season(request: Request, title_id: int, season_id: int, watched: 
     return await _press(request, title_id, act)
 
 
+@router.post("/titles/{title_id:int}/platforms/{platform}", name="card_platform")
+@refreshing
+async def mark_platform(request: Request, title_id: int, platform: str, playing: str = Form("")) -> Response:
+    """The mark «играю здесь» of a platform of a game: like the mark of a season, the state after the press, not a
+    switch. The core knows which platforms the game has: anything else is a platform that is gone."""
+    mark = playing == "1"
+    return await _press(request, title_id, lambda tracker: tracker.set_platform_playing(title_id, platform, mark))
+
+
 @router.post("/titles/{title_id:int}/score", name="card_score")
 @refreshing
 async def score_title(request: Request, title_id: int, score: str = Form("")) -> Response:
@@ -292,9 +366,17 @@ async def mark_all_released(request: Request, title_id: int) -> Response:
     return await _press(request, title_id, lambda tracker: tracker.mark_all_released(title_id))
 
 
+@router.post("/titles/{title_id:int}/started", name="card_started")
+@refreshing
+async def mark_started(request: Request, title_id: int) -> Response:
+    """«Начал играть»; a kind without that button, or a title not in «Хочу», changes nothing."""
+    return await _press(request, title_id, lambda tracker: tracker.mark_started(title_id))
+
+
 @router.post("/titles/{title_id:int}/watched", name="card_watched")
 @refreshing
 async def mark_watched(request: Request, title_id: int) -> Response:
+    """The button of the final status: «Посмотрел» of a film, «Прошёл» of a game (the table of kinds decides)."""
     return await _press(request, title_id, lambda tracker: tracker.mark_watched(title_id))
 
 

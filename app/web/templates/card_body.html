@@ -46,7 +46,34 @@
         </ul>
         {% endif %}
       </section>
-      {% else %}
+      {% endif %}
+
+      {% if platforms %}
+      <section class="platforms" aria-labelledby="platforms-heading">
+        <h2 id="platforms-heading">Платформы</h2>
+        {% if platforms.lines %}
+        <p class="hint">{{ platforms_hint }}</p>
+        <ul class="season-list">
+          {% for line in platforms.lines %}
+          <li class="season-item">
+            <form method="post" action="{{ line.address }}" hx-post="{{ line.address }}" hx-trigger="change" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find input">
+              <label class="check"><input type="checkbox" name="playing" value="1"{% if line.playing %} checked{% endif %}> <span>{{ line.text }}</span></label>
+            </form>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="platform-note">{% for part in platforms.note %}{% if part.link %}<a href="{{ part.link }}">{{ part.text }}</a>{% else %}{{ part.text }}{% endif %}{% endfor %}</p>
+        {% endif %}
+        {% if platforms.stores %}
+        <ul class="store-links">
+          {% for store in platforms.stores %}<li><a class="button-link" href="{{ store.url }}" target="_blank" rel="noopener">{{ store.label }}</a></li>{% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      {% if dates %}
       <ul class="dates">
         {% for line in dates %}<li>{{ line }}</li>{% endfor %}
       </ul>
@@ -81,9 +108,14 @@
       {% endif %}
 
       <div class="actions">
-        {% if can_mark_watched %}
+        {% if start_press %}
+        <form method="post" action="{{ started_address }}" hx-post="{{ started_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button(start_press, "Сохраняю…") }}
+        </form>
+        {% endif %}
+        {% if finish_press %}
         <form method="post" action="{{ watched_address }}" hx-post="{{ watched_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
-          {{ busy_button("Посмотрел", "Сохраняю…") }}
+          {{ busy_button(finish_press, "Сохраняю…") }}
         </form>
         {% endif %}
         {% if can_drop %}

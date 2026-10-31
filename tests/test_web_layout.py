@@ -122,10 +122,14 @@ def test_img_src_is_self_tmdb_and_the_shikimori_of_the_setting_with_its_subdomai
 
     response = signed_in(app).get("/")
 
-    assert policy(response)["img-src"] == ["'self'", "https://image.tmdb.org", "https://shikimori.io", "https://*.shikimori.io"]
+    assert policy(response)["img-src"] == [
+        "'self'", "https://image.tmdb.org", "https://images.igdb.com", "https://shikimori.io", "https://*.shikimori.io",
+    ]
     assert policy(response)["default-src"] == ["'self'"] and policy(response)["form-action"] == ["'self'"]
     hosts = re.findall(r"https?://[^\s;]+", response.headers["Content-Security-Policy"])
-    assert sorted(hosts) == ["https://*.shikimori.io", "https://image.tmdb.org", "https://shikimori.io"]  # no other
+    assert sorted(hosts) == [
+        "https://*.shikimori.io", "https://image.tmdb.org", "https://images.igdb.com", "https://shikimori.io",
+    ]  # no other
 
 
 @pytest.mark.parametrize("path", ["/health", "/login", "/nowhere", "/static/style.css"])
@@ -139,7 +143,7 @@ def test_another_shikimori_address_changes_the_header(tmp_path):
     app = make_app(tmp_path, image_sources=image_sources("https://shikimori.one/api/graphql"))
 
     assert policy(signed_in(app).get("/"))["img-src"] == [
-        "'self'", "https://image.tmdb.org", "https://shikimori.one", "https://*.shikimori.one",
+        "'self'", "https://image.tmdb.org", "https://images.igdb.com", "https://shikimori.one", "https://*.shikimori.one",
     ]
 
 
@@ -152,16 +156,16 @@ def test_without_sources_the_header_is_the_old_one(tmp_path):
 
 
 @pytest.mark.parametrize("address, expected", [
-    (SHIKIMORI, ("https://image.tmdb.org", "https://shikimori.io", "https://*.shikimori.io")),
-    ("  https://Shikimori.IO/  ", ("https://image.tmdb.org", "https://shikimori.io", "https://*.shikimori.io")),
-    ("https://shikimori.example:8443/x", ("https://image.tmdb.org", "https://shikimori.example:8443", "https://*.shikimori.example:8443")),
-    ("https://127.0.0.1:9000", ("https://image.tmdb.org", "https://127.0.0.1:9000")),  # numbers have no subdomains
-    ("http://shikimori.io", ("https://image.tmdb.org",)),  # a picture needs `https`
-    ("", ("https://image.tmdb.org",)),
-    ("shikimori.io", ("https://image.tmdb.org",)),
-    ("https://a;b.example", ("https://image.tmdb.org",)),  # nothing that could add a directive to the header
-    ("https://bad host.example", ("https://image.tmdb.org",)),
-    ("https://shikimori.io:port", ("https://image.tmdb.org",)),
+    (SHIKIMORI, ("https://image.tmdb.org", "https://images.igdb.com", "https://shikimori.io", "https://*.shikimori.io")),
+    ("  https://Shikimori.IO/  ", ("https://image.tmdb.org", "https://images.igdb.com", "https://shikimori.io", "https://*.shikimori.io")),
+    ("https://shikimori.example:8443/x", ("https://image.tmdb.org", "https://images.igdb.com", "https://shikimori.example:8443", "https://*.shikimori.example:8443")),
+    ("https://127.0.0.1:9000", ("https://image.tmdb.org", "https://images.igdb.com", "https://127.0.0.1:9000")),  # numbers have no subdomains
+    ("http://shikimori.io", ("https://image.tmdb.org", "https://images.igdb.com")),  # a picture needs `https`
+    ("", ("https://image.tmdb.org", "https://images.igdb.com")),
+    ("shikimori.io", ("https://image.tmdb.org", "https://images.igdb.com")),
+    ("https://a;b.example", ("https://image.tmdb.org", "https://images.igdb.com")),  # nothing that could add a directive to the header
+    ("https://bad host.example", ("https://image.tmdb.org", "https://images.igdb.com")),
+    ("https://shikimori.io:port", ("https://image.tmdb.org", "https://images.igdb.com")),
 ])
 def test_the_sources_of_pictures_come_from_the_start_of_the_setting(address, expected):
     assert image_sources(address) == expected
@@ -169,11 +173,18 @@ def test_the_sources_of_pictures_come_from_the_start_of_the_setting(address, exp
 
 # ---- the posters --------------------------------------------------------------------------------------
 
+IGDB = "https://images.igdb.com/igdb/image/upload"
+
 @pytest.mark.parametrize("stored, size, expected", [
     ("/abc.jpg", LIST_SIZE, "https://image.tmdb.org/t/p/w92/abc.jpg"),
     ("/abc.jpg", CARD_SIZE, "https://image.tmdb.org/t/p/w342/abc.jpg"),
     ("https://shikimori.io/uploads/poster/animes/1/x.jpeg", LIST_SIZE, "https://shikimori.io/uploads/poster/animes/1/x.jpeg"),
     ("https://shikimori.io/uploads/poster/animes/1/x.jpeg", CARD_SIZE, "https://shikimori.io/uploads/poster/animes/1/x.jpeg"),
+    # IGDB stores the address of the size of the list; the place asks for its own
+    (f"{IGDB}/t_cover_big/coaarl.jpg", LIST_SIZE, f"{IGDB}/t_cover_big/coaarl.jpg"),
+    (f"{IGDB}/t_cover_big/coaarl.jpg", CARD_SIZE, f"{IGDB}/t_cover_big_2x/coaarl.jpg"),
+    (f"{IGDB}/t_thumb/coaarl.jpg", LIST_SIZE, f"{IGDB}/t_cover_big/coaarl.jpg"),
+    (f"{IGDB}/coaarl.jpg", CARD_SIZE, f"{IGDB}/coaarl.jpg"),  # no size in it: as it is
     (None, LIST_SIZE, None),
     ("", LIST_SIZE, None),
     ("   ", CARD_SIZE, None),
@@ -185,8 +196,9 @@ def test_the_address_of_a_poster(stored, size, expected):
     assert poster_url(stored, size) == expected
 
 
-def test_the_sizes_are_the_two_of_tmdb():
+def test_the_sizes_are_the_two_of_tmdb_and_the_two_of_igdb():
     assert (LIST_SIZE.name, CARD_SIZE.name) == ("w92", "w342")
+    assert (LIST_SIZE.igdb, CARD_SIZE.igdb) == ("t_cover_big", "t_cover_big_2x")
 
 
 def render(tmp_path, source, **context):

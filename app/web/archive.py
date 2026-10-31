@@ -1,6 +1,6 @@
-"""The archive: the titles with a final status («Просмотрено», «Бросил») with a search by name, a filter by kind, by genre
-and by status, and an order (links, so «Назад» and bookmarks work). Everything lives in the address (`q`, `kind`, `genre`,
-`status`, `order`); a value nobody knows counts as none. Rules: 5.2 and 5.4 of the spec of part 5.3."""
+"""The archive: the titles with a final status («Просмотрено», «Пройдено», «Бросил») with a search by name, a filter by
+kind, by genre and by status, and an order (links, so «Назад» and bookmarks work). Everything lives in the address (`q`,
+`kind`, `genre`, `status`, `order`); a value nobody knows counts as none. Rules: 5.2 and 5.4 of the spec of part 5.3."""
 
 from dataclasses import dataclass, replace
 from urllib.parse import urlencode
@@ -17,7 +17,7 @@ from app.web.filters import (
 from app.web.posters import LIST_SIZE
 from app.web.title_rows import Link, clean_query, rows
 
-ARCHIVE_EMPTY = "В архиве пока ничего нет. Сюда попадает просмотренное и брошенное"
+ARCHIVE_EMPTY = "В архиве пока ничего нет. Сюда попадает просмотренное, пройденное и брошенное"
 
 ORDERS = (  # the links of the row of orders; the first one is the default
     ("По оценке", ListOrder.SCORE),

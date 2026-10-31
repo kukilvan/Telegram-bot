@@ -254,7 +254,7 @@ def test_an_empty_archive_says_what_gets_there(client, session_factory):
 
     html = client.get("/archive").text
 
-    assert "В архиве пока ничего нет. Сюда попадает просмотренное и брошенное" in html and "Сбросить фильтры" not in html
+    assert "В архиве пока ничего нет. Сюда попадает просмотренное, пройденное и брошенное" in html and "Сбросить фильтры" not in html
     assert "Показано" not in html
 
 

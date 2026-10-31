@@ -6,7 +6,7 @@
 <ul class="suggestions">
   {% for row in rows %}
   <li class="title-row">
-    {{ title_main(row.poster, size, row.icon, row.name, row.original_name, row.year) }}
+    {{ title_main(row.poster, size, row.icon, row.name, row.original_name, row.year, row.details) }}
     {% if row.card %}
     <a class="row-action button-link" href="{{ row.card }}">В списке</a>
     {% else %}
