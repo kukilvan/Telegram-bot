@@ -86,7 +86,7 @@ def feed_pieces(
     """What comes out of a game from today on, on the platforms the owner is told about (`game_events.reported`) and
     that are not cancelled: the full release on an exact day, the early access on an exact day while the full release
     is not out, the full release on an approximate date (only for «Позже»). Platforms of one day (or one approximate
-    date) and one kind are one piece: «Выход на ПК и PS5»; a date of the older platform: «Выход на PS4 (идёт на PS5)»."""
+    date) and one type are one piece: «Выход на ПК и PS5»; a date of the older platform: «Выход на PS4 (идёт на PS5)»."""
     grouped: dict[tuple[int, date, str], list[tuple[Platform, str]]] = {}
     for platform in Platform:
         dates = platform_dates(game, platform, country) if platform in told else None
@@ -103,9 +103,9 @@ def feed_pieces(
             if full_day is None or full_day > early.date.start:
                 found.append((1, early, early.date.start, ""))
         for order, dated, day, when in found:
-            if dated.version_of and older_tells(platform, told):
+            if dated.via and older_tells(platform, told):
                 continue  # the older platform is in the piece itself
-            grouped.setdefault((order, day, when), []).append((platform, dated.version_of or ""))
+            grouped.setdefault((order, day, when), []).append((platform, dated.via or ""))
     return [
         Piece(title, day, None, (order,), f"{EARLY_ACCESS if order else RELEASE} на {platforms_text(entries)}", when)
         for (order, day, when), entries in grouped.items()

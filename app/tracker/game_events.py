@@ -143,13 +143,15 @@ def detect_events(
         before = platform_dates(old, platform, country)
         prefix = f"game:{title_id}:{platform.value}"
 
-        def event(kind: str, key: str, dated: PlatformDate | None, data: dict[str, Any], earlier: str | None = None):
-            via = dated.version_of if dated is not None else None
+        def event(
+            event_type: str, key: str, dated: PlatformDate | None, data: dict[str, Any], earlier: str | None = None
+        ):
+            via = dated.via if dated is not None else None
             if via and older_tells(platform, told):
                 return  # the older platform tells it
             data = {"name": name, "platform": platform.value, "via": via or "", **data}
-            text = message(kind, name, [(platform, data["via"])], data)
-            events.append(DetectedEvent(kind, key, text, data, earlier))
+            text = message(event_type, name, [(platform, data["via"])], data)
+            events.append(DetectedEvent(event_type, key, text, data, earlier))
 
         old_full, new_full = _date_of(before.full if before else None), _date_of(now_dates.full)
         old_early, new_early = _date_of(before.early if before else None), _date_of(now_dates.early)

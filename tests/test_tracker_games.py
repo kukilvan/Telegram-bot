@@ -225,6 +225,14 @@ def test_a_game_already_in_the_list_opens_the_same_title(session_factory, clock,
     assert again.title_id == first.title_id and not again.created
 
 
+def test_two_records_of_one_game_in_igdb_are_two_titles(tracker, made_up):
+    first = add(tracker, made_up, state((PC, "full", "2027")), external_id="1", name="Phantom Blade Zero")
+
+    second = add(tracker, made_up, state((PC, "full", "2027")), external_id="2", name="Phantom Blade 0")
+
+    assert second != first  # a game is known only by its number in IGDB (spec 14)
+
+
 def test_without_steam_the_game_has_the_name_and_description_of_igdb(session_factory, clock, sender):
     tracker = igdb_tracker(session_factory, clock, sender, steam=FakeSteam(failing=True))
 
@@ -503,6 +511,21 @@ def test_a_date_igdb_stopped_sending_is_kept(tracker, session_factory, made_up, 
         kept = GameState.from_state(session.scalars(select(SourceSnapshot.state)).one())
     assert games.platform_dates(kept, games.Platform.PS5, "il").full.date.text == "2027-03-12"
     assert rows(session_factory, title_id) == {"ps5": True}
+
+
+def test_a_game_igdb_no_longer_knows_is_a_failure_that_says_so(tracker, session_factory, made_up, sender):
+    add(tracker, made_up, state((PC, "full", "2027")), name="Hades II")
+    del made_up.by_id["1"]  # IGDB joined the duplicates: the number gives nothing now
+    with session_factory() as session:
+        for stored in session.scalars(select(SourceSnapshot)):
+            stored.next_check_at = None
+        session.commit()
+
+    report = run(tracker.poll_due())
+    run(tracker.deliver_pending())
+
+    assert report.failed == 1
+    assert sender.texts == ["⚠️ Не удалось проверить «Hades II»: IGDB больше не знает этого тайтла. Повторю через 30 мин."]
 
 
 def test_a_new_poster_of_igdb_replaces_the_stored_one(tracker, session_factory, made_up):

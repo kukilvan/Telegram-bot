@@ -21,7 +21,7 @@ from app.tracker.movie_events import INTERVAL_NEAR, INTERVAL_QUIET, INTERVAL_SOO
 from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform
 from app.tracker.sources.dates import parse_date, response_day_of_timestamp
 
-# The kinds of a release record (`type` in the snapshot); other statuses of IGDB (alpha, beta, offline…) are not taken
+# The types of a release record (`type` in the snapshot); other statuses of IGDB (alpha, beta, offline…) are not taken
 FULL = "full"
 EARLY = "early"
 CANCELLED = "cancelled"
@@ -173,7 +173,7 @@ def _earliest_first(game_date: GameDate) -> tuple[bool, date]:
 
 @dataclass(frozen=True)
 class Release:
-    """One record of a date of IGDB in the snapshot: a platform and a region by their IGDB numbers, its kind, its date."""
+    """One record of a date of IGDB in the snapshot: a platform and a region by their IGDB numbers, its type, its date."""
 
     platform: int
     region: int
@@ -185,11 +185,13 @@ class Release:
 
     @classmethod
     def from_state(cls, data: Mapping[str, Any]) -> "Release":
-        """Strict, like every text the tracker stored: an unknown kind or a broken record raises ValueError."""
-        kind = data["type"]
-        if kind not in RELEASE_TYPES:
-            raise ValueError(f"unknown kind of a release: {kind!r}")
-        return cls(platform=int(data["platform"]), region=int(data["region"]), type=kind, date=GameDate.parse(data["date"]))
+        """Strict, like every text the tracker stored: an unknown type or a broken record raises ValueError."""
+        release_type = data["type"]
+        if release_type not in RELEASE_TYPES:
+            raise ValueError(f"unknown type of a release: {release_type!r}")
+        return cls(
+            platform=int(data["platform"]), region=int(data["region"]), type=release_type, date=GameDate.parse(data["date"])
+        )
 
 
 @dataclass(frozen=True)
@@ -220,11 +222,11 @@ class GameState:
         )
 
 
-def pick(releases: Iterable[Release], igdb_platform: int, kind: str, regions: Sequence[int]) -> GameDate | None:
-    """The date of one IGDB platform and one kind for a country whose regions are `regions` (spec 5.2): the record of
+def pick(releases: Iterable[Release], igdb_platform: int, release_type: str, regions: Sequence[int]) -> GameDate | None:
+    """The date of one IGDB platform and one type for a country whose regions are `regions` (spec 5.2): the record of
     the first region that has one, else the earliest of the others («not announced» last). Two records of one region —
-    the earlier start. None — the platform has no record of this kind."""
-    found = [release for release in releases if release.platform == igdb_platform and release.type == kind]
+    the earlier start. None — the platform has no record of this type."""
+    found = [release for release in releases if release.platform == igdb_platform and release.type == release_type]
     for region in regions:
         of_region = [release.date for release in found if release.region == region]
         if of_region:
@@ -234,20 +236,20 @@ def pick(releases: Iterable[Release], igdb_platform: int, kind: str, regions: Se
 
 @dataclass(frozen=True)
 class PlatformDate:
-    """A date of a platform of the tracker; `version_of` («PS4») when it is the date of the older platform's version."""
+    """A date of a platform of the tracker; `via` («PS4») when it is the date of the older platform's version."""
 
     date: GameDate
-    version_of: str | None = None
+    via: str | None = None
 
     @property
     def label(self) -> str:
         """«27 марта 2015 (версия для PS4)»."""
-        return f"{self.date.label} (версия для {self.version_of})" if self.version_of else self.date.label
+        return f"{self.date.label} (версия для {self.via})" if self.via else self.date.label
 
 
 @dataclass(frozen=True)
 class PlatformDates:
-    """The dates of a platform of the tracker: the full release and the early access (None — no record of the kind);
+    """The dates of a platform of the tracker: the full release and the early access (None — no record of the type);
     `cancelled` — the platform is cancelled and the older one gives no date to play by."""
 
     full: PlatformDate | None = None
@@ -290,11 +292,11 @@ def platform_dates(game: GameState, platform: Platform, country: str) -> Platfor
     info = PLATFORMS[platform]
     regions = STORE_COUNTRIES[country].regions
 
-    def dated(kind: str) -> PlatformDate | None:
-        own = pick(game.releases, info.igdb_id, kind, regions)
+    def dated(release_type: str) -> PlatformDate | None:
+        own = pick(game.releases, info.igdb_id, release_type, regions)
         if info.older is None:
             return PlatformDate(own) if own is not None else None
-        return _better(own, pick(game.releases, info.older.igdb_id, kind, regions), info.older.label)
+        return _better(own, pick(game.releases, info.older.igdb_id, release_type, regions), info.older.label)
 
     full, early = dated(FULL), dated(EARLY)
     own_cancelled = is_cancelled(game, info.igdb_id)
@@ -303,21 +305,21 @@ def platform_dates(game: GameState, platform: Platform, country: str) -> Platfor
 
 def is_cancelled(game: GameState, igdb_platform: int) -> bool:
     """An IGDB platform with records `cancelled` and none `full` or `early`."""
-    kinds = {release.type for release in game.releases if release.platform == igdb_platform}
-    return CANCELLED in kinds and not kinds & set(DATED_TYPES)
+    types = {release.type for release in game.releases if release.platform == igdb_platform}
+    return CANCELLED in types and not types & set(DATED_TYPES)
 
 
 def carry_over(previous: GameState, current: GameState) -> GameState:
-    """A date the source stopped sending is not wiped out (spec 5.4): when an IGDB platform has no record of a kind
-    (`full`, `early`) in the new answer and had some in the previous snapshot, the previous records of that kind move
+    """A date the source stopped sending is not wiped out (spec 5.4): when an IGDB platform has no record of a type
+    (`full`, `early`) in the new answer and had some in the previous snapshot, the previous records of that type move
     into the new one — unless the platform has records `cancelled` now. A «TBD» record is a record: it replaces the
     previous ones. A platform gone from `platforms` comes back too when it still has records."""
     carried: list[Release] = []
     for release in previous.releases:
         if release.type not in DATED_TYPES:
             continue
-        kinds_now = {item.type for item in current.releases if item.platform == release.platform}
-        if release.type not in kinds_now and CANCELLED not in kinds_now:
+        types_now = {item.type for item in current.releases if item.platform == release.platform}
+        if release.type not in types_now and CANCELLED not in types_now:
             carried.append(release)
     if not carried:
         return current

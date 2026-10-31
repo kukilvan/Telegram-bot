@@ -93,7 +93,8 @@ class GamePoller(Poller):
             observed_at = stored.observed_at
             country = self.settings.store_country_in(session)
             mine = self.settings.my_platforms_in(session)
-            # the marks as they are when the check starts: one set while it runs counts from the next check (as KI-22)
+            # the marks as they are when IGDB has answered: one set while the events are queued counts from the next
+            # check (as KI-22); one set while IGDB was answering counts already in this one
             playing = _marks(session, [due.id]).get(due.id, {})
         new = games.carry_over(old, snapshot.game)
         told = game_events.reported(mine, playing)
