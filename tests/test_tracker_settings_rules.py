@@ -97,6 +97,8 @@ def save(tracker, **override):
         "quiet_from": view.quiet_from,
         "quiet_until": view.quiet_until,
         "part_gap_weeks": str(view.part_gap_weeks),
+        "my_platforms": view.saved.my_platforms,
+        "store_country": view.saved.store_country,
     }
     run(tracker.save_settings(SettingsChange(**{**values, **override})))
 

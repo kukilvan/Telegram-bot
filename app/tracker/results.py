@@ -1,5 +1,6 @@
 """What the tracker core hands back to its callers. Plain data, no database. Re-exported by `core`."""
 
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -105,8 +106,32 @@ class ZoneOption:
 
 
 @dataclass(frozen=True)
+class Choice:
+    """One choice of a setting: the value that is stored (and sent by the form) and the text the owner reads."""
+
+    value: str
+    label: str
+
+
+@dataclass(frozen=True)
+class SettingsChange:
+    """What the settings form sent, as it came: the core reads the texts, so the web has no part in the rules. A new
+    setting is one more field here, one more check in `settings_store` and one more field on the page."""
+
+    tz_name: str  # «»: the zone of the launch file
+    workdays: Collection[int]
+    summary_at: str
+    quiet_from: str
+    quiet_until: str
+    part_gap_weeks: str
+    my_platforms: Collection[str]  # the values of `Platform`
+    store_country: str  # the code of the country
+
+
+@dataclass(frozen=True)
 class SettingsView:
-    """What the settings page shows: the stored values (the defaults where nothing is stored) and the line «Сейчас»."""
+    """What the settings page shows: the stored values (the defaults where nothing is stored), the choices and the
+    line «Сейчас»."""
 
     tz_name: str | None  # the zone chosen in the settings; None: none chosen, the one of the launch file (`.env`) works
     default_tz_name: str  # the zone of the launch file
@@ -117,4 +142,7 @@ class SettingsView:
     quiet_from: str  # «21:00»
     quiet_until: str  # «07:30»
     part_gap_weeks: int
+    saved: SettingsChange  # all of the above and the rest, as the form sends them: the page fills itself from it
+    platforms: tuple[Choice, ...]  # «Мои платформы»: the boxes, in the order of the table
+    countries: tuple[Choice, ...]  # «Страна магазинов»: the list, by label
     now_line: str  # what the stored rules would do with an event at this minute

@@ -19,6 +19,7 @@ in a message of their own alike.
 """
 
 import logging
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
@@ -35,6 +36,7 @@ DEFAULT_SUMMARY_AT = time(15, 0)
 DEFAULT_QUIET_FROM = time(21, 0)
 DEFAULT_QUIET_UNTIL = time(7, 30)
 
+_CLOCK = re.compile(r"[0-9]{1,2}:[0-9]{2}")  # «7:30» or «07:30», ASCII digits only
 SUMMARY_ICON = "📋"
 MESSAGE_LIMIT = 3500  # Telegram refuses more than 4096 characters; a longer summary goes in several messages
 _EPISODE_MARK = " — вышла серия "  # where a series message names the title: «📺 Укрытие — вышла серия 5 из 10»
@@ -74,6 +76,31 @@ class DeliveryRules:
                 f"час сводки {format_time(self.summary_at)} попадает в тихие часы "
                 f"{format_time(self.quiet_from)}–{format_time(self.quiet_until)}"
             )
+
+    def now_line(self, moment: datetime) -> str:
+        """«Сейчас чт, 29 окт, 22:10 — тихие часы: событие придёт сводкой завтра в 07:30»: what the rules would do with an
+        event that appears at this naive UTC moment, in the owner's time. The state is judged in the order of `release`."""
+        local = self.local(moment)
+        if self.is_quiet(local):
+            state = "тихие часы"
+        elif self.is_workday(local):
+            state = "рабочий день, до часа сводки" if local.time() < self.summary_at else "рабочий день"
+        else:
+            state = "выходной"
+        release, waited = self.release(moment)
+        if not waited:
+            when = "сразу"
+        else:
+            out = self.local(release)
+            days = (out.date() - local.date()).days
+            at = format_time(out.time())
+            if days <= 0:
+                when = f"сводкой в {at}"
+            elif days == 1:
+                when = f"сводкой завтра в {at}"
+            else:
+                when = f"сводкой в {format_weekday_date(out.date())} в {at}"
+        return f"Сейчас {format_weekday_date(local.date())}, {format_time(local.time())} — {state}: событие придёт {when}"
 
     def is_workday(self, local: datetime) -> bool:
         return local.weekday() in self.workdays
@@ -142,32 +169,6 @@ class DeliveryRules:
                 waited = silence is not None and silence <= now  # it sat through silence: it joins the summary
             (summary if waited else single).append(pending)
         return single, summary
-
-
-def now_line(rules: DeliveryRules, moment: datetime) -> str:
-    """«Сейчас чт, 29 окт, 22:10 — тихие часы: событие придёт сводкой завтра в 07:30»: what the rules would do with an
-    event that appears at this naive UTC moment, in the owner's time. The state is judged in the order of `release`."""
-    local = rules.local(moment)
-    if rules.is_quiet(local):
-        state = "тихие часы"
-    elif rules.is_workday(local):
-        state = "рабочий день, до часа сводки" if local.time() < rules.summary_at else "рабочий день"
-    else:
-        state = "выходной"
-    release, waited = rules.release(moment)
-    if not waited:
-        when = "сразу"
-    else:
-        out = rules.local(release)
-        days = (out.date() - local.date()).days
-        at = format_time(out.time())
-        if days <= 0:
-            when = f"сводкой в {at}"
-        elif days == 1:
-            when = f"сводкой завтра в {at}"
-        else:
-            when = f"сводкой в {format_weekday_date(out.date())} в {at}"
-    return f"Сейчас {format_weekday_date(local.date())}, {format_time(local.time())} — {state}: событие придёт {when}"
 
 
 def format_event(event_type: str, payload: Mapping[str, Any]) -> str:
@@ -304,13 +305,16 @@ def summary_messages(units: Sequence[Unit], moment: datetime, rules: DeliveryRul
 
 
 def parse_time(value: str | time) -> time:
-    """«15:00» (or a `time`) to a `time`; anything else is a ValueError."""
+    """«15:00» or «7:30» (or a `time`) to a `time`; anything else is a ValueError: «16:5», «+16:05» and digits of other
+    scripts («١٦:٠٥») are not times."""
     if isinstance(value, time):
         return value.replace(second=0, microsecond=0)
+    if not isinstance(value, str) or not _CLOCK.fullmatch(value.strip()):
+        raise ValueError(f"time must look like 15:00, got {value!r}")
+    hours, minutes = value.strip().split(":")
     try:
-        hours, minutes = value.split(":")
         return time(int(hours), int(minutes))
-    except (ValueError, AttributeError) as exc:
+    except ValueError as exc:  # «24:00», «15:60»
         raise ValueError(f"time must look like 15:00, got {value!r}") from exc
 
 

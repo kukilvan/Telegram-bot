@@ -22,7 +22,7 @@ from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import (
-    CannotScore, SettingsRefused, SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle,
+    CannotScore, SettingsField, SettingsRefused, SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, RecentRow, SequelOffer, UpcomingRow
@@ -38,6 +38,7 @@ from app.tracker.results import (
     ListOrder,
     Overview,
     PollReport,
+    SettingsChange,
     SettingsView,
     SummaryResult,
     TestEventResult,
@@ -46,7 +47,7 @@ from app.tracker.results import (
     ZoneOption,
 )
 from app.tracker.scores import ScoreView
-from app.tracker.settings_store import SettingsChange, SettingsStore
+from app.tracker.settings_store import SettingsStore
 from app.tracker.statuses import Statuses
 from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
@@ -54,8 +55,8 @@ from app.tracker.titles import Titles
 __all__ = [
     "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay", "FeedTitle",
     "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SequelOffer", "SettingsChange",
-    "SettingsRefused", "SettingsView", "SourceFailed", "SummaryResult", "TestEventResult", "TestSample", "TitleCard",
-    "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
+    "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SummaryResult", "TestEventResult", "TestSample",
+    "TitleCard", "TitleNotFound", "TitleSummary", "Tracker", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
     "UpcomingRow", "WatchableSeason", "ZoneOption",
 ]
 

@@ -408,4 +408,6 @@ select, input[type="time"], input[type="number"] {
 
 .invalid { border-color: var(--error); outline: 1px solid var(--error); }
 
+.days.invalid { padding: 0.25rem 0.5rem; border-radius: 6px; }
+
 .now-line, .telegram-state { margin: 0 0 0.5rem; }

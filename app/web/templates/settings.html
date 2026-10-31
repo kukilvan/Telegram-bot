@@ -4,7 +4,7 @@
 <section class="card">
   <h1>Настройки</h1>
   {% if error_text %}<p class="error" role="alert">{{ error_text }}</p>{% endif %}
-  <form class="settings-form" method="post" action="/settings">
+  <form class="settings-form" method="post" action="{{ form_address }}">
     <div class="field">
       <label for="timezone">Часовой пояс</label>
       <select id="timezone" name="timezone"{% if invalid.timezone %} class="invalid" aria-invalid="true"{% endif %}>
@@ -48,6 +48,24 @@
       </div>
       <p class="hint">Сериал ушёл на перерыв посреди сезона — вторая половина выходит отдельной частью. У аниме части берутся из Shikimori, это число на них не влияет</p>
     </fieldset>
+
+    <fieldset class="field">
+      <legend>Мои платформы</legend>
+      <div class="days platforms{% if invalid.my_platforms %} invalid{% endif %}">
+        {% for platform in platforms %}
+        <label class="check day"><input type="checkbox" name="platform" value="{{ platform.value }}"{% if platform.selected %} checked{% endif %}> {{ platform.label }}</label>
+        {% endfor %}
+      </div>
+      <p class="hint">Игры: сообщения о выходе приходят только по этим платформам. В карточке игры галочкой отмечается, где вы играете в эту игру</p>
+    </fieldset>
+
+    <div class="field">
+      <label for="store_country">Страна магазинов</label>
+      <select id="store_country" name="store_country"{% if invalid.store_country %} class="invalid" aria-invalid="true"{% endif %}>
+        {% for country in countries %}<option value="{{ country.value }}"{% if country.selected %} selected{% endif %}>{{ country.label }}</option>{% endfor %}
+      </select>
+      <p class="hint">Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона</p>
+    </div>
 
     <button type="submit">Сохранить</button>
     <p class="hint">Новые правила действуют сразу, в том числе для того, что уже ждёт отправки</p>

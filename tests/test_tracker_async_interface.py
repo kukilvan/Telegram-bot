@@ -12,7 +12,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from app.tracker.core import SettingsChange, Tracker
+from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 
 T0 = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -78,9 +78,7 @@ def test_the_database_work_of_a_read_runs_off_the_event_loop_thread():
         await tracker.list_titles()
         await tracker.delivery_rules()
         view = await tracker.settings()
-        await tracker.save_settings(
-            SettingsChange("", view.workdays, view.summary_at, view.quiet_from, view.quiet_until, str(view.part_gap_weeks))
-        )
+        await tracker.save_settings(view.saved)
         return threading.current_thread()
 
     loop_thread = asyncio.run(scenario())

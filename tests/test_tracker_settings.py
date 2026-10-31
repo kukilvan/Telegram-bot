@@ -69,6 +69,8 @@ def form(**override):
         "quiet_from": "22:00",
         "quiet_until": "06:00",
         "part_gap_weeks": "8",
+        "my_platforms": ["pc", "xbox_series"],
+        "store_country": "us",
     }
     return SettingsChange(**{**values, **override})
 
@@ -366,6 +368,7 @@ def test_two_saves_in_a_row_the_last_one_wins_with_nothing_of_the_first(tracker,
 
     assert stored(session_factory) == {
         "workdays": [2, 3], "summary_at": "17:00", "quiet_from": "22:00", "quiet_until": "06:00", "part_gap_weeks": 3,
+        "my_platforms": ["pc", "xbox_series"], "store_country": "us",
     }
 
 
@@ -383,6 +386,7 @@ def test_two_saves_at_once_leave_one_whole_form_not_halves_of_both(tracker, sess
             **({"timezone": change.tz_name} if change.tz_name else {}),
             "workdays": sorted(change.workdays), "summary_at": change.summary_at, "quiet_from": change.quiet_from,
             "quiet_until": change.quiet_until, "part_gap_weeks": int(change.part_gap_weeks),
+            "my_platforms": sorted(change.my_platforms), "store_country": change.store_country,
         }
 
     assert stored(session_factory) in (as_stored(first), as_stored(second))
@@ -408,13 +412,13 @@ DEFAULT_RULES = delivery.DeliveryRules(tz=JERUSALEM)  # the owner's week: Sunday
 def test_the_line_now_for_the_six_moments_of_the_owners_week(when, line):
     day, hour, minute, month = when
 
-    assert delivery.now_line(DEFAULT_RULES, moment(day, hour, minute, month)) == line
+    assert DEFAULT_RULES.now_line(moment(day, hour, minute, month)) == line
 
 
 def test_the_line_now_with_no_working_days_says_day_off():
     rules = delivery.DeliveryRules(tz=JERUSALEM, workdays=frozenset())
 
-    line = delivery.now_line(rules, moment(1, 10, 0))
+    line = rules.now_line(moment(1, 10, 0))
 
     assert line == "Сейчас вс, 1 ноя, 10:00 — выходной: событие придёт сразу"
 
@@ -422,20 +426,20 @@ def test_the_line_now_with_no_working_days_says_day_off():
 def test_the_summary_hour_at_midnight_leaves_no_working_morning():
     rules = delivery.DeliveryRules(tz=JERUSALEM, summary_at=time(0, 0), quiet_from=time(1, 0), quiet_until=time(6, 0))
 
-    assert delivery.now_line(rules, moment(1, 10, 0)) == "Сейчас вс, 1 ноя, 10:00 — рабочий день: событие придёт сразу"
-    assert delivery.now_line(rules, moment(1, 0, 30)) == "Сейчас вс, 1 ноя, 00:30 — рабочий день: событие придёт сразу"
-    assert delivery.now_line(rules, moment(1, 3, 0)) == "Сейчас вс, 1 ноя, 03:00 — тихие часы: событие придёт сводкой в 06:00"
+    assert rules.now_line(moment(1, 10, 0)) == "Сейчас вс, 1 ноя, 10:00 — рабочий день: событие придёт сразу"
+    assert rules.now_line(moment(1, 0, 30)) == "Сейчас вс, 1 ноя, 00:30 — рабочий день: событие придёт сразу"
+    assert rules.now_line(moment(1, 3, 0)) == "Сейчас вс, 1 ноя, 03:00 — тихие часы: событие придёт сводкой в 06:00"
 
 
 def test_quiet_hours_that_do_not_cross_midnight_are_told_too():
     rules = delivery.DeliveryRules(tz=JERUSALEM, quiet_from=time(1, 0), quiet_until=time(6, 0))
 
-    assert delivery.now_line(rules, moment(30, 3, 0, 10)) == "Сейчас пт, 30 окт, 03:00 — тихие часы: событие придёт сводкой в 06:00"
-    assert delivery.now_line(rules, moment(30, 7, 0, 10)) == "Сейчас пт, 30 окт, 07:00 — выходной: событие придёт сразу"
+    assert rules.now_line(moment(30, 3, 0, 10)) == "Сейчас пт, 30 окт, 03:00 — тихие часы: событие придёт сводкой в 06:00"
+    assert rules.now_line(moment(30, 7, 0, 10)) == "Сейчас пт, 30 окт, 07:00 — выходной: событие придёт сразу"
 
 
 def test_quiet_hours_across_midnight_before_a_working_morning_wait_for_the_summary():
-    line = delivery.now_line(DEFAULT_RULES, moment(1, 23, 0, 11))  # Sunday night: Monday is a working day
+    line = DEFAULT_RULES.now_line(moment(1, 23, 0, 11))  # Sunday night: Monday is a working day
 
     assert line == "Сейчас вс, 1 ноя, 23:00 — тихие часы: событие придёт сводкой завтра в 15:00"
 
@@ -445,6 +449,6 @@ def test_a_wait_of_more_than_a_day_names_the_day(caplog):
     rules = delivery.DeliveryRules(tz=JERUSALEM, summary_at=time(22, 0))
 
     with caplog.at_level(logging.WARNING):
-        line = delivery.now_line(rules, moment(31, 22, 30, 10))
+        line = rules.now_line(moment(31, 22, 30, 10))
 
     assert line == "Сейчас сб, 31 окт, 22:30 — тихие часы: событие придёт сводкой в пн, 2 ноя в 22:00"

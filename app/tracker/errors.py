@@ -1,5 +1,7 @@
 """Errors the tracker core raises to its callers (the bot, later the web app). Re-exported by `core`."""
 
+from enum import StrEnum
+
 
 class TitleNotFound(Exception):
     """The source has nothing at the chosen id (for example a series id picked as a movie)."""
@@ -37,11 +39,23 @@ class CannotScore(Exception):
         self.season_id = season_id
 
 
-class SettingsRefused(Exception):
-    """The settings form was refused and nothing was stored. `field` names the setting to point at (`"timezone"`,
-    `"workdays"`, `"summary_at"`, `"quiet"`, `"part_gap_weeks"`); `text` is the phrase for the owner."""
+class SettingsField(StrEnum):
+    """The fields of the settings form that a refusal can point at (the values are what the page highlights by)."""
 
-    def __init__(self, field: str, text: str) -> None:
+    TIMEZONE = "timezone"
+    WORKDAYS = "workdays"
+    SUMMARY_AT = "summary_at"
+    QUIET = "quiet"  # both fields of the quiet hours
+    PART_GAP_WEEKS = "part_gap_weeks"
+    MY_PLATFORMS = "my_platforms"
+    STORE_COUNTRY = "store_country"
+
+
+class SettingsRefused(Exception):
+    """The settings form was refused and nothing was stored. `field` names the setting to point at; `text` is the
+    phrase for the owner."""
+
+    def __init__(self, field: SettingsField, text: str) -> None:
         super().__init__(text)
         self.field = field
         self.text = text

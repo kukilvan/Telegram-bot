@@ -15,6 +15,7 @@ from fastapi.testclient import TestClient
 
 from app.runtime import Health
 from app.tracker.core import SettingsChange, SettingsView, Tracker, ZoneOption
+from app.tracker.results import Choice
 from app.tracker.db import create_session_factory
 from app.web import create_web_app
 from app.web.status_line import TELEGRAM_DOWN
@@ -26,7 +27,7 @@ WEB = Path(__file__).resolve().parent.parent / "app" / "web"
 CLASH = "Час сводки 22:00 попадает в тихие часы 21:00–07:30 — сводка не придёт. Сдвиньте час сводки или тихие часы"
 FORM = {
     "timezone": "Asia/Tokyo", "workday": ["1", "2"], "summary_at": "16:00", "quiet_from": "22:00", "quiet_until": "06:00",
-    "part_gap_weeks": "8",
+    "part_gap_weeks": "8", "platform": ["pc", "xbox_series"], "store_country": "us",
 }
 
 
@@ -121,7 +122,7 @@ def test_the_form_is_a_plain_post_with_a_label_for_every_field_and_the_seven_day
 
 
 def test_the_page_shows_what_is_stored_and_says_the_log_keeps_the_zone_of_the_launch_file(client, tracker):
-    run(tracker.save_settings(SettingsChange("Asia/Tokyo", [0, 4], "16:00", "22:00", "06:00", "8")))
+    run(tracker.save_settings(SettingsChange("Asia/Tokyo", [0, 4], "16:00", "22:00", "06:00", "8", ["pc", "xbox_series"], "us")))
 
     html = client.get("/settings").text
 
@@ -134,7 +135,7 @@ def test_the_page_shows_what_is_stored_and_says_the_log_keeps_the_zone_of_the_la
 
 
 def test_the_zone_of_the_launch_file_chosen_by_name_needs_no_note_on_the_log(client, tracker):
-    run(tracker.save_settings(SettingsChange("Europe/Moscow", [0], "15:00", "21:00", "07:30", "6")))
+    run(tracker.save_settings(SettingsChange("Europe/Moscow", [0], "15:00", "21:00", "07:30", "6", ["pc", "ps5"], "il")))
 
     html = client.get("/settings").text
 
@@ -160,6 +161,8 @@ def test_a_zone_from_the_database_is_text_on_the_page_not_markup(tmp_path):
         tz_name=evil, default_tz_name="Europe/Moscow", zones=(ZoneOption(evil, f"{evil} (UTC+0)"),),
         default_label="Как в файле настроек запуска: Europe/Moscow (UTC+3)", workdays=frozenset({0}), summary_at="15:00",
         quiet_from="21:00", quiet_until="07:30", part_gap_weeks=6, now_line="Сейчас",
+        saved=SettingsChange(evil, [0], "15:00", "21:00", "07:30", "6", ["pc"], "il"),
+        platforms=(Choice("pc", "<b>ПК</b>"),), countries=(Choice("il", "Израиль"),),
     )
     client = make_client(FakeCore(view), tmp_path)
 
@@ -191,7 +194,7 @@ def test_saving_goes_back_to_the_page_says_saved_once_and_the_core_got_the_form_
     response = client.post("/settings", data=FORM)
 
     assert response.status_code == 303 and response.headers["location"] == "/settings"
-    assert spy.changes == [SettingsChange("Asia/Tokyo", [1, 2], "16:00", "22:00", "06:00", "8")]
+    assert spy.changes == [SettingsChange("Asia/Tokyo", [1, 2], "16:00", "22:00", "06:00", "8", ["pc", "xbox_series"], "us")]
     first = client.get("/settings")
     assert '<p class="notice" role="status">Сохранено</p>' in first.text and first.text.count("Сохранено") == 1
     assert "Сохранено" not in client.get("/settings").text  # shown once
@@ -216,7 +219,8 @@ def test_saving_what_is_stored_changes_nothing_and_still_says_saved(client, trac
     same = {
         "timezone": selected_zone(html), "workday": [str(day) for day in checked_days(html)],
         "summary_at": before.summary_at, "quiet_from": before.quiet_from, "quiet_until": before.quiet_until,
-        "part_gap_weeks": str(before.part_gap_weeks),
+        "part_gap_weeks": str(before.part_gap_weeks), "platform": list(before.saved.my_platforms),
+        "store_country": before.saved.store_country,
     }
 
     response = client.post("/settings", data=same)
@@ -274,6 +278,8 @@ def test_everything_the_owner_typed_stays_in_a_refused_form_not_what_was_stored(
     ({"part_gap_weeks": "53"}, ["part_gap_weeks"], "Части сезона: число недель — целое, от 1 до 52"),
     ({"part_gap_weeks": "2.5"}, ["part_gap_weeks"], "Части сезона: число недель — целое, от 1 до 52"),
     ({"summary_at": "22:00", "quiet_from": "21:00", "quiet_until": "07:30"}, ["summary_at"], CLASH),
+    ({"store_country": "xx"}, ["store_country"], "Страна магазинов: выберите страну из списка"),
+    ({"store_country": ""}, ["store_country"], "Страна магазинов: выберите страну из списка"),
 ])
 def test_the_field_the_core_names_is_marked_and_the_others_are_not(client, override, marked, sentence):
     response = refused_page(client, **override)
@@ -381,3 +387,71 @@ def test_the_page_reaches_the_core_through_the_facade_only_and_the_templates_hav
         text = (WEB / "templates" / name).read_text(encoding="utf-8")
         assert "<script" not in text and "style=" not in text and "onclick" not in text, name
     assert not (WEB / "templates" / "section.html").exists()
+
+
+# ---- the platforms of the games and the country of the stores ----------------
+
+def platform_boxes(html):
+    """(value, checked) of the boxes «Мои платформы», in the order of the page."""
+    return [(m.group(1), m.group(2) is not None) for m in re.finditer(r'name="platform" value="(\w+)"( checked)?>', html)]
+
+
+def test_the_page_shows_my_platforms_pc_and_ps5_and_israel_by_default(client):
+    html = client.get("/settings").text
+
+    assert platform_boxes(html) == [
+        ("pc", True), ("ps5", True), ("xbox_series", False), ("switch_2", False), ("switch", False)
+    ]
+    assert re.search(r'<option value="il" selected>Израиль</option>', html)
+    assert [m for m in re.findall(r'<option value="\w\w"[^>]*>([^<]*)</option>', html)] == [
+        "Великобритания", "Германия", "Израиль", "Казахстан", "Польша", "Россия", "США", "Турция", "Украина"
+    ]
+    assert "Игры: сообщения о выходе приходят только по этим платформам" in html
+    assert "Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона" in html
+    for label in ("ПК", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch 2", "Nintendo Switch"):
+        assert f"> {label}</label>" in html
+
+
+def test_the_platforms_and_the_country_are_saved_and_come_back(client, tracker):
+    response = client.post("/settings", data={**FORM, "platform": ["xbox_series", "pc"], "store_country": "us"})
+
+    assert response.status_code == 303
+    html = client.get("/settings").text
+    assert platform_boxes(html) == [
+        ("pc", True), ("ps5", False), ("xbox_series", True), ("switch_2", False), ("switch", False)
+    ]
+    assert re.search(r'<option value="us" selected>США</option>', html)
+    assert run(tracker.settings()).saved.my_platforms == ["pc", "xbox_series"]
+
+
+def test_no_platform_ticked_is_refused_with_the_boxes_marked_and_what_was_typed_kept(client, tracker):
+    before = run(tracker.settings())
+
+    response = client.post("/settings", data={k: v for k, v in {**FORM, "store_country": "de"}.items() if k != "platform"})
+
+    html = response.text
+    assert response.status_code == 400
+    assert '<p class="error" role="alert">Мои платформы: отметьте хотя бы одну платформу</p>' in html
+    assert 'class="days platforms invalid"' in html and html.count("invalid") == 1
+    assert all(not checked for _, checked in platform_boxes(html))
+    assert re.search(r'<option value="de" selected>Германия</option>', html) and selected_zone(html) == "Asia/Tokyo"
+    assert run(tracker.settings()) == before
+
+
+def test_a_platform_that_is_not_ours_is_refused_by_the_core(client):
+    response = client.post("/settings", data={**FORM, "platform": ["pc", "playstation_4"]})
+
+    assert response.status_code == 400
+    assert "Мои платформы: выберите платформы из списка" in response.text and 'class="days platforms invalid"' in response.text
+
+
+def test_the_address_of_the_settings_is_the_name_of_the_route_not_a_written_line(client, tracker, tmp_path):
+    app = client.app
+    page = client.get("/settings").text
+
+    assert f'action="{app.url_path_for("settings_save")}"' in page
+    assert f'<a href="{app.url_path_for("settings")}" aria-current="page">Настройки</a>' in page
+    template = (Path(__file__).parents[1] / "app" / "web" / "templates" / "settings.html").read_text(encoding="utf-8")
+    source = (Path(__file__).parents[1] / "app" / "web" / "settings.py").read_text(encoding="utf-8")
+    assert 'action="/settings"' not in template and 'current="/settings"' not in source
+    assert source.count('"/settings"') == 2  # the two routes that are the address
