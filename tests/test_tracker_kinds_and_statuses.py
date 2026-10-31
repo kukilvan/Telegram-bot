@@ -15,7 +15,10 @@ from app.tracker.models import ARCHIVE_STATUSES, DeliveryItem, DeliveryStatus, T
 
 APP = pathlib.Path(__file__).resolve().parent.parent / "app"
 # "watched" is left out: it is also the name of the «Посмотрел» button action (`actions.WATCHED`), which is no status
-RAW_WORDS = {"movie", "series", "anime", "pending", "delivered", "want", "in_progress", "waiting", "to_finish", "dropped"}
+RAW_WORDS = {
+    "movie", "series", "anime", "game", "pending", "delivered", "want", "in_progress", "waiting", "to_finish", "completed",
+    "dropped",
+}
 # the enums themselves may spell the words (migrations are skipped by the test: they wrote the data)
 ALLOWED_FILES = {pathlib.PurePath("tracker/models.py")}
 # words of Shikimori's own response, not kinds of title of ours: the `kind` of a catalogue entry and the `anime` field of a relation
@@ -23,8 +26,10 @@ SHIKIMORI_WORDS = {(pathlib.PurePath("tracker/sources/shikimori_anime.py"), word
 
 
 def test_the_enums_keep_the_values_the_database_already_holds():
-    assert [k.value for k in TitleKind] == ["movie", "series", "anime"]
-    assert [s.value for s in TitleStatus] == ["want", "in_progress", "waiting", "to_finish", "watched", "dropped"]
+    assert [k.value for k in TitleKind] == ["movie", "series", "anime", "game"]
+    assert [s.value for s in TitleStatus] == [
+        "want", "in_progress", "waiting", "to_finish", "watched", "completed", "dropped",
+    ]
     assert [s.value for s in DeliveryStatus] == ["pending", "delivered"]
 
 
@@ -46,6 +51,24 @@ def test_every_status_has_a_label(status):
 
 def test_the_table_of_status_labels_has_no_status_that_does_not_exist():
     assert set(cards.STATUS_LABELS) == set(TitleStatus)
+
+
+def test_the_final_status_and_the_buttons_of_a_kind_are_in_the_table():
+    # a film, a series and an anime behave as before; a game is finished as «Пройдено» and lives on the web
+    assert {kind: KINDS[kind].finished for kind in TitleKind} == {
+        TitleKind.MOVIE: TitleStatus.WATCHED, TitleKind.SERIES: TitleStatus.WATCHED, TitleKind.ANIME: TitleStatus.WATCHED,
+        TitleKind.GAME: TitleStatus.COMPLETED,
+    }
+    assert [KINDS[kind].finish_press for kind in TitleKind] == ["Посмотрел", "", "", "Прошёл"]
+    assert [KINDS[kind].start_press for kind in TitleKind] == ["", "", "", "Начал играть"]
+    assert [KINDS[kind].web_only for kind in TitleKind] == [False, False, False, True]
+    assert cards.STATUS_LABELS[TitleStatus.COMPLETED] == "Пройдено"
+
+
+def test_the_game_reads_as_the_spec_says():
+    game = KINDS[TitleKind.GAME]
+    assert (game.label, game.plural, game.icon, game.source_name, game.seasonal) == ("Игра", "Игры", "🎮", "IGDB", False)
+    assert game.search_note == "Игры лучше искать по-английски: по-русски IGDB находит не всё"
 
 
 def test_seasonal_kinds_are_series_and_anime():
@@ -82,7 +105,7 @@ def test_a_card_of_a_seasonal_kind_has_no_watched_button_for_the_whole_title():
 
 
 def test_the_archive_is_the_final_statuses():
-    assert ARCHIVE_STATUSES == {TitleStatus.WATCHED, TitleStatus.DROPPED}
+    assert ARCHIVE_STATUSES == {TitleStatus.WATCHED, TitleStatus.COMPLETED, TitleStatus.DROPPED}
 
 
 def test_dropped_is_a_status_the_season_marks_never_rewrite():
@@ -145,8 +168,8 @@ def test_the_database_keeps_plain_text_and_hands_back_members():
 def test_a_button_naming_no_kind_is_not_a_kind():
     from app.bot.tracker_handlers import _kind_of
 
-    assert _kind_of("anime") is TitleKind.ANIME
-    assert _kind_of("game") is None and _kind_of("") is None
+    assert _kind_of("anime") is TitleKind.ANIME and _kind_of("game") is TitleKind.GAME
+    assert _kind_of("book") is None and _kind_of("") is None
 
 
 def test_following_a_sequel_of_an_unknown_kind_says_so():
@@ -155,7 +178,7 @@ def test_following_a_sequel_of_an_unknown_kind_says_so():
     from app.tracker.core import Tracker, UnknownKind
 
     tracker = Tracker(create_session_factory("sqlite://"), clock=lambda: datetime(2026, 1, 1), sender=None, sources={})
-    for kind in ("game", "series"):  # no such kind / a kind with no sequel source
+    for kind in ("book", "game"):  # no such kind / a kind with no sequel source
         with pytest.raises(UnknownKind):
             asyncio.run(tracker.follow_sequel_of(kind, "1"))
 
@@ -165,6 +188,9 @@ def test_the_table_says_what_the_owner_has_always_read():
         ("Фильм", "🎬", "TMDb"),
         ("Сериал", "📺", "TMDb"),
         ("Аниме", "🎌", "Shikimori"),
+        ("Игра", "🎮", "IGDB"),
     ]
     assert KINDS[TitleKind.ANIME].ask_name == "Напишите название аниме (можно по-русски или по-английски)."
-    assert [cards.STATUS_LABELS[s] for s in TitleStatus] == ["Хочу", "В процессе", "Жду", "Досмотреть", "Просмотрено", "Бросил"]
+    assert [cards.STATUS_LABELS[s] for s in TitleStatus] == [
+        "Хочу", "В процессе", "Жду", "Досмотреть", "Просмотрено", "Пройдено", "Бросил",
+    ]

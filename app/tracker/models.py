@@ -15,6 +15,7 @@ class TitleKind(StrEnum):
     MOVIE = "movie"
     SERIES = "series"
     ANIME = "anime"
+    GAME = "game"
 
 
 class TitleStatus(StrEnum):
@@ -23,11 +24,12 @@ class TitleStatus(StrEnum):
     WAITING = "waiting"  # «Жду»: everything released is watched, a season is expected
     TO_FINISH = "to_finish"  # «Досмотреть»: the series is closed but not every season is watched
     WATCHED = "watched"  # «Просмотрено»: the title is in the archive
+    COMPLETED = "completed"  # «Пройдено»: a game the owner finished; it is in the archive
     DROPPED = "dropped"  # «Бросил»: the owner gave the title up; it is in the archive
 
 
 # the final statuses: a title with one of them is in the archive, its own release is no longer followed
-ARCHIVE_STATUSES = frozenset({TitleStatus.WATCHED, TitleStatus.DROPPED})
+ARCHIVE_STATUSES = frozenset({TitleStatus.WATCHED, TitleStatus.COMPLETED, TitleStatus.DROPPED})
 
 
 class DeliveryStatus(StrEnum):
@@ -160,6 +162,19 @@ class MovieRecord(TrackerBase):
     shikimori_id: Mapped[str] = mapped_column(String(32))
     mal_id: Mapped[str | None] = mapped_column(String(32))
     anilist_id: Mapped[str | None] = mapped_column(String(32))
+
+
+class GamePlatformRecord(TrackerBase):
+    """A platform of the tracker a game is on (`app.tracker.platforms.Platform`) and the owner's mark «играю здесь» on
+    it. The dates are not here: they live in the snapshot, the one place of the dates (spec 4.3 of part 6.1)."""
+
+    __tablename__ = "game_platforms"
+    __table_args__ = (UniqueConstraint("title_id", "platform", name="uq_game_platforms_title_platform"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_id: Mapped[int] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
+    platform: Mapped[str] = mapped_column(String(16))
+    playing: Mapped[bool] = mapped_column(Boolean)
 
 
 class SettingRecord(TrackerBase):

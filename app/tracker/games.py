@@ -13,10 +13,11 @@ import calendar
 import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import date
+from datetime import date, timedelta
 from typing import Any
 
 from app.tracker.cards import format_date
+from app.tracker.movie_events import INTERVAL_NEAR, INTERVAL_QUIET, INTERVAL_SOON, INTERVAL_WAITING, NEAR, SOON
 from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform
 from app.tracker.sources.dates import parse_date, response_day_of_timestamp
 
@@ -324,3 +325,34 @@ def carry_over(previous: GameState, current: GameState) -> GameState:
     with_records = {release.platform for release in releases}
     back = {number for number in previous.platforms if number in with_records}
     return replace(current, releases=releases, platforms=tuple(sorted(set(current.platforms) | back)))
+
+
+def released_by(game_date: GameDate | None, day: date) -> bool:
+    """An exact date not later than `day`: out by then. An approximate date is never out."""
+    return game_date is not None and game_date.exact and game_date.start <= day
+
+
+def check_interval(game: GameState, country: str, today: date) -> timedelta:
+    """How long to wait before looking at the game again (spec 6.6), by the dates of all its platforms of the tracker,
+    marked or not, for the country of the stores; the intervals of a film. A full release or an early access on an
+    exact day within 2 days — an hour, within 14 — 6 hours; a later exact day, an approximate date or «not announced»
+    on a platform that is not cancelled — a day; every such platform out (or all cancelled) — a week."""
+    upcoming: list[date] = []
+    waiting = False
+    for platform in Platform:
+        dates = platform_dates(game, platform, country)
+        if dates is None or dates.cancelled:
+            continue
+        for dated in (dates.full, dates.early):
+            if dated is not None and dated.date.exact and dated.date.start >= today:
+                upcoming.append(dated.date.start)
+        if not released_by(dates.full.date if dates.full else None, today):
+            waiting = True
+    if upcoming:
+        distance = min(upcoming) - today
+        if distance <= SOON:
+            return INTERVAL_SOON
+        if distance <= NEAR:
+            return INTERVAL_NEAR
+        return INTERVAL_WAITING
+    return INTERVAL_WAITING if waiting else INTERVAL_QUIET

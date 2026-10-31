@@ -257,7 +257,7 @@ def test_an_older_database_with_data_is_migrated_when_opened_and_keeps_it(tmp_pa
         assert session.scalar(select(func.count()).select_from(Event)) == 1
         assert session.scalar(select(func.count()).select_from(DeliveryItem)) == 1
         assert session.execute(text("PRAGMA foreign_key_check")).fetchall() == []
-        assert session.scalar(text("SELECT version_num FROM alembic_version")) == "0011"
+        assert session.scalar(text("SELECT version_num FROM alembic_version")) == "0012"
 
 
 def test_a_database_that_is_already_current_is_opened_again_without_change(tmp_path):

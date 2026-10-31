@@ -1,7 +1,8 @@
-"""The owner's marks on a title and the status that follows from them: «Посмотрел», «Бросил», «Вернуть в список», the
-season marks and «Отметить все вышедшие»; and the owner's scores, which only what is watched gets. What differs by kind
-(the sequel check that starts after «Посмотрел») is asked of the title's poller; whether a title has seasons, of the
-table of kinds.
+"""The owner's marks on a title and the status that follows from them: «Посмотрел» («Прошёл» of a game), «Начал играть»,
+«Бросил», «Вернуть в список», the season marks, «Отметить все вышедшие» and the mark «играю здесь» on a platform of a
+game; and the owner's scores, which only what is watched gets. What differs by kind (the sequel check that starts after
+«Посмотрел») is asked of the title's poller; whether a title has seasons, its final status and whether it can be
+started, of the table of kinds.
 
 A season is known by its record (`SeasonRecord.id`), not by its number: the seasons of an anime are renumbered when the
 source changes its chain, and a mark sent from a card opened before that must reach the season the owner saw."""
@@ -10,13 +11,15 @@ import asyncio
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from sqlalchemy import select
+
 from app.tracker import scores
 from app.tracker import seasons as season_logic
 from app.tracker import storage
 from app.tracker.context import CoreContext
-from app.tracker.errors import CannotScore, UnknownSeason, UnknownTitle
-from app.tracker.kinds import is_seasonal
-from app.tracker.models import ARCHIVE_STATUSES, SeasonRecord, SourceSnapshot, Title, TitleStatus
+from app.tracker.errors import CannotScore, UnknownPlatform, UnknownSeason, UnknownTitle
+from app.tracker.kinds import KINDS, is_seasonal
+from app.tracker.models import ARCHIVE_STATUSES, GamePlatformRecord, SeasonRecord, SourceSnapshot, Title, TitleStatus
 from app.tracker.queue import EventQueue
 from app.tracker.results import ChangeResult, WatchableSeason
 
@@ -133,19 +136,22 @@ class Statuses:
             session.commit()
             return ChangeResult(changed=bool(unmarked))
 
-    # --- «Посмотрел» ----------------------------------------------------------------------------
+    # --- «Посмотрел», «Прошёл» and «Начал играть» ----------------------------------------------
 
     async def mark_watched(self, title_id: int) -> ChangeResult:
-        """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
+        """«Посмотрел» of a movie, «Прошёл» of a game: the title gets the final status of its kind (`KINDS[…].finished`:
+        «Просмотрено», «Пройдено») and moves to the archive. A kind with a sequel source starts looking for its sequels;
+        a game has none, so nothing more is stored. Already in that status: nothing changes."""
         return await asyncio.to_thread(self._set_watched, title_id)
 
     def _set_watched(self, title_id: int) -> ChangeResult:
         now = self.ctx.now()
         with self.ctx.write_session() as session:
             title = _title(session, title_id)
-            if title.status == TitleStatus.WATCHED:
+            finished = KINDS[title.kind].finished
+            if title.status == finished:
                 return ChangeResult(changed=False)
-            _move(title, TitleStatus.WATCHED, now, tracking=False)  # its own release is no longer followed
+            _move(title, finished, now, tracking=False)  # its own release is no longer followed
             sequels = self.pollers.sequels_of(title.kind)
             if sequels is not None:
                 # an empty state means "not looked at yet": the first check records the collection as it is,
@@ -153,9 +159,50 @@ class Statuses:
                 session.add(
                     SourceSnapshot(
                         title_id=title.id, source=sequels.source.source_key, state={}, observed_at=now,
-                        next_check_at=sequels.first_check((), {}, now),
+                        next_check_at=sequels.first_check(session, (), {}, now),
                     )
                 )
+            session.commit()
+            return ChangeResult(changed=True)
+
+    async def mark_started(self, title_id: int) -> ChangeResult:
+        """«Начал играть»: from «Хочу» the title is «В процессе», and its release is still followed (the owner plays on
+        the PC and waits for PS5). From another status, or of a kind without the button (`KINDS[…].start_press`),
+        nothing changes. It is taken back only by «Бросил» and «Вернуть в список». Raises UnknownTitle."""
+        return await asyncio.to_thread(self._mark_started, title_id)
+
+    def _mark_started(self, title_id: int) -> ChangeResult:
+        now = self.ctx.now()
+        with self.ctx.write_session() as session:
+            title = _title(session, title_id)
+            if not KINDS[title.kind].start_press or title.status != TitleStatus.WANT:
+                return ChangeResult(changed=False)
+            _move(title, TitleStatus.IN_PROGRESS, now, tracking=True)
+            session.commit()
+            return ChangeResult(changed=True)
+
+    # --- «играю здесь» --------------------------------------------------------------------------
+
+    async def set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
+        """The mark «играю здесь» on a platform of a game (`platform`: a value of `Platform`, as the address gives it):
+        the state asked for, not a switch; the same twice changes nothing. The status does not follow it. Raises
+        UnknownTitle, and UnknownPlatform for a platform the game is not on, a value that is no platform, or a title
+        that is no game (it has no platforms)."""
+        return await asyncio.to_thread(self._set_platform_playing, title_id, platform, playing)
+
+    def _set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
+        with self.ctx.write_session() as session:
+            _title(session, title_id)
+            record = session.scalar(
+                select(GamePlatformRecord).where(
+                    GamePlatformRecord.title_id == title_id, GamePlatformRecord.platform == platform
+                )
+            )
+            if record is None:
+                raise UnknownPlatform(f"{title_id}:{platform}")
+            if record.playing == playing:
+                return ChangeResult(changed=False)
+            record.playing = playing
             session.commit()
             return ChangeResult(changed=True)
 
@@ -179,7 +226,7 @@ class Statuses:
             return ChangeResult(changed=True)
 
     async def restore_title(self, title_id: int) -> ChangeResult:
-        """«Вернуть в список»: the title leaves the archive. A movie is «Хочу» again; a series or an anime comes back from
+        """«Вернуть в список»: the title leaves the archive. A movie and a game are «Хочу» again; a series or an anime comes back from
         «Бросил» with the status its season marks give. Its own source is checked within a minute, and that first check
         is the baseline: what happened while the title was in the archive is recorded without events. A title out of
         the archive, or a series that is «Просмотрено» (its marks give that status), is left as it is. Raises UnknownTitle."""

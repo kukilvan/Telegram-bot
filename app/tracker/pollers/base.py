@@ -1,6 +1,6 @@
 """What every kind of title does when it is added and when it is polled: one object per kind, one set of actions.
 
-`first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has,
+`snapshot_to_add`, `first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has,
 `known_ids` and `snapshot_ids` tell a title already in the list by the ids of the source, and `apply` compares a fresh
 snapshot with the stored one, queues the events and stores the new state. The core never asks «which kind is it?»: it
 asks the poller of the kind (the table is in `polling`).
@@ -47,12 +47,20 @@ class Poller:
 
     # --- adding a title ---
 
+    async def snapshot_to_add(self, external_id: str) -> Any:
+        """The snapshot a new title is made of; None when the source has nothing at this id. Most kinds take the one of
+        the polling; a game asks Steam for its Russian texts too, only here (spec 4.4 of part 6.1)."""
+        return await self.source.snapshot(external_id)
+
     def first_seasons(self, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
         """The seasons to store with a new title."""
         return ()
 
-    def first_check(self, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime | None:
-        """When the first poll is due; the snapshot taken at adding is the baseline it compares against."""
+    def first_check(
+        self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime
+    ) -> datetime | None:
+        """When the first poll is due; the snapshot taken at adding is the baseline it compares against. `session` is the
+        write session of adding: what the rule reads of the settings (a game: the country of the stores) is read there."""
         raise NotImplementedError
 
     def store_extras(self, session, title_id: int, records: dict[int, SeasonRecord], snapshot: Any) -> None:

@@ -11,7 +11,7 @@ from app.tracker.pollers.base import DueTitle, Poller
 
 
 class MoviePoller(Poller):
-    def first_check(self, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
+    def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
         return now + movie_events.check_interval_for_state(state, now.date())
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:

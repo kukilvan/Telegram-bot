@@ -14,8 +14,9 @@ and which outlived the quiet hours or a working morning, joins that summary too;
 stretch of time goes out alone.
 
 Several episodes of one season of one title are folded into a single line («вышли серии 5–6») — in a summary only.
-Failures of several titles of one source for one reason in one pass are folded into one message, in a summary and
-in a message of their own alike.
+Failures of several titles of one source for one reason in one pass are folded into one message, and events of one
+game of one type on several platforms into one line («вышла на ПК и PS5»), in a summary and in a message of their own
+alike.
 """
 
 import logging
@@ -25,7 +26,7 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from typing import Any
 
-from app.tracker import failures
+from app.tracker import failures, game_events
 from app.tracker.cards import format_weekday_date, local_moment
 from app.tracker.series_events import EPISODE_OUT
 
@@ -197,6 +198,9 @@ class Unit:
 
     members: tuple[Pending, ...]
     text: str
+    # the event whose buttons the unit shows: the single one; of a folded game, its first (all are of one title, the
+    # buttons are its card); folded failures and episodes have none
+    lead: Pending | None = None
 
     @property
     def single(self) -> Pending | None:
@@ -230,11 +234,15 @@ def _failure_key(pending: Pending) -> tuple[Any, ...] | None:
 
 def fold(queue: Sequence[Pending], *, episodes: bool) -> list[Unit]:
     """Units in queue order. Two or more failures with the same source, reason and pass become one unit with a common
-    text and no buttons; with `episodes`, episodes of one season of one title (two or more) become one unit too. A
-    folded unit stands at the place of its first member. The folded episodes keep the second line of the latest one."""
+    text and no buttons; two or more events of one game with the same type and dates, one unit with the list of their
+    platforms and the buttons of the first; with `episodes`, episodes of one season of one title (two or more) become one
+    unit too. A folded unit stands at the place of its first member. The folded episodes keep the second line of the
+    latest one."""
     def key_of(pending: Pending) -> tuple[Any, ...] | None:
         if (key := _failure_key(pending)) is not None:
             return key
+        if (key := game_events.fold_key(pending.type, pending.title_id, pending.data)) is not None:
+            return ("platforms", *key)
         if episodes and (key := _episode_key(pending)) is not None:
             return ("episodes", *key)
         return None
@@ -247,7 +255,7 @@ def fold(queue: Sequence[Pending], *, episodes: bool) -> list[Unit]:
     folded = {
         key: members
         for key, members in groups.items()
-        if len(members) > 1 and (key[0] == "failure" or len({m.data["episode"] for m in members}) > 1)
+        if len(members) > 1 and (key[0] != "episodes" or len({m.data["episode"] for m in members}) > 1)
     }
 
     units: list[Unit] = []
@@ -256,11 +264,13 @@ def fold(queue: Sequence[Pending], *, episodes: bool) -> list[Unit]:
         key = key_of(pending)
         members = folded.get(key) if key is not None else None
         if members is None:
-            units.append(Unit((pending,), pending.text))
+            units.append(Unit((pending,), pending.text, pending))
         elif key not in done:
             done.add(key)
             if key[0] == "failure":
                 units.append(Unit(tuple(members), _failures_text(key, members)))
+            elif key[0] == "platforms":
+                units.append(Unit(tuple(members), game_events.folded_text(key[1], [m.data for m in members]), members[0]))
             else:
                 units.append(Unit(tuple(members), _episodes_text(key, members)))
     return units

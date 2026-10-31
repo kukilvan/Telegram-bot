@@ -21,6 +21,7 @@ STATUS_LABELS = {
     TitleStatus.WAITING: "Жду",
     TitleStatus.TO_FINISH: "Досмотреть",
     TitleStatus.WATCHED: "Просмотрено",
+    TitleStatus.COMPLETED: "Пройдено",
     TitleStatus.DROPPED: "Бросил",
 }
 _WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")

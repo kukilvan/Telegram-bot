@@ -19,7 +19,7 @@ class AnimePoller(Poller):
         """An anime's episodes are put together from both its sources."""
         return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now)
 
-    def first_check(self, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
+    def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
         return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
 
     def store_extras(self, session, title_id: int, records: dict[int, SeasonRecord], snapshot: Any) -> None:

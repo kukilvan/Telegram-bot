@@ -14,7 +14,7 @@ class SeriesPoller(Poller):
     def first_seasons(self, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
         return snapshot.seasons
 
-    def first_check(self, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
+    def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
         return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:

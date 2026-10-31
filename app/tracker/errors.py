@@ -34,6 +34,11 @@ class UnknownSeason(Exception):
     marked because nothing of it is out)."""
 
 
+class UnknownPlatform(Exception):
+    """The game has no such platform: a platform it is not on, a value that is no platform of the tracker, or a title
+    that is no game."""
+
+
 class CannotScore(Exception):
     """Only what is watched gets a score: a film in the archive, a season with its mark, a series with a marked season
     or in the archive. `title_id` is the title; `season_id` the record of the season when the score was a season's."""

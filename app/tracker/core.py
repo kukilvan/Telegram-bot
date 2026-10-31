@@ -23,7 +23,7 @@ from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import (
     CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent, UnknownKind,
-    UnknownSeason, UnknownTitle,
+    UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, RecentRow, SequelOffer, UpcomingRow
@@ -58,7 +58,7 @@ __all__ = [
     "FeedTitle", "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SequelOffer",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
     "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
-    "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason", "ZoneOption",
+    "UnknownEvent", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason", "ZoneOption",
 ]
 
 
@@ -150,12 +150,14 @@ class Tracker:
 
     async def search(self, kind: TitleKind, query: str) -> list[Any]:
         """Suggestions for `query` from the source of this kind, each with its poster and the number of its title when
-        it is in the list already. Raises KeyError for an unknown kind, SourceFailed when the source fails."""
+        it is in the list already. Raises KeyError for an unknown kind, SourceNotConfigured when the source has no keys
+        (games without the keys of IGDB), SourceFailed when the source fails."""
         return await self._titles.search(kind, query)
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
         """Put a search result into the list with status «Хочу», or open the title that is already there (an anime is
-        known by any entry of its chain). Raises SourceFailed when the source fails, TitleNotFound when it has no such title."""
+        known by any entry of its chain; a game by its number in IGDB). Raises SourceNotConfigured when the source has no
+        keys, SourceFailed when it fails, TitleNotFound when it has no such title."""
         return await self._titles.add_title(kind, external_id)
 
     async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
@@ -186,8 +188,18 @@ class Tracker:
         return await self._statuses.set_season_score(title_id, season_id, score)
 
     async def mark_watched(self, title_id: int) -> ChangeResult:
-        """«Посмотрел»: the movie gets «Просмотрено» and moves to the archive, where only its sequels are watched."""
+        """«Посмотрел» of a movie, «Прошёл» of a game: the final status of the kind («Просмотрено», «Пройдено»), and the
+        title moves to the archive (a movie's sequels are still watched there)."""
         return await self._statuses.mark_watched(title_id)
+
+    async def mark_started(self, title_id: int) -> ChangeResult:
+        """«Начал играть»: a game in «Хочу» is «В процессе», still followed. Anything else: nothing changes."""
+        return await self._statuses.mark_started(title_id)
+
+    async def set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
+        """The mark «играю здесь» on a platform of a game (`platform` as the address gives it). The same twice changes
+        nothing. Raises UnknownTitle, and UnknownPlatform for a platform the game is not on (or a title that is no game)."""
+        return await self._statuses.set_platform_playing(title_id, platform, playing)
 
     async def mark_dropped(self, title_id: int) -> ChangeResult:
         """«Бросил»: the title goes to the archive, is no longer checked, and its messages not sent yet are dropped."""

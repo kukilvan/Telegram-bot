@@ -11,7 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.runtime import Health
-from app.tracker.core import SourceFailed, TitleNotFound, Tracker
+from app.tracker.core import SourceFailed, SourceNotConfigured, TitleNotFound, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
@@ -106,7 +106,7 @@ def test_the_page_has_the_switch_the_field_and_the_menu_with_the_search_marked(t
     html = response.text
     assert response.status_code == 200 and "<h1>Поиск</h1>" in html
     assert [label for label in re.findall(r'<input type="radio" name="kind" value="\w+"(?: checked)?> <span>(\w+)</span>', html)] == [
-        "Фильм", "Сериал", "Аниме",
+        "Фильм", "Сериал", "Аниме", "Игра",
     ]
     assert "Название — по-русски или по-английски" in html and "autofocus" in html and "Найти" in html
     assert '<a href="/search" aria-current="page">Поиск</a>' in html and "Скоро будет" not in html
@@ -129,7 +129,7 @@ def test_the_kind_in_the_address_wins_over_the_remembered_one_and_an_unknown_one
     client.get("/search/suggestions", params={"kind": "anime", "q": "би"}, headers=HTMX)
 
     assert checked(client.get("/search?kind=series").text) == ["series"]
-    assert checked(client.get("/search?kind=game").text) == ["anime"]
+    assert checked(client.get("/search?kind=book").text) == ["anime"]
 
 
 def test_the_form_asks_after_a_pause_at_a_change_and_at_enter_and_drops_a_stale_request(tmp_path):
@@ -240,9 +240,20 @@ def test_a_failing_source_is_one_line_with_its_name_and_a_200(tmp_path, kind, na
 def test_an_unknown_kind_says_there_is_no_such_kind(tmp_path):
     tracker = FakeTracker([DUNE])
 
-    html = make_client(tracker, tmp_path).get("/search/suggestions", params={"kind": "game", "q": "дюна"}, headers=HTMX).text
+    html = make_client(tracker, tmp_path).get("/search/suggestions", params={"kind": "book", "q": "дюна"}, headers=HTMX).text
 
     assert "Такого типа нет" in html and tracker.searched == []
+
+
+def test_games_without_the_keys_of_igdb_say_they_are_not_connected(tmp_path):
+    client = make_client(FakeTracker(error=SourceNotConfigured("no keys")), tmp_path)
+
+    html = client.get("/search/suggestions", params={"kind": "game", "q": "hades"}, headers=HTMX).text
+    added = client.post("/titles", data={"kind": "game", "external_id": "1"}, headers=HTMX).text
+
+    line = "Игры не подключены: в файле настроек запуска (.env) нет ключей IGDB — IGDB_CLIENT_ID и IGDB_CLIENT_SECRET"
+    assert line in html and 'role="alert"' not in html
+    assert line in added
 
 
 def test_a_kind_without_a_source_says_there_is_no_such_kind(tmp_path):
@@ -345,7 +356,7 @@ def test_without_htmx_what_went_wrong_goes_back_to_the_search_with_a_line(tmp_pa
 def test_adding_an_unknown_kind_does_not_reach_the_core(tmp_path):
     tracker = FakeTracker()
 
-    response = make_client(tracker, tmp_path).post("/titles", data={"kind": "game", "external_id": "1"}, headers=HTMX)
+    response = make_client(tracker, tmp_path).post("/titles", data={"kind": "book", "external_id": "1"}, headers=HTMX)
 
     assert "Такого типа нет" in response.text and tracker.adds == []
 

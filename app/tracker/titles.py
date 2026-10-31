@@ -10,7 +10,7 @@ from sqlalchemy import delete, select
 
 from app.tracker import sequel_events, storage
 from app.tracker.context import PRIMARY_ROLE, CoreContext
-from app.tracker.errors import SourceFailed, TitleNotFound, UnknownEvent, UnknownKind, UnknownTitle
+from app.tracker.errors import SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent, UnknownKind, UnknownTitle
 from app.tracker.models import ExternalId, Event, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import AddResult, DeleteResult
 
@@ -28,11 +28,13 @@ class Titles:
 
     async def search(self, kind: TitleKind, query: str) -> list[Any]:
         """Suggestions for `query` from the source of this kind, each with the number of its title when the title is in
-        the list already (found after the source answered, in one read). Raises KeyError for an unknown kind and
-        SourceFailed when the source fails."""
+        the list already (found after the source answered, in one read). Raises KeyError for an unknown kind,
+        SourceNotConfigured when the source has no keys and SourceFailed when it fails."""
         poller = self.pollers.of(kind)
         try:
             suggestions = await poller.source.suggest(query)
+        except SourceNotConfigured:
+            raise
         except Exception as exc:
             raise SourceFailed(poller.source.source_key) from exc
         if not suggestions:
@@ -49,7 +51,9 @@ class Titles:
             return AddResult(known[external_id], created=False)
         source = poller.source
         try:
-            snapshot = await source.snapshot(external_id)
+            snapshot = await poller.snapshot_to_add(external_id)
+        except SourceNotConfigured:
+            raise
         except Exception as exc:
             raise SourceFailed(source.source_key) from exc
         if snapshot is None:
@@ -102,7 +106,7 @@ class Titles:
                     state=state,
                     observed_at=now,
                     # the snapshot taken now is the baseline; the first poll compares against it
-                    next_check_at=poller.first_check(seasons, state, now),
+                    next_check_at=poller.first_check(session, seasons, state, now),
                 )
             )
             records = storage.store_seasons(session, title.id, seasons)

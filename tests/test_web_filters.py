@@ -71,7 +71,7 @@ def current(html):
 # ---- a value from the address ------------------------------------------------------------------------------------
 
 @pytest.mark.parametrize("raw, expected", [
-    ("movie", TitleKind.MOVIE), ("anime", TitleKind.ANIME), ("", None), ("game", None), ("MOVIE", None), (" movie", None),
+    ("movie", TitleKind.MOVIE), ("anime", TitleKind.ANIME), ("", None), ("book", None), ("MOVIE", None), (" movie", None),
 ])
 def test_a_kind_from_the_address_is_the_kind_or_none(raw, expected):
     assert filters.parse_choice(TitleKind, raw) is expected
@@ -88,9 +88,9 @@ def test_a_value_outside_the_allowed_ones_counts_as_none_or_the_default():
 def test_the_row_of_kinds_has_all_then_every_kind_with_the_chosen_one_marked():
     links = filters.kind_links(TitleKind.SERIES, lambda kind: f"/x?kind={kind.value if kind else ''}")
 
-    assert [link.label for link in links] == ["Все", "Фильмы", "Сериалы", "Аниме"]
-    assert [link.address for link in links] == ["/x?kind=", "/x?kind=movie", "/x?kind=series", "/x?kind=anime"]
-    assert [link.current for link in links] == [False, False, True, False]
+    assert [link.label for link in links] == ["Все", "Фильмы", "Сериалы", "Аниме", "Игры"]
+    assert [link.address for link in links] == ["/x?kind=", "/x?kind=movie", "/x?kind=series", "/x?kind=anime", "/x?kind=game"]
+    assert [link.current for link in links] == [False, False, True, False, False]
     assert filters.kind_links(None, lambda kind: "/")[0].current is True
 
 

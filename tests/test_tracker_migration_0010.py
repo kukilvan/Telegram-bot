@@ -36,7 +36,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
 
     assert "restored_at" in columns(engine)
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0011"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0012"
 
 
 def test_a_database_with_titles_gets_the_column_empty_and_keeps_everything(engine):

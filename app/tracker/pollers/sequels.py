@@ -20,7 +20,7 @@ class SequelPoller(Poller):
         super().__init__(*args)
         self.release_source = release_source
 
-    def first_check(self, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
+    def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
         return now  # an archived title is looked at as soon as it is archived
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:

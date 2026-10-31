@@ -65,7 +65,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
 
     assert count(engine, "events") == 0
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0011"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0012"
 
 
 def test_events_of_titles_that_no_longer_exist_go_with_their_queue_entries(engine):

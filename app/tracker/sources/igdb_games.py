@@ -15,12 +15,12 @@ from typing import Any
 
 from app.tracker.errors import SourceNotConfigured
 from app.tracker.games import CANCELLED, EARLY, FULL, GameDate, GameState, Release
+from app.tracker.models import TitleKind
 from app.tracker.platforms import IGDB_LABELS
 from app.tracker.sources.dates import response_day_of_timestamp
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "igdb"
-GAME = "game"  # the kind of a suggestion: `TitleKind.GAME` once the core knows games (ticket 04 of part 6.1)
 
 # `game_type` of IGDB: 0 main game, 4 standalone expansion, 8 remake, 9 remaster, 10 expanded game, 11 port
 GAME_TYPES = (0, 4, 8, 9, 10, 11)
@@ -139,7 +139,7 @@ def _release_year(item: dict[str, Any]) -> int | None:
 def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
     return [
         Suggestion(
-            kind=GAME,
+            kind=TitleKind.GAME,
             external_id=str(item["id"]),
             name=russian_name(item) or item.get("name") or "",
             original_name=item.get("name") or "",

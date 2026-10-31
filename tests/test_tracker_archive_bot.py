@@ -469,7 +469,7 @@ def test_an_old_follow_button_without_its_event_says_the_announcement_is_gone(tr
     ]
 
 
-@pytest.mark.parametrize("data", ["tact:follow:game:1", "tact:follow:movie:", "tact:follow::1", "tact:follow:x"])
+@pytest.mark.parametrize("data", ["tact:follow:book:1", "tact:follow:movie:", "tact:follow::1", "tact:follow:x"])
 def test_a_follow_button_of_an_unknown_kind_or_shape_stops_working(tracker, replies, data):
     Chat_(tracker).press(data)
 

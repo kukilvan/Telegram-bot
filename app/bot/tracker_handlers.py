@@ -286,15 +286,16 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
 
     async def show_add_menu(message: Message) -> None:
         forget_pending(message.from_user)
-        rows = [
+        rows = [  # a kind added only on the web (a game) is not offered here
             [InlineKeyboardButton(text=KINDS[kind].label, callback_data=f"{_ADD_KIND_PREFIX}{kind.value}")]
             for kind in tracker.sources
+            if not KINDS[kind].web_only
         ]
         await message.answer("Что добавить?", reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
 
     async def ask_name(callback: CallbackQuery) -> None:
         kind = _kind_of(callback.data.removeprefix(_ADD_KIND_PREFIX))
-        if kind is None or kind not in tracker.sources:
+        if kind is None or kind not in tracker.sources or KINDS[kind].web_only:
             await callback.answer(_NO_SUCH_KIND)
             return
         awaiting_name[callback.from_user.id] = kind

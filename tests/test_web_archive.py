@@ -158,7 +158,7 @@ def test_the_genres_follow_the_kind_and_the_status(client, archive):
 
 @pytest.mark.parametrize(
     "query",
-    ["kind=game", "status=want", "status=foo", "order=sideways", "order=added", "genre=Вестерн", "kind=&genre=&status=&order=", "q="],
+    ["kind=book", "status=want", "status=foo", "order=sideways", "order=added", "genre=Вестерн", "kind=&genre=&status=&order=", "q="],
 )
 def test_a_value_nobody_knows_counts_as_none(client, archive, query):
     page = client.get(f"/archive?{query}")
@@ -187,7 +187,7 @@ def test_the_default_archive_has_clean_links(client, archive):
     assert links(html, "Все") == ["/archive"] and links(html, "По оценке") == ["/archive"]
     assert links(html, "Просмотрено") == ["/archive?status=watched"]
     status_row = re.search(r'<nav class="filters" aria-label="Статус">(.*?)</nav>', html, re.S).group(1)
-    assert re.findall(r">([^<]+)</a>", status_row) == ["Весь архив", "Просмотрено", "Бросил"]
+    assert re.findall(r">([^<]+)</a>", status_row) == ["Весь архив", "Просмотрено", "Пройдено", "Бросил"]
 
 
 # ---- the search --------------------------------------------------------------------------------------------------

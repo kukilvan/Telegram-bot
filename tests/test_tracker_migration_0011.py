@@ -59,7 +59,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
 
     assert "score" in columns(engine, "titles") and "score" in columns(engine, "seasons")
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0011"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0012"
 
 
 def test_a_database_after_0010_gets_both_columns_empty_and_keeps_everything(engine):

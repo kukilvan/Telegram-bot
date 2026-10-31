@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, Request, Response
 
-from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownTitle
+from app.tracker.core import SourceFailed, SourceNotConfigured, TitleNotFound, Tracker, UnknownTitle
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web import pages
@@ -18,6 +18,8 @@ MIN_QUERY = 2  # a shorter query does not reach the source
 MAX_QUERY = 100  # a longer one is cut
 MAX_SUGGESTIONS = 10
 DEFAULT_KIND = TitleKind.MOVIE  # the kind of the very first search
+# a source without its keys in `.env`: only games have one (IGDB)
+NOT_CONNECTED = "Игры не подключены: в файле настроек запуска (.env) нет ключей IGDB — IGDB_CLIENT_ID и IGDB_CLIENT_SECRET"
 KIND_KEY = "search_kind"  # the kind of the last search, in the session
 
 TYPE_MORE = "Наберите хотя бы две буквы"
@@ -85,6 +87,8 @@ async def _found(request: Request, kind: TitleKind | None, raw_query: str) -> di
     except KeyError:  # a kind the core has no source for
         logging.warning("web search: no source for %s", kind)
         return {**shown, "hint": pages.NO_SUCH_KIND, "error": True}
+    except SourceNotConfigured:  # no mistake of a press: the launch settings lack the keys
+        return {**shown, "hint": NOT_CONNECTED}
     except SourceFailed as exc:
         return {**shown, "hint": pages.report_source_failure(kind, exc, "search"), "error": True}
     if not suggestions:
@@ -158,6 +162,8 @@ async def add(request: Request, kind: str = Form(""), external_id: str = Form(""
         return await _refused(request, back, pages.NO_SUCH_KIND)
     except TitleNotFound:
         return await _refused(request, back, pages.not_found(chosen))
+    except SourceNotConfigured:
+        return await _refused(request, back, NOT_CONNECTED)
     except SourceFailed as exc:
         return await _refused(request, back, pages.report_source_failure(chosen, exc, "add"))
     pages.notify(request, await _added(tracker, result.title_id) if result.created else ALREADY)

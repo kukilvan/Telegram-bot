@@ -239,11 +239,11 @@ def _recent_row(unit: delivery.Unit, events: Mapping[int, FeedEvent], listed: Ma
     latest = events[unit.members[0].event_id]  # the events come latest first, and a folded unit stands at its first one
     headline, *details = unit.text.split("\n")
     watched, follow = False, None
-    single = unit.single
-    if single is not None:
-        names = {action.name for action in event_actions(single.type, single.event_id, single.title_id, single.data)}
+    lead = unit.lead
+    if lead is not None:
+        names = {action.name for action in event_actions(lead.type, lead.event_id, lead.title_id, lead.data)}
         watched = WATCHED in names and latest.status == TitleStatus.WANT
-        sequel = sequel_of(single.data) if FOLLOW in names else None
+        sequel = sequel_of(lead.data) if FOLLOW in names else None
         follow = SequelOffer(sequel[0], sequel[1], listed.get(sequel)) if sequel else None
     return RecentRow(latest.title, headline, tuple(d for d in details if d), latest.at, watched, follow)
 

@@ -204,7 +204,7 @@ def test_a_kind_the_core_lost_comes_as_a_message(tracker, telegram):
 
 
 def test_a_kind_that_is_no_kind_is_a_popup_and_never_reaches_a_source(tracker, telegram):
-    press(tracker, "tpick:game:1")
+    press(tracker, "tpick:book:1")
 
     assert list(telegram) == [("answer", "Такого типа больше нет, нажмите «➕ Добавить» заново.")]
 
@@ -264,7 +264,7 @@ def test_a_kind_without_sequels_comes_as_a_message(tracker, telegram):
     assert not telegram.started
 
 
-@pytest.mark.parametrize("data", ["tact:follow:game:1", "tact:follow:movie:", "tact:follow::1", "tact:follow:x"])
+@pytest.mark.parametrize("data", ["tact:follow:book:1", "tact:follow:movie:", "tact:follow::1", "tact:follow:x"])
 def test_a_dead_follow_button_is_a_popup_and_never_reaches_a_source(tracker, telegram, data):
     press(tracker, data)
 

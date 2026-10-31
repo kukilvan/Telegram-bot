@@ -154,7 +154,7 @@ def test_each_filter_asks_the_core_for_its_rows(client, mixed, query, expected):
     assert shown(client.get(f"/list?{query}").text) == expected
 
 
-@pytest.mark.parametrize("query", ["kind=game", "status=foo", "order=sideways", "kind=&status=&order=", "select=maybe"])
+@pytest.mark.parametrize("query", ["kind=book", "status=foo", "order=sideways", "kind=&status=&order=", "select=maybe"])
 def test_a_value_nobody_knows_counts_as_none(client, mixed, query):
     page = client.get(f"/list?{query}")
 
@@ -193,7 +193,7 @@ def test_the_default_list_has_clean_links_and_every_status_in_order(client, mixe
     assert links(html, "Просмотрено") == ["/list?status=watched"]
     status_row = re.search(r'<nav class="filters" aria-label="Статус">(.*?)</nav>', html, re.S).group(1)
     assert re.findall(r">([^<]+)</a>", status_row) == [
-        "Без архива", "Хочу", "В процессе", "Жду", "Досмотреть", "Просмотрено", "Бросил", "Весь список",
+        "Без архива", "Хочу", "В процессе", "Жду", "Досмотреть", "Просмотрено", "Пройдено", "Бросил", "Весь список",
     ]
 
 

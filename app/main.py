@@ -23,13 +23,16 @@ from app.bot.main import add_jobs, build_dispatcher
 from app.bot.tracker_handlers import BOT_COMMANDS, MALFORMED_TOKEN, TelegramSender
 from app.config import Settings, get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
+from app.providers.igdb import IGDBProvider
 from app.providers.shikimori import ShikimoriClient
+from app.providers.steam import SteamProvider
 from app.providers.tmdb import TMDbProvider
 from app.runtime import Health, Runtime
 from app.startup_report import forget_failure, report_failure
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
+from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
@@ -109,6 +112,10 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
             TitleKind.MOVIE: TmdbMovieSource(tmdb),
             TitleKind.SERIES: TmdbSeriesSource(tmdb),
             TitleKind.ANIME: ShikimoriAnimeSource(ShikimoriClient(), AniListProvider()),
+            # without the keys of IGDB the source is «not connected»: it asks nothing and says so
+            TitleKind.GAME: IgdbGameSource(
+                IGDBProvider(settings.igdb_client_id, settings.igdb_client_secret), SteamProvider()
+            ),
         },
         sequel_sources={TitleKind.MOVIE: TmdbSequelSource(tmdb)},
         default_tz=time_zone_of(settings),

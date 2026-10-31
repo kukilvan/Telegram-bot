@@ -18,6 +18,7 @@ from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.models import ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.pollers.anime import AnimePoller
 from app.tracker.pollers.base import DueTitle, Poller
+from app.tracker.pollers.game import GamePoller
 from app.tracker.pollers.movie import MoviePoller
 from app.tracker.pollers.sequels import SequelPoller
 from app.tracker.pollers.series import SeriesPoller
@@ -33,6 +34,7 @@ POLLER_CLASSES: Mapping[TitleKind, type[Poller]] = {
     TitleKind.MOVIE: MoviePoller,
     TitleKind.SERIES: SeriesPoller,
     TitleKind.ANIME: AnimePoller,
+    TitleKind.GAME: GamePoller,
 }
 
 

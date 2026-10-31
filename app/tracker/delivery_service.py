@@ -44,9 +44,10 @@ class DeliveryService:
                 single, summary = pending, []
             else:
                 single, summary = rules.due(pending, moment)
-            # episodes are folded only inside a summary; failures of one source and reason are folded everywhere
+            # episodes are folded only inside a summary; failures of one source and reason and the platforms of a game
+            # are folded everywhere
             for unit in delivery.fold(single, episodes=False):
-                item = unit.single
+                item = unit.lead
                 actions = event_actions(item.type, item.event_id, item.title_id, item.data) if item is not None else []
                 await self._send(unit.members, unit.text, actions, report)
             if summary:
@@ -114,13 +115,13 @@ class DeliveryService:
         actions: list[Action] = []
         shown: set[tuple[str, int]] = set()  # one button per action and title, however many events of it the summary holds
         for unit in units:
-            single = unit.single
-            if single is None:
+            lead = unit.lead
+            if lead is None:
                 continue
-            name = single.data.get("sequel_title") or names.get(single.title_id, "")
+            name = lead.data.get("sequel_title") or names.get(lead.title_id, "")
             if len(name) > BUTTON_NAME_LIMIT:
                 name = name[: BUTTON_NAME_LIMIT - 1] + "…"
-            for action in event_actions(single.type, single.event_id, single.title_id, single.data):
+            for action in event_actions(lead.type, lead.event_id, lead.title_id, lead.data):
                 if (action.name, action.arg) in shown:
                     continue
                 shown.add((action.name, action.arg))
