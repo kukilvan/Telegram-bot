@@ -9,7 +9,7 @@ Without a network and without the database; the pure modules of the core import 
 `context`.
 """
 
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any
 
 
@@ -29,6 +29,17 @@ def response_year(value: Any) -> int | None:
     """The year of a date from a service's answer (soft, like `parse_response_date`)."""
     parsed = parse_response_date(value)
     return parsed.year if parsed else None
+
+
+def response_day_of_timestamp(value: Any) -> date | None:
+    """The UTC day of a Unix time from a service's answer (IGDB: `first_release_date`, the `date` of a release).
+    Nothing or garbage is None (soft, like `parse_response_date`)."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        return datetime.fromtimestamp(value, tz=timezone.utc).date()
+    except (OverflowError, OSError, ValueError):
+        return None
 
 
 def parse_date(value: str | None) -> date | None:

@@ -1,0 +1,77 @@
+[
+ {
+  "id": 396020,
+  "cover": {
+   "id": 551976,
+   "image_id": "cobtwo"
+  },
+  "external_games": [
+   {
+    "id": 3158997,
+    "uid": "422847046",
+    "url": "https://www.twitch.tv/directory/game/Hunter:%20The%20Reckoning%20-%20Deathwish",
+    "external_game_source": 14
+   },
+   {
+    "id": 3159140,
+    "uid": "4434610",
+    "url": "https://store.steampowered.com/app/4434610",
+    "external_game_source": 1
+   }
+  ],
+  "first_release_date": 1822262400,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Hunter: The Reckoning - Deathwish",
+  "platforms": [
+   169,
+   6,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 893570,
+    "date": 1822262400,
+    "human": "Q3 2027",
+    "m": 9,
+    "platform": 167,
+    "y": 2027,
+    "status": 6,
+    "date_format": 5,
+    "release_region": 8
+   },
+   {
+    "id": 893568,
+    "date": 1822262400,
+    "human": "Q3 2027",
+    "m": 9,
+    "platform": 169,
+    "y": 2027,
+    "status": 6,
+    "date_format": 5,
+    "release_region": 8
+   },
+   {
+    "id": 893569,
+    "date": 1822262400,
+    "human": "Q3 2027",
+    "m": 9,
+    "platform": 6,
+    "y": 2027,
+    "status": 6,
+    "date_format": 5,
+    "release_region": 8
+   }
+  ],
+  "summary": "Vampires, Werewolves, Witches. What if I told you that the things that go bump in the night are real? What if I told you that you could see them?\n\nAwaken to the truth you’re now a Hunter. Build your character, select skills, and work with a team of allies to investigate the monsters hidden in plain sight, to find their lairs, and to eradicate them. All the while, investigating a story that drags up memories from your past, ones that could change how you see the future.\n\nWelcome to the World of Darkness.",
+  "game_type": 0
+ }
+]

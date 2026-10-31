@@ -2,10 +2,11 @@
 
 Public endpoints — no API key required.
 - Search: GET /api/storesearch/?term={query}&l=english&cc={cc}
-- App details: GET /api/appdetails?appids={appid}&cc={cc}
+- App details: GET /api/appdetails?appids={appid}&l=russian&filters=basic
 """
 
 import logging
+from typing import Any
 
 import httpx
 
@@ -43,23 +44,26 @@ class SteamProvider:
             logger.error("Steam search failed: %s", e)
             return []
 
-    async def get_game_details(self, appid: int) -> dict | None:
-        """Get full game details for a Steam appid."""
+    async def app_details(self, appid: str) -> dict[str, Any] | None:
+        """The basic details of an app in Russian (`name`, `short_description`…), as Steam names the product.
+
+        Only a help when a game is added: a failure, a timeout or `success: false` (no such app) is None and an `info`
+        line in the log, and the game is added by what IGDB knows."""
         try:
             self.call_count += 1
             resp = await self._client.get(
                 f"{self.BASE_URL}/api/appdetails",
-                params={"appids": appid, "cc": self.country_code},
+                params={"appids": appid, "l": "russian", "filters": "basic"},
             )
             resp.raise_for_status()
-            data = resp.json()
-            app_data = data.get(str(appid), {})
-            if not app_data.get("success"):
+            entry = resp.json().get(str(appid)) or {}
+            details = entry.get("data")
+            if not entry.get("success") or not isinstance(details, dict):
+                logger.info("Steam has no app %s", appid)
                 return None
-            details = app_data.get("data", {})
             return details
-        except Exception as e:
-            logger.error("Steam appdetails failed for %s: %s", appid, e)
+        except Exception as e:  # whatever goes wrong, the game is added without Steam
+            logger.info("Steam appdetails failed for %s: %s", appid, type(e).__name__)
             return None
 
     async def close(self):

@@ -1,0 +1,88 @@
+[
+ {
+  "id": 1942,
+  "alternative_names": [
+   {
+    "id": 173745,
+    "comment": "Alternative title",
+    "name": "Witcher III"
+   },
+   {
+    "id": 2427,
+    "comment": "Russian Title",
+    "name": "Ведьмак 3: Дикая охота"
+   },
+   {
+    "id": 2495,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon"
+   },
+   {
+    "id": 71879,
+    "comment": "Chinese title - simplified",
+    "name": "巫师3：狂猎"
+   },
+   {
+    "id": 51941,
+    "comment": "Alternative spelling",
+    "name": "The Witcher III: Wild Hunt"
+   },
+   {
+    "id": 74560,
+    "comment": "Alternative title",
+    "name": "Witcher 3"
+   },
+   {
+    "id": 74561,
+    "comment": "Acronym",
+    "name": "TW3"
+   },
+   {
+    "id": 121895,
+    "comment": "Chinese title - traditional",
+    "name": "巫師3：狂獵"
+   },
+   {
+    "id": 179756,
+    "comment": "Windows Executable",
+    "name": "redprelauncher.exe"
+   },
+   {
+    "id": 256031,
+    "comment": "Czech title",
+    "name": "Zaklínač 3: Divoký hon"
+   },
+   {
+    "id": 276816,
+    "comment": "Alternative title",
+    "name": "Вещерът 3 - Дивият лов"
+   },
+   {
+    "id": 282455,
+    "comment": "Japanese title - stylized",
+    "name": "ウィッチャー３　ワイルドハント"
+   },
+   {
+    "id": 276919,
+    "comment": "Alternative title",
+    "name": "Вещерът 3: Дивият лов"
+   }
+  ],
+  "cover": {
+   "id": 480513,
+   "image_id": "coaarl"
+  },
+  "first_release_date": 1431993600,
+  "name": "The Witcher 3: Wild Hunt",
+  "platforms": [
+   169,
+   48,
+   508,
+   6,
+   167,
+   49,
+   130
+  ],
+  "game_type": 0
+ }
+]

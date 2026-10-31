@@ -55,7 +55,7 @@ def defined_functions():
 
 def test_there_is_one_reader_of_each_kind_and_no_copies():
     functions = defined_functions()
-    for name in ("parse_response_date", "response_year", "parse_date"):
+    for name in ("parse_response_date", "response_year", "response_day_of_timestamp", "parse_date"):
         assert functions[name] == ["dates.py"], name
     copies = {name: where for name, where in functions.items() if name in ("_parse_date", "_year", "_parse")}
     assert copies == {}

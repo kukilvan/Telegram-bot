@@ -1,0 +1,156 @@
+[
+ {
+  "id": 7334,
+  "alternative_names": [
+   {
+    "id": 27171,
+    "comment": "Working title",
+    "name": "Project Beast"
+   },
+   {
+    "id": 130571,
+    "comment": "Chinese title - simplified",
+    "name": "血源诅咒"
+   }
+  ],
+  "cover": {
+   "id": 525225,
+   "image_id": "cob99l"
+  },
+  "external_games": [
+   {
+    "id": 1937655,
+    "uid": "B00KX1LXE8",
+    "external_game_source": 20
+   },
+   {
+    "id": 1936143,
+    "uid": "B07FF8M561",
+    "external_game_source": 20
+   },
+   {
+    "id": 1929609,
+    "uid": "B00KVR4HEC",
+    "url": "https://amazon.com/dp/B00KVR4HEC",
+    "external_game_source": 20
+   },
+   {
+    "id": 114536,
+    "uid": "46569",
+    "url": "https://www.giantbomb.com/games/3030-46569/",
+    "external_game_source": 3
+   },
+   {
+    "id": 188913,
+    "uid": "UC68tmoFnKPwpGLPa8ajMI6A",
+    "url": "https://gaming.youtube.com/game/UC68tmoFnKPwpGLPa8ajMI6A",
+    "external_game_source": 10
+   },
+   {
+    "id": 1935890,
+    "uid": "B07DQN7SKM",
+    "external_game_source": 20
+   },
+   {
+    "id": 1937751,
+    "uid": "B07F455XQX",
+    "external_game_source": 20
+   },
+   {
+    "id": 3222380,
+    "uid": "B00U62BFB0",
+    "external_game_source": 20
+   },
+   {
+    "id": 1928948,
+    "uid": "B07DNLYMV4",
+    "url": "https://amazon.com/dp/B07DNLYMV4",
+    "external_game_source": 20
+   },
+   {
+    "id": 1934280,
+    "uid": "B00UX0DUCW",
+    "external_game_source": 20
+   },
+   {
+    "id": 1934419,
+    "uid": "B07F2PGN1G",
+    "external_game_source": 20
+   },
+   {
+    "id": 1937115,
+    "uid": "B07FJKT4G3",
+    "external_game_source": 20
+   },
+   {
+    "id": 3232898,
+    "uid": "B07GQ38L35",
+    "external_game_source": 20
+   },
+   {
+    "id": 2175521,
+    "uid": "200520",
+    "url": "https://store.playstation.com/en-us/concept/200520",
+    "external_game_source": 36
+   },
+   {
+    "id": 245165,
+    "uid": "460636",
+    "url": "https://www.twitch.tv/directory/game/Bloodborne",
+    "external_game_source": 14
+   }
+  ],
+  "first_release_date": 1427155200,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Bloodborne",
+  "platforms": [
+   48
+  ],
+  "release_dates": [
+   {
+    "id": 926160,
+    "date": 1427328000,
+    "human": "Mar 26, 2015",
+    "m": 3,
+    "platform": 48,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 5
+   },
+   {
+    "id": 926161,
+    "date": 1427155200,
+    "human": "Mar 24, 2015",
+    "m": 3,
+    "platform": 48,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 2
+   },
+   {
+    "id": 926162,
+    "date": 1427414400,
+    "human": "Mar 27, 2015",
+    "m": 3,
+    "platform": 48,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 1
+   }
+  ],
+  "summary": "An action RPG in which the player embodies a Hunter who, after being transfused with the mysterious blood local to the city of Yharnam, sets off into a \"night of the Hunt\", an extended night in which Hunters may phase in and out of dream and reality in order to thin the outbreak of abominable beasts that plague the land and, for the more resilient and insightful Hunters, uncover the answers to the Hunt's many mysteries.",
+  "game_type": 0
+ }
+]

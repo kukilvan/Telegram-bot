@@ -45,6 +45,20 @@ PLATFORMS: dict[Platform, PlatformInfo] = {
 }
 DEFAULT_PLATFORMS = (Platform.PC, Platform.PS5)
 
+
+def _igdb_labels() -> dict[int, str]:
+    labels: dict[int, str] = {}
+    for info in PLATFORMS.values():
+        labels.setdefault(info.igdb_id, info.label)
+        if info.older:
+            labels.setdefault(info.older.igdb_id, info.older.label)
+    return labels
+
+
+# Every IGDB platform the tracker knows, its own and the older ones, in the order of the table with each older one right
+# after its newer: «ПК, PS5, PS4, Xbox Series X|S, Xbox One, Switch 2, Switch» (the line of platforms of a suggestion)
+IGDB_LABELS: dict[int, str] = _igdb_labels()
+
 # The regions of IGDB, as its `release_region` numbers them
 WORLD, EUROPE, NORTH_AMERICA = 8, 1, 2
 

@@ -1,0 +1,148 @@
+[
+ {
+  "id": 11589,
+  "alternative_names": [
+   {
+    "id": 61403,
+    "comment": "Japanese title - romanization",
+    "name": "Yomawari"
+   },
+   {
+    "id": 198169,
+    "comment": "Windows Executable",
+    "name": "yomawari-steam.exe"
+   }
+  ],
+  "cover": {
+   "id": 123735,
+   "image_id": "co2nh3"
+  },
+  "external_games": [
+   {
+    "id": 189489,
+    "uid": "UCKOQcjHIEJ5YtjwpGhH2wYA",
+    "url": "https://gaming.youtube.com/game/UCKOQcjHIEJ5YtjwpGhH2wYA",
+    "external_game_source": 10
+   },
+   {
+    "id": 111049,
+    "uid": "50153",
+    "url": "https://www.giantbomb.com/games/3030-50153/",
+    "external_game_source": 3
+   },
+   {
+    "id": 1932677,
+    "uid": "B010CO3E6K",
+    "external_game_source": 20
+   },
+   {
+    "id": 4724,
+    "uid": "477870",
+    "url": "https://store.steampowered.com/app/477870",
+    "external_game_source": 1
+   },
+   {
+    "id": 248316,
+    "uid": "491581",
+    "url": "https://www.twitch.tv/directory/game/Yomawari",
+    "external_game_source": 14
+   }
+  ],
+  "first_release_date": 1446076800,
+  "genres": [
+   {
+    "id": 15,
+    "name": "Strategy"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Yomawari: Night Alone",
+  "platforms": [
+   6,
+   167,
+   46
+  ],
+  "release_dates": [
+   {
+    "id": 807029,
+    "date": 1477353600,
+    "human": "Oct 25, 2016",
+    "m": 10,
+    "platform": 46,
+    "y": 2016,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 2
+   },
+   {
+    "id": 807031,
+    "date": 1446076800,
+    "human": "Oct 29, 2015",
+    "m": 10,
+    "platform": 46,
+    "y": 2015,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 5
+   },
+   {
+    "id": 807030,
+    "date": 1477612800,
+    "human": "Oct 28, 2016",
+    "m": 10,
+    "platform": 46,
+    "y": 2016,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 1
+   },
+   {
+    "id": 52266,
+    "date": 1477353600,
+    "human": "Oct 25, 2016",
+    "m": 10,
+    "platform": 6,
+    "y": 2016,
+    "date_format": 0,
+    "release_region": 2
+   },
+   {
+    "id": 52268,
+    "date": 1477612800,
+    "human": "Oct 28, 2016",
+    "m": 10,
+    "platform": 6,
+    "y": 2016,
+    "date_format": 0,
+    "release_region": 1
+   },
+   {
+    "id": 961858,
+    "date": 1793836800,
+    "human": "Nov 05, 2026",
+    "m": 11,
+    "platform": 167,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 2
+   },
+   {
+    "id": 912244,
+    "date": 1778630400,
+    "human": "May 13, 2026",
+    "m": 5,
+    "platform": 167,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 5
+   }
+  ],
+  "summary": "Yomawari is a Japanese horror action game and features a female protagonist that is searching for her older sister and pet dog, while exploring a creepy town at night. She only has a flashlight at her disposal, and using said flash light will let her “see things that shouldn’t be seen.”",
+  "game_type": 0
+ }
+]

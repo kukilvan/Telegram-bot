@@ -1,0 +1,261 @@
+[
+ {
+  "id": 1942,
+  "alternative_names": [
+   {
+    "id": 173745,
+    "comment": "Alternative title",
+    "name": "Witcher III"
+   },
+   {
+    "id": 2427,
+    "comment": "Russian Title",
+    "name": "Ведьмак 3: Дикая охота"
+   },
+   {
+    "id": 2495,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon"
+   },
+   {
+    "id": 71879,
+    "comment": "Chinese title - simplified",
+    "name": "巫师3：狂猎"
+   },
+   {
+    "id": 51941,
+    "comment": "Alternative spelling",
+    "name": "The Witcher III: Wild Hunt"
+   },
+   {
+    "id": 74560,
+    "comment": "Alternative title",
+    "name": "Witcher 3"
+   },
+   {
+    "id": 74561,
+    "comment": "Acronym",
+    "name": "TW3"
+   },
+   {
+    "id": 121895,
+    "comment": "Chinese title - traditional",
+    "name": "巫師3：狂獵"
+   },
+   {
+    "id": 179756,
+    "comment": "Windows Executable",
+    "name": "redprelauncher.exe"
+   },
+   {
+    "id": 256031,
+    "comment": "Czech title",
+    "name": "Zaklínač 3: Divoký hon"
+   },
+   {
+    "id": 276816,
+    "comment": "Alternative title",
+    "name": "Вещерът 3 - Дивият лов"
+   },
+   {
+    "id": 282455,
+    "comment": "Japanese title - stylized",
+    "name": "ウィッチャー３　ワイルドハント"
+   },
+   {
+    "id": 276919,
+    "comment": "Alternative title",
+    "name": "Вещерът 3: Дивият лов"
+   }
+  ],
+  "cover": {
+   "id": 480513,
+   "image_id": "coaarl"
+  },
+  "first_release_date": 1431993600,
+  "name": "The Witcher 3: Wild Hunt",
+  "platforms": [
+   169,
+   48,
+   508,
+   6,
+   167,
+   49,
+   130
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 141472,
+  "alternative_names": [
+   {
+    "id": 52901,
+    "comment": "Alternative title",
+    "name": "The Witcher III Wild Hunt + Dark Souls III Compilation"
+   },
+   {
+    "id": 52902,
+    "comment": "Alternative title",
+    "name": "The Witcher 3: Wild Hunt / Dark Souls III"
+   }
+  ],
+  "cover": {
+   "id": 372851,
+   "image_id": "co7zoz"
+  },
+  "first_release_date": 1540512000,
+  "name": "The Witcher 3: Wild Hunt + Dark Souls III",
+  "platforms": [
+   48,
+   49
+  ],
+  "game_type": 3
+ },
+ {
+  "id": 415005,
+  "alternative_names": [
+   {
+    "id": 289552,
+    "comment": "Abbreviation",
+    "name": "The Witcher 3 Remastered"
+   }
+  ],
+  "cover": {
+   "id": 595561,
+   "image_id": "cocrjd"
+  },
+  "first_release_date": 1790640000,
+  "name": "The Witcher 3: Wild Hunt Remastered",
+  "platforms": [
+   169,
+   508,
+   6,
+   167
+  ],
+  "game_type": 14
+ },
+ {
+  "id": 22439,
+  "alternative_names": [
+   {
+    "id": 36162,
+    "comment": "Acronym",
+    "name": "The Witcher 3: Wild Hunt - GOTY"
+   }
+  ],
+  "cover": {
+   "id": 89392,
+   "image_id": "co1wz4"
+  },
+  "first_release_date": 1472428800,
+  "name": "The Witcher 3: Wild Hunt - Game of the Year Edition",
+  "platforms": [
+   48,
+   6,
+   49
+  ],
+  "version_parent": 1942,
+  "game_type": 3
+ },
+ {
+  "id": 13166,
+  "alternative_names": [
+   {
+    "id": 49556,
+    "comment": "Russian title",
+    "name": "Ведьмак 3: Дикая Охота - Кровь и Вино"
+   },
+   {
+    "id": 8059,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon - Krew i wino"
+   }
+  ],
+  "cover": {
+   "id": 121128,
+   "image_id": "co2lgo"
+  },
+  "first_release_date": 1464566400,
+  "name": "The Witcher 3: Wild Hunt - Blood and Wine",
+  "platforms": [
+   169,
+   48,
+   6,
+   167,
+   49,
+   130
+  ],
+  "game_type": 2
+ },
+ {
+  "id": 403150,
+  "alternative_names": [
+   {
+    "id": 278283,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon - Pieśni przeszłości"
+   },
+   {
+    "id": 289750,
+    "comment": "Russian title",
+    "name": "Ведьмак 3: Дикая Охота — Баллады прошлого"
+   }
+  ],
+  "cover": {
+   "id": 565688,
+   "image_id": "coc4hk"
+  },
+  "first_release_date": 1830211200,
+  "name": "The Witcher 3: Wild Hunt - Songs of the Past",
+  "platforms": [
+   169,
+   508,
+   6,
+   167
+  ],
+  "game_type": 2
+ },
+ {
+  "id": 283715,
+  "cover": {
+   "id": 357620,
+   "image_id": "co7nxw"
+  },
+  "first_release_date": 1624579200,
+  "name": "The Witcher 3: Enhanced Edition - Redux",
+  "platforms": [
+   6
+  ],
+  "game_type": 5
+ },
+ {
+  "id": 12503,
+  "alternative_names": [
+   {
+    "id": 49557,
+    "comment": "Russian title",
+    "name": "Ведьмак 3: Дикая Охота - Каменные сердца"
+   },
+   {
+    "id": 8058,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon - Serca z kamienia"
+   }
+  ],
+  "cover": {
+   "id": 84518,
+   "image_id": "co1t7q"
+  },
+  "first_release_date": 1444608000,
+  "name": "The Witcher 3: Wild Hunt - Hearts of Stone",
+  "platforms": [
+   169,
+   48,
+   6,
+   167,
+   49,
+   130
+  ],
+  "game_type": 2
+ }
+]

@@ -1,0 +1,18 @@
+{
+ "292030": {
+  "success": true,
+  "data": {
+   "type": "game",
+   "name": "Ведьмак 3: Дикая Охота — Обновлённое издание",
+   "steam_appid": 292030,
+   "required_age": "18",
+   "is_free": false,
+   "short_description": "Обновлённое издание игры «Ведьмак 3: Дикая Охота» — всё та же любимая многими ролевая игра с открытым миром, но теперь со множеством улучшений. Вместе с охотником на чудовищ Геральтом из Ривии отправьтесь по разорённым войной королевствам Севера на поиски Цири, приёмной дочери ведьмака.",
+   "supported_languages": "английский<strong>*</strong>, французский<strong>*</strong>, итальянский, немецкий<strong>*</strong>, испанский — Испания, арабский, чешский, венгерский, японский<strong>*</strong>, корейский<strong>*</strong>, польский<strong>*</strong>, португальский — Бразилия<strong>*</strong>, русский<strong>*</strong>, китайский (трад.), турецкий, китайский (упр.)<strong>*</strong>, испанский — Латинская Америка, украинский<br><strong>*</strong>озвучивание доступно на этих языках",
+   "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/78ff6ed62505e46e168615ed4f3c2db18086dd3f/header_alt_assets_1_russian.jpg?t=1790845156",
+   "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/9fdb1baa3833f7438ff7e9e77b792da8a2681c67/capsule_231x87_alt_assets_1_russian.jpg?t=1790845156",
+   "capsule_imagev5": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/9fdb1baa3833f7438ff7e9e77b792da8a2681c67/capsule_184x69_alt_assets_1_russian.jpg?t=1790845156",
+   "website": "https://www.thewitcher.com/witcher3"
+  }
+ }
+}

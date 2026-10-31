@@ -30,8 +30,9 @@ class Suggestion:
     name: str
     original_name: str
     year: int | None
-    poster_path: str | None = None  # as the title stores it: a TMDb file name or a whole Shikimori address
+    poster_path: str | None = None  # as the title stores it: a TMDb file name or a whole Shikimori or IGDB address
     title_id: int | None = None  # the title in the list this suggestion already is; the core fills it in
+    details: str | None = None  # a line under the name: the platforms of a game («ПК, PS5»); None for the other kinds
 
 
 @dataclass(frozen=True)

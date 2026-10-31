@@ -1,0 +1,100 @@
+[
+ {
+  "id": 194662,
+  "alternative_names": [
+   {
+    "id": 163253,
+    "comment": "Alternative spelling",
+    "name": "The Witcher 4"
+   },
+   {
+    "id": 107761,
+    "comment": "Working title",
+    "name": "Project Polaris"
+   },
+   {
+    "id": 141777,
+    "comment": "Alternative title",
+    "name": "Untitled New Witcher Game "
+   },
+   {
+    "id": 163252,
+    "comment": "Working title",
+    "name": "The Witcher"
+   },
+   {
+    "id": 288833,
+    "comment": "Alternative title",
+    "name": "Witcher 4"
+   },
+   {
+    "id": 288834,
+    "comment": "Alternative title",
+    "name": "Witcher IV"
+   }
+  ],
+  "cover": {
+   "id": 427032,
+   "image_id": "co95i0"
+  },
+  "external_games": [
+   {
+    "id": 2351062,
+    "uid": "270380143",
+    "url": "https://www.twitch.tv/directory/game/The%20Witcher%20IV",
+    "external_game_source": 14
+   }
+  ],
+  "first_release_date": 1861833600,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "The Witcher IV",
+  "platforms": [
+   169,
+   6,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 956710,
+    "date": 1861833600,
+    "human": "2028",
+    "m": 12,
+    "platform": 6,
+    "y": 2028,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 956711,
+    "date": 1861833600,
+    "human": "2028",
+    "m": 12,
+    "platform": 167,
+    "y": 2028,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 956712,
+    "date": 1861833600,
+    "human": "2028",
+    "m": 12,
+    "platform": 169,
+    "y": 2028,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ],
+  "summary": "The Witcher IV is a single-player, open-world RPG from CD PROJEKT RED. At the start of a new saga, players take on the role of Ciri, a professional monster slayer, and embark on a journey through a brutal dark-fantasy world.",
+  "game_type": 0
+ }
+]

@@ -1,0 +1,217 @@
+[
+ {
+  "id": 138383,
+  "alternative_names": [
+   {
+    "id": 66509,
+    "comment": "Alternative spelling",
+    "name": "Prince of Persia: The Sands of Time - Remake"
+   }
+  ],
+  "cover": {
+   "id": 592685,
+   "image_id": "cocpbh"
+  },
+  "external_games": [
+   {
+    "id": 1941717,
+    "uid": "B08HW1X2GS",
+    "external_game_source": 20
+   },
+   {
+    "id": 1941941,
+    "uid": "B08HP2SS9P",
+    "external_game_source": 20
+   },
+   {
+    "id": 2875587,
+    "uid": "B08J4Z65VL",
+    "url": "https://amazon.es/dp/B08J4Z65VL",
+    "external_game_source": 20
+   },
+   {
+    "id": 1941684,
+    "uid": "B08HW1H4XB",
+    "external_game_source": 20
+   },
+   {
+    "id": 1941977,
+    "uid": "B08HP2SXYH",
+    "external_game_source": 20
+   },
+   {
+    "id": 1942234,
+    "uid": "B08HTHB6BX",
+    "url": "https://amazon.jp/dp/B08HTHB6BX",
+    "external_game_source": 20
+   },
+   {
+    "id": 1942458,
+    "uid": "B08HTPC5VB",
+    "url": "https://amazon.jp/dp/B08HTPC5VB",
+    "external_game_source": 20
+   },
+   {
+    "id": 1942799,
+    "uid": "B08J4Y33KY",
+    "external_game_source": 20
+   },
+   {
+    "id": 1997591,
+    "uid": "B08TS7B3YL",
+    "url": "https://amazon.com/dp/B08TS7B3YL",
+    "external_game_source": 20
+   },
+   {
+    "id": 2001732,
+    "uid": "B08W5FWJCM",
+    "url": "https://amazon.com/dp/B08W5FWJCM",
+    "external_game_source": 20
+   },
+   {
+    "id": 2872432,
+    "uid": "B08J4Z65VL",
+    "url": "https://amazon.es/dp/B08J4Z65VL",
+    "external_game_source": 20
+   },
+   {
+    "id": 2872531,
+    "uid": "B08J4Y33KY",
+    "url": "https://amazon.es/dp/B08J4Y33KY",
+    "external_game_source": 20
+   },
+   {
+    "id": 2874709,
+    "uid": "B08J4Z65VL",
+    "url": "https://amazon.es/dp/B08J4Z65VL",
+    "external_game_source": 20
+   },
+   {
+    "id": 2875634,
+    "uid": "B08J4Y33KY",
+    "url": "https://amazon.es/dp/B08J4Y33KY",
+    "external_game_source": 20
+   },
+   {
+    "id": 2874740,
+    "uid": "B08J4Y33KY",
+    "url": "https://amazon.es/dp/B08J4Y33KY",
+    "external_game_source": 20
+   },
+   {
+    "id": 2874016,
+    "uid": "B08J4Y33KY",
+    "url": "https://amazon.es/dp/B08J4Y33KY",
+    "external_game_source": 20
+   },
+   {
+    "id": 2731291,
+    "uid": "335ef1bd08994a95b98cc33290ef91a0",
+    "url": "https://store.epicgames.com/en-US/p/prince-of-persia-sands-of-time",
+    "external_game_source": 26
+   },
+   {
+    "id": 1942731,
+    "uid": "B08J4Z65VL",
+    "external_game_source": 20
+   },
+   {
+    "id": 2565202,
+    "uid": "90909681-3846-459b-929c-7013a9b902f7",
+    "url": "https://www.epicgames.com/store/p/prince-of-persia-sands-of-time",
+    "external_game_source": 26
+   },
+   {
+    "id": 1996426,
+    "uid": "B08MG3PD9G",
+    "url": "https://amazon.jp/dp/B08MG3PD9G",
+    "external_game_source": 20
+   },
+   {
+    "id": 1996364,
+    "uid": "B08MG3B3FD",
+    "url": "https://amazon.jp/dp/B08MG3B3FD",
+    "external_game_source": 20
+   },
+   {
+    "id": 2626587,
+    "uid": "0a688d78b282406092050458f0b195ce",
+    "url": "https://store.epicgames.com/en-US/p/prince-of-persia-sands-of-time",
+    "external_game_source": 26
+   },
+   {
+    "id": 2873911,
+    "uid": "B08J4Z65VL",
+    "url": "https://amazon.es/dp/B08J4Z65VL",
+    "external_game_source": 20
+   }
+  ],
+  "genres": [
+   {
+    "id": 8,
+    "name": "Platform"
+   },
+   {
+    "id": 9,
+    "name": "Puzzle"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Prince of Persia: The Sands of Time Remake",
+  "parent_game": 836,
+  "platforms": [
+   169,
+   48,
+   6,
+   167,
+   49
+  ],
+  "release_dates": [
+   {
+    "id": 861501,
+    "human": "TBD",
+    "platform": 6,
+    "status": 5,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 861502,
+    "human": "TBD",
+    "platform": 167,
+    "status": 5,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 861503,
+    "human": "TBD",
+    "platform": 169,
+    "status": 5,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 861504,
+    "human": "TBD",
+    "platform": 48,
+    "status": 5,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 861505,
+    "human": "TBD",
+    "platform": 49,
+    "status": 5,
+    "date_format": 7,
+    "release_region": 8
+   }
+  ],
+  "summary": "Prince of Persia: The Sands of Time Remake was the cancelled remake of the 2003 game of the same title that led to arguably the most successful reboot of the franchise yet. Announced almost exactly 10 years after the previous AAA Prince of Persia title's release, this game was an attempt to revive the franchise back to life. During its reveal at Ubisoft Forward (September 2020), the game was given a January 2021 release date, but later it has been confirmed on various social platforms that the game's release has been pushed back indefinitely until further notice. In January 2026, the game was officially cancelled by Ubisoft to \"focus on future games in the franchise\".",
+  "game_type": 8
+ }
+]

@@ -1,0 +1,96 @@
+[
+ {
+  "id": 52189,
+  "alternative_names": [
+   {
+    "id": 9265,
+    "comment": "Acronym",
+    "name": "GTA 6"
+   },
+   {
+    "id": 9263,
+    "comment": "Numerical",
+    "name": "Grand Theft Auto 6"
+   },
+   {
+    "id": 139291,
+    "comment": "Acronym",
+    "name": "GTA VI"
+   },
+   {
+    "id": 144677,
+    "comment": "Acronym",
+    "name": "GTA6"
+   },
+   {
+    "id": 279332,
+    "comment": "Acronym",
+    "name": "GTAVI"
+   }
+  ],
+  "cover": {
+   "id": 600115,
+   "image_id": "cocv1v"
+  },
+  "external_games": [
+   {
+    "id": 3218871,
+    "uid": "B0H6X8VNQC",
+    "url": "https://www.amazon.in/dp/B0H6X8VNQC",
+    "external_game_source": 20
+   },
+   {
+    "id": 3191009,
+    "uid": "10000730",
+    "url": "https://store.playstation.com/en-us/concept/10000730",
+    "external_game_source": 36
+   }
+  ],
+  "first_release_date": 1795046400,
+  "genres": [
+   {
+    "id": 5,
+    "name": "Shooter"
+   },
+   {
+    "id": 10,
+    "name": "Racing"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Grand Theft Auto VI",
+  "platforms": [
+   169,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 831835,
+    "date": 1795046400,
+    "human": "Nov 19, 2026",
+    "m": 11,
+    "platform": 169,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 831834,
+    "date": 1795046400,
+    "human": "Nov 19, 2026",
+    "m": 11,
+    "platform": 167,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "summary": "Grand Theft Auto VI heads to the state of Leonida, home to the neon-soaked streets of Vice City and beyond in the biggest, most immersive evolution of the Grand Theft Auto series yet.",
+  "game_type": 0
+ }
+]

@@ -14,7 +14,7 @@ from sqlalchemy import select
 from app.providers.shikimori import ShikimoriError
 from app.providers.tmdb import TmdbHttpError
 from app.tracker import failures
-from app.tracker.core import Tracker
+from app.tracker.core import SourceNotConfigured, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import DeliveryItem, Event, ExternalId, SourceSnapshot, Title
 from app.tracker.sources.tmdb_movies import MovieSnapshot
@@ -179,6 +179,7 @@ def notices(sender):
         (ShikimoriError("entries request failed", status=502), "у него сейчас сбой"),
         (ShikimoriError("entries request failed", cause=httpx.ReadTimeout("slow")), "не ответил вовремя"),
         (failures.TitleGone("tmdb 1"), "больше не знает этого тайтла"),
+        (SourceNotConfigured("no keys of IGDB"), "не принял ключ — проверьте ключ в настройках"),
         (RuntimeError("something odd"), "неизвестная ошибка, подробности в журнале"),
         (ShikimoriError("entries request failed"), "неизвестная ошибка, подробности в журнале"),
         (KeyError("movie"), "неизвестная ошибка, подробности в журнале"),
@@ -246,7 +247,7 @@ def test_the_count_agrees_with_the_word(count, word):
 
 @pytest.mark.parametrize(
     "key, name",
-    [("tmdb_movie", "TMDb"), ("tmdb_tv", "TMDb"), ("tmdb_sequels", "TMDb"), ("shikimori", "Shikimori")],
+    [("tmdb_movie", "TMDb"), ("tmdb_tv", "TMDb"), ("tmdb_sequels", "TMDb"), ("shikimori", "Shikimori"), ("igdb", "IGDB")],
 )
 def test_the_source_is_named_by_its_key(key, name):
     assert failures.source_name(key) == name

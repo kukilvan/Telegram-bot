@@ -24,6 +24,11 @@ class SourceFailed(Exception):
     a title. Its own error is the cause (`__cause__`): the log tells it, the owner only learns which source failed."""
 
 
+class SourceNotConfigured(Exception):
+    """The source of the kind has no keys in the launch settings (`.env`): nothing was asked, the network was not
+    touched. Games without the keys of IGDB."""
+
+
 class UnknownSeason(Exception):
     """The title has no such season (a season of another title, one the source took away, or one that cannot be
     marked because nothing of it is out)."""

@@ -11,6 +11,7 @@ from typing import Any
 import httpx
 
 from app.tracker.cards import titles_word
+from app.tracker.errors import SourceNotConfigured
 from app.tracker.movie_events import RETRY_AFTER_FAILURE
 
 SOURCE_FAILED = "source_failure"  # event type
@@ -26,7 +27,7 @@ SOURCE_DOWN = "source_down"
 GONE = "gone"
 UNKNOWN = "unknown"
 
-_SOURCE_NAMES = (("tmdb", "TMDb"), ("shikimori", "Shikimori"), ("anilist", "AniList"))
+_SOURCE_NAMES = (("tmdb", "TMDb"), ("shikimori", "Shikimori"), ("anilist", "AniList"), ("igdb", "IGDB"))
 
 # {source} is the name of the source; each reason reads after «Не удалось проверить «…»: »
 _REASONS = {
@@ -45,7 +46,8 @@ class TitleGone(LookupError):
 
 
 def source_name(source_key: str) -> str:
-    """«tmdb_movie», «tmdb_tv», «tmdb_sequels» → TMDb; «shikimori» → Shikimori; an unknown key stands for itself."""
+    """«tmdb_movie», «tmdb_tv», «tmdb_sequels» → TMDb; «shikimori» → Shikimori; «igdb» → IGDB; an unknown key stands for
+    itself."""
     for prefix, name in _SOURCE_NAMES:
         if source_key.startswith(prefix):
             return name
@@ -63,12 +65,15 @@ def _status(exc: BaseException) -> int | None:
 
 def reason_of(exc: BaseException) -> str:
     """Sort a failure into one of the reasons above. A source client's own cause (a timeout behind a
-    `ShikimoriError`) counts as much as the exception itself."""
+    `ShikimoriError`) counts as much as the exception itself. A source without keys (the keys of IGDB taken out of `.env`
+    after games were added) is a key the source did not take."""
     for error in (exc, getattr(exc, "cause", None), exc.__cause__):
         if error is None:
             continue
         if isinstance(error, TitleGone):
             return GONE
+        if isinstance(error, SourceNotConfigured):
+            return KEY_REJECTED
         status = _status(error)
         if status == 429:
             return RATE_LIMIT
