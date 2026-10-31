@@ -1,0 +1,483 @@
+{
+ "292030": {
+  "success": true,
+  "data": {
+   "type": "game",
+   "name": "Ведьмак 3: Дикая Охота — Обновлённое издание",
+   "steam_appid": 292030,
+   "required_age": "18",
+   "is_free": false,
+   "dlc": [
+    5006530,
+    1229320,
+    1233280,
+    1233340
+   ],
+   "detailed_description": "<h1>ЕЩЁ ОДНА ВЕДЬМАЧЬЯ ИСТОРИЯ, В КОТОРОЙ ВСЯКИЙ ВЫБОР ОБЯЗАТЕЛЬНО ПОВЛЕЧЁТ ЗА СОБОЙ ПОСЛЕДСТВИЯ</h1><p><p class=\"bb_paragraph\" ><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/481ade50ba4d4cdeb0c66edf4508bbaf.avif?t=1790845156\" width=780 height=300 /></span></p></p><br><h1>Об игре</h1><p class=\"bb_paragraph\" ><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/6516e53e71a7849f7af610224a7648d6.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/41a4df015392c1148c261c953d1fc0c2.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/0e6d624ea84dc331ad53f59d6c722fe4.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/7f38656142998c6fdcf80be8af87dce9.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/44dc1a2d7c879a92428a1cc656225d4a.avif?t=1790845156\" width=780 height=300 /></span></p>",
+   "about_the_game": "<p class=\"bb_paragraph\" ><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/6516e53e71a7849f7af610224a7648d6.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/41a4df015392c1148c261c953d1fc0c2.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/0e6d624ea84dc331ad53f59d6c722fe4.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/7f38656142998c6fdcf80be8af87dce9.avif?t=1790845156\" width=780 height=300 /></span><span class=\"bb_img_ctn\"><img class=\"bb_img\" src=\"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/extras/44dc1a2d7c879a92428a1cc656225d4a.avif?t=1790845156\" width=780 height=300 /></span></p>",
+   "short_description": "Обновлённое издание игры «Ведьмак 3: Дикая Охота» — всё та же любимая многими ролевая игра с открытым миром, но теперь со множеством улучшений. Вместе с охотником на чудовищ Геральтом из Ривии отправьтесь по разорённым войной королевствам Севера на поиски Цири, приёмной дочери ведьмака.",
+   "supported_languages": "английский<strong>*</strong>, французский<strong>*</strong>, итальянский, немецкий<strong>*</strong>, испанский — Испания, арабский, чешский, венгерский, японский<strong>*</strong>, корейский<strong>*</strong>, польский<strong>*</strong>, португальский — Бразилия<strong>*</strong>, русский<strong>*</strong>, китайский (трад.), турецкий, китайский (упр.)<strong>*</strong>, испанский — Латинская Америка, украинский<br><strong>*</strong>озвучивание доступно на этих языках",
+   "reviews": "“ONE OF THE BEST GAMES EVER MADE”<br>10/10 – GameSpot<br><br>“AMAZING”<br>9.3/10 – IGN<br><br>“ONE OF THE BEST RPGs EVER MADE”<br>9.8/10 – Game Trailers<br>",
+   "header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/78ff6ed62505e46e168615ed4f3c2db18086dd3f/header_alt_assets_1_russian.jpg?t=1790845156",
+   "capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/9fdb1baa3833f7438ff7e9e77b792da8a2681c67/capsule_231x87_alt_assets_1_russian.jpg?t=1790845156",
+   "capsule_imagev5": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/9fdb1baa3833f7438ff7e9e77b792da8a2681c67/capsule_184x69_alt_assets_1_russian.jpg?t=1790845156",
+   "website": "https://www.thewitcher.com/witcher3",
+   "pc_requirements": {
+    "minimum": "<strong>Минимальные:</strong><br><ul class=\"bb_ul\"><li><strong>ОС:</strong> 64-bit Windows 11<br></li><li><strong>Процессор:</strong> Core i5-8400 / Ryzen 5 2600<br></li><li><strong>Оперативная память:</strong> 12 GB ОЗУ<br></li><li><strong>Видеокарта:</strong> GeForce GTX 1660 / Radeon RX 5500 XT 8GB / Arc A580<br></li><li><strong>Место на диске:</strong> 60 SSD GB<br></li><li><strong>Дополнительно:</strong> VRAM 6 GB</li></ul>",
+    "recommended": "<strong>Рекомендованные:</strong><br><ul class=\"bb_ul\"><li><strong>ОС:</strong> 64-bit Windows 11<br></li><li><strong>Процессор:</strong> Intel Core i7 8700K / AMD Ryzen 5 3600X<br></li><li><strong>Оперативная память:</strong> 16 GB ОЗУ<br></li><li><strong>Видеокарта:</strong> RTX 2060 Super / AMD Radeon RX 6600 XT / Intel Arc B580<br></li><li><strong>Место на диске:</strong> 60 SSD GB<br></li><li><strong>Дополнительно:</strong> VRAM 8 GB</li></ul>"
+   },
+   "mac_requirements": [],
+   "linux_requirements": [],
+   "legal_notice": "CD PROJEKT RED®, CD PROJEKT®, The Witcher® are registered trademarks of CD PROJEKT RED S.A. The Witcher game © 2015–2026 CD PROJEKT RED S.A. Developed by CD PROJEKT RED S.A. All rights reserved. The Witcher game is set in the universe created by Andrzej Sapkowski in his series of books. All other copyrights and trademarks are the property of their respective owners.",
+   "developers": [
+    "CD PROJEKT RED"
+   ],
+   "publishers": [
+    "CD PROJEKT RED"
+   ],
+   "price_overview": {
+    "currency": "ILS",
+    "initial": 17995,
+    "final": 17995,
+    "discount_percent": 0,
+    "initial_formatted": "",
+    "final_formatted": "₪179.95"
+   },
+   "packages": [
+    68476
+   ],
+   "package_groups": [
+    {
+     "name": "default",
+     "title": "Купить Ведьмак 3: Дикая Охота — Обновлённое издание",
+     "description": "",
+     "selection_text": "Выберите способ покупки",
+     "save_text": "",
+     "display_type": 0,
+     "is_recurring_subscription": "false",
+     "subs": [
+      {
+       "packageid": 68476,
+       "percent_savings_text": ": ",
+       "percent_savings": 0,
+       "option_text": "The Witcher 3: Wild Hunt — Remastered - ₪179.95",
+       "option_description": "",
+       "can_get_free_license": "0",
+       "is_free_license": false,
+       "price_in_cents_with_discount": 17995
+      }
+     ]
+    }
+   ],
+   "platforms": {
+    "windows": true,
+    "mac": false,
+    "linux": false
+   },
+   "metacritic": {
+    "score": 93,
+    "url": "https://www.metacritic.com/game/pc/the-witcher-3-wild-hunt?ftag=MCD-06-10aaa1f"
+   },
+   "categories": [
+    {
+     "id": 2,
+     "description": "Для одного игрока"
+    },
+    {
+     "id": 22,
+     "description": "Достижения Steam"
+    },
+    {
+     "id": 29,
+     "description": "Коллекционные карточки Steam"
+    },
+    {
+     "id": 30,
+     "description": "Мастерская Steam"
+    },
+    {
+     "id": 64,
+     "description": "Регулируемый размер текста"
+    },
+    {
+     "id": 67,
+     "description": "Настройки движения камеры"
+    },
+    {
+     "id": 66,
+     "description": "Альтернативные цвета"
+    },
+    {
+     "id": 68,
+     "description": "Расширенное управление громкостью"
+    },
+    {
+     "id": 78,
+     "description": "Регулируемая сложность"
+    },
+    {
+     "id": 74,
+     "description": "Можно играть без QTE"
+    },
+    {
+     "id": 57,
+     "description": "Поддержка контроллера DualSense"
+    },
+    {
+     "id": 58,
+     "description": "Поддержка контроллера DualSense"
+    },
+    {
+     "id": 79,
+     "description": "Сохранение в любое время"
+    },
+    {
+     "id": 69,
+     "description": "Стереозвук"
+    },
+    {
+     "id": 70,
+     "description": "Объёмный звук"
+    },
+    {
+     "id": 18,
+     "description": "Частичная поддержка контроллеров"
+    },
+    {
+     "id": 23,
+     "description": "Steam Cloud"
+    },
+    {
+     "id": 42,
+     "description": "Remote Play на планшете"
+    },
+    {
+     "id": 43,
+     "description": "Remote Play на телевизоре"
+    },
+    {
+     "id": 61,
+     "description": "Поддержка HDR"
+    },
+    {
+     "id": 62,
+     "description": "Семейный доступ"
+    }
+   ],
+   "genres": [
+    {
+     "id": "3",
+     "description": "Ролевые игры"
+    }
+   ],
+   "screenshots": [
+    {
+     "id": 0,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/f7f564ecedd09b3e503b071a637aeefdedbeedd8/ss_f7f564ecedd09b3e503b071a637aeefdedbeedd8.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/f7f564ecedd09b3e503b071a637aeefdedbeedd8/ss_f7f564ecedd09b3e503b071a637aeefdedbeedd8.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 1,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/0a38e4d0d57f15934772dbe09b322d08132d5518/ss_0a38e4d0d57f15934772dbe09b322d08132d5518.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/0a38e4d0d57f15934772dbe09b322d08132d5518/ss_0a38e4d0d57f15934772dbe09b322d08132d5518.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 2,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/19c03c2b997d3a393fc629fd42f55ddb4a3d8dd0/ss_19c03c2b997d3a393fc629fd42f55ddb4a3d8dd0.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/19c03c2b997d3a393fc629fd42f55ddb4a3d8dd0/ss_19c03c2b997d3a393fc629fd42f55ddb4a3d8dd0.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 3,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/3a3f430982cc3bccac1633d3ea60a30bf3d1ae9e/ss_3a3f430982cc3bccac1633d3ea60a30bf3d1ae9e.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/3a3f430982cc3bccac1633d3ea60a30bf3d1ae9e/ss_3a3f430982cc3bccac1633d3ea60a30bf3d1ae9e.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 4,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/78ecbfb8bc64b8e9d4a372f4a8ffa5069e9325d0/ss_78ecbfb8bc64b8e9d4a372f4a8ffa5069e9325d0.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/78ecbfb8bc64b8e9d4a372f4a8ffa5069e9325d0/ss_78ecbfb8bc64b8e9d4a372f4a8ffa5069e9325d0.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 5,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/203487f667e4ac00baf482b1c93c87a2b830a6fc/ss_203487f667e4ac00baf482b1c93c87a2b830a6fc.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/203487f667e4ac00baf482b1c93c87a2b830a6fc/ss_203487f667e4ac00baf482b1c93c87a2b830a6fc.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 6,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/bd815be52023e2632855e01d3d7ba813a0b8d1a3/ss_bd815be52023e2632855e01d3d7ba813a0b8d1a3.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/bd815be52023e2632855e01d3d7ba813a0b8d1a3/ss_bd815be52023e2632855e01d3d7ba813a0b8d1a3.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 7,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/a8bb0ff704918927e07002cf0901d7195bb6a13e/ss_a8bb0ff704918927e07002cf0901d7195bb6a13e.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/a8bb0ff704918927e07002cf0901d7195bb6a13e/ss_a8bb0ff704918927e07002cf0901d7195bb6a13e.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 8,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/9436c0e2632ea9e2db315fc3483d8f9ff3facc8d/ss_9436c0e2632ea9e2db315fc3483d8f9ff3facc8d.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/9436c0e2632ea9e2db315fc3483d8f9ff3facc8d/ss_9436c0e2632ea9e2db315fc3483d8f9ff3facc8d.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 9,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/f6816851eaf092be4b646f4c1dd9a7b91dd77c89/ss_f6816851eaf092be4b646f4c1dd9a7b91dd77c89.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/f6816851eaf092be4b646f4c1dd9a7b91dd77c89/ss_f6816851eaf092be4b646f4c1dd9a7b91dd77c89.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 10,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/8a97157ec7e4f3d458d70a0942779f093f404d8c/ss_8a97157ec7e4f3d458d70a0942779f093f404d8c.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/8a97157ec7e4f3d458d70a0942779f093f404d8c/ss_8a97157ec7e4f3d458d70a0942779f093f404d8c.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 11,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/7c7a239b3b1c58c5c5eb25ece042b81819286823/ss_7c7a239b3b1c58c5c5eb25ece042b81819286823.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/7c7a239b3b1c58c5c5eb25ece042b81819286823/ss_7c7a239b3b1c58c5c5eb25ece042b81819286823.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 12,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/c39f886647cdd361a31d775e0f817dd1e46d97db/ss_c39f886647cdd361a31d775e0f817dd1e46d97db.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/c39f886647cdd361a31d775e0f817dd1e46d97db/ss_c39f886647cdd361a31d775e0f817dd1e46d97db.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 13,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/4b4e193c62cc367962b7b9e682e8b3824e75022a/ss_4b4e193c62cc367962b7b9e682e8b3824e75022a.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/4b4e193c62cc367962b7b9e682e8b3824e75022a/ss_4b4e193c62cc367962b7b9e682e8b3824e75022a.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 14,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/8420c5eafbae128550c1d7e41b32da90a0bde9ca/ss_8420c5eafbae128550c1d7e41b32da90a0bde9ca.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/8420c5eafbae128550c1d7e41b32da90a0bde9ca/ss_8420c5eafbae128550c1d7e41b32da90a0bde9ca.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 15,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ba2c8dfce29d6cca82edb1b69c2479d64cc1db23/ss_ba2c8dfce29d6cca82edb1b69c2479d64cc1db23.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ba2c8dfce29d6cca82edb1b69c2479d64cc1db23/ss_ba2c8dfce29d6cca82edb1b69c2479d64cc1db23.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 16,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/f62c314f6695b6e2b4dc2e0c94101482c9edf6ac/ss_f62c314f6695b6e2b4dc2e0c94101482c9edf6ac.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/f62c314f6695b6e2b4dc2e0c94101482c9edf6ac/ss_f62c314f6695b6e2b4dc2e0c94101482c9edf6ac.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 17,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/bbf2225688fc42fd8b31ccd07885e0064f7da201/ss_bbf2225688fc42fd8b31ccd07885e0064f7da201.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/bbf2225688fc42fd8b31ccd07885e0064f7da201/ss_bbf2225688fc42fd8b31ccd07885e0064f7da201.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 18,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/c6d0b7eee8d40b55d33621fcd700151f3325b501/ss_c6d0b7eee8d40b55d33621fcd700151f3325b501.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/c6d0b7eee8d40b55d33621fcd700151f3325b501/ss_c6d0b7eee8d40b55d33621fcd700151f3325b501.1920x1080.jpg?t=1790845156"
+    },
+    {
+     "id": 19,
+     "path_thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ff255a17c339af5a4f17bf825b9500802180d717/ss_ff255a17c339af5a4f17bf825b9500802180d717.600x338.jpg?t=1790845156",
+     "path_full": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/ff255a17c339af5a4f17bf825b9500802180d717/ss_ff255a17c339af5a4f17bf825b9500802180d717.1920x1080.jpg?t=1790845156"
+    }
+   ],
+   "movies": [
+    {
+     "id": 257439733,
+     "name": "Ведьмак 3: Дикая Охота — Обновлённое издание | Официальный трейлер",
+     "thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257439733/761e045cda3f2636151e28569eba4c52e699c114/movie_600x337.jpg?t=1790693320",
+     "dash_av1": "https://video.akamai.steamstatic.com/store_trailers/292030/555518584/64b0324a0d573db380e16133eab244426e68886f/1790686668/dash_av1.mpd?t=1790693320",
+     "dash_h264": "https://video.akamai.steamstatic.com/store_trailers/292030/555518584/64b0324a0d573db380e16133eab244426e68886f/1790686668/dash_h264.mpd?t=1790693320",
+     "hls_h264": "https://video.akamai.steamstatic.com/store_trailers/292030/555518584/64b0324a0d573db380e16133eab244426e68886f/1790686668/hls_264_master.m3u8?t=1790693320",
+     "highlight": true
+    },
+    {
+     "id": 257411197,
+     "name": "Ведьмак 3: Дикая Охота — Обновлённое издание | Официальный анонсирующий трейлер",
+     "thumbnail": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/257411197/a6ed76050fc6522f4ddf136cb39ece4223d9827e/movie_600x337.jpg?t=1788333496",
+     "dash_av1": "https://video.akamai.steamstatic.com/store_trailers/292030/310673952/562f7c0883ece6c47561c488b63074df382dedd7/1787921963/dash_av1.mpd?t=1788333496",
+     "dash_h264": "https://video.akamai.steamstatic.com/store_trailers/292030/310673952/562f7c0883ece6c47561c488b63074df382dedd7/1787921963/dash_h264.mpd?t=1788333496",
+     "hls_h264": "https://video.akamai.steamstatic.com/store_trailers/292030/310673952/562f7c0883ece6c47561c488b63074df382dedd7/1787921963/hls_264_master.m3u8?t=1788333496",
+     "highlight": true
+    }
+   ],
+   "recommendations": {
+    "total": 851502
+   },
+   "achievements": {
+    "total": 78,
+    "highlighted": [
+     {
+      "icon": "6078587189483353f06f48d0eefdaaa0791e9e13.jpg",
+      "localized_name": "Сирень и крыжовник",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Сирень и крыжовник",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/6078587189483353f06f48d0eefdaaa0791e9e13.jpg"
+     },
+     {
+      "icon": "07bae88f1ee9b856ddfc1d8e28ae7eedd4bcde95.jpg",
+      "localized_name": "Друг в беде",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Друг в беде",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/07bae88f1ee9b856ddfc1d8e28ae7eedd4bcde95.jpg"
+     },
+     {
+      "icon": "652e39d4e750183a390a4e9f2f99018c1b335a20.jpg",
+      "localized_name": "Некромантия",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Некромантия",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/652e39d4e750183a390a4e9f2f99018c1b335a20.jpg"
+     },
+     {
+      "icon": "883f82ffa933d6d12da3e8733f340b082a08c325.jpg",
+      "localized_name": "Друг семьи",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Друг семьи",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/883f82ffa933d6d12da3e8733f340b082a08c325.jpg"
+     },
+     {
+      "icon": "97246533609245ba270e7a8eb39a64d319ce5011.jpg",
+      "localized_name": "Нечто большее",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Нечто большее",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/97246533609245ba270e7a8eb39a64d319ce5011.jpg"
+     },
+     {
+      "icon": "46b0b574e6334d81211e0c3db1539d3a76364144.jpg",
+      "localized_name": "Ксенонавт",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Ксенонавт",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/46b0b574e6334d81211e0c3db1539d3a76364144.jpg"
+     },
+     {
+      "icon": "53e0820b82445eeafe38f4991b947ed6ef64406d.jpg",
+      "localized_name": "Король мертв",
+      "archived": 0,
+      "hidden": 1,
+      "name": "Король мертв",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/53e0820b82445eeafe38f4991b947ed6ef64406d.jpg"
+     },
+     {
+      "icon": "bc1da5cdbd6e323308f012851cf4c3f6a1439c3f.jpg",
+      "localized_name": "Дитя-Неожиданность",
+      "archived": 0,
+      "hidden": 0,
+      "name": "Дитя-Неожиданность",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/bc1da5cdbd6e323308f012851cf4c3f6a1439c3f.jpg"
+     },
+     {
+      "icon": "cba4abe872ecb92a755cbc9cf1ffa708b7aef42e.jpg",
+      "localized_name": "Мучильня",
+      "archived": 0,
+      "hidden": 0,
+      "name": "Мучильня",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/cba4abe872ecb92a755cbc9cf1ffa708b7aef42e.jpg"
+     },
+     {
+      "icon": "03afa403f58958f72f7540345ba16a3439d1f830.jpg",
+      "localized_name": "Ведьмак на тракте",
+      "archived": 0,
+      "hidden": 0,
+      "name": "Ведьмак на тракте",
+      "path": "https://shared.akamai.steamstatic.com/community_assets/images/apps/292030/03afa403f58958f72f7540345ba16a3439d1f830.jpg"
+     }
+    ]
+   },
+   "release_date": {
+    "coming_soon": false,
+    "date": "18 мая. 2015 г."
+   },
+   "support_info": {
+    "url": "http://en.cdprojektred.com/support",
+    "email": "http://en.cdprojektred.com/contact-support/"
+   },
+   "background": "https://store.akamai.steamstatic.com/images/storepagebackground/app/292030?t=1790845156",
+   "background_raw": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/292030/94a3c7f9db82538b752312f6e17f912f0899ca30/page_bg_raw.jpg?t=1790845156",
+   "content_descriptors": {
+    "ids": [
+     1,
+     5
+    ],
+    "notes": "The Witcher 3: Wild Hunt contains strong language, intense violence, blood and gore, as well as nudity and sexual material.\r\n"
+   },
+   "ratings": {
+    "esrb": {
+     "rating": "m",
+     "descriptors": "Blood and Gore\r\nIntense Violence\r\nNudity\r\nStrong Language\r\nStrong Sexual Content\r\nUse of Alcohol",
+     "use_age_gate": "true",
+     "required_age": "17",
+     "interactive_elements": "In-Game Purchases\r\n"
+    },
+    "pegi": {
+     "rating": "18",
+     "descriptors": "Violence\r\nBad language\r\nIn-game Purchases",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "usk": {
+     "rating": "18",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "oflc": {
+     "rating": "r18",
+     "descriptors": "High impact violence and sex",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "nzoflc": {
+     "rating": "r16",
+     "descriptors": "Violence\r\nSexual violence\r\nOffensive language and sex scenes",
+     "use_age_gate": "true",
+     "required_age": "16"
+    },
+    "kgrb": {
+     "rating": "18",
+     "descriptors": "Sexuality\r\nViolence\r\nLanguage\r\nDrugs",
+     "use_age_gate": "true",
+     "required_age": "19"
+    },
+    "dejus": {
+     "rating": "16",
+     "descriptors": "Conteúdo Sexual\r\nDrogas Lícitas\r\nViolência",
+     "use_age_gate": "true",
+     "required_age": "16"
+    },
+    "mda": {
+     "rating": "M18",
+     "descriptors": "STRONG VIOLENCE, NUDITY AND SEXUAL SCENES",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "fpb": {
+     "rating": "18",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "csrr": {
+     "rating": "R",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "crl": {
+     "rating": "18",
+     "use_age_gate": "true",
+     "required_age": "18"
+    },
+    "steam_germany": {
+     "rating_generated": "1",
+     "rating": "16",
+     "required_age": "16",
+     "banned": "0",
+     "use_age_gate": "0",
+     "descriptors": "Sexuelle Inhalte\nDrastische Gewalt\nAlkohol / Tabak"
+    },
+    "igrs": {
+     "rating_generated": "1",
+     "rating": "BANNED",
+     "required_age": "2147483647",
+     "banned": "1",
+     "use_age_gate": "0",
+     "descriptors": "Rokok dan/atau rokok elektronik, minuman beralkohol, narkotika, psikotropika, dan/atau zat adiktif lainnya\nPenampilan Tokoh\nKekerasan"
+    }
+   }
+  }
+ }
+}

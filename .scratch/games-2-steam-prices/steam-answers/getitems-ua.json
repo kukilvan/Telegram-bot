@@ -1,0 +1,309 @@
+{
+ "response": {
+  "store_items": [
+   {
+    "item_type": 0,
+    "id": 292030,
+    "success": 1,
+    "visible": true,
+    "name": "Ведьмак 3: Дикая Охота — Обновлённое издание",
+    "store_url_path": "app/292030/Ведьмак_3_Дикая_Охота_Обновлённое_издание",
+    "store_url_slug": "Ведьмак_3_Дикая_Охота_Обновлённое_издание",
+    "appid": 292030,
+    "type": 0,
+    "content_descriptorids": [
+     1,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2
+     ],
+     "feature_categoryids": [
+      22,
+      29,
+      30,
+      64,
+      66,
+      67,
+      68,
+      69,
+      70,
+      74,
+      78,
+      79,
+      23,
+      42,
+      43,
+      61,
+      62
+     ],
+     "controller_categoryids": [
+      57,
+      58,
+      18
+     ]
+    },
+    "release": {
+     "steam_release_date": 1431937260,
+     "original_release_date": 0
+    },
+    "best_purchase_option": {
+     "packageid": 68476,
+     "purchase_option_name": "The Witcher 3: Wild Hunt — Remastered",
+     "final_price_in_cents": "134900",
+     "formatted_final_price": "1 349,00₴",
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 68476,
+      "purchase_option_name": "The Witcher 3: Wild Hunt — Remastered",
+      "final_price_in_cents": "134900",
+      "formatted_final_price": "1 349,00₴",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "bundleid": 727,
+      "purchase_option_name": "The Witcher Trilogy",
+      "final_price_in_cents": "179700",
+      "formatted_final_price": "1 797,00₴",
+      "bundle_discount_pct": 10,
+      "price_before_bundle_discount": "199700",
+      "formatted_price_before_bundle_discount": "1 997,00₴",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 3,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 10
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 730,
+    "success": 1,
+    "visible": true,
+    "name": "Counter-Strike 2",
+    "store_url_path": "app/730/CounterStrike_2",
+    "store_url_slug": "CounterStrike_2",
+    "appid": 730,
+    "type": 0,
+    "is_free": true,
+    "content_descriptorids": [
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      1,
+      27
+     ],
+     "feature_categoryids": [
+      29,
+      30,
+      51,
+      35,
+      64,
+      66,
+      67,
+      68,
+      69,
+      70,
+      74,
+      8,
+      15,
+      41,
+      42,
+      43,
+      63
+     ]
+    },
+    "release": {
+     "steam_release_date": 1345568400
+    },
+    "purchase_options": [
+     {
+      "packageid": 54029,
+      "purchase_option_name": "прайм-статус",
+      "final_price_in_cents": "65000",
+      "formatted_final_price": "650,00₴",
+      "user_can_purchase_as_gift": false,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 999999999,
+    "success": 15,
+    "visible": false,
+    "name": "",
+    "store_url_path": "app/0/",
+    "store_url_slug": "",
+    "appid": 0
+   },
+   {
+    "item_type": 0,
+    "id": 3240220,
+    "success": 1,
+    "visible": true,
+    "name": "Grand Theft Auto V Enhanced",
+    "store_url_path": "app/3240220/Grand_Theft_Auto_V_Enhanced",
+    "store_url_slug": "Grand_Theft_Auto_V_Enhanced",
+    "appid": 3240220,
+    "type": 0,
+    "content_descriptorids": [
+     1,
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2,
+      1,
+      49,
+      36,
+      9,
+      38
+     ],
+     "feature_categoryids": [
+      22,
+      35,
+      41,
+      42
+     ],
+     "controller_categoryids": [
+      57,
+      58,
+      18
+     ]
+    },
+    "release": {
+     "steam_release_date": 1741091880
+    },
+    "best_purchase_option": {
+     "packageid": 1148516,
+     "purchase_option_name": "Grand Theft Auto V Enhanced",
+     "final_price_in_cents": "67400",
+     "original_price_in_cents": "134900",
+     "formatted_final_price": "674,00₴",
+     "formatted_original_price": "1 349,00₴",
+     "discount_pct": 50,
+     "active_discounts": [
+      {
+       "discount_amount": "67500",
+       "discount_description": "#discount_desc_preset_special",
+       "discount_end_date": 1793901600
+      }
+     ],
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 1148516,
+      "purchase_option_name": "Grand Theft Auto V Enhanced",
+      "final_price_in_cents": "67400",
+      "original_price_in_cents": "134900",
+      "formatted_final_price": "674,00₴",
+      "formatted_original_price": "1 349,00₴",
+      "discount_pct": 50,
+      "active_discounts": [
+       {
+        "discount_amount": "67500",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793901600
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1251933,
+      "purchase_option_name": "Grand Theft Auto V Enhanced & Great White Shark Card",
+      "final_price_in_cents": "199900",
+      "formatted_final_price": "1 999,00₴",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1229928,
+      "purchase_option_name": "GTA+",
+      "final_price_in_cents": "25900",
+      "formatted_final_price": "259,00₴",
+      "user_can_purchase_as_gift": false,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 0,
+      "recurrence_info": {
+       "packageid": 1229942,
+       "billing_agreement_type": 1,
+       "renewal_time_unit": 6,
+       "renewal_time_period": 1,
+       "renewal_price_in_cents": "25900",
+       "formatted_renewal_price": "259,00₴"
+      },
+      "must_purchase_as_set": false,
+      "package_group": "subscriptions",
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   }
+  ]
+ }
+}
