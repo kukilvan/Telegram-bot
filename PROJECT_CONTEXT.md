@@ -16,7 +16,7 @@ Session «Тикет 6.2.02»: ticket 02 of part 6.2 (Steam prices, discounts an
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
 - Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`); cleaned in stage 8. `.env` has variables the code does not read (`PSN_API_KEY`, `SHIKIMORI_CLIENT_ID/SECRET`, lower-case `psn_api_key`); also stage 8.
 - The bot token and the TMDb key leaked in a chat and a console; **replace all keys once, at the end, before publishing** (stage 8).
-- Docs were moved onto the kickoff workflow on 2026-11-01 (`docs/history.md`); this file is the result.
+- Docs were moved onto the kickoff workflow on 2026-11-01 (`docs/history.md`); this file is the result. The code map `docs/code-map.md` is built from the module docstrings by `tools/code_map.py` (rule 11 of the coding standards): a ticket writes the docstring and runs the script.
 
 ## Stages
 
