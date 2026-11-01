@@ -76,7 +76,7 @@ The owner works in Claude Code on the PC, in the folder `E:\LocalAI\Bionic\Teleg
 Before the owner sees a ticket:
 1. The full test suite passes; failures listed as known in `PROJECT_CONTEXT.md` don't count, new ones do.
 2. Start the app with `.\start-bot.ps1` (it stops the running one).
-3. Walk the owner's check exactly as you will write it: web — in the browser pane or by HTTP requests; bot — logs and the health endpoint. Watch the log for 10–15 seconds: no red text, and within a minute a line `poll scan done: … failed, …`; no error message arrives in Telegram. What only the owner can do (their phone, Telegram, their accounts) stays theirs.
+3. Walk the owner's check exactly as you will write it: web — in the browser pane or by HTTP requests; bot — logs and the health endpoint. Watch the log for 10–15 seconds: no red text, and within a minute a line `Job "Tracker.poll_due …" executed successfully` with no `polling title … failed` before it; no error message arrives in Telegram. What only the owner can do (their phone, Telegram, their accounts) stays theirs.
 4. Fix what broke and repeat. The owner's check then lists what you could not verify, and one line says what you did.
 
 ## End of a session
