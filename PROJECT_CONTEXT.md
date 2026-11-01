@@ -4,14 +4,14 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Тикет 6.2.02»: ticket 02 of part 6.2 (Steam prices, discounts and bundles) — the Steam `GetItems` client, the adapter and the pure prices module. Start from `.scratch/games-2-steam-prices/issues/02-steam-client-and-prices.md`. Model: Opus 5.5, effort high (`docs/models.md`: complex ticket). After it: 03 (complex) → 04 (complex) → 05 (medium), then «Ревью 6.2».
+Session «Тикет 6.2.03»: ticket 03 of part 6.2 (Steam prices, discounts and bundles) — the price check at the end of the polling pass, the price history and migration 0013. Start from `.scratch/games-2-steam-prices/issues/03-price-check-and-history.md`. Model: Opus 5.5, effort high (`docs/models.md`: complex ticket). After it: 04 (complex) → 05 (medium), then «Ревью 6.2».
 
 ## State
 
 - Telegram bot, polling and web run as **one process** in Docker on the owner's PC (ADR 0006, 0007). Web: `http://localhost:8080` with password login; the bot is the delivery channel (ADR 0002). Commands — `CLAUDE.md`, "Run".
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0012 (0013 comes with 6.2 ticket 03). Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The temporary bot buttons «➕ Добавить» and «📚 Мои тайтлы» stay until stage 6.4 / 7.
-- Games: part 6.1 done (IGDB, platforms, release events, «Пройдено»). **Part 6.2 in progress**: description, spec and slicing accepted (5 tickets in `.scratch/games-2-steam-prices/issues/`), ticket 01 accepted (`GameScope`, KI-39 and KI-40 fixed, sequel snapshot by source, `search_games` removed). Tickets 02–05 open. PlayStation has no prices (ADR 0009).
+- Games: part 6.1 done (IGDB, platforms, release events, «Пройдено»). **Part 6.2 in progress**: description, spec and slicing accepted (5 tickets in `.scratch/games-2-steam-prices/issues/`), tickets 01 (`GameScope`, KI-39 and KI-40 fixed, sequel snapshot by source, `search_games` removed) and 02 (Steam `GetItems` client `store_items` with `SteamError`, adapter `sources/steam_prices.py`, pure `prices.py`: `PriceLook`, `Money`, `lowest`; not yet connected to the core) accepted. Tickets 03–05 open. PlayStation has no prices (ADR 0009).
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
 - Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`); cleaned in stage 8. `.env` has variables the code does not read (`PSN_API_KEY`, `SHIKIMORI_CLIENT_ID/SECRET`, lower-case `psn_api_key`); also stage 8.
@@ -25,7 +25,7 @@ Session «Тикет 6.2.02»: ticket 02 of part 6.2 (Steam prices, discounts an
 | 0–4 | Urgent fixes, data model, sources for movies/series/anime, events and delivery, bot | done | — | — |
 | 5 | Web app: 5.1 Docker and skeleton, 5.2 search/list/card, 5.3 feed/archive/scores, 5.4 settings/PWA | done | — | — |
 | 6.1 | Games in the list and release events (IGDB) | done | — | — |
-| 6.2 | Steam prices, discounts, bundles | tickets 1/5 | 4 tickets + 1 review left | — |
+| 6.2 | Steam prices, discounts, bundles | tickets 2/5 | 3 tickets + 1 review left | — |
 | 6.3 | DLC and sequels of games | not started | not estimated | — |
 | 6.4 | «Входящие»: add from Telegram by post or name | not started | 7–9 | 001 |
 | 7 | Backups, NAS move, access from outside the home, install on phone | not started | 1+ | — |
@@ -37,7 +37,7 @@ Status values: not started · description · spec · tickets k/n · review · fi
 ## Environment
 
 - Windows 11, PowerShell (Git Bash also available), Python 3.12.10 in `.venv/`, Docker 29.x. Runs in Docker on the owner's PC; later on a NAS (stage 7), access from outside the home via Tailscale or Cloudflare Tunnel (decided then).
-- Tests: 2449 in total. On the owner's PC (checked 2026-11-01): 2444 pass, 2 skipped; three process-launch tests (`test_app_main`, `test_docker_files`, `test_runtime`) fail on Windows without any change — known, do not count.
+- Tests: 2610 in total. On the owner's PC (checked 2026-11-01): 2605 pass, 2 skipped; three process-launch tests (`test_app_main`, `test_docker_files`, `test_runtime`) fail on Windows without any change — known, do not count.
 - `.env` (values never printed; read by `Settings` in `app/config.py` unless noted):
 
 | Variable | Required | Meaning |

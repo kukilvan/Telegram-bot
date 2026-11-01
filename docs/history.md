@@ -2,6 +2,15 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-01 — Part 6.2, ticket 02: Steam client, price adapter, pure prices
+
+- `app/providers/steam.py`: `store_items(appids, country)` — one `GET IStoreBrowseService/GetItems` (ids, Russian, the country in capitals, `include_all_purchase_options`), at most 100 apps (`MAX_ITEMS`; more is a `ValueError`), no apps — no request; `SteamError(status, cause)`: timeout and no connection — `cause`, 429 and 5xx — `status`, any other status — neither, so the reason is «unknown» (no key to check). `failures.source_name("steam")` — «Steam».
+- `app/tracker/prices.py` (pure): `PriceLook` (`answer`, `currency`, `Price`, `Bundle`s) with `state()` / strict `from_state()` (`{}` — not looked at yet; invariants checked in `__post_init__`, so a look that contradicts its answer cannot be made); `Money` and `currency_of` (the number in Steam's text becomes `{}`); `percent`; `lowest(records, appid, country, currency)` over anything with the fields of the future `PriceRecord`.
+- `app/tracker/sources/steam_prices.py`: `SteamPriceSource.price_looks` (a number of no ASCII digits — `unknown_app` without asking) and pure `parse_items` / `parse_item`; an unreadable record is an `UnreadAnswer` (a `ValueError` with no status, so the owner reads «неизвестная ошибка») naming the field.
+- `app/tracker/sources/dates.py`: `response_moment_of_timestamp` (soft, naive UTC; AniList's copy removed) and `parse_moment` (strict). `CONTEXT.md`: `PriceLook`, `answer`, `lowest`.
+- Decisions: `bundles_only` is tested on the real answer of Counter-Strike (appid 10 has no purchase option of one game), not an assembled one; only the preorder answer is assembled (KI-44). Fixtures: `tests/fixtures/steam/getitems_*.json`. English rows added to the Russian `docs/coding-standards.md` and `docs/tests-map.md` without translating the files.
+- `docs/workflow.md`, self-check: the log line to wait for is `Job "Tracker.poll_due …" executed successfully` (polling no longer writes `poll scan done`).
+
 ## 2026-11-01 — Code map built from the docstrings
 
 Why: `docs/code-map.md` was 93,337 bytes (about 35k tokens) and every spec, ticket and review session read it; 8 of its 57 rows held half of the text (`app/web/` alone 19k characters), they mixed in ticket and `KI-` history, and 45 files were not named in it by full path. Now `tools/code_map.py` builds the list of the 98 modules of `app/` from the first sentence of each module docstring (the list is 14 KB, the whole file 17.7 KB), and `tests/test_code_map.py` fails when the file is stale, a module has no docstring or a first sentence is over 200 characters. Rule 11 of `docs/coding-standards.md` and the Ticket step of `docs/workflow.md` say so. The old map: `git show 142bc26:docs/code-map.md`.
