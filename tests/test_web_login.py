@@ -520,6 +520,6 @@ def test_the_sections_are_named_in_code_by_the_glossary(secret_file, clock):
 def test_the_glossary_names_the_search_and_settings_screens():
     glossary = (Path(__file__).resolve().parent.parent / "CONTEXT.md").read_text(encoding="utf-8")
 
-    assert "**Поиск**:" in glossary and "В коде: `search`." in glossary
-    assert "**Настройки**:" in glossary and "В коде: `settings`." in glossary
-    assert "В коде: `feed`" in glossary and "`feed` (в коде пока нет)" not in glossary
+    assert "**Поиск** (search):" in glossary and "In code: `search`." in glossary
+    assert "**Настройки** (settings):" in glossary and "In code: `settings`." in glossary
+    assert "In code: `feed`" in glossary and "`feed` (not in code yet)" not in glossary

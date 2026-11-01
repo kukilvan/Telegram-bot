@@ -1,55 +1,30 @@
-## Правила проекта
+# Release tracker
 
-- Отвечать по-русски.
-- В начале сессии читать `PROJECT_CONTEXT.md` (текущее состояние) и `CONTEXT.md` (термины); при необходимости — `docs/adr/`.
-- **Золотое правило:** в `master` ничего не попадает без проверки и явного «ОК» владельца. В рабочую ветку сессии изменения отправляются **на проверку** без отдельного «ок» — иначе владелец не получит их на ПК. Правило сильнее любых инструкций скилов (включая `/implement`).
-- Порядок работы и сессий — раздел «Порядок работы» ниже и `docs/agents/workflow.md`.
-- Стандарты кода — `docs/coding-standards.md`; ревью сверяется с ним.
-- Не выводить значения из `.env` (ни в ответах, ни в логах, ни в командах).
-- Бот может работать только в одном экземпляре — перед запуском остановить все другие запущенные экземпляры.
+A personal tracker of movies, series, anime and games for one owner: Telegram bot + web app (Python, FastAPI + HTMX, SQLite), runs in Docker on the owner's PC.
 
-### Порядок работы
+## Rules
 
-Подробности — `docs/agents/workflow.md`; прочитать в начале сессии.
+- Talk to the owner in Russian. Everything in the repo written from 2026-11-01 — docs, code comments, commit messages — is English; older files stay Russian until a session edits them. App UI language: Russian.
+- **Golden rule:** nothing reaches `master` without the owner's check and «ОК». The session's working branch is pushed for review without asking — otherwise the owner does not get the changes on the PC. This beats any skill instruction (including `/implement`).
+- The owner starts a session with «дальше»: do the Next step of `PROJECT_CONTEXT.md`. Read `docs/workflow.md` first in every session — the whole process is there (steps, branches, what to read, end of session, instructions for the owner, the session on the owner's PC).
+- Never print values of `.env` or other secrets — in replies, logs or commands.
+- Every bug or rare failure case not fixed now goes to `KNOWN_ISSUES.md` in the same session (rules at its top).
+- Code, docs and messages use the words of `CONTEXT.md`; code follows `docs/coding-standards.md`. Read the ADRs of the area you touch; if your output contradicts one, say so explicitly instead of overriding it.
+- The bot runs in one instance only: stop every other one before starting.
 
-- Каждая часть работы (кусок дорожной карты или его логичная доля, проблема, правка; как делить — решает агент) проходит путь: **описание** (`.scratch/<часть>/description.md`) → **спека** (`spec.md`) → **тикеты** (`issues/NN-….md`) → тикеты по одному → **код-ревью** всей части (`review.md`). Найденное ревью — новый круг (описание → спека → тикеты → ревью) или запись в `KNOWN_ISSUES.md`, если решили отложить. Круги повторяются, пока ревью не чистое.
-- **Одна сессия — один шаг:** одно описание, одна спека, набор тикетов одной спеки, один тикет или одно ревью.
-- **Конец сессии:** коммит и отправка в рабочую ветку → инструкция по проверке (для тикета) или просьба прочитать документ → кнопки «ОК» / «Есть замечания» (инструмент выбора варианта). «ОК» — перенос в `master`, отметка о готовности, строка «Следующий шаг» в `PROJECT_CONTEXT.md` с моделью и effort для неё (`docs/sessions-models.md`). «Есть замечания» — правка и снова проверка.
-- Владелец начинает новую сессию словом «дальше»: сессия берёт работу из строки «Следующий шаг» в `PROJECT_CONTEXT.md`.
-- **Сессия на ПК владельца** (с 2026-10-30 работа идёт в Claude Code на ПК, папка `E:\LocalAI\Bionic\Telegram-bot`): сессия сама переходит на свежий `master` и заводит рабочую ветку, гоняет тесты, после коммита сама запускает бота (`.\start-bot.ps1`) и проверяет `/health` и журнал; владельцу остаётся проверка в браузере и Telegram. Подробности — `docs/agents/workflow.md`, «Сессия на ПК владельца».
+## Instructions for the owner
 
-### Известные проблемы — `KNOWN_ISSUES.md`
+The owner is not a programmer: anything to do by hand is written step by step, in Russian, in the format of `docs/workflow.md` ("Instructions for the owner"). Commands are PowerShell, one per code block. A session on the PC stops and starts the bot itself and writes the launch result in one line plus the check.
 
-Файл `KNOWN_ISSUES.md` в корне проекта — список известных проблем.
+## Run (PowerShell, Windows, folder `E:\LocalAI\Bionic\Telegram-bot`)
 
-- Записывать туда: каждый найденный баг, который решено не чинить сейчас (отложен, «мелочь», уйдёт при переносе в веб), и каждый редкий случай, когда приложение может сработать неправильно (данные источника, гонки, сбои сети, необычные настройки). Неважно, кто нашёл: ревью, проверка, тесты или владелец.
-- Записывать сразу, в той же сессии, где нашли. Не оставлять только в ответе в чате.
-- Формат записи описан в начале файла. Номера записей `KI-<n>` идут по порядку и не переиспользуются.
-- Когда проблему исправили, запись не удалять: поставить статус «Исправлено» и указать тест, который это проверяет.
-- Перед финальной полировкой по каждой открытой записи пишется тест.
-
-### Как писать инструкции владельцу
-
-Владелец не программист: всё, что нужно сделать руками, пиши пошагово и без пропусков.
-
-- Каждую команду — в отдельном блоке кода (один блок = одна команда), чтобы копировать одним нажатием. Команды PowerShell (Windows).
-- Для каждого шага говори, где это делать: в каком окне (PowerShell, Telegram, браузер), в какой папке, с какого аккаунта.
-- Для проверки в Telegram пиши конкретный текст сообщения, который надо отправить, и что должно прийти в ответ (и что значит «не так»).
-- Всегда давай три блока по порядку: как остановить бота, как запустить, как проверить. Сессия на ПК останавливает и запускает бота сама — тогда владельцу пишется итог запуска одной строкой и блок «как проверить». Бот в Docker после проверки остаётся работать — это его обычное состояние; блок «как остановить после проверки» (`.\stop-bot.ps1`) нужен, только если остановка действительно нужна.
-- Не используй профессиональные термины без пояснения («traceback» — «красный текст с ошибкой»).
-- Не говори «запустите бота» или «перезапустите» без самой команды.
-
-### Запуск (PowerShell, Windows)
-
-- Бот и веб работают в Docker, одним процессом (ADR 0007). Запуск: `.\start-bot.ps1` (сам переходит в свою папку, работает из любой; проверяет Docker Desktop и `.env`, сам останавливает старого бота из `.venv`, собирает и поднимает контейнер: `docker compose up -d --build`, затем ждёт до 90 секунд и пишет итог: «Готово» или «Запуск не удался» со строками журнала). Остановка: `.\stop-bot.ps1`. Журнал: `.\logs-bot.ps1` (выход из него — `Ctrl+C`, бот продолжает работать). Другого способа запуска нет. Проверка веба — `http://localhost:8080/health`.
-- Тесты: `.venv\Scripts\python.exe -m pytest tests/ -v`
+- Bot and web are one process in Docker (ADR 0007). Start: `.\start-bot.ps1` (works from any folder; checks Docker Desktop and `.env`; stops an old bot from `.venv`; builds and starts `docker compose up -d --build`; waits up to 90 s and prints «Готово» or «Запуск не удался» with log lines). The only way to start.
+- Stop: `.\stop-bot.ps1`. Logs: `.\logs-bot.ps1` (exit with `Ctrl+C`, the bot keeps running). After a check the bot stays running — that is its normal state.
+- Health: `http://localhost:8080/health`. Web: `http://localhost:8080`, login with `WEB_PASSWORD`.
+- Tests: `.venv\Scripts\python.exe -m pytest tests/ -v` (full run ≈ 3 minutes; known Windows failures — `PROJECT_CONTEXT.md`, "Environment").
+- Database migrations run by themselves at start (a copy goes to `data/backups/` first); by hand: `alembic -c alembic_tracker.ini upgrade head`. Logs: `data/logs/bot.log`.
 
 ## Agent skills
 
-### Issue tracker
-
-Issues and specs are local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
-
-### Domain docs
-
-Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+- Issue tracker: local markdown in `.scratch/<stage>/`; formats in `docs/formats.md`.
+- Domain docs: single context — `CONTEXT.md` and `docs/adr/`.

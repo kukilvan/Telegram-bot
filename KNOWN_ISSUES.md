@@ -1,19 +1,83 @@
-# Известные проблемы
+# Known issues
 
-Баги, которые решено пока не чинить, и редкие случаи, когда приложение может сработать неправильно.
-Перед финальной полировкой по каждой записи пишется тест: он показывает, осталась ли проблема.
-Когда проблему исправили, запись не удаляется: её статус меняется на «Исправлено» и рядом указывается тест, который это проверяет.
+Bugs decided not to fix now, and rare cases where the app can go wrong (source data, races, network failures, unusual settings) — whoever found them: review, check, tests or the owner.
 
-Формат записи:
+- Recorded in the same session it was found, never only in chat.
+- IDs `KI-<n>` go in order and are never reused.
+- Fixed: the entry stays, its status becomes `fixed (test: …)`, and the index row changes too.
+- Each stage description pulls in the open entries that fit its stage.
+- Before final polishing, every open entry gets a test.
+- Sessions read the index; a full entry is found by its `## KI-<n>` heading (Grep), never by reading the whole file.
+- Entries written before 2026-11-01 are in Russian with the labels Где · Что не так · Как воспроизвести · Насколько вероятно / чем грозит · Статус · Найдено; they keep their form (Статус: Открыто = open, Исправлено = fixed).
 
-- **Где** — файл и функция.
-- **Что не так** — суть, одной-двумя фразами.
-- **Как воспроизвести** — конкретные входные данные или состояние и что из этого выходит.
-- **Насколько вероятно / чем грозит.**
-- **Статус** — «Открыто» или «Исправлено (тест: …)».
-- **Найдено** — дата и при каком событии (ревью, проверка, жалоба владельца).
+## Index
 
----
+| ID | Title | Where | Status | Fix in |
+|---|---|---|---|---|
+| KI-1 | Аниме: сдвиг частей сезона может упереться в уникальный ключ | `app/tracker/pollers/anime.py` | open | — |
+| KI-2 | Аниме: новый приквел у франшизы даёт дубль тайтла при повторном добавлении | `app/tracker/titles.py` | fixed | — |
+| KI-3 | Docker: проверка здоровья контейнера всегда проваливается | `docker-compose.yml` | fixed | — |
+| KI-4 | Docker: на Linux бот может не получить права на запись в `data/` | `Dockerfile` | fixed | — |
+| KI-5 | Остановка, оборвавшая отправку, может повторить сообщение после старта | `app/runtime.py` | open | — |
+| KI-6 | Сторож не видит зависание с захваченной блокировкой интерпретатора (GIL) | `app/runtime.py` | open | — |
+| KI-7 | Перезапуск сбрасывает счётчик блокировки входа | `app/web/auth.py` | open | — |
+| KI-8 | Украденную cookie сессии выход не отзывает | `app/web/app.py` | open | — |
+| KI-9 | Остановка не дожидается начатых нажатий в боте | `app/runtime.py` | open | — |
+| KI-10 | «Посмотрел» сдвигает «последнюю проверку источников» в строке веба | `app/tracker/listing.py` | fixed | — |
+| KI-11 | Веб: неподдержанный метод и ошибка сервера отвечают не в общем виде | `app/web/app.py` | fixed | — |
+| KI-12 | Чужая страница с подменой адреса (DNS rebinding) проходит проверку Origin | `app/web/app.py` | open | — |
+| KI-13 | Испорченный файл ключа сессий не пересоздаётся | `app/web/auth.py` | open | — |
+| KI-14 | Пауза повтора подключения бота сбрасывается раньше, чем в спеке | `app/runtime.py` | fixed | — |
+| KI-15 | Старт контейнера не от root всё равно проверяет PUID и PGID | `app/container_start.py` | open | — |
+| KI-16 | Сбой запуска с меняющимся текстом сообщается при каждом повторе | `app/startup_report.py` | open | — |
+| KI-17 | Запись о сбое запуска не сохраняется — сообщение при каждом повторе | `app/startup_report.py` | open | — |
+| KI-18 | `.\start-bot.ps1` останавливает и чужой `python -m app.main` | `start-bot.ps1` | open | — |
+| KI-19 | `.\start-bot.ps1` может ждать итога дольше 90 секунд | `start-bot.ps1` | open | — |
+| KI-20 | Имя `kind` для типа ошибки в `app/startup_report.py` | `app/startup_report.py` | open | куске 8 |
+| KI-21 | Постеры непроверяемых аниме пропадают при смене адреса Shikimori | `app/tracker/pollers/` | open | — |
+| KI-22 | «Бросил» во время проверки этого же тайтла может пропустить одно сообщение | `Tracker.mark_dropped` | open | — |
+| KI-23 | Факт, случившийся сразу после «Вернуть в список», становится точкой отсчёта | `Poller.record_all` | open | — |
+| KI-24 | Номер удалённого последнего тайтла достаётся следующему добавленному | `app/tracker/models.py` | open | — |
+| KI-25 | Очень длинный номер в адресе карточки — «Не получилось» вместо «Этого тайтла нет в списке» | `app/web/card.py` | fixed | — |
+| KI-26 | Бот пишет в журнал сбой поиска и добавления без причины | `app/bot/tracker_handlers.py` | fixed | — |
+| KI-27 | Устаревшая карточка аниме ставит галочку не тому сезону после перенумерации | `app/web/card.py` | fixed | — |
+| KI-28 | Лента: серия аниме ровно в 00:00 UTC показывается без часа | `app/tracker/sources/shikimori_anime.py` | open | — |
+| KI-29 | «Недавно» не показывает вышедшее до добавления и до первой проверки после возврата | `Poller.record_all` | open | — |
+| KI-30 | Фильтр жанров Архива: один жанр под разными именами | `Tracker.genres` | open | — |
+| KI-31 | Список: поиск в режиме «Удалить несколько» сбрасывает галочки | `app/web/title_list.py` | fixed | — |
+| KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | open | — |
+| KI-33 | Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма | `app/runtime.py` | open | — |
+| KI-34 | Настройки: старые методы ядра и страница проверяют значения по-разному | `app/tracker/settings_store.py` | fixed | — |
+| KI-35 | Игры: дата выхода только в Японии считается выходом | `app/tracker/games.py` | open | — |
+| KI-36 | Игры: выход, о котором IGDB узнал больше чем через 30 дней, приходит без сообщения | `app/tracker/game_events.py` | open | — |
+| KI-37 | Игры: ссылка в PlayStation Store может вести на страницу ошибки | `app/tracker/games.py` | open | — |
+| KI-38 | Игры: запись IGDB без точности даты читается как «дата не объявлена» | `app/tracker/games.py` | open | — |
+| KI-39 | Игры: примерная дата старшей платформы прячет точную дату своей | `app/tracker/games.py` | fixed | — |
+| KI-40 | Игры: галочка «играю здесь» меняется у платформы, которой у игры больше нет | `app/tracker/statuses.py` | fixed | — |
+| KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | open | — |
+| KI-42 | Ручной запрос «Добавить» с номером не из цифр отвечает «Не удалось связаться» | `app/tracker/titles.py` | open | — |
+| KI-43 | Цены Steam: цена бандла — для покупателя без игр набора | `app/tracker/sources/steam_prices.py` | open | — |
+| KI-44 | Цены Steam: предзаказ проверен только на собранном ответе | `app/tracker/sources/steam_prices.py` | open | — |
+| KI-45 | Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение | `app/tracker/queue.py` | open | — |
+| KI-46 | Цены Steam: короткая скидка может пройти без сообщения или с неверным «до» | `app/tracker/pollers/game_prices.py` | open | — |
+| KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | open | — |
+| KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | open | stage 9 |
+| KI-49 | `.env` holds variables the code does not read | `.env` | open | stage 8 |
+
+## Entries
+
+Format of a new entry:
+
+```text
+## KI-<n>. <title>
+
+- Where: file and function.
+- What's wrong: one or two sentences.
+- How to reproduce: concrete input or state, and what comes out.
+- Likelihood / impact:
+- Status: open | fixed (test: …)
+- Found: date, by what (review, check, owner).
+```
 
 ## KI-1. Аниме: сдвиг частей сезона может упереться в уникальный ключ
 
@@ -440,3 +504,21 @@
 - **Насколько вероятно / чем грозит:** очень редко: нужно нажать в последнюю минуту перед отправкой. Вред — одно лишнее сообщение о скидке. «Бросил» убирает сообщения сразу, как раньше.
 - **Статус:** Открыто.
 - **Найдено:** 2026-10-31, спека части 6.2.
+
+## KI-48. Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen)
+
+- Where: anime card, data from AniList (`app/tracker/sources/`).
+- What's wrong: season 4 of Jujutsu Kaisen is announced, AniList has no data for it, so the card shows no episode or schedule information.
+- How to reproduce: open the card of Jujutsu Kaisen and look at the announced season: no episode count, no next-episode time.
+- Likelihood / impact: whenever AniList lacks data for an announced season; the card is poorer, no message is lost.
+- Status: open (carried over from the old bug BUG-14; may already be fine — recheck in stage 9).
+- Found: before 2026-10-27, by the owner (old bug table, `docs/history.md`).
+
+## KI-49. `.env` holds variables the code does not read
+
+- Where: `.env`, `.env.example`.
+- What's wrong: `PSN_API_KEY` and `SHIKIMORI_CLIENT_ID` / `SHIKIMORI_CLIENT_SECRET` are not read by any code; `psn_api_key` is written in lower case.
+- How to reproduce: search `app/` for these names — no reader.
+- Likelihood / impact: harmless; confusing for someone who deploys their own instance.
+- Status: open (bring to one form in stage 8, the cleanup).
+- Found: 2026-11-01, while moving the docs (carried over from the old bug table).

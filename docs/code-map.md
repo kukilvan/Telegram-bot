@@ -1,6 +1,22 @@
-# Карта кода
+# Code map
 
-Что лежит в каждом файле `app/`. Общая схема и технологии — `PROJECT_CONTEXT.md`, раздел 5; куда класть новый код — `docs/coding-standards.md`, правило 7. Обновлять вместе с кодом.
+One line per file or module: what it holds (the rows below were written in Russian and keep it until a session edits them; keep new rows to one short line). The ticket that changes the code updates this file. Where to put new code — `docs/coding-standards.md`, rule 7. What each test module checks — `docs/tests-map.md` (read on need).
+
+## Architecture
+
+```text
+One process app.main (app/runtime.py: start, stop, self-check, watchdog; ADR 0007):
+Telegram (aiogram 3.x) -> app/bot (thin handlers) --\
+                                                      >-> app/tracker (core: events, delivery) -> sources -> app/providers -> external APIs
+Browser -> app/web (FastAPI on uvicorn; app.py assembles; --/
+           password login, /health; menu.py, pages.py, posters.py, one router per page)
+Database: SQLite in WAL mode (SQLAlchemy 2 + Alembic), file data/tracker.db, schema only through Alembic (app/tracker/migrations/, alembic_tracker.ini)
+Scheduler: APScheduler · events deduplicated by key
+```
+
+Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007) + HTMX (ADR 0004), httpx, Pydantic v2 + pydantic-settings, SQLAlchemy 2, Alembic, APScheduler, pytest (+asyncio). Models (titles, external ids, seasons, episodes, season parts, franchise movies, source snapshots, events, delivery queue, settings) — `app/tracker/models.py`. The old database `bot.db` and its copies lie in `data/archive/`; the bot does not read them. All tests run offline on fake sources and SQLite in memory.
+
+## Code
 
 | Файл | Назначение |
 |---|---|
