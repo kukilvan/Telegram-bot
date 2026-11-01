@@ -1,0 +1,1904 @@
+{
+ "response": {
+  "store_items": [
+   {
+    "item_type": 0,
+    "id": 3240220,
+    "success": 1,
+    "visible": true,
+    "name": "Grand Theft Auto V Enhanced",
+    "store_url_path": "app/3240220/Grand_Theft_Auto_V_Enhanced",
+    "store_url_slug": "Grand_Theft_Auto_V_Enhanced",
+    "appid": 3240220,
+    "type": 0,
+    "included_items": {
+     "included_apps": [
+      {
+       "item_type": 0,
+       "id": 3482260,
+       "success": 1,
+       "visible": true,
+       "name": "GTA+",
+       "store_url_path": "app/3482260/GTA",
+       "store_url_slug": "GTA",
+       "appid": 3482260,
+       "type": 0,
+       "categories": {},
+       "best_purchase_option": {
+        "packageid": 1229928,
+        "purchase_option_name": "GTA+",
+        "final_price_in_cents": "3200",
+        "formatted_final_price": "₪32.00",
+        "user_can_purchase_as_gift": false,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "recurrence_info": {
+         "packageid": 1229942,
+         "billing_agreement_type": 1,
+         "renewal_time_unit": 6,
+         "renewal_time_period": 1,
+         "renewal_price_in_cents": "3200",
+         "formatted_renewal_price": "₪32.00"
+        },
+        "must_purchase_as_set": false,
+        "package_group": "subscriptions",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_packages": [
+      {
+       "item_type": 1,
+       "id": 1148516,
+       "success": 1,
+       "visible": true,
+       "name": "Grand Theft Auto V Enhanced",
+       "store_url_path": "app/3240220/Grand_Theft_Auto_V_Enhanced",
+       "store_url_slug": "Grand_Theft_Auto_V_Enhanced",
+       "appid": 3240220,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3240220
+       ],
+       "content_descriptorids": [
+        1,
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         35,
+         41,
+         42
+        ],
+        "controller_categoryids": [
+         57,
+         58,
+         18
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1148516,
+        "purchase_option_name": "Grand Theft Auto V Enhanced",
+        "final_price_in_cents": "5650",
+        "original_price_in_cents": "11300",
+        "formatted_final_price": "₪56.50",
+        "formatted_original_price": "₪113.00",
+        "discount_pct": 50,
+        "active_discounts": [
+         {
+          "discount_amount": "5650",
+          "discount_description": "#discount_desc_preset_special",
+          "discount_end_date": 1793901600
+         }
+        ],
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1251933,
+       "success": 1,
+       "visible": true,
+       "name": "Grand Theft Auto V Enhanced & Great White Shark Card",
+       "store_url_path": "app/3240220/Grand_Theft_Auto_V_Enhanced",
+       "store_url_slug": "Grand_Theft_Auto_V_Enhanced_Great_White_Shark_Card",
+       "appid": 3240220,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3240220
+       ],
+       "content_descriptorids": [
+        1,
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         35,
+         41,
+         42
+        ],
+        "controller_categoryids": [
+         57,
+         58,
+         18
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1251933,
+        "purchase_option_name": "Grand Theft Auto V Enhanced & Great White Shark Card",
+        "final_price_in_cents": "17100",
+        "formatted_final_price": "₪171.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1229928,
+       "success": 1,
+       "visible": true,
+       "name": "GTA+",
+       "store_url_path": "app/3482260/GTA",
+       "store_url_slug": "GTA",
+       "appid": 3482260,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3482260
+       ],
+       "best_purchase_option": {
+        "packageid": 1229928,
+        "purchase_option_name": "GTA+",
+        "final_price_in_cents": "3200",
+        "formatted_final_price": "₪32.00",
+        "user_can_purchase_as_gift": false,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "recurrence_info": {
+         "packageid": 1229942,
+         "billing_agreement_type": 1,
+         "renewal_time_unit": 6,
+         "renewal_time_period": 1,
+         "renewal_price_in_cents": "3200",
+         "formatted_renewal_price": "₪32.00"
+        },
+        "must_purchase_as_set": false,
+        "package_group": "subscriptions",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_creators": [
+      {
+       "item_type": 5,
+       "id": 1541443,
+       "success": 1,
+       "visible": true,
+       "name": "Rockstar Games",
+       "store_url_path": "developer/rockstargames",
+       "store_url_slug": "rockstargames",
+       "game_count": 19
+      }
+     ]
+    },
+    "content_descriptorids": [
+     1,
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2,
+      1,
+      49,
+      36,
+      9,
+      38
+     ],
+     "feature_categoryids": [
+      22,
+      35,
+      41,
+      42
+     ],
+     "controller_categoryids": [
+      57,
+      58,
+      18
+     ]
+    },
+    "release": {
+     "steam_release_date": 1741091880
+    },
+    "best_purchase_option": {
+     "packageid": 1148516,
+     "purchase_option_name": "Grand Theft Auto V Enhanced",
+     "final_price_in_cents": "5650",
+     "original_price_in_cents": "11300",
+     "formatted_final_price": "₪56.50",
+     "formatted_original_price": "₪113.00",
+     "discount_pct": 50,
+     "active_discounts": [
+      {
+       "discount_amount": "5650",
+       "discount_description": "#discount_desc_preset_special",
+       "discount_end_date": 1793901600
+      }
+     ],
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 1148516,
+      "purchase_option_name": "Grand Theft Auto V Enhanced",
+      "final_price_in_cents": "5650",
+      "original_price_in_cents": "11300",
+      "formatted_final_price": "₪56.50",
+      "formatted_original_price": "₪113.00",
+      "discount_pct": 50,
+      "active_discounts": [
+       {
+        "discount_amount": "5650",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793901600
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1251933,
+      "purchase_option_name": "Grand Theft Auto V Enhanced & Great White Shark Card",
+      "final_price_in_cents": "17100",
+      "formatted_final_price": "₪171.00",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1229928,
+      "purchase_option_name": "GTA+",
+      "final_price_in_cents": "3200",
+      "formatted_final_price": "₪32.00",
+      "user_can_purchase_as_gift": false,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 0,
+      "recurrence_info": {
+       "packageid": 1229942,
+       "billing_agreement_type": 1,
+       "renewal_time_unit": 6,
+       "renewal_time_period": 1,
+       "renewal_price_in_cents": "3200",
+       "formatted_renewal_price": "₪32.00"
+      },
+      "must_purchase_as_set": false,
+      "package_group": "subscriptions",
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 1091500,
+    "success": 1,
+    "visible": true,
+    "name": "Cyberpunk 2077",
+    "store_url_path": "app/1091500/Cyberpunk_2077",
+    "store_url_slug": "Cyberpunk_2077",
+    "appid": 1091500,
+    "type": 0,
+    "included_items": {
+     "included_apps": [
+      {
+       "item_type": 0,
+       "id": 2138330,
+       "success": 1,
+       "visible": true,
+       "name": "Cyberpunk 2077: Призрачная свобода",
+       "store_url_path": "app/2138330/Cyberpunk_2077_Призрачная_свобода",
+       "store_url_slug": "Cyberpunk_2077_Призрачная_свобода",
+       "appid": 2138330,
+       "type": 4,
+       "related_items": {
+        "parent_appid": 1091500
+       },
+       "content_descriptorids": [
+        1,
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         64,
+         65,
+         66,
+         67,
+         68,
+         69,
+         70,
+         78,
+         79,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 938169,
+        "purchase_option_name": "Cyberpunk 2077: Призрачная свобода",
+        "final_price_in_cents": "12499",
+        "formatted_final_price": "₪124.99",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_packages": [
+      {
+       "item_type": 1,
+       "id": 367653,
+       "success": 1,
+       "visible": true,
+       "name": "Cyberpunk 2077",
+       "store_url_path": "app/1091500/Cyberpunk_2077",
+       "store_url_slug": "Cyberpunk_2077",
+       "appid": 1091500,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        1091500
+       ],
+       "content_descriptorids": [
+        1,
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         64,
+         65,
+         66,
+         67,
+         68,
+         69,
+         70,
+         74,
+         78,
+         79,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 367653,
+        "purchase_option_name": "Cyberpunk 2077",
+        "final_price_in_cents": "24900",
+        "formatted_final_price": "₪249.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 938169,
+       "success": 1,
+       "visible": true,
+       "name": "Cyberpunk 2077: Призрачная свобода",
+       "store_url_path": "app/2138330/Cyberpunk_2077_Призрачная_свобода",
+       "store_url_slug": "Cyberpunk_2077_Phantom_Liberty",
+       "appid": 2138330,
+       "type": 4,
+       "included_types": [
+        4
+       ],
+       "included_appids": [
+        2138330
+       ],
+       "content_descriptorids": [
+        1,
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         64,
+         65,
+         66,
+         67,
+         68,
+         69,
+         70,
+         78,
+         79,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 938169,
+        "purchase_option_name": "Cyberpunk 2077: Призрачная свобода",
+        "final_price_in_cents": "12499",
+        "formatted_final_price": "₪124.99",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_bundles": [
+      {
+       "item_type": 2,
+       "id": 32470,
+       "success": 1,
+       "visible": true,
+       "name": "Cyberpunk 2077: Полное издание",
+       "store_url_path": "bundle/32470/Cyberpunk_2077_Полное_издание",
+       "store_url_slug": "Cyberpunk_2077_Полное_издание",
+       "type": 0,
+       "included_types": [
+        0,
+        4
+       ],
+       "included_appids": [
+        1091500,
+        2138330
+       ],
+       "content_descriptorids": [
+        1,
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         64,
+         65,
+         66,
+         67,
+         68,
+         69,
+         70,
+         74,
+         78,
+         79,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "bundleid": 32470,
+        "purchase_option_name": "Cyberpunk 2077: Полное издание",
+        "final_price_in_cents": "34407",
+        "formatted_final_price": "₪344.07",
+        "bundle_discount_pct": 8,
+        "price_before_bundle_discount": "37399",
+        "formatted_price_before_bundle_discount": "₪373.99",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": true,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false,
+        "combined_discount_pct": 8
+       }
+      }
+     ],
+     "included_creators": [
+      {
+       "item_type": 5,
+       "id": 32989758,
+       "success": 1,
+       "visible": true,
+       "name": "CD PROJEKT RED",
+       "store_url_path": "developer/CDPR",
+       "store_url_slug": "CDPR",
+       "game_count": 10
+      }
+     ]
+    },
+    "content_descriptorids": [
+     1,
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2
+     ],
+     "feature_categoryids": [
+      22,
+      29,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      74,
+      78,
+      79,
+      23,
+      61,
+      62
+     ],
+     "controller_categoryids": [
+      28,
+      55,
+      57,
+      58
+     ]
+    },
+    "release": {
+     "steam_release_date": 1607558400,
+     "original_release_date": 0
+    },
+    "best_purchase_option": {
+     "packageid": 367653,
+     "purchase_option_name": "Cyberpunk 2077",
+     "final_price_in_cents": "24900",
+     "formatted_final_price": "₪249.00",
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 367653,
+      "purchase_option_name": "Cyberpunk 2077",
+      "final_price_in_cents": "24900",
+      "formatted_final_price": "₪249.00",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "bundleid": 32470,
+      "purchase_option_name": "Cyberpunk 2077: Полное издание",
+      "final_price_in_cents": "34407",
+      "formatted_final_price": "₪344.07",
+      "bundle_discount_pct": 8,
+      "price_before_bundle_discount": "37399",
+      "formatted_price_before_bundle_discount": "₪373.99",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": true,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 8
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 1245620,
+    "success": 1,
+    "visible": true,
+    "name": "ELDEN RING",
+    "store_url_path": "app/1245620/ELDEN_RING",
+    "store_url_slug": "ELDEN_RING",
+    "appid": 1245620,
+    "type": 0,
+    "included_items": {
+     "included_apps": [
+      {
+       "item_type": 0,
+       "id": 2778580,
+       "success": 1,
+       "visible": true,
+       "name": "ELDEN RING Shadow of the Erdtree",
+       "store_url_path": "app/2778580/ELDEN_RING_Shadow_of_the_Erdtree",
+       "store_url_slug": "ELDEN_RING_Shadow_of_the_Erdtree",
+       "appid": 2778580,
+       "type": 4,
+       "related_items": {
+        "parent_appid": 1245620
+       },
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         23,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1010513,
+        "purchase_option_name": "ELDEN RING Shadow of the Erdtree",
+        "final_price_in_cents": "15900",
+        "formatted_final_price": "₪159.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 0,
+       "id": 2778590,
+       "success": 1,
+       "visible": true,
+       "name": "ELDEN RING Shadow of the Erdtree Premium Bundle",
+       "store_url_path": "app/2778590/ELDEN_RING_Shadow_of_the_Erdtree_Premium_Bundle",
+       "store_url_slug": "ELDEN_RING_Shadow_of_the_Erdtree_Premium_Bundle",
+       "appid": 2778590,
+       "type": 4,
+       "related_items": {
+        "parent_appid": 1245620
+       },
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         23,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1010529,
+        "purchase_option_name": "ELDEN RING Shadow of the Erdtree Premium Bundle",
+        "final_price_in_cents": "19900",
+        "formatted_final_price": "₪199.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 0,
+       "id": 2855520,
+       "success": 15,
+       "visible": false,
+       "name": "",
+       "store_url_path": "app/0/",
+       "store_url_slug": "",
+       "appid": 0
+      }
+     ],
+     "included_packages": [
+      {
+       "item_type": 1,
+       "id": 440408,
+       "success": 1,
+       "visible": true,
+       "name": "ELDEN RING",
+       "store_url_path": "app/1245620/ELDEN_RING",
+       "store_url_slug": "ELDEN_RING",
+       "appid": 1245620,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        1245620
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         67,
+         68,
+         69,
+         70,
+         74,
+         79,
+         23,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 440408,
+        "purchase_option_name": "ELDEN RING",
+        "final_price_in_cents": "24900",
+        "formatted_final_price": "₪249.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1010505,
+       "success": 1,
+       "visible": true,
+       "name": "ELDEN RING Shadow of the Erdtree Edition",
+       "store_url_path": "sub/1010505/",
+       "store_url_slug": "ELDEN_RING_Shadow_of_the_Erdtree_Edition",
+       "type": 0,
+       "included_types": [
+        0,
+        4
+       ],
+       "included_appids": [
+        1245620,
+        2778580
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         67,
+         68,
+         69,
+         70,
+         74,
+         79,
+         23,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1010505,
+        "purchase_option_name": "ELDEN RING Shadow of the Erdtree Edition",
+        "final_price_in_cents": "31900",
+        "formatted_final_price": "₪319.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1010506,
+       "success": 1,
+       "visible": true,
+       "name": "ELDEN RING Shadow of the Erdtree Deluxe Edition",
+       "store_url_path": "sub/1010506/",
+       "store_url_slug": "ELDEN_RING_Shadow_of_the_Erdtree_Deluxe_Edition",
+       "type": 0,
+       "included_types": [
+        0,
+        4
+       ],
+       "included_appids": [
+        1245620,
+        2778580,
+        2778590
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2,
+         1,
+         49,
+         36,
+         9,
+         38
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         67,
+         68,
+         69,
+         70,
+         74,
+         79,
+         23,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1010506,
+        "purchase_option_name": "ELDEN RING Shadow of the Erdtree Deluxe Edition",
+        "final_price_in_cents": "38900",
+        "formatted_final_price": "₪389.00",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_creators": [
+      {
+       "item_type": 5,
+       "id": 33042543,
+       "success": 1,
+       "visible": true,
+       "name": "Bandai Namco Entertainment",
+       "store_url_path": "developer/BANDAINAMCO",
+       "store_url_slug": "BANDAINAMCO",
+       "game_count": 169
+      },
+      {
+       "item_type": 5,
+       "id": 45188208,
+       "success": 1,
+       "visible": true,
+       "name": "FromSoftware",
+       "store_url_path": "developer/FromSoftware",
+       "store_url_slug": "FromSoftware",
+       "game_count": 9
+      }
+     ]
+    },
+    "content_descriptorids": [
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2,
+      1,
+      49,
+      36,
+      9,
+      38
+     ],
+     "feature_categoryids": [
+      22,
+      29,
+      67,
+      68,
+      69,
+      70,
+      74,
+      79,
+      23,
+      62
+     ],
+     "controller_categoryids": [
+      28
+     ]
+    },
+    "release": {
+     "steam_release_date": 1645744078
+    },
+    "best_purchase_option": {
+     "packageid": 440408,
+     "purchase_option_name": "ELDEN RING",
+     "final_price_in_cents": "24900",
+     "formatted_final_price": "₪249.00",
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 440408,
+      "purchase_option_name": "ELDEN RING",
+      "final_price_in_cents": "24900",
+      "formatted_final_price": "₪249.00",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "is_edition": true,
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1010505,
+      "purchase_option_name": "ELDEN RING Shadow of the Erdtree Edition",
+      "final_price_in_cents": "31900",
+      "formatted_final_price": "₪319.00",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "is_edition": true,
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1010506,
+      "purchase_option_name": "ELDEN RING Shadow of the Erdtree Deluxe Edition",
+      "final_price_in_cents": "38900",
+      "formatted_final_price": "₪389.00",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "is_edition": true,
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 1145350,
+    "success": 1,
+    "visible": true,
+    "name": "Hades II",
+    "store_url_path": "app/1145350/Hades_II",
+    "store_url_slug": "Hades_II",
+    "appid": 1145350,
+    "type": 0,
+    "included_items": {
+     "included_apps": [
+      {
+       "item_type": 0,
+       "id": 1145360,
+       "success": 1,
+       "visible": true,
+       "name": "Hades",
+       "store_url_path": "app/1145360/Hades",
+       "store_url_slug": "Hades",
+       "appid": 1145360,
+       "type": 0,
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         41,
+         42,
+         43,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 415372,
+        "purchase_option_name": "Hades",
+        "final_price_in_cents": "9295",
+        "formatted_final_price": "₪92.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 0,
+       "id": 1206340,
+       "success": 1,
+       "visible": true,
+       "name": "Hades Original Soundtrack",
+       "store_url_path": "app/1206340/Hades_Original_Soundtrack",
+       "store_url_slug": "Hades_Original_Soundtrack",
+       "appid": 1206340,
+       "type": 11,
+       "related_items": {
+        "parent_appid": 1145360
+       },
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         50
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 416693,
+        "purchase_option_name": "Hades Original Soundtrack",
+        "final_price_in_cents": "3695",
+        "formatted_final_price": "₪36.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 0,
+       "id": 2950840,
+       "success": 1,
+       "visible": true,
+       "name": "Hades II Original Soundtrack",
+       "store_url_path": "app/2950840/Hades_II_Original_Soundtrack",
+       "store_url_slug": "Hades_II_Original_Soundtrack",
+       "appid": 2950840,
+       "type": 11,
+       "related_items": {
+        "parent_appid": 1145350
+       },
+       "categories": {
+        "feature_categoryids": [
+         50
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1050729,
+        "purchase_option_name": "Hades II Soundtrack",
+        "final_price_in_cents": "3695",
+        "formatted_final_price": "₪36.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_packages": [
+      {
+       "item_type": 1,
+       "id": 390036,
+       "success": 1,
+       "visible": true,
+       "name": "Hades II",
+       "store_url_path": "app/1145350/Hades_II",
+       "store_url_slug": "Hades_II",
+       "appid": 1145350,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        1145350
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         56,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 390036,
+        "purchase_option_name": "Hades II",
+        "final_price_in_cents": "11095",
+        "formatted_final_price": "₪110.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 415372,
+       "success": 1,
+       "visible": true,
+       "name": "Hades",
+       "store_url_path": "app/1145360/Hades",
+       "store_url_slug": "Hades",
+       "appid": 1145360,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        1145360
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         41,
+         42,
+         43,
+         62
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 415372,
+        "purchase_option_name": "Hades",
+        "final_price_in_cents": "9295",
+        "formatted_final_price": "₪92.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 416693,
+       "success": 1,
+       "visible": true,
+       "name": "Hades Original Soundtrack",
+       "store_url_path": "app/1206340/Hades_Original_Soundtrack",
+       "store_url_slug": "Hades_Original_Soundtrack",
+       "appid": 1206340,
+       "type": 11,
+       "included_types": [
+        11
+       ],
+       "included_appids": [
+        1206340
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         50
+        ],
+        "controller_categoryids": [
+         28
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 416693,
+        "purchase_option_name": "Hades Original Soundtrack",
+        "final_price_in_cents": "3695",
+        "formatted_final_price": "₪36.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1050729,
+       "success": 1,
+       "visible": true,
+       "name": "Hades II Soundtrack",
+       "store_url_path": "app/2950840/Hades_II_Original_Soundtrack",
+       "store_url_slug": "Hades_II_Soundtrack",
+       "appid": 2950840,
+       "type": 11,
+       "included_types": [
+        11
+       ],
+       "included_appids": [
+        2950840
+       ],
+       "categories": {
+        "feature_categoryids": [
+         50
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1050729,
+        "purchase_option_name": "Hades II Soundtrack",
+        "final_price_in_cents": "3695",
+        "formatted_final_price": "₪36.95",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 0,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_bundles": [
+      {
+       "item_type": 2,
+       "id": 61368,
+       "success": 1,
+       "visible": true,
+       "name": "Hades + Hades II",
+       "store_url_path": "bundle/61368/Hades_Hades_II",
+       "store_url_slug": "Hades_Hades_II",
+       "type": 0,
+       "included_types": [
+        0,
+        11
+       ],
+       "included_appids": [
+        1145350,
+        1145360,
+        1206340,
+        2950840
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         50,
+         22,
+         29,
+         13,
+         23,
+         41,
+         42,
+         43,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         56,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "bundleid": 61368,
+        "purchase_option_name": "Hades + Hades II",
+        "final_price_in_cents": "25000",
+        "formatted_final_price": "₪250.00",
+        "bundle_discount_pct": 10,
+        "price_before_bundle_discount": "27780",
+        "formatted_price_before_bundle_discount": "₪277.80",
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 2,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false,
+        "combined_discount_pct": 10
+       }
+      }
+     ],
+     "included_creators": [
+      {
+       "item_type": 5,
+       "id": 3584665,
+       "success": 1,
+       "visible": true,
+       "name": "Supergiant Games",
+       "store_url_path": "developer/supergiantgames",
+       "store_url_slug": "supergiantgames",
+       "game_count": 6
+      }
+     ]
+    },
+    "categories": {
+     "supported_player_categoryids": [
+      2
+     ],
+     "feature_categoryids": [
+      22,
+      29,
+      13,
+      23,
+      62
+     ],
+     "controller_categoryids": [
+      28,
+      55,
+      56,
+      57,
+      58
+     ]
+    },
+    "release": {
+     "steam_release_date": 1758816089,
+     "original_steam_release_date": 1715014173
+    },
+    "best_purchase_option": {
+     "packageid": 390036,
+     "purchase_option_name": "Hades II",
+     "final_price_in_cents": "11095",
+     "formatted_final_price": "₪110.95",
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 390036,
+      "purchase_option_name": "Hades II",
+      "final_price_in_cents": "11095",
+      "formatted_final_price": "₪110.95",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "bundleid": 61368,
+      "purchase_option_name": "Hades + Hades II",
+      "final_price_in_cents": "25000",
+      "formatted_final_price": "₪250.00",
+      "bundle_discount_pct": 10,
+      "price_before_bundle_discount": "27780",
+      "formatted_price_before_bundle_discount": "₪277.80",
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 2,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false,
+      "combined_discount_pct": 10
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 5180770,
+    "success": 1,
+    "visible": true,
+    "name": "GhostLine - Origin Zero",
+    "store_url_path": "app/5180770/GhostLine_Origin_Zero",
+    "store_url_slug": "GhostLine_Origin_Zero",
+    "appid": 5180770,
+    "type": 0,
+    "categories": {
+     "supported_player_categoryids": [
+      2
+     ],
+     "feature_categoryids": [
+      22,
+      30,
+      64,
+      65,
+      67,
+      68,
+      69,
+      76,
+      77,
+      23,
+      25,
+      17,
+      62
+     ]
+    },
+    "release": {
+     "steam_release_date": 1793484420,
+     "is_coming_soon": true,
+     "coming_soon_display": "date_full"
+    },
+    "is_coming_soon": true
+   },
+   {
+    "item_type": 0,
+    "id": 3764200,
+    "success": 1,
+    "visible": true,
+    "name": "Resident Evil Requiem",
+    "store_url_path": "app/3764200/Resident_Evil_Requiem",
+    "store_url_slug": "Resident_Evil_Requiem",
+    "appid": 3764200,
+    "type": 0,
+    "related_items": {
+     "demo_appid": [
+      4459100
+     ],
+     "demos": [
+      {
+       "appid": 4459100,
+       "show_above_purchase": true
+      }
+     ]
+    },
+    "included_items": {
+     "included_apps": [
+      {
+       "item_type": 0,
+       "id": 4459100,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil Requiem — демоверсия",
+       "store_url_path": "app/4459100/Resident_Evil_Requiem_демоверсия",
+       "store_url_slug": "Resident_Evil_Requiem_демоверсия",
+       "appid": 4459100,
+       "type": 1,
+       "is_free": true,
+       "related_items": {
+        "parent_appid": 3764200
+       },
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         13,
+         61
+        ]
+       }
+      }
+     ],
+     "included_packages": [
+      {
+       "item_type": 1,
+       "id": 1324561,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil Requiem",
+       "store_url_path": "app/3764200/Resident_Evil_Requiem",
+       "store_url_slug": "Resident_Evil_Requiem",
+       "appid": 3764200,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3764200
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         56,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1324561,
+        "purchase_option_name": "Resident Evil Requiem",
+        "final_price_in_cents": "19530",
+        "original_price_in_cents": "27900",
+        "formatted_final_price": "₪195.30",
+        "formatted_original_price": "₪279.00",
+        "discount_pct": 30,
+        "active_discounts": [
+         {
+          "discount_amount": "8370",
+          "discount_description": "#discount_desc_preset_special",
+          "discount_end_date": 1793728800
+         }
+        ],
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1424518,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil Requiem Deluxe Edition",
+       "store_url_path": "app/3764200/Resident_Evil_Requiem",
+       "store_url_slug": "Resident_Evil_Requiem_Deluxe_Edition",
+       "appid": 3764200,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3764200
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         56,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1424518,
+        "purchase_option_name": "Resident Evil Requiem Deluxe Edition",
+        "final_price_in_cents": "22330",
+        "original_price_in_cents": "31900",
+        "formatted_final_price": "₪223.30",
+        "formatted_original_price": "₪319.00",
+        "discount_pct": 30,
+        "active_discounts": [
+         {
+          "discount_amount": "9570",
+          "discount_description": "#discount_desc_preset_special",
+          "discount_end_date": 1793728800
+         }
+        ],
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_creators": [
+      {
+       "item_type": 5,
+       "id": 33273264,
+       "success": 1,
+       "visible": true,
+       "name": "Capcom",
+       "store_url_path": "developer/capcom",
+       "store_url_slug": "capcom",
+       "game_count": 111
+      },
+      {
+       "item_type": 5,
+       "id": 34827950,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil",
+       "store_url_path": "curator/34827950",
+       "store_url_slug": "",
+       "game_count": 22
+      }
+     ]
+    },
+    "content_descriptorids": [
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2
+     ],
+     "feature_categoryids": [
+      22,
+      29,
+      13,
+      23,
+      61,
+      62
+     ],
+     "controller_categoryids": [
+      28,
+      55,
+      56,
+      57,
+      58
+     ]
+    },
+    "release": {
+     "steam_release_date": 1772168388
+    },
+    "best_purchase_option": {
+     "packageid": 1324561,
+     "purchase_option_name": "Resident Evil Requiem",
+     "final_price_in_cents": "19530",
+     "original_price_in_cents": "27900",
+     "formatted_final_price": "₪195.30",
+     "formatted_original_price": "₪279.00",
+     "discount_pct": 30,
+     "active_discounts": [
+      {
+       "discount_amount": "8370",
+       "discount_description": "#discount_desc_preset_special",
+       "discount_end_date": 1793728800
+      }
+     ],
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 1324561,
+      "purchase_option_name": "Resident Evil Requiem",
+      "final_price_in_cents": "19530",
+      "original_price_in_cents": "27900",
+      "formatted_final_price": "₪195.30",
+      "formatted_original_price": "₪279.00",
+      "discount_pct": 30,
+      "active_discounts": [
+       {
+        "discount_amount": "8370",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793728800
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1424518,
+      "purchase_option_name": "Resident Evil Requiem Deluxe Edition",
+      "final_price_in_cents": "22330",
+      "original_price_in_cents": "31900",
+      "formatted_final_price": "₪223.30",
+      "formatted_original_price": "₪319.00",
+      "discount_pct": 30,
+      "active_discounts": [
+       {
+        "discount_amount": "9570",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793728800
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   }
+  ]
+ }
+}

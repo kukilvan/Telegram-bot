@@ -10,8 +10,10 @@ schedule here (`released` is None) and what the core already has stands: a gap i
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
+
+from app.tracker.sources.dates import response_moment_of_timestamp
 
 FINISHED = "FINISHED"
 NOT_YET_RELEASED = "NOT_YET_RELEASED"
@@ -25,12 +27,6 @@ class PartSchedule:
     next_at: datetime | None  # naive UTC; None: no moment known
 
 
-def _moment(value: Any) -> datetime | None:
-    if not isinstance(value, (int, float)) or isinstance(value, bool):
-        return None
-    return datetime.fromtimestamp(value, tz=timezone.utc).replace(tzinfo=None)
-
-
 def _count(value: Any) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
 
@@ -40,7 +36,7 @@ def parse_schedule(raw: dict[str, Any]) -> PartSchedule:
     upcoming = raw.get("nextAiringEpisode") or {}
     next_episode = _count(upcoming.get("episode"))
     next_episode = next_episode if next_episode and next_episode >= 1 else None
-    next_at = _moment(upcoming.get("airingAt")) if next_episode else None
+    next_at = response_moment_of_timestamp(upcoming.get("airingAt")) if next_episode else None
     total = _count(raw.get("episodes"))
 
     released: int | None = None

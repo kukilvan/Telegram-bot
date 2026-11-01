@@ -247,7 +247,7 @@ def test_the_count_agrees_with_the_word(count, word):
 
 @pytest.mark.parametrize(
     "key, name",
-    [("tmdb_movie", "TMDb"), ("tmdb_tv", "TMDb"), ("tmdb_sequels", "TMDb"), ("shikimori", "Shikimori"), ("igdb", "IGDB")],
+    [("tmdb_movie", "TMDb"), ("tmdb_tv", "TMDb"), ("tmdb_sequels", "TMDb"), ("shikimori", "Shikimori"), ("igdb", "IGDB"), ("steam", "Steam")],
 )
 def test_the_source_is_named_by_its_key(key, name):
     assert failures.source_name(key) == name

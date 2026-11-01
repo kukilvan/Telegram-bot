@@ -1,0 +1,316 @@
+{
+ "_note": "Assembled from the real answer of Resident Evil Requiem (getitems_six_games_il.json, 2026-10-31): only is_coming_soon: true is added. Steam had no live preorder that day (KI-44).",
+ "response": {
+  "store_items": [
+   {
+    "item_type": 0,
+    "id": 3764200,
+    "success": 1,
+    "visible": true,
+    "name": "Resident Evil Requiem",
+    "store_url_path": "app/3764200/Resident_Evil_Requiem",
+    "store_url_slug": "Resident_Evil_Requiem",
+    "appid": 3764200,
+    "type": 0,
+    "related_items": {
+     "demo_appid": [
+      4459100
+     ],
+     "demos": [
+      {
+       "appid": 4459100,
+       "show_above_purchase": true
+      }
+     ]
+    },
+    "included_items": {
+     "included_apps": [
+      {
+       "item_type": 0,
+       "id": 4459100,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil Requiem — демоверсия",
+       "store_url_path": "app/4459100/Resident_Evil_Requiem_демоверсия",
+       "store_url_slug": "Resident_Evil_Requiem_демоверсия",
+       "appid": 4459100,
+       "type": 1,
+       "is_free": true,
+       "related_items": {
+        "parent_appid": 3764200
+       },
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         13,
+         61
+        ]
+       }
+      }
+     ],
+     "included_packages": [
+      {
+       "item_type": 1,
+       "id": 1324561,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil Requiem",
+       "store_url_path": "app/3764200/Resident_Evil_Requiem",
+       "store_url_slug": "Resident_Evil_Requiem",
+       "appid": 3764200,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3764200
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         56,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1324561,
+        "purchase_option_name": "Resident Evil Requiem",
+        "final_price_in_cents": "19530",
+        "original_price_in_cents": "27900",
+        "formatted_final_price": "₪195.30",
+        "formatted_original_price": "₪279.00",
+        "discount_pct": 30,
+        "active_discounts": [
+         {
+          "discount_amount": "8370",
+          "discount_description": "#discount_desc_preset_special",
+          "discount_end_date": 1793728800
+         }
+        ],
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      },
+      {
+       "item_type": 1,
+       "id": 1424518,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil Requiem Deluxe Edition",
+       "store_url_path": "app/3764200/Resident_Evil_Requiem",
+       "store_url_slug": "Resident_Evil_Requiem_Deluxe_Edition",
+       "appid": 3764200,
+       "type": 0,
+       "included_types": [
+        0
+       ],
+       "included_appids": [
+        3764200
+       ],
+       "content_descriptorids": [
+        2,
+        5
+       ],
+       "categories": {
+        "supported_player_categoryids": [
+         2
+        ],
+        "feature_categoryids": [
+         22,
+         29,
+         13,
+         23,
+         61,
+         62
+        ],
+        "controller_categoryids": [
+         28,
+         55,
+         56,
+         57,
+         58
+        ]
+       },
+       "best_purchase_option": {
+        "packageid": 1424518,
+        "purchase_option_name": "Resident Evil Requiem Deluxe Edition",
+        "final_price_in_cents": "22330",
+        "original_price_in_cents": "31900",
+        "formatted_final_price": "₪223.30",
+        "formatted_original_price": "₪319.00",
+        "discount_pct": 30,
+        "active_discounts": [
+         {
+          "discount_amount": "9570",
+          "discount_description": "#discount_desc_preset_special",
+          "discount_end_date": 1793728800
+         }
+        ],
+        "user_can_purchase_as_gift": true,
+        "hide_discount_pct_for_compliance": false,
+        "included_game_count": 1,
+        "must_purchase_as_set": false,
+        "package_group": "default",
+        "price_cannot_be_displayed_as_discount": false
+       }
+      }
+     ],
+     "included_creators": [
+      {
+       "item_type": 5,
+       "id": 33273264,
+       "success": 1,
+       "visible": true,
+       "name": "Capcom",
+       "store_url_path": "developer/capcom",
+       "store_url_slug": "capcom",
+       "game_count": 111
+      },
+      {
+       "item_type": 5,
+       "id": 34827950,
+       "success": 1,
+       "visible": true,
+       "name": "Resident Evil",
+       "store_url_path": "curator/34827950",
+       "store_url_slug": "",
+       "game_count": 22
+      }
+     ]
+    },
+    "content_descriptorids": [
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      2
+     ],
+     "feature_categoryids": [
+      22,
+      29,
+      13,
+      23,
+      61,
+      62
+     ],
+     "controller_categoryids": [
+      28,
+      55,
+      56,
+      57,
+      58
+     ]
+    },
+    "release": {
+     "steam_release_date": 1772168388
+    },
+    "best_purchase_option": {
+     "packageid": 1324561,
+     "purchase_option_name": "Resident Evil Requiem",
+     "final_price_in_cents": "19530",
+     "original_price_in_cents": "27900",
+     "formatted_final_price": "₪195.30",
+     "formatted_original_price": "₪279.00",
+     "discount_pct": 30,
+     "active_discounts": [
+      {
+       "discount_amount": "8370",
+       "discount_description": "#discount_desc_preset_special",
+       "discount_end_date": 1793728800
+      }
+     ],
+     "user_can_purchase_as_gift": true,
+     "hide_discount_pct_for_compliance": false,
+     "included_game_count": 1,
+     "must_purchase_as_set": false,
+     "package_group": "default",
+     "price_cannot_be_displayed_as_discount": false
+    },
+    "purchase_options": [
+     {
+      "packageid": 1324561,
+      "purchase_option_name": "Resident Evil Requiem",
+      "final_price_in_cents": "19530",
+      "original_price_in_cents": "27900",
+      "formatted_final_price": "₪195.30",
+      "formatted_original_price": "₪279.00",
+      "discount_pct": 30,
+      "active_discounts": [
+       {
+        "discount_amount": "8370",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793728800
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     },
+     {
+      "packageid": 1424518,
+      "purchase_option_name": "Resident Evil Requiem Deluxe Edition",
+      "final_price_in_cents": "22330",
+      "original_price_in_cents": "31900",
+      "formatted_final_price": "₪223.30",
+      "formatted_original_price": "₪319.00",
+      "discount_pct": 30,
+      "active_discounts": [
+       {
+        "discount_amount": "9570",
+        "discount_description": "#discount_desc_preset_special",
+        "discount_end_date": 1793728800
+       }
+      ],
+      "user_can_purchase_as_gift": true,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ],
+    "is_coming_soon": true
+   }
+  ]
+ }
+}

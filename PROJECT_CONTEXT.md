@@ -64,7 +64,7 @@ Status values: not started · description · spec · tickets k/n · review · fi
 | AniList | works | anime schedule and next episode; GraphQL `graphql.anilist.co`, no key, ~90 req/min |
 | Shikimori | works | anime franchises, seasons, Russian names; GraphQL `shikimori.io`, `User-Agent` required; season links via `related { relationKind }` |
 | IGDB | works | games (6.1): search, names, dates by platform and region, genres, covers (`images.igdb.com`); Client-ID + Twitch Bearer token obtained at run time; search runs outside the polling queue |
-| Steam Store | works (unofficial) | `app/providers/steam.py`: Russian name and description at adding (`appdetails`); link «Открыть в Steam» by the Steam id from IGDB; prices — part 6.2 (`IStoreBrowseService/GetItems`) |
+| Steam Store | works (unofficial) | `app/providers/steam.py`, no key: prices by `IStoreBrowseService/GetItems` (up to 100 apps per request, Russian, the store country; no currency code — the currency is how Steam writes the price; adapter `sources/steam_prices.py`), the Russian name and description at adding (`appdetails`); link «Открыть в Steam» by the Steam id from IGDB |
 | PlayStation Store | not used | no prices: PlatPrices does not give a key for personal use (refusal 2026-10-30; ADR 0009 supersedes 0003); the card links to the store page by the country from Settings (KI-37) |
 | Telegram Bot API (aiogram 3.31) | works | long polling |
 | KinoPub / Kinopoisk | not used | no partner contract, no `CLIENT_ID`/`CLIENT_SECRET` |

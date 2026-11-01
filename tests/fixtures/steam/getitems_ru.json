@@ -1,0 +1,105 @@
+{
+ "response": {
+  "store_items": [
+   {
+    "item_type": 0,
+    "id": 292030,
+    "success": 15,
+    "visible": false,
+    "unvailable_for_country_restriction": true,
+    "name": "Ведьмак 3: Дикая Охота — Обновлённое издание",
+    "store_url_path": "app/292030/Ведьмак_3_Дикая_Охота_Обновлённое_издание",
+    "store_url_slug": "Ведьмак_3_Дикая_Охота_Обновлённое_издание",
+    "appid": 292030
+   },
+   {
+    "item_type": 0,
+    "id": 730,
+    "success": 1,
+    "visible": true,
+    "name": "Counter-Strike 2",
+    "store_url_path": "app/730/CounterStrike_2",
+    "store_url_slug": "CounterStrike_2",
+    "appid": 730,
+    "type": 0,
+    "is_free": true,
+    "content_descriptorids": [
+     2,
+     5
+    ],
+    "categories": {
+     "supported_player_categoryids": [
+      1,
+      27
+     ],
+     "feature_categoryids": [
+      29,
+      30,
+      51,
+      35,
+      64,
+      66,
+      67,
+      68,
+      69,
+      70,
+      74,
+      8,
+      15,
+      41,
+      42,
+      43,
+      63
+     ]
+    },
+    "release": {
+     "steam_release_date": 1345568400
+    },
+    "purchase_options": [
+     {
+      "packageid": 54029,
+      "purchase_option_name": "прайм-статус",
+      "final_price_in_cents": "127500",
+      "formatted_final_price": "1275 руб",
+      "user_can_purchase_as_gift": false,
+      "hide_discount_pct_for_compliance": false,
+      "included_game_count": 1,
+      "must_purchase_as_set": false,
+      "package_group": "default",
+      "price_cannot_be_displayed_as_discount": false
+     }
+    ],
+    "package_groups": [
+     {
+      "name": "default"
+     },
+     {
+      "name": "subscriptions",
+      "display_type": 1
+     }
+    ]
+   },
+   {
+    "item_type": 0,
+    "id": 999999999,
+    "success": 15,
+    "visible": false,
+    "name": "",
+    "store_url_path": "app/0/",
+    "store_url_slug": "",
+    "appid": 0
+   },
+   {
+    "item_type": 0,
+    "id": 3240220,
+    "success": 15,
+    "visible": false,
+    "unvailable_for_country_restriction": true,
+    "name": "Grand Theft Auto V Enhanced",
+    "store_url_path": "app/3240220/Grand_Theft_Auto_V_Enhanced",
+    "store_url_slug": "Grand_Theft_Auto_V_Enhanced",
+    "appid": 3240220
+   }
+  ]
+ }
+}

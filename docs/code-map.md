@@ -38,7 +38,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/providers/anilist.py` — AniList provider: anime metadata + airing schedule via GraphQL.
 - `app/providers/igdb.py` — IGDB client: queries to `/games` in the Apicalypse language of IGDB, with the token of Twitch and the pace of IGDB.
 - `app/providers/shikimori.py` — Shikimori API client: anime search, franchise grouping, season selection.
-- `app/providers/steam.py` — Steam Store provider: the Russian name and description of a game from the public `appdetails` endpoint.
+- `app/providers/steam.py` — Steam client: the prices of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
 - `app/providers/tmdb.py` — TMDb provider: search + details via async httpx, with Phase 7.5 adaptive throttling.
 - `app/runtime.py` — One process: the web server, the scheduler and the bot run in one event loop (ADR 0007).
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
@@ -86,6 +86,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.
 - `app/tracker/pollers/series.py` — A series: the fresh seasons are compared with the stored ones, and the owner's season marks keep the status.
 - `app/tracker/polling.py` — Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.
+- `app/tracker/prices.py` — Steam prices of a game: what one price check saw (`PriceLook`), an amount of money (`Money`) and «самая низкая с добавления».
 - `app/tracker/progress.py` — The status a series takes by itself from the owner's season marks and the state of the show.
 - `app/tracker/queue.py` — Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages.
 - `app/tracker/results.py` — What the tracker core hands back to its callers.
@@ -98,6 +99,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/sources/dates.py` — Reading a date from text: two readers, and which one to use depends on who wrote the text.
 - `app/tracker/sources/igdb_games.py` — IGDB adapter for games: search suggestions and the game snapshot, with the Russian texts of Steam when a game is added.
 - `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the franchise built from the chain of sequels.
+- `app/tracker/sources/steam_prices.py` — Steam adapter for prices: what Steam answered about each game becomes its price look (`PriceLook`), source `steam`.
 - `app/tracker/sources/tmdb_movies.py` — TMDb adapter for movies: search suggestions and the movie snapshot.
 - `app/tracker/sources/tmdb_sequels.py` — TMDb adapter for sequels of an archived movie: the franchise collection the movie belongs to.
 - `app/tracker/sources/tmdb_series.py` — TMDb adapter for series: search suggestions and the series snapshot with its seasons.

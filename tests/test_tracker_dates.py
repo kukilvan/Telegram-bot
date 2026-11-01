@@ -1,12 +1,19 @@
-"""Ticket 29: a date is read in two places only: softly for what a service sent, strictly for what the tracker stored."""
+"""Ticket 29: a date is read in two places only: softly for what a service sent, strictly for what the tracker stored.
+The same two kinds for a moment (part 6.2, ticket 02)."""
 
 import ast
 import pathlib
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 
-from app.tracker.sources.dates import parse_date, parse_response_date, response_year
+from app.tracker.sources.dates import (
+    parse_date,
+    parse_moment,
+    parse_response_date,
+    response_moment_of_timestamp,
+    response_year,
+)
 
 TRACKER = pathlib.Path(__file__).resolve().parent.parent / "app" / "tracker"
 
@@ -42,6 +49,20 @@ def test_a_stored_date_is_read_strictly():
         parse_date("2026-10-24T09:00:00")  # we never store this: it would be a bug, not a service's whim
 
 
+def test_a_moment_from_a_service_is_read_softly_as_naive_utc():
+    assert response_moment_of_timestamp(1793728800) == datetime(2026, 11, 3, 18, 0)
+    for garbage in (None, "1793728800", True, 10**20):
+        assert response_moment_of_timestamp(garbage) is None
+
+
+def test_a_stored_moment_is_read_strictly():
+    assert parse_moment("2026-11-03T18:00:00") == datetime(2026, 11, 3, 18, 0)
+    assert parse_moment(None) is None
+    for garbage in ("soon", "2026-11-03T18:00:00+00:00", ""):
+        with pytest.raises(ValueError):
+            parse_moment(garbage)
+
+
 def defined_functions():
     found: dict[str, list[str]] = {}
     for path in TRACKER.rglob("*.py"):
@@ -55,7 +76,10 @@ def defined_functions():
 
 def test_there_is_one_reader_of_each_kind_and_no_copies():
     functions = defined_functions()
-    for name in ("parse_response_date", "response_year", "response_day_of_timestamp", "parse_date"):
+    for name in (
+        "parse_response_date", "response_year", "response_day_of_timestamp", "parse_date", "response_moment_of_timestamp",
+        "parse_moment",
+    ):
         assert functions[name] == ["dates.py"], name
     copies = {name: where for name, where in functions.items() if name in ("_parse_date", "_year", "_parse")}
     assert copies == {}
