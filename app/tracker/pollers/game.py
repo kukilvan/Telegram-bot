@@ -5,7 +5,8 @@ A game is added with the Russian texts of Steam (`snapshot_to_add`); the polls t
 description stay as they were added (like a film's). Every platform of the tracker the game is on gets its row; the
 mark is set where the platform is one of «Мои платформы» at that moment (spec 6.3 of part 6.1). The feed and the card
 show the dates of the country of the stores as it is now: the feed only the platforms the owner is told about, the
-card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1).
+card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1). At the end of each polling pass
+the Steam prices of the games are checked (`pollers/game_prices`, part 6.2).
 """
 
 from collections.abc import Mapping, Sequence
@@ -22,6 +23,7 @@ from app.tracker.game_scope import GameScope
 from app.tracker.models import GamePlatformRecord, SeasonRecord, Title
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
+from app.tracker.pollers.game_prices import GamePrices
 
 
 def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Platform]) -> None:
@@ -34,6 +36,10 @@ def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Plat
 
 
 class GamePoller(Poller):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.prices = GamePrices(self.kind, self.price_source, self.ctx, self.settings)
+
     async def snapshot_to_add(self, external_id: str) -> Any:
         return await self.source.snapshot_to_add(external_id)
 
@@ -95,3 +101,7 @@ class GamePoller(Poller):
             stored.next_check_at = now + games.check_interval(new, scope.country, today)
             session.commit()
         return found
+
+    async def end_of_pass(self) -> list[tuple[DueTitle, Exception]]:
+        """The Steam prices of the games (`pollers/game_prices`)."""
+        return await self.prices.check()

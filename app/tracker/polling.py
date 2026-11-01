@@ -1,7 +1,8 @@
 """Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.
 
-A failing source postpones only its own title; the others are still polled. Database work runs in a worker thread, so
-a slow disk never freezes the bot.
+A failing source postpones only its own title; the others are still polled. After the titles, the poller of every kind
+does its check at the end of the pass (the Steam prices of the games); its failures join the «could not check» messages
+of the pass. Database work runs in a worker thread, so a slow disk never freezes the bot.
 """
 
 import asyncio
@@ -50,9 +51,11 @@ class Pollers:
         queue: EventQueue,
         sources: Mapping[TitleKind, Any],
         sequel_sources: Mapping[TitleKind, Any],
+        price_source: Any = None,
     ) -> None:
         self._every = {
-            kind: poller_class(kind, sources.get(kind), ctx, settings, queue) for kind, poller_class in POLLER_CLASSES.items()
+            kind: poller_class(kind, sources.get(kind), ctx, settings, queue, price_source)
+            for kind, poller_class in POLLER_CLASSES.items()
         }
         self._release = {kind: self._every[kind] for kind in sources}
         self._sequels = {
@@ -67,6 +70,10 @@ class Pollers:
     def reader_of(self, kind: TitleKind) -> Poller:
         """The poller of the kind for what the owner reads; every kind has one, whether the core has its source or not."""
         return self._every[kind]
+
+    def every(self) -> list[Poller]:
+        """The poller of every kind, one each: the checks at the end of a pass are asked of them."""
+        return list(self._every.values())
 
     def sequels_of(self, kind: TitleKind) -> SequelPoller | None:
         return self._sequels.get(kind)
@@ -98,6 +105,8 @@ class Polling:
         async with self.ctx.poll_lock:
             for due in await asyncio.to_thread(self._due_titles):
                 await self._poll_one(due, report, broken)
+            for poller in self.pollers.every():
+                await self._end_of_pass(poller, report, broken)
             if broken:
                 await self._tell_owner_about(broken, report)
         return report
@@ -163,6 +172,15 @@ class Polling:
             return
         report.polled += 1
         report.events += found
+
+    async def _end_of_pass(self, poller: Poller, report: PollReport, broken: list[tuple[DueTitle, Exception]]) -> None:
+        try:
+            failed = await poller.end_of_pass()
+        except Exception:  # a bug in the check must not hide the pass: the titles are checked already
+            logging.exception("the check at the end of the pass of the %s titles failed", poller.kind)
+            return
+        report.failed += len(failed)
+        broken += failed
 
     def _still_checked(self, due: DueTitle) -> bool:
         """Whether the snapshot of this check is still there (it goes with its title, and with the sequel check)."""

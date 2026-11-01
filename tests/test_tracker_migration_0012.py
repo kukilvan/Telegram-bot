@@ -84,7 +84,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
 
     assert "game_platforms" in tables(engine)
     with engine.connect() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0012"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0013"
 
 
 def test_a_database_after_0011_gets_the_table_and_keeps_its_titles(engine):

@@ -34,6 +34,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
 from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
+from app.tracker.sources.steam_prices import SteamPriceSource
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
 from app.tracker.sources.tmdb_series import TmdbSeriesSource
@@ -104,6 +105,7 @@ def telegram_bot(token: str) -> Bot | None:
 def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
     """The tracker core with its sources; the database is migrated (and copied first) here."""
     tmdb = TMDbProvider()
+    steam = SteamProvider()  # one client for the Russian texts of a game being added and for its prices
     return Tracker(
         create_session_factory(),
         clock=lambda: dt.now(tz=timezone.utc),
@@ -114,11 +116,12 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
             TitleKind.ANIME: ShikimoriAnimeSource(ShikimoriClient(), AniListProvider()),
             # without the keys of IGDB the source is «not connected»: it asks nothing and says so
             TitleKind.GAME: IgdbGameSource(
-                IGDBProvider(settings.igdb_client_id, settings.igdb_client_secret), SteamProvider()
+                IGDBProvider(settings.igdb_client_id, settings.igdb_client_secret), steam
             ),
         },
         sequel_sources={TitleKind.MOVIE: TmdbSequelSource(tmdb)},
         default_tz=time_zone_of(settings),
+        price_source=SteamPriceSource(steam),
     )
 
 

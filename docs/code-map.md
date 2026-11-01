@@ -75,12 +75,14 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0010_restored_at.py` — When the owner last brought a title back from the archive («Вернуть в список»): the first check of its own source after that moment records what it finds as the baseline, without events.
 - `app/tracker/migrations/versions/0011_scores.py` — The owner's scores: of a title (a film's only one; a series' own one over the average of its seasons) and of a season.
 - `app/tracker/migrations/versions/0012_game_platforms.py` — The platforms of a game and the owner's mark «играю здесь» on each (spec 6.2 of part 6.1).
-- `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings and game platforms.
+- `app/tracker/migrations/versions/0013_price_history.py` — The price history of the games (spec 4.5 of part 6.2): a record of a Steam price each time a price check saw it change.
+- `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings, game platforms and the price history.
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
 - `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out and whose region its dates are.
 - `app/tracker/pollers/anime.py` — An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the source entries behind the seasons and the franchise films are kept beside them.
 - `app/tracker/pollers/base.py` — What every kind of title does when it is added and when it is polled: one object per kind, one set of actions.
 - `app/tracker/pollers/game.py` — A game: the dates of its platforms are compared for the country of the stores, and the owner is told only about the platforms of «Мои платформы» marked «играю здесь».
+- `app/tracker/pollers/game_prices.py` — The price check at the end of a polling pass: which games have their Steam prices checked, the requests in packs of 100, the reference point, the price history and the failures (spec 4 of part 6.2).
 - `app/tracker/pollers/movie.py` — A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show the same two dates.
 - `app/tracker/pollers/seasonal.py` — What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card lists.
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.

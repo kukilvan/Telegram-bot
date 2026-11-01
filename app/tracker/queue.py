@@ -1,7 +1,7 @@
 """Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages."""
 
 import asyncio
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from datetime import datetime
 from typing import Any
 
@@ -78,10 +78,14 @@ class EventQueue:
         return event.id
 
     @staticmethod
-    def withdraw(session, title_id: int) -> None:
-        """Take the title's entries that were not delivered yet out of the queue (the «could not check» messages too), in
-        a write session; the caller commits. The events stay: their dedup keys keep the same facts from coming again."""
+    def withdraw(session, title_id: int, types: Collection[str] | None = None) -> None:
+        """Take the title's entries that were not delivered yet out of the queue, in a write session; the caller commits.
+        `types`: only the events of these types (the events of Steam of a game whose prices are no longer checked);
+        None — all of them, the «could not check» messages too. The events stay: their dedup keys keep the same facts
+        from coming again."""
         events_of_title = select(Event.id).where(Event.title_id == title_id)
+        if types is not None:
+            events_of_title = events_of_title.where(Event.type.in_(tuple(types)))
         session.execute(
             delete(DeliveryItem).where(DeliveryItem.status == DeliveryStatus.PENDING, DeliveryItem.event_id.in_(events_of_title))
         )

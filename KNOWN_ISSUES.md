@@ -63,6 +63,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | open | — |
 | KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | open | stage 9 |
 | KI-49 | `.env` holds variables the code does not read | `.env` | open | stage 8 |
+| KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | open | — |
 
 ## Entries
 
@@ -522,3 +523,12 @@ Format of a new entry:
 - Likelihood / impact: harmless; confusing for someone who deploys their own instance.
 - Status: open (bring to one form in stage 8, the cleanup).
 - Found: 2026-11-01, while moving the docs (carried over from the old bug table).
+
+## KI-50. Steam prices: a spoiled price snapshot stops the price check of every game
+
+- Where: `app/tracker/pollers/game_prices.py` (the reconciliation reads every price snapshot with the strict `PriceLook.from_state`).
+- What's wrong: a price snapshot whose state the code cannot read (edited by hand in the database, or written by a bug) raises `ValueError` in the reconciliation, so the whole price check fails: no game gets its prices until the snapshot is fixed or deleted. The log has the traceback every minute; the owner gets no message.
+- How to reproduce: put `{"appid": 1}` into the `state` of a `source_snapshots` row with `source = 'steam'` and wait a minute: «the check at the end of the pass of the game titles failed» with a `ValueError` in the log.
+- Likelihood / impact: only after a hand edit or a bug (rule 9: what we wrote is read strictly); prices stop updating, nothing else breaks — dates of games and other kinds are checked as usual. Deleting the row heals it: the reconciliation makes a new one.
+- Status: open.
+- Found: 2026-11-01, ticket 03 of part 6.2.

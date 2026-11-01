@@ -1,5 +1,5 @@
-"""Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings and
-game platforms. Timestamps are naive UTC and are always set by the core at insert time."""
+"""Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings,
+game platforms and the price history. Timestamps are naive UTC and are always set by the core at insert time."""
 
 from datetime import date, datetime
 from enum import StrEnum
@@ -176,6 +176,23 @@ class GamePlatformRecord(TrackerBase):
     title_id: Mapped[int] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
     platform: Mapped[str] = mapped_column(String(16))
     playing: Mapped[bool] = mapped_column(Boolean)
+
+
+class PriceRecord(TrackerBase):
+    """A record of the price history of a game (spec 4.5 of part 6.2): the price of Steam as a price check saw it. A new
+    record only when it differs from the latest one; «самая низкая с добавления» reads them (`prices.lowest`)."""
+
+    __tablename__ = "price_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_id: Mapped[int] = mapped_column(ForeignKey("titles.id", ondelete="CASCADE"), index=True)
+    seen_at: Mapped[datetime] = mapped_column(DateTime)  # the moment of the price check that saw the price
+    appid: Mapped[str] = mapped_column(String(16))  # the Steam number asked about
+    country: Mapped[str] = mapped_column(String(2))  # the store country of that check
+    currency: Mapped[str] = mapped_column(String(32))  # as Steam writes a price («₪{}», `prices.currency_of`)
+    final: Mapped[int] = mapped_column(Integer)  # the price now, in hundredths
+    original: Mapped[int | None] = mapped_column(Integer)  # the price before the discount; None: no discount
+    pct: Mapped[int] = mapped_column(Integer)  # the percent of the discount; 0: none
 
 
 class SettingRecord(TrackerBase):

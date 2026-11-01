@@ -92,6 +92,7 @@ def test_every_kind_has_one_poller_with_the_same_set_of_actions():
         assert issubclass(poller_class, Poller), kind
         for action in (
             "snapshot_to_add", "first_seasons", "first_check", "store_extras", "apply", "feed_pieces", "card_part",
+            "end_of_pass",
         ):
             assert callable(getattr(poller_class, action)), (kind, action)
 
