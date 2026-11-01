@@ -11,7 +11,7 @@ from app.tracker.games import (
     CANCELLED, EARLY, FULL, NOT_ANNOUNCED, GameDate, GameState, PlatformDate, Release, carry_over, has_platform, pick,
     platform_dates,
 )
-from app.tracker.platforms import EUROPE, NORTH_AMERICA, STORE_COUNTRIES, WORLD, Platform
+from app.tracker.platforms import EUROPE, NORTH_AMERICA, PLATFORMS, STORE_COUNTRIES, WORLD, Platform
 from app.tracker.sources.igdb_games import parse_game
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "igdb"
@@ -194,8 +194,8 @@ def own_and_older(own, older):
     "own, older, expected",
     [
         ("2027-03-12", "2027-03-12", PlatformDate(GameDate.parse("2027-03-12"))),  # a tie: the own one
-        ("2027-03-12", "2027", PlatformDate(GameDate.parse("2027"), "PS4")),  # the year starts earlier
-        ("2027", "2027-03-12", PlatformDate(GameDate.parse("2027"))),
+        ("2027-03-12", "2027", PlatformDate(GameDate.parse("2027-03-12"))),  # a day ends before its year does (KI-39)
+        ("2027", "2027-03-12", PlatformDate(GameDate.parse("2027-03-12"), "PS4")),
         (None, "2027", PlatformDate(GameDate.parse("2027"), "PS4")),  # not announced loses
         ("2027", None, PlatformDate(GameDate.parse("2027"))),
         (None, None, PlatformDate(NOT_ANNOUNCED)),
@@ -206,6 +206,38 @@ def own_and_older(own, older):
 )
 def test_the_own_date_or_the_older_one(own, older, expected):
     assert platform_dates(own_and_older(own, older), Platform.PS5, "il").full == expected
+
+
+@pytest.mark.parametrize(
+    "older, own, expected, label",
+    [  # the table 7.1 of the spec of part 6.2: the older platform (PS4) against the own one (PS5)
+        ("2015-03-27", "none", "2015-03-27", "PS4"),  # Bloodborne: no own date
+        ("2015-05-19", "2022-12-14", "2015-05-19", "PS4"),  # The Witcher 3
+        ("2026", "2026-11-10", "2026-11-10", ""),  # a day of the year the older platform only promised
+        ("2027-03-12", "2027", "2027-03-12", "PS4"),
+        ("2026-Q3", "2026", "2026-Q3", "PS4"),
+        ("2026", "2026-Q4", "2026-Q4", ""),  # the periods end on one day: the own one
+    ],
+)
+def test_the_date_of_the_older_platform_is_taken_by_the_end_of_the_period(older, own, expected, label):
+    dated = platform_dates(own_and_older(own, older), Platform.PS5, "il").full
+
+    assert dated == PlatformDate(GameDate.parse(expected), label or None)
+
+
+@pytest.mark.parametrize("platform", [Platform.SWITCH_2, Platform.XBOX_SERIES])
+def test_switch_2_and_xbox_series_take_the_older_date_the_same_way(platform):
+    info = PLATFORMS[platform]
+    own, older = info.igdb_id, info.older.igdb_id
+    year_only = GameState(platforms=(older, own), releases=(
+        Release(own, WORLD, FULL, GameDate.parse("2026-11-10")), Release(older, WORLD, FULL, GameDate.parse("2026")),
+    ))
+    earlier_day = GameState(platforms=(older, own), releases=(
+        Release(own, WORLD, FULL, GameDate.parse("2027")), Release(older, WORLD, FULL, GameDate.parse("2026-11-10")),
+    ))
+
+    assert platform_dates(year_only, platform, "il").full == PlatformDate(GameDate.parse("2026-11-10"))
+    assert platform_dates(earlier_day, platform, "il").full == PlatformDate(GameDate.parse("2026-11-10"), info.older.label)
 
 
 def test_the_game_is_on_a_platform_by_its_list_or_by_its_records():

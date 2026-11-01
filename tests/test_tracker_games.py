@@ -14,15 +14,17 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select
 
-from app.tracker import game_events, games
+from app.tracker import game_events, games, storage
 from app.tracker.core import (
     CannotScore, SourceNotConfigured, Tracker, UnknownPlatform, UnknownTitle,
 )
+from app.tracker.game_scope import GameScope
 from app.tracker.games import GameDate, GameState, Release
 from app.tracker.models import (
     DeliveryItem, DeliveryStatus, GamePlatformRecord, SettingRecord, SourceSnapshot, Title, TitleKind, TitleStatus,
 )
-from app.tracker.platforms import WORLD
+from app.tracker.platforms import WORLD, Platform
+from app.tracker.pollers.game import GamePoller
 from app.tracker.settings_store import MY_PLATFORMS_SETTING
 from app.tracker.sources.igdb_games import GameSnapshot, IgdbGameSource, parse_state
 from app.tracker.db import create_session_factory
@@ -404,6 +406,23 @@ def test_a_title_that_is_no_game_has_no_platforms(session_factory, clock, sender
         run(tracker.set_platform_playing(999, "pc", True))
 
 
+def test_a_platform_igdb_no_longer_lists_is_unknown_and_its_row_and_mark_stay(tracker, session_factory, made_up):
+    title_id = add(tracker, made_up, state((PC, "full", "2027"), (PS5, "full", "2027")))
+    run(tracker.set_platform_playing(title_id, "ps5", False))
+    with session_factory() as session:  # IGDB took PS5 away: the row of the platform is still there
+        session.scalars(select(SourceSnapshot)).one().state = state((PC, "full", "2027")).state()
+        session.commit()
+
+    with pytest.raises(UnknownPlatform):
+        run(tracker.set_platform_playing(title_id, "ps5", True))
+
+    assert rows(session_factory, title_id)["ps5"] is False  # the mark is not changed, the row is not deleted
+    with session_factory() as session:  # the platform is back: so is its mark
+        session.scalars(select(SourceSnapshot)).one().state = state((PC, "full", "2027"), (PS5, "full", "2027")).state()
+        session.commit()
+    assert run(tracker.set_platform_playing(title_id, "ps5", True)).changed is True
+
+
 # --- the polls and their messages (7) -------------------------------------------------------------------------------
 
 
@@ -546,6 +565,16 @@ def test_the_next_check_follows_the_dates_of_the_game(tracker, session_factory, 
         assert session.scalars(select(SourceSnapshot.next_check_at)).one() == clock.now.replace(tzinfo=None) + timedelta(hours=1)
 
 
+def test_a_day_of_ps5_inside_the_year_of_ps4_is_announced_and_then_released(tracker, session_factory, made_up, sender, clock):
+    add(tracker, made_up, state((PS4, "full", "2026")))
+
+    poll(tracker, session_factory, made_up, state((PS4, "full", "2026"), (PS5, "full", "2026-11-10")))
+    clock.advance(days=1)
+    poll(tracker, session_factory, made_up, state((PS4, "full", "2026"), (PS5, "full", "2026-11-10")))
+
+    assert sender.texts == ["🎮 Elden Ring: на PS5 объявлена дата — 10 ноября 2026", "🎮 Elden Ring вышла на PS5"]
+
+
 def test_the_samples_of_games_are_in_the_menu_and_the_two_platforms_come_as_one_message(tracker, sender):
     ids = {sample.id for sample in tracker.test_samples()}
     assert {"game-announced", "game-moved", "game-released", "game-early-access", game_events.SAMPLE_TWO_PLATFORMS_ID} <= ids
@@ -570,3 +599,132 @@ def test_every_game_sample_reads_as_the_real_message(tracker, sender, sample_id,
 
     [(message, _)] = sender.sent
     assert message.endswith(text)
+
+
+# --- what the owner sees of the games, and the snapshot of the sequel check (spec 7.3 and 7.4 of part 6.2) -------------
+
+
+ALL_MARKS = [
+    {},
+    {"pc": True, "ps5": True},
+    {"pc": False, "ps5": True},
+    {"pc": True, "ps5": False, "xbox_series": True},
+    {"pc": False, "ps5": False},
+]
+ALL_MINE = [(Platform.PC,), (Platform.PC, Platform.PS5), (Platform.PS5, Platform.SWITCH_2), (Platform.XBOX_SERIES,)]
+
+
+@pytest.mark.parametrize("mine", ALL_MINE)
+@pytest.mark.parametrize("marks", ALL_MARKS)
+def test_told_is_the_platforms_the_owner_is_told_about(mine, marks):
+    scope = GameScope("il", mine, {7: marks})
+
+    assert scope.told(7) == game_events.reported(mine, marks)
+    assert scope.told(8) == game_events.reported(mine, {})  # a game with no rows: nothing is marked off
+
+
+class CountingSettings:
+    """Counts what the poller reads of the settings."""
+
+    def __init__(self, settings):
+        self.settings = settings
+        self.reads = {"store_country_in": 0, "my_platforms_in": 0}
+
+    def __getattr__(self, name):
+        attribute = getattr(self.settings, name)
+        if name not in self.reads:
+            return attribute
+
+        def counted(*args, **kwargs):
+            self.reads[name] += 1
+            return attribute(*args, **kwargs)
+
+        return counted
+
+
+@pytest.fixture
+def counting(tracker):
+    poller = tracker._polling.pollers.reader_of(TitleKind.GAME)
+    assert isinstance(poller, GamePoller)
+    counter = CountingSettings(poller.settings)
+    poller.settings = counter
+    return counter
+
+
+def test_the_country_and_my_platforms_are_read_once_for_the_card_the_feed_and_a_poll(
+    tracker, session_factory, made_up, counting
+):
+    title_id = add(tracker, made_up, state((PC, "full", "2027"), (PS5, "full", "2027")))
+    assert counting.reads == {"store_country_in": 2, "my_platforms_in": 2}  # adding: the first check, then the rows
+
+    counting.reads.update(store_country_in=0, my_platforms_in=0)
+    run(tracker.title_card(title_id))
+    assert counting.reads == {"store_country_in": 1, "my_platforms_in": 1}
+
+    counting.reads.update(store_country_in=0, my_platforms_in=0)
+    run(tracker.feed())
+    assert counting.reads == {"store_country_in": 1, "my_platforms_in": 1}
+
+    counting.reads.update(store_country_in=0, my_platforms_in=0)
+    poll(tracker, session_factory, made_up, state((PC, "full", "2027"), (PS5, "full", "2027")))
+    assert counting.reads == {"store_country_in": 1, "my_platforms_in": 1}
+
+
+def test_no_place_of_the_game_poller_reads_the_scope_by_pieces():
+    source = (GamePoller.__module__.replace(".", "/") + ".py")
+    text = open(source, encoding="utf-8").read()
+
+    assert text.count("store_country_in") == 0 and text.count("my_platforms_in") == 0
+    assert "_marks(" not in text
+
+
+# --- the snapshot of the sequel check (7.4) --------------------------------------------------------------------------
+
+
+def add_snapshot(session_factory, title_id, source, clock):
+    with session_factory() as session:
+        session.add(SourceSnapshot(title_id=title_id, source=source, state={}, observed_at=clock.now, next_check_at=None))
+        session.commit()
+
+
+def sources_of(session_factory, title_id):
+    with session_factory() as session:
+        return sorted(session.scalars(select(SourceSnapshot.source).where(SourceSnapshot.title_id == title_id)))
+
+
+def test_a_snapshot_of_another_source_is_no_sequel_check(tracker, session_factory, made_up, clock):
+    title_id = add(tracker, made_up, state((PC, "full", "2027")))
+    add_snapshot(session_factory, title_id, "steam", clock)
+
+    with session_factory() as session:
+        assert storage.sequel_snapshot(session, title_id, None) is None  # a game has no sequel source
+        assert storage.sequel_snapshot(session, title_id, "tmdb_sequels") is None
+        assert storage.sequel_snapshot(session, title_id, "steam").source == "steam"
+
+
+@pytest.mark.parametrize("finish", ["dropped", "restored"])
+def test_dropping_and_returning_a_game_keep_its_snapshot_of_another_source(
+    tracker, session_factory, made_up, clock, finish
+):
+    title_id = add(tracker, made_up, state((PC, "full", "2027")))
+    add_snapshot(session_factory, title_id, "steam", clock)
+    run(tracker.mark_dropped(title_id))
+    if finish == "restored":
+        run(tracker.restore_title(title_id))
+
+    assert sources_of(session_factory, title_id) == ["igdb", "steam"]
+
+
+def test_the_pass_over_the_titles_does_not_take_a_snapshot_of_another_source_for_a_sequel_check(
+    tracker, session_factory, made_up, clock
+):
+    title_id = add(tracker, made_up, state((PC, "full", "2027")))
+    add_snapshot(session_factory, title_id, "steam", clock)
+    with session_factory() as session:  # a state a game does not get, but the rule must not need it to hold
+        session.get(Title, title_id).status = TitleStatus.WATCHED
+        session.commit()
+    clock.advance(hours=1)
+
+    report = run(tracker.poll_due())
+
+    assert (report.polled, report.failed) == (0, 0)

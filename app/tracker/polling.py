@@ -10,7 +10,7 @@ from collections.abc import Mapping
 from datetime import timedelta
 from typing import Any
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, false, or_, select
 
 from app.tracker import failures, movie_events
 from app.tracker import storage
@@ -71,6 +71,16 @@ class Pollers:
     def sequels_of(self, kind: TitleKind) -> SequelPoller | None:
         return self._sequels.get(kind)
 
+    def sequel_key_of(self, kind: TitleKind) -> str | None:
+        """The key of the snapshot of the kind's sequel check; None — the kind has none. The one place that says which
+        snapshot of a title is its sequel check: any other snapshot (the prices of a game) is not."""
+        poller = self._sequels.get(kind)
+        return poller.source.source_key if poller is not None else None
+
+    def sequel_keys(self) -> list[tuple[TitleKind, str]]:
+        """Every (kind, key of its sequel snapshot)."""
+        return [(kind, poller.source.source_key) for kind, poller in self._sequels.items()]
+
     def for_due(self, due: DueTitle) -> Poller:
         return self._sequels[due.kind] if due.sequels else self._release[due.kind]
 
@@ -95,12 +105,18 @@ class Polling:
     def _due_titles(self) -> list[DueTitle]:
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
-            # a title's own source is the one of its primary id; any other snapshot is its sequel check
+            # a title's own source is the one of its primary id; the snapshot of the sequel source of its kind is its
+            # sequel check, and any other snapshot is none of this pass's
             own = SourceSnapshot.source == ExternalId.source
+            sequel_check = or_(
+                false(), *(and_(Title.kind == kind, SourceSnapshot.source == key) for kind, key in self.pollers.sequel_keys())
+            )
             # the own source's first check since «Вернуть в список»: the stored look is older than the return
             baseline = and_(own, Title.restored_at.is_not(None), SourceSnapshot.observed_at < Title.restored_at)
             rows = session.execute(
-                select(Title.id, Title.kind, Title.name, ExternalId.external_id, SourceSnapshot.source, ~own, baseline)
+                select(
+                    Title.id, Title.kind, Title.name, ExternalId.external_id, SourceSnapshot.source, sequel_check, baseline
+                )
                 .join(SourceSnapshot, SourceSnapshot.title_id == Title.id)
                 .join(
                     ExternalId,
@@ -114,7 +130,7 @@ class Polling:
                             Title.status.in_(POLLED_STATUSES),
                             Title.tracking_enabled.is_(True),
                         ),
-                        and_(~own, Title.status == TitleStatus.WATCHED),
+                        and_(sequel_check, Title.status == TitleStatus.WATCHED),
                     ),
                     (SourceSnapshot.next_check_at.is_(None)) | (SourceSnapshot.next_check_at <= now),
                 )

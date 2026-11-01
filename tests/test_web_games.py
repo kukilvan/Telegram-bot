@@ -8,15 +8,18 @@ IGDB and Steam (no network), the film one a fake.
 
 import copy
 import re
+from dataclasses import replace
 from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 
 from app.providers.igdb import IgdbError
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
-from app.tracker.models import GamePlatformRecord, SettingRecord, TitleStatus
+from app.tracker.games import GameState
+from app.tracker.models import GamePlatformRecord, SettingRecord, SourceSnapshot, TitleStatus
 from app.tracker.settings_store import MY_PLATFORMS_SETTING
 from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.tmdb_movies import MovieSnapshot
@@ -236,6 +239,26 @@ def test_a_platform_the_game_does_not_have_is_the_fresh_card_with_a_line(tracker
     witcher = add(tracker, WITCHER)
 
     answer = client.post(f"/titles/{witcher}/platforms/{platform}", headers=HTMX)
+
+    assert answer.status_code == 200 and PLATFORM_GONE in answer.text and 'id="card"' in answer.text
+    assert playing(session_factory, witcher) == {"pc": True, "ps5": True}
+
+
+def test_a_platform_igdb_took_away_is_the_fresh_card_with_a_line_and_keeps_its_row(
+    tracker, client, session_factory
+):
+    witcher = add(tracker, WITCHER)
+    with session_factory() as session:  # IGDB no longer lists PS4 and PS5; the row of PS5 stays
+        stored = session.scalars(select(SourceSnapshot)).one()
+        before = GameState.from_state(stored.state)
+        stored.state = replace(
+            before,
+            platforms=tuple(p for p in before.platforms if p not in (48, 167)),
+            releases=tuple(r for r in before.releases if r.platform not in (48, 167)),
+        ).state()
+        session.commit()
+
+    answer = client.post(f"/titles/{witcher}/platforms/ps5", headers=HTMX)
 
     assert answer.status_code == 200 and PLATFORM_GONE in answer.text and 'id="card"' in answer.text
     assert playing(session_factory, witcher) == {"pc": True, "ps5": True}

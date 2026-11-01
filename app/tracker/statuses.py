@@ -13,13 +13,14 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
-from app.tracker import scores
+from app.tracker import games, scores
 from app.tracker import seasons as season_logic
 from app.tracker import storage
 from app.tracker.context import CoreContext
 from app.tracker.errors import CannotScore, UnknownPlatform, UnknownSeason, UnknownTitle
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ARCHIVE_STATUSES, GamePlatformRecord, SeasonRecord, SourceSnapshot, Title, TitleStatus
+from app.tracker.platforms import Platform
 from app.tracker.queue import EventQueue
 from app.tracker.results import ChangeResult, WatchableSeason
 
@@ -186,7 +187,8 @@ class Statuses:
     async def set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
         """The mark «играю здесь» on a platform of a game (`platform`: a value of `Platform`, as the address gives it):
         the state asked for, not a switch; the same twice changes nothing. The status does not follow it. Raises
-        UnknownTitle, and UnknownPlatform for a platform the game is not on, a value that is no platform, or a title
+        UnknownTitle, and UnknownPlatform for a platform the game is not on (IGDB no longer lists it, though the row of
+        the platform is kept: it brings the mark back if the platform returns), a value that is no platform, or a title
         that is no game (it has no platforms)."""
         return await asyncio.to_thread(self._set_platform_playing, title_id, platform, playing)
 
@@ -198,7 +200,9 @@ class Statuses:
                     GamePlatformRecord.title_id == title_id, GamePlatformRecord.platform == platform
                 )
             )
-            if record is None:
+            if record is None or not games.has_platform(
+                games.GameState.from_state(storage.own_state(session, title_id)), Platform(platform)
+            ):
                 raise UnknownPlatform(f"{title_id}:{platform}")
             if record.playing == playing:
                 return ChangeResult(changed=False)
@@ -220,7 +224,8 @@ class Statuses:
             if title.status == TitleStatus.DROPPED:
                 return ChangeResult(changed=False)
             _move(title, TitleStatus.DROPPED, now, tracking=False)
-            storage.drop_sequel_check(session, title_id)  # a watched movie dropped in a second tab
+            # a watched movie dropped in a second tab
+            storage.drop_sequel_check(session, title_id, self.pollers.sequel_key_of(title.kind))
             EventQueue.withdraw(session, title_id)
             session.commit()
             return ChangeResult(changed=True)
@@ -242,7 +247,7 @@ class Statuses:
             _move(title, TitleStatus.WANT, now, tracking=True)
             title.restored_at = now
             # a movie waits for its own release again; the next «Посмотрел» starts the sequel check anew
-            storage.drop_sequel_check(session, title_id)
+            storage.drop_sequel_check(session, title_id, self.pollers.sequel_key_of(title.kind))
             storage.refresh_status(session, title, now)  # a series: the status its marks give
             own = storage.own_snapshot(session, title_id)
             if own is not None:

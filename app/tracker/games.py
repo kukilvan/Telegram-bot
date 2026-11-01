@@ -270,15 +270,15 @@ def has_platform(game: GameState, platform: Platform) -> bool:
 
 
 def _better(own: GameDate | None, older: GameDate | None, older_label: str) -> PlatformDate | None:
-    """The own date or the older platform's, whichever starts earlier; the own one on a tie. «Not announced» of
-    either loses to a date."""
+    """The own date or the older platform's, whichever ends earlier («the game can surely be played by this day»: a
+    year is no earlier than a day of it); the own one on a tie. «Not announced» of either loses to a date."""
     if older is None:
         return PlatformDate(own) if own is not None else None
     if own is None:
         return PlatformDate(older, older_label)
     if not older.announced:
         return PlatformDate(own)
-    if not own.announced or older.start < own.start:
+    if not own.announced or older.end < own.end:
         return PlatformDate(older, older_label)
     return PlatformDate(own)
 

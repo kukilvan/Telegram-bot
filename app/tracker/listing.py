@@ -167,7 +167,8 @@ class Listing:
 
     def _sequels(self, session, title: Title) -> SequelsView | None:
         """The sequels of a watched title whose sequel check is on (a movie), with the ones the list already has."""
-        snapshot = storage.sequel_snapshot(session, title.id) if title.status == TitleStatus.WATCHED else None
+        key = self.pollers.sequel_key_of(title.kind)
+        snapshot = storage.sequel_snapshot(session, title.id, key) if title.status == TitleStatus.WATCHED else None
         if snapshot is None:
             return None
         sequels = sequel_events.Sequels.from_state(snapshot.state)

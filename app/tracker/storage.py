@@ -164,18 +164,21 @@ def own_states_of(session, title_ids: Select) -> dict[int, dict[str, Any]]:
     return {title_id: state for title_id, state in rows}
 
 
-def sequel_snapshot(session, title_id: int) -> SourceSnapshot | None:
-    """The snapshot of the title's sequel check: any snapshot that is not of its own source (a watched movie has one)."""
-    own_sources = select(ExternalId.source).where(ExternalId.title_id == title_id, ExternalId.role == PRIMARY_ROLE)
+def sequel_snapshot(session, title_id: int, sequel_key: str | None) -> SourceSnapshot | None:
+    """The snapshot of the title's sequel check (a watched movie has one): the one of the sequel source of its kind,
+    `sequel_key` (None: the kind has no sequel source, so no such snapshot). A snapshot of any other source, the
+    prices of a game, is not it (spec 7.4 of part 6.2)."""
+    if sequel_key is None:
+        return None
     return session.scalar(
-        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source.not_in(own_sources))
+        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == sequel_key)
     )
 
 
-def drop_sequel_check(session, title_id: int) -> None:
+def drop_sequel_check(session, title_id: int, sequel_key: str | None) -> None:
     """Stop looking for the title's sequels: its sequel snapshot goes. The next «Посмотрел» starts the check anew, and
     its first look again only records the collection."""
-    snapshot = sequel_snapshot(session, title_id)
+    snapshot = sequel_snapshot(session, title_id, sequel_key)
     if snapshot is not None:
         session.delete(snapshot)
 

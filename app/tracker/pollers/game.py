@@ -8,16 +8,17 @@ show the dates of the country of the stores as it is now: the feed only the plat
 card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1).
 """
 
-from collections.abc import Collection, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Select, select
+from sqlalchemy import select
 
 from app.tracker import game_events, game_rows, games, storage
 from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart, local_moment
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
+from app.tracker.game_scope import GameScope
 from app.tracker.models import GamePlatformRecord, SeasonRecord, Title
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
@@ -32,19 +33,6 @@ def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Plat
             session.add(GamePlatformRecord(title_id=title_id, platform=platform.value, playing=platform in mine))
 
 
-def _marks(session, title_ids: Select | Collection[int]) -> dict[int, dict[str, bool]]:
-    """The marks «играю здесь» of games (a select of their numbers, or the numbers), in one read: title → platform → mark."""
-    rows = session.execute(
-        select(GamePlatformRecord.title_id, GamePlatformRecord.platform, GamePlatformRecord.playing).where(
-            GamePlatformRecord.title_id.in_(title_ids)
-        )
-    )
-    marks: dict[int, dict[str, bool]] = {}
-    for title_id, platform, playing in rows:
-        marks.setdefault(title_id, {})[platform] = playing
-    return marks
-
-
 class GamePoller(Poller):
     async def snapshot_to_add(self, external_id: str) -> Any:
         return await self.source.snapshot_to_add(external_id)
@@ -52,35 +40,30 @@ class GamePoller(Poller):
     def first_check(
         self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime
     ) -> datetime:
-        country = self.settings.store_country_in(session)
-        return now + games.check_interval(games.GameState.from_state(state), country, now.date())
+        scope = GameScope.read(self.settings, session)
+        return now + games.check_interval(games.GameState.from_state(state), scope.country, now.date())
 
     def store_extras(self, session, title_id: int, records: dict[int, SeasonRecord], snapshot: Any) -> None:
         """The platforms of the game, each with the mark «играю здесь» where it is one of «Мои платформы» now."""
-        _new_rows(session, title_id, snapshot.game, self.settings.my_platforms_in(session))
+        _new_rows(session, title_id, snapshot.game, GameScope.read(self.settings, session).mine)
 
     def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
-        country = self.settings.store_country_in(session)
-        mine = self.settings.my_platforms_in(session)
-        marks = _marks(session, self._active())
+        scope = GameScope.read(self.settings, session, self._active())
         pieces: list[Piece] = []
         for title_id, state in storage.own_states_of(session, self._active()).items():
             if title_id in shown:
-                told = game_events.reported(mine, marks.get(title_id, {}))
                 game = games.GameState.from_state(state)
-                pieces += game_rows.feed_pieces(shown[title_id], game, told, country, basis.today)
+                pieces += game_rows.feed_pieces(shown[title_id], game, scope.told(title_id), scope.country, basis.today)
         return pieces
 
     def card_part(self, session, title: Title) -> CardPart:
         game = games.GameState.from_state(storage.own_state(session, title.id))
-        country = self.settings.store_country_in(session)
-        mine = self.settings.my_platforms_in(session)
+        scope = GameScope.read(self.settings, session, [title.id])
         today = local_moment(self.ctx.now(), self.settings.time_zone(session)).date()
-        marks = _marks(session, [title.id]).get(title.id, {})
-        rows = game_rows.platform_rows(game, mine, marks, country, today)
+        rows = game_rows.platform_rows(game, scope.mine, scope.marks_of(title.id), scope.country, today)
         return CardPart(
             platforms=rows,
-            store_links=game_rows.store_links(game, mine, country, title.original_name or title.name),
+            store_links=game_rows.store_links(game, scope.mine, scope.country, title.original_name or title.name),
             platform_note=game_rows.platform_note(game, rows),
         )
 
@@ -91,25 +74,24 @@ class GamePoller(Poller):
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             old = games.GameState.from_state(stored.state)
             observed_at = stored.observed_at
-            country = self.settings.store_country_in(session)
-            mine = self.settings.my_platforms_in(session)
             # the marks as they are when IGDB has answered: one set while the events are queued counts from the next
             # check (as KI-22); one set while IGDB was answering counts already in this one
-            playing = _marks(session, [due.id]).get(due.id, {})
+            scope = GameScope.read(self.settings, session, [due.id])
         new = games.carry_over(old, snapshot.game)
-        told = game_events.reported(mine, playing)
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
         found = self.record_all(
             due,
-            game_events.detect_events(due.id, due.name, old, new, country, told, observed_at, today),
+            game_events.detect_events(
+                due.id, due.name, old, new, scope.country, scope.told(due.id), observed_at, today
+            ),
             previous_look=observed_at,
         )
         with self.ctx.write_session() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             storage.refresh_poster(session, due.id, snapshot.poster_path)
-            _new_rows(session, due.id, new, mine)  # a platform IGDB added: marked as the events counted it
+            _new_rows(session, due.id, new, scope.mine)  # a platform IGDB added: marked as the events counted it
             stored.state = new.state()
             stored.observed_at = now
-            stored.next_check_at = now + games.check_interval(new, country, today)
+            stored.next_check_at = now + games.check_interval(new, scope.country, today)
             session.commit()
         return found
