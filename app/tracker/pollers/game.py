@@ -1,5 +1,5 @@
-"""A game: the dates of its platforms are compared for the country of the stores, the owner is told only about the
-platforms of «Мои платформы» marked «играю здесь», and the platforms of the game are kept beside it with that mark.
+"""A game: the dates of its platforms are compared for the country of the stores, and the owner is told only about the
+platforms of «Мои платформы» marked «играю здесь». The platforms of the game are kept beside it with that mark.
 
 A game is added with the Russian texts of Steam (`snapshot_to_add`); the polls take IGDB alone, and the name and the
 description stay as they were added (like a film's). Every platform of the tracker the game is on gets its row; the

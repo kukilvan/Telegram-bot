@@ -1,4 +1,4 @@
-"""Steam Store provider.
+"""Steam Store provider: the Russian name and description of a game from the public `appdetails` endpoint.
 
 Public endpoints — no API key required.
 - App details: GET /api/appdetails?appids={appid}&l=russian&filters=basic

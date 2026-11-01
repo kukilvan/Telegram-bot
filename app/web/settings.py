@@ -1,5 +1,5 @@
-"""The settings page: the time zone, the working days, the hour of the summary, the quiet hours, the break between parts of
-a season, the platforms of the games and the country of the stores, in one form with one button; under it the line
+"""The settings page: one form for the time zone, the working days, the hour of the summary, the quiet hours, the break
+between parts of a season, the platforms and the country of the stores. It has one button; under it are the line
 «Сейчас» and the state of the bot in Telegram. The form is saved as a whole or not at all: a value the core refuses is
 shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the spec of part
 5.4, section 11 of the spec of part 6.1."""

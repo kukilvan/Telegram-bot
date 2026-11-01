@@ -1,5 +1,5 @@
-"""Game events: what changed between two snapshots of a game on the platforms the owner is told about, how the message
-reads, how the events of several platforms fold into one, and the samples of «Тестовое событие».
+"""Game events: what changed between two snapshots of a game on the platforms the owner is told about, and how the
+message reads. The events of several platforms fold into one, and the samples of «Тестовое событие» are here too.
 
 Pure: no database, no network. The previous and the new snapshot are read for the same country of the stores — today's
 (spec 5.2 of part 6.1), so a new country gives no messages. Only an exact day gives a message; an approximate date

@@ -1,5 +1,5 @@
 """What every page shares: the page with the menu and the status line, a fragment, the answer to a press, the notice
-that crosses to the next page, «the title is gone» and the net under an unexpected error. The pages reach all of it
+for the next page, «the title is gone» and the net under an unexpected error. The pages reach all of it
 through `request.app.state.web` (`WebContext`), so a page module has a router of its own and needs nothing built for it."""
 
 import functools

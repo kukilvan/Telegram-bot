@@ -1,6 +1,7 @@
-"""Bot side of the tracker core: the menu («Добавить», «Мои тайтлы», «Сводка сейчас», «Тестовое событие»; the
-delivery-rules check is the last item of the test-event list), the buttons under messages and cards
-(«Посмотрел», «Следить», «Карточка», «Удалить») and the Telegram sender.
+"""Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
+
+The menu is «Добавить», «Мои тайтлы», «Сводка сейчас», «Тестовое событие» (the delivery-rules check is the last item of
+the test-event list); the buttons under messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить».
 
 Handlers talk to the core only through the `Tracker` facade. They live on one router with the owner filter on it;
 a handler never checks the owner itself. «Добавить» is a temporary way to fill the

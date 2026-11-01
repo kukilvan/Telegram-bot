@@ -1,6 +1,6 @@
-"""The feed, the main page after the sign-in: «Скоро» (what comes out in the next two weeks, by days), «Позже» (the nearest
-date of the titles that have nothing in those days) and «Недавно» (the events of the last week, with «Посмотрел» and
-«Следить»). The core decides what is shown and which buttons a row has (`Tracker.feed()`); the page only words it.
+"""The feed, the main page after the sign-in: «Скоро» (the next two weeks, by days), «Позже» (the nearest date of the
+titles with nothing in those days) and «Недавно» (the events of the last week). «Недавно» has the buttons «Посмотрел»
+and «Следить». The core decides what is shown and which buttons a row has (`Tracker.feed()`); the page only words it.
 Every press asks the core and answers with the whole feed fresh (HTMX puts it in the place of the old one; a plain form
 gets a redirect to `/`). The feed is read when the page opens: nothing refreshes it. Rules: 3.5 and 3.6 of the spec of
 part 5.3."""

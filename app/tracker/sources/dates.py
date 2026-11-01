@@ -1,4 +1,4 @@
-"""Reading a date from text. Two readers, and which one to use depends on who wrote the text.
+"""Reading a date from text: two readers, and which one to use depends on who wrote the text.
 
 - `parse_response_date`: what a service on the internet sent. It may be garbage, so it is read softly: garbage is
   «no date».

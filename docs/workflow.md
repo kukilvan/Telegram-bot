@@ -11,7 +11,7 @@ The project is split into stages (`docs/project-spec.md`; status in `PROJECT_CON
 | Description | «Описание 6.3» | `.scratch/6-3-<slug>/description.md` |
 | Spec | «Спека 6.3» | `.scratch/6-3-<slug>/spec.md` |
 | Slicing | «Тикеты 6.3» | `.scratch/6-3-<slug>/issues/MM-<slug>.md` |
-| Ticket | «Тикет 6.3.02» | code, tests, `docs/code-map.md` |
+| Ticket | «Тикет 6.3.02» | code, tests, module docstrings (the code map is built from them) |
 | Review | «Ревью 6.3» | `.scratch/6-3-<slug>/review.md` |
 
 How a roadmap item is split into stages is decided by the agent: the split is proposed in the description and confirmed by the owner. Folders of stages finished or running before 2026-11-01 keep their names (`.scratch/games-2-steam-prices/`, `web-3-feed-archive-scores/`, …); their `Статус:` and `Сложность:` lines mean Status and Complexity (`открыт` open · `ждёт проверки` in review · `принят` accepted; `простой` simple · `средний` medium · `сложный` complex). File formats: `docs/formats.md`, the section for the file you write.
@@ -27,7 +27,7 @@ The approved description is the source of truth for its stage; when it changes t
 
 **Slicing.** One file per ticket, numbered from `01`. Each ticket is a finished piece the owner can check on its own and fits one session. Its `Complexity:` (simple · medium · complex) picks the model of its session. The ticket names the spec sections it needs, so its session does not read the whole spec.
 
-**Ticket.** Code, tests, `docs/code-map.md`, then the self-check, then the owner's check.
+**Ticket.** Code, tests, then the docstring of every module it adds or changes: its first sentence says what the module holds and becomes the line of `docs/code-map.md`. Nobody edits the map by hand: run `.venv\Scripts\python.exe tools\code_map.py` (`tests/test_code_map.py` fails when the map is stale). Then the self-check, then the owner's check.
 
 **Review.** The whole stage against its spec and `docs/coding-standards.md` — with the `code-review` skill: one pass for standards, one for the spec. Run things, not only read them. Each finding gets one decision in `review.md`:
 - **fix now** — minutes of work and no design choice (typo, label, spacing): fixed in this session;
@@ -108,14 +108,14 @@ The owner is not a programmer. For anything they do by hand:
 
 | File | Holds | Budget |
 |---|---|---|
-| `CLAUDE.md` | rules, run commands, pointers | 60 lines and 6,000 characters |
-| `PROJECT_CONTEXT.md` | Next step, state, stages, environment, gotchas | 20,000 characters |
+| `CLAUDE.md` | rules, run commands, pointers | 60 lines and 6,000 bytes |
+| `PROJECT_CONTEXT.md` | Next step, state, stages, environment, gotchas | 20,000 bytes |
 | `docs/project-spec.md` | the product and its stages | — |
 | `CONTEXT.md` | glossary | — |
 | `docs/adr/` | one decision per file with its reasons; replaced by a new ADR, never rewritten | — |
 | `KNOWN_ISSUES.md` | index on top, entries below | one index line per entry |
 | `docs/coding-standards.md` | rules with reason and check; added by the ticket that introduces a rule | — |
-| `docs/code-map.md` | architecture in a few lines, then one line per file or module | — |
+| `docs/code-map.md` | architecture, the files that are not Python, and the list of the modules of `app/` built from their docstrings by `tools/code_map.py` — never edited by hand | — |
 | `docs/tests-map.md` | what each test module checks | read only on need |
 | `docs/history.md` | dated details of accepted steps | read rarely |
 | `docs/models.md` | model and effort per session | — |
@@ -123,4 +123,4 @@ The owner is not a programmer. For anything they do by hand:
 | `docs/ideas/` | one idea spec per file, with its stage and status | — |
 | `.scratch/<stage>/` | a stage's description, spec, tickets, review, mockups | — |
 
-Budgets are in characters, not lines: a few very long lines pass a line budget and still cost tens of thousands of tokens in every session. Each fact has one home; other files point to it. Over budget → the oldest detail moves to `docs/history.md`. Keep rows of `docs/code-map.md` to one short line.
+Budgets are in bytes (`wc -c`), not lines: a few very long lines pass a line budget and still cost tens of thousands of tokens in every session. Each fact has one home; other files point to it. Over budget → the oldest detail moves to `docs/history.md`.

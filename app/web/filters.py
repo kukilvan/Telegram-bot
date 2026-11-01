@@ -1,5 +1,5 @@
-"""What the list and the archive share about their filters: a value read from the address, the row of links for the kind,
-the sentence of an empty page and the answer with the results under the search field. What differs stays with the
+"""What the list and the archive share about their filters: a value read from the address, the row of links for the
+kind, the sentence of an empty page and the answer under the search field. What differs stays with the
 pages: their own `Filters` (the fields are not the same) and their own rows of links. Rules: 6.1 of the spec of part 5.4."""
 
 from collections.abc import Awaitable, Callable, Collection, Mapping, Sequence

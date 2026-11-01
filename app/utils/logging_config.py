@@ -1,3 +1,9 @@
+"""Logging of the application: the console and the rotated file `data/logs/bot.log`, both with secrets masked.
+
+The file keeps 5 copies of 10 MB. Third-party loggers (httpx logs full URLs with api_key=..., aiogram logs tracebacks)
+reach the same handlers, so the masking sits in the formatter (`MaskingFormatter`).
+"""
+
 import logging
 import sys
 from logging.handlers import RotatingFileHandler

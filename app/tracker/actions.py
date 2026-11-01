@@ -1,4 +1,4 @@
-"""Buttons under a message or a card. The core decides which ones; the bot turns them into Telegram buttons."""
+"""Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass

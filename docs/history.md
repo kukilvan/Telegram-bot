@@ -2,9 +2,18 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-01 — Code map built from the docstrings
+
+Why: `docs/code-map.md` was 93,337 bytes (about 35k tokens) and every spec, ticket and review session read it; 8 of its 57 rows held half of the text (`app/web/` alone 19k characters), they mixed in ticket and `KI-` history, and 45 files were not named in it by full path. Now `tools/code_map.py` builds the list of the 98 modules of `app/` from the first sentence of each module docstring (the list is 14 KB, the whole file 17.7 KB), and `tests/test_code_map.py` fails when the file is stale, a module has no docstring or a first sentence is over 200 characters. Rule 11 of `docs/coding-standards.md` and the Ticket step of `docs/workflow.md` say so. The old map: `git show 142bc26:docs/code-map.md`.
+
+- Docstrings: one added (`app/utils/logging_config.py`); the first sentence of 14 modules shortened or sharpened (docstrings only, no behaviour change). The 14 first lines that were counted as Russian in the first estimate are English sentences with the names of buttons in «», so nothing was translated.
+- Dropped from the old rows (they stay in git only): ticket numbers and `KI-` references, lists of method names and parameters (the code says it), copies of behaviour that the tests and the specs in `.scratch/` hold. Checked on 15 of the 57 rows (the 8 biggest and 7 medium ones) that the explanations are in the code (the comments of `delete_bar.html` and `title_list_results.html`, `at_once` in `tmdb.py`, the token of IGDB in `igdb.py`, `reader_of` and `sequel_key_of` in `polling.py`, `OPEN_ADDRESSES` in `app/web/app.py`, `db.py`, `main.py`, `runtime.py`) or in rule 10 of the coding standards. Kept by hand in the map: the architecture, the stack, the files that are not Python (templates, static with the HTMX version, migrations folder, root scripts, `data/`).
+- `.dockerignore` got `tools/`; `docs/tests-map.md` got the row of the new test.
+- Labelling fix: sizes called "characters" in the entry below were bytes (`wc -m` in Git Bash counts bytes; the map is 62.7k characters but 93,337 bytes). The token estimates were calibrated on bytes and stand. The budgets of `docs/workflow.md` and `PROJECT_CONTEXT.md` now say bytes; the numbers (20,000 and 6,000) stay.
+
 ## 2026-11-01 — Moved onto the kickoff workflow (`/new-project` adopt)
 
-What changed: the working process was brought in line with `docs/workflow.md`. Why: the old `PROJECT_CONTEXT.md` had grown to 98,6k characters (about 37k tokens, read by every session) and the line budget could not catch it because single lines were thousands of characters long. Budgets are now in characters.
+What changed: the working process was brought in line with `docs/workflow.md`. Why: the old `PROJECT_CONTEXT.md` had grown to 98.6 KB (about 37k tokens, read by every session) and the line budget could not catch it because single lines were thousands of characters long. Budgets are now in bytes (`wc -c`).
 
 - `CLAUDE.md`, `PROJECT_CONTEXT.md`, `CONTEXT.md`, `docs/workflow.md` (was `docs/agents/workflow.md`), `docs/models.md` (was `docs/sessions-models.md`) rewritten in English, shorter. `docs/formats.md` and `docs/project-spec.md` are new; `docs/agents/` removed (its content lives in `docs/workflow.md`, `docs/formats.md` and `CLAUDE.md`).
 - The bulky parts of the old `PROJECT_CONTEXT.md` moved here word for word (below). The complete old file: `git show 3e8b4b8:PROJECT_CONTEXT.md`.

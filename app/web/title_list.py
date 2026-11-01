@@ -1,5 +1,6 @@
-"""The list: the rows with a search by name, a filter by kind and by status and an order (links, so «Назад» and bookmarks
-work), the mode of choosing, in which several titles are deleted at once after a question on the page. The filters live
+"""The list: the rows with a search by name, filters by kind and status and an order (links, so «Назад» and bookmarks
+work), and a mode of choosing that deletes several titles at once. The deletion comes after a question on the page.
+The filters live
 in the address (`kind`, `status`, `order`, and `q` for the search); a value nobody knows counts as none. The mode is
 `select=1`. Rules: section 5 of the spec of part 5.2 and 5.2, 5.5 of the spec of part 5.3."""
 

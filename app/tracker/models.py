@@ -1,4 +1,5 @@
-"""Tables of the tracker database. Timestamps are naive UTC and are always set by the core at insert time."""
+"""Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings and
+game platforms. Timestamps are naive UTC and are always set by the core at insert time."""
 
 from datetime import date, datetime
 from enum import StrEnum

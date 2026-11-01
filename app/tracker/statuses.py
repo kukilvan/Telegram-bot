@@ -1,8 +1,10 @@
-"""The owner's marks on a title and the status that follows from them: «Посмотрел» («Прошёл» of a game), «Начал играть»,
-«Бросил», «Вернуть в список», the season marks, «Отметить все вышедшие» and the mark «играю здесь» on a platform of a
-game; and the owner's scores, which only what is watched gets. What differs by kind (the sequel check that starts after
-«Посмотрел») is asked of the title's poller; whether a title has seasons, its final status and whether it can be
-started, of the table of kinds.
+"""The owner's marks on a title (watched, started, dropped, restored, seasons, platforms, scores) and the status that
+follows from them.
+
+The marks are «Посмотрел» («Прошёл» of a game), «Начал играть», «Бросил», «Вернуть в список», the season marks,
+«Отметить все вышедшие» and the mark «играю здесь» on a platform of a game; and the owner's scores, which only what is
+watched gets. What differs by kind (the sequel check that starts after «Посмотрел») is asked of the title's poller;
+whether a title has seasons, its final status and whether it can be started, of the table of kinds.
 
 A season is known by its record (`SeasonRecord.id`), not by its number: the seasons of an anime are renumbered when the
 source changes its chain, and a mark sent from a card opened before that must reach the season the owner saw."""

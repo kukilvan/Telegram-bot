@@ -1,5 +1,5 @@
 """The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages
-behind (each section has a module and a router of its own, `create_web_app` only puts them together)."""
+behind them. Each section has a module and a router of its own; `create_web_app` only puts them together."""
 
 import logging
 import mimetypes

@@ -1,6 +1,6 @@
 # Project context
 
-Current state only; budget 20,000 characters (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-01.
+Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-01.
 
 ## Next step
 
