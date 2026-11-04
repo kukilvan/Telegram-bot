@@ -16,7 +16,9 @@ stretch of time goes out alone.
 Several episodes of one season of one title are folded into a single line («вышли серии 5–6») — in a summary only.
 Failures of several titles of one source for one reason in one pass are folded into one message, and events of one
 game of one type on several platforms into one line («вышла на ПК и PS5»), in a summary and in a message of their own
-alike.
+alike. Two discounts in Steam or more that go out at once in messages of their own become one message, a line a game
+(«🎮 Скидки в Steam:»); in a summary each keeps its line. An event whose `expires_at` has come (a discount that is over)
+goes out no more (`expired`).
 """
 
 import logging
@@ -26,8 +28,9 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from typing import Any
 
-from app.tracker import failures, game_events
+from app.tracker import failures, game_events, price_events
 from app.tracker.cards import format_weekday_date, local_moment
+from app.tracker.sources.dates import parse_moment
 from app.tracker.series_events import EPISODE_OUT
 
 logger = logging.getLogger(__name__)
@@ -201,6 +204,7 @@ class Unit:
     # the event whose buttons the unit shows: the single one; of a folded game, its first (all are of one title, the
     # buttons are its card); folded failures and episodes have none
     lead: Pending | None = None
+    discounts: bool = False  # folded discounts in Steam: a link to Steam a game instead of the buttons of a lead
 
     @property
     def single(self) -> Pending | None:
@@ -232,15 +236,18 @@ def _failure_key(pending: Pending) -> tuple[Any, ...] | None:
     return ("failure", *key) if key is not None else None
 
 
-def fold(queue: Sequence[Pending], *, episodes: bool) -> list[Unit]:
+def fold(queue: Sequence[Pending], *, episodes: bool, discounts: bool = False) -> list[Unit]:
     """Units in queue order. Two or more failures with the same source, reason and pass become one unit with a common
     text and no buttons; two or more events of one game with the same type and dates, one unit with the list of their
     platforms and the buttons of the first; with `episodes`, episodes of one season of one title (two or more) become one
-    unit too. A folded unit stands at the place of its first member. The folded episodes keep the second line of the
-    latest one."""
+    unit too; with `discounts`, all the discounts in Steam (two or more) become one, or several when the text would not
+    fit into Telegram. A folded unit stands at the place of its first member. The folded episodes keep the second line
+    of the latest one."""
     def key_of(pending: Pending) -> tuple[Any, ...] | None:
         if (key := _failure_key(pending)) is not None:
             return key
+        if discounts and price_events.foldable(pending.type, pending.data):
+            return ("discounts",)
         if (key := game_events.fold_key(pending.type, pending.title_id, pending.data)) is not None:
             return ("platforms", *key)
         if episodes and (key := _episode_key(pending)) is not None:
@@ -271,6 +278,9 @@ def fold(queue: Sequence[Pending], *, episodes: bool) -> list[Unit]:
                 units.append(Unit(tuple(members), _failures_text(key, members)))
             elif key[0] == "platforms":
                 units.append(Unit(tuple(members), game_events.folded_text(key[1], [m.data for m in members]), members[0]))
+            elif key[0] == "discounts":
+                for text, held in price_events.folded_messages([m.data for m in members], MESSAGE_LIMIT):
+                    units.append(Unit(tuple(members[i] for i in held), text, discounts=True))
             else:
                 units.append(Unit(tuple(members), _episodes_text(key, members)))
     return units
@@ -287,6 +297,13 @@ def _episodes_text(key: tuple[Any, ...], members: Sequence[Pending]) -> str:
     head = f"{key[2]} — вышли серии {episode_ranges(m.data['episode'] for m in members)}"
     tail = latest.text.split("\n", 1)[1] if "\n" in latest.text else ""
     return f"{head}\n{tail}" if tail else head
+
+
+def expired(pending: Pending, now: datetime) -> bool:
+    """The message is old: the moment it is about has come (a discount is over, spec 5.6 of part 6.2). Only the events
+    of Steam have `expires_at`; it is ours, so it is read strictly."""
+    expires_at = pending.data.get("expires_at")
+    return expires_at is not None and parse_moment(expires_at) <= now
 
 
 def one_line(text: str) -> str:

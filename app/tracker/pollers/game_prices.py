@@ -6,8 +6,10 @@ Each pass (every minute) the price snapshots (source `steam`) are first brought 
 snapshot gets an empty one, due now; the snapshot of a game that is no longer one goes, and with it the undelivered
 events of Steam of that game (the price history stays). No button touches the price snapshots: the rule lives here.
 Then the due games are asked about, all in the country of the stores of now; the request holds no database, and each
-game is written in a write session of its own (rule 9). No event is queued yet: ticket 04 connects to `_store`, where
-the reference point is decided.
+game is written in a write session of its own (rule 9). Unless the check is the reference point, the previous look and
+the new one are compared (`price_events`) and the events are queued first, each in a session of its own (a new
+discount takes the undelivered one of the game out of the queue); then the look and the history are stored, so a
+failed store finds the same facts again and their keys drop them.
 """
 
 import asyncio
@@ -20,11 +22,11 @@ from typing import Any
 from sqlalchemy import select
 
 from app.providers.steam import MAX_ITEMS
-from app.tracker import games, storage
+from app.tracker import games, price_events, storage
 from app.tracker.context import CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import PriceRecord, SourceSnapshot, Title, TitleKind, TitleStatus
-from app.tracker.movie_events import RETRY_AFTER_FAILURE
+from app.tracker.movie_events import RETRY_AFTER_FAILURE, DetectedEvent
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle
 from app.tracker.prices import Lowest, PriceLook, lowest
@@ -34,9 +36,8 @@ from app.tracker.sources.steam_prices import SOURCE_KEY, UnreadAnswer
 
 PRICE_INTERVAL = timedelta(hours=6)  # after a price check that worked; after a failure — `RETRY_AFTER_FAILURE`
 
-# the types of the events of Steam (spec 5.1; ticket 04 makes them): the one list of what goes out of the queue when a
-# game's prices are no longer checked
-STEAM_EVENTS = ("game_discount", "game_bundle", "game_steam_page")
+# the types of the events of Steam (spec 5.1): what goes out of the queue when a game's prices are no longer checked
+STEAM_EVENTS = price_events.TYPES
 
 
 def steam_number(status: TitleStatus, game: games.GameState, told: Collection[Platform]) -> str | None:
@@ -203,10 +204,10 @@ class GamePrices:
     # --- storing (spec 4.3–4.5) ---
 
     def _store(self, game: DueTitle, look: PriceLook) -> None:
-        """The look becomes the snapshot, a changed price a record of the history. A snapshot gone while Steam was
-        answering (the game was deleted) is no failure: nothing is written."""
+        """The events of the look, then the look becomes the snapshot, a changed price a record of the history. A
+        snapshot gone while Steam was answering (the game was deleted) is no failure: nothing is written."""
         now = self.ctx.now()
-        with self.ctx.write_session() as session:
+        with self.ctx.session_factory() as session:
             stored = _snapshot(session, game.id)
             if stored is None:
                 logging.info("title %s was deleted while its prices were checked", game.id)
@@ -214,11 +215,40 @@ class GamePrices:
             old = PriceLook.from_state(stored.state)
             if is_baseline(old, look):
                 logging.info("title %s: first price check of Steam app %s in %s, the baseline", game.id, look.appid, look.country)
+                events = []
+            else:
+                # «самая низкая» by the history before this check; the end of a discount on the owner's clock
+                events = price_events.detect_events(
+                    game.id, game.name, old, look, now, self.settings.time_zone(session),
+                    lowest_seen(session, game.id, look), stored.observed_at,
+                )
+        found = sum(self._queue(game.id, event, now) for event in events)
+        if found:
+            logging.info("title %s: %s events of Steam", game.id, found)
+        with self.ctx.write_session() as session:
+            stored = _snapshot(session, game.id)
+            if stored is None:
+                logging.info("title %s was deleted while its prices were checked", game.id)
+                return
             _add_to_history(session, game.id, look, now)
             stored.state = look.state()
             stored.observed_at = now
             stored.next_check_at = now + PRICE_INTERVAL
             session.commit()
+
+    def _queue(self, title_id: int, event: DetectedEvent, now: datetime) -> bool:
+        """Queue an event of Steam; False — its fact is known already, or the game's prices are no longer checked. A
+        new discount takes the undelivered one of the game out of the queue: one line about it in a summary."""
+        with self.ctx.write_session() as session:
+            if _snapshot(session, title_id) is None:
+                return False
+            if event.type == price_events.DISCOUNT:
+                EventQueue.withdraw(session, title_id, (price_events.DISCOUNT,))
+            payload = {"text": event.text, **event.data}
+            if EventQueue.enqueue(session, event.type, payload, event.dedup_key, title_id, now) is None:
+                return False  # rolled back: the undelivered discount stays too
+            session.commit()
+            return True
 
     def _postpone(self, game: DueTitle) -> bool:
         """The next price check of the game in 30 minutes. False — its snapshot is gone (the game was deleted while

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone
 from typing import Any
 
-from app.tracker import anime_events, failures, game_events, movie_events, sequel_events, series_events
+from app.tracker import anime_events, failures, game_events, movie_events, price_events, sequel_events, series_events
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.queue import EventQueue
@@ -109,6 +109,8 @@ class TestSamples:
                 game_events.sample_two_platforms_events,
             )
         )
+        for sample_id, label, events in price_events.TEST_SAMPLES:  # real types: their buttons open Steam
+            self.register(TestSample(sample_id, label, lambda events=events: events()[0][1], events))
         self.register(
             TestSample(
                 series_events.SAMPLE_EPISODES_ID,

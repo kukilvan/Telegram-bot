@@ -88,6 +88,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.
 - `app/tracker/pollers/series.py` — A series: the fresh seasons are compared with the stored ones, and the owner's season marks keep the status.
 - `app/tracker/polling.py` — Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.
+- `app/tracker/price_events.py` — The events of Steam (pure): a discount and a bundle from two price looks, the page in Steam, texts, keys, folding.
 - `app/tracker/prices.py` — Steam prices of a game: what one price check saw (`PriceLook`), an amount of money (`Money`) and «самая низкая с добавления».
 - `app/tracker/progress.py` — The status a series takes by itself from the owner's season marks and the state of the show.
 - `app/tracker/queue.py` — Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages.

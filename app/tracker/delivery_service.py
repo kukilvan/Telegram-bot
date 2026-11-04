@@ -1,7 +1,8 @@
 """Delivery: sending what the queue holds to the owner, one message or one summary, and noting every attempt.
 
 The rules (what goes out now, what waits, how a summary reads) are the pure functions of `delivery`; this module reads
-the queue, sends through the sender and records what happened.
+the queue, sends through the sender and records what happened. A message that got old before it could go out (its
+`expires_at` has come) leaves the queue unsent; its event stays.
 """
 
 import asyncio
@@ -10,10 +11,10 @@ from collections.abc import Sequence
 from dataclasses import replace
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
-from app.tracker import delivery
-from app.tracker.actions import CARD, FOLLOW, WATCHED, Action, event_actions
+from app.tracker import delivery, price_events
+from app.tracker.actions import CARD, FOLDED_STEAM_LABEL, FOLLOW, STEAM, WATCHED, Action, event_actions, steam_action
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, Title
 from app.tracker.results import DeliveryReport, SummaryResult
@@ -39,17 +40,15 @@ class DeliveryService:
         report = DeliveryReport()
         async with self.ctx.delivery_lock:
             moment = naive_utc(now or self.ctx.clock())
-            rules, pending, names = await asyncio.to_thread(self._load_queue, only)
+            rules, pending, names = await asyncio.to_thread(self._load_queue, only, moment)
             if force:
                 single, summary = pending, []
             else:
                 single, summary = rules.due(pending, moment)
-            # episodes are folded only inside a summary; failures of one source and reason and the platforms of a game
-            # are folded everywhere
-            for unit in delivery.fold(single, episodes=False):
-                item = unit.lead
-                actions = event_actions(item.type, item.event_id, item.title_id, item.data) if item is not None else []
-                await self._send(unit.members, unit.text, actions, report)
+            # episodes are folded only inside a summary, discounts only outside it; failures of one source and reason
+            # and the platforms of a game are folded everywhere
+            for unit in delivery.fold(single, episodes=False, discounts=True):
+                await self._send(unit.members, unit.text, _unit_actions(unit), report)
             if summary:
                 await self._send_summary(summary, moment, rules, report, names)
         return report
@@ -59,7 +58,7 @@ class DeliveryService:
         report = DeliveryReport()
         async with self.ctx.delivery_lock:
             moment = self.ctx.now()
-            rules, pending, names = await asyncio.to_thread(self._load_queue, None)
+            rules, pending, names = await asyncio.to_thread(self._load_queue, None, moment)
             if pending:
                 await self._send_summary(pending, moment, rules, report, names)
         return SummaryResult(events=len(pending), delivered=bool(pending) and report.failed == 0)
@@ -74,6 +73,22 @@ class DeliveryService:
             return len(items) == len(event_ids) and all(item.status == DeliveryStatus.DELIVERED for item in items)
 
     def _load_queue(
+        self, only: frozenset[int] | None, moment: datetime
+    ) -> tuple[delivery.DeliveryRules, list[delivery.Pending], dict[int, str]]:
+        """The rules, what waits in the queue and is not old at `moment`, and the names of its titles. The old entries
+        leave the queue here: neither a message, nor a summary, nor «Сводка сейчас» sends them."""
+        rules, pending, names = self._read_queue(only)
+        old = [p.item_id for p in pending if delivery.expired(p, moment)]
+        if old:
+            logging.info("queue items %s are old (the discount is over), they leave the queue unsent", old)
+            with self.ctx.write_session() as session:
+                session.execute(
+                    delete(DeliveryItem).where(DeliveryItem.id.in_(old), DeliveryItem.status == DeliveryStatus.PENDING)
+                )
+                session.commit()
+        return rules, [p for p in pending if p.item_id not in old], names
+
+    def _read_queue(
         self, only: frozenset[int] | None
     ) -> tuple[delivery.DeliveryRules, list[delivery.Pending], dict[int, str]]:
         with self.ctx.session_factory() as session:
@@ -118,18 +133,17 @@ class DeliveryService:
             lead = unit.lead
             if lead is None:
                 continue
-            name = lead.data.get("sequel_title") or names.get(lead.title_id, "")
-            if len(name) > BUTTON_NAME_LIMIT:
-                name = name[: BUTTON_NAME_LIMIT - 1] + "…"
+            name = _button_name(lead.data.get("sequel_title") or names.get(lead.title_id, ""))
             for action in event_actions(lead.type, lead.event_id, lead.title_id, lead.data):
                 if (action.name, action.arg) in shown:
                     continue
                 shown.add((action.name, action.arg))
                 actions.append(replace(action, label=f"{action.label}: {name}") if name else action)
         # «Следить» is never cut: a sequel announcement has no card or list entry to follow from. The rest fill
-        # what is left of the limit, «Посмотрел» before «Карточка», and are reached from «Мои тайтлы» if cut.
+        # what is left of the limit, «Посмотрел», then «Открыть в Steam», then «Карточка», and are reached from «Мои
+        # тайтлы» if cut.
         follow = [a for a in actions if a.name == FOLLOW]
-        rest = [a for name in (WATCHED, CARD) for a in actions if a.name == name]
+        rest = [a for name in (WATCHED, STEAM, CARD) for a in actions if a.name == name]
         return follow + rest[: max(0, MAX_SUMMARY_BUTTONS - len(follow))]
 
     async def _send(
@@ -166,3 +180,18 @@ class DeliveryService:
                 else:
                     item.last_error = mask_secrets(repr(error))[:500]
             session.commit()
+
+
+def _button_name(name: str) -> str:
+    """A title's name on a button, cut to `BUTTON_NAME_LIMIT`."""
+    return name[: BUTTON_NAME_LIMIT - 1] + "…" if len(name) > BUTTON_NAME_LIMIT else name
+
+
+def _unit_actions(unit: delivery.Unit) -> list[Action]:
+    """The buttons of a message of its own: of its lead; folded discounts have a link to Steam a game, in the order of
+    their lines, up to `MAX_SUMMARY_BUTTONS`, and no card."""
+    if unit.discounts:
+        games = price_events.steam_ids(m.data for m in unit.members)[:MAX_SUMMARY_BUTTONS]
+        return [steam_action(steam_id, f"{FOLDED_STEAM_LABEL}: {_button_name(name)}") for name, steam_id in games]
+    item = unit.lead
+    return event_actions(item.type, item.event_id, item.title_id, item.data) if item is not None else []

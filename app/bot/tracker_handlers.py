@@ -1,7 +1,8 @@
 """Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
 
 The menu is «Добавить», «Мои тайтлы», «Сводка сейчас», «Тестовое событие» (the delivery-rules check is the last item of
-the test-event list); the buttons under messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить».
+the test-event list); the buttons under messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить» and the link «🛒 Открыть в Steam»
+(a button with an address opens the page itself, the bot never hears of it).
 
 Handlers talk to the core only through the `Tracker` facade. They live on one router with the owner filter on it;
 a handler never checks the owner itself. «Добавить» is a temporary way to fill the
@@ -88,14 +89,18 @@ _ASK_SEASONS = (
 )
 
 
+def _action_button(action: Action) -> InlineKeyboardButton:
+    """A button with an address opens it (the game in Steam); the others call the bot."""
+    if action.url is not None:
+        return InlineKeyboardButton(text=action.label, url=action.url)
+    return InlineKeyboardButton(text=action.label, callback_data=f"{_ACTION_PREFIX}{action.name}:{action.arg}")
+
+
 def actions_markup(actions: Sequence[Action]) -> InlineKeyboardMarkup | None:
     """One button per row under a message; None when there is nothing to press."""
     if not actions:
         return None
-    rows = [
-        [InlineKeyboardButton(text=a.label, callback_data=f"{_ACTION_PREFIX}{a.name}:{a.arg}")] for a in actions
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=rows)
+    return InlineKeyboardMarkup(inline_keyboard=[[_action_button(a)] for a in actions])
 
 
 class TelegramSender:

@@ -6,7 +6,8 @@ description stay as they were added (like a film's). Every platform of the track
 mark is set where the platform is one of «Мои платформы» at that moment (spec 6.3 of part 6.1). The feed and the card
 show the dates of the country of the stores as it is now: the feed only the platforms the owner is told about, the
 card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1). At the end of each polling pass
-the Steam prices of the games are checked (`pollers/game_prices`, part 6.2).
+the Steam prices of the games are checked (`pollers/game_prices`, part 6.2); the page in Steam is told here, by IGDB:
+its previous snapshot had no Steam number, the new one has, and the game is one for prices by the new snapshot.
 """
 
 from collections.abc import Mapping, Sequence
@@ -15,7 +16,7 @@ from typing import Any
 
 from sqlalchemy import select
 
-from app.tracker import game_events, game_rows, games, storage
+from app.tracker import game_events, game_rows, games, price_events, storage
 from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart, local_moment
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
@@ -23,7 +24,7 @@ from app.tracker.game_scope import GameScope
 from app.tracker.models import GamePlatformRecord, SeasonRecord, Title
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
-from app.tracker.pollers.game_prices import GamePrices
+from app.tracker.pollers.game_prices import GamePrices, steam_number
 
 
 def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Platform]) -> None:
@@ -83,15 +84,14 @@ class GamePoller(Poller):
             # the marks as they are when IGDB has answered: one set while the events are queued counts from the next
             # check (as KI-22); one set while IGDB was answering counts already in this one
             scope = GameScope.read(self.settings, session, [due.id])
+            status = session.get(Title, due.id).status
         new = games.carry_over(old, snapshot.game)
+        events = game_events.detect_events(due.id, due.name, old, new, scope.country, scope.told(due.id), observed_at, today)
+        steam_id = steam_number(status, new, scope.told(due.id))
+        if not old.steam_id and steam_id is not None:
+            events.append(price_events.steam_page_event(due.id, due.name, steam_id))
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them
-        found = self.record_all(
-            due,
-            game_events.detect_events(
-                due.id, due.name, old, new, scope.country, scope.told(due.id), observed_at, today
-            ),
-            previous_look=observed_at,
-        )
+        found = self.record_all(due, events, previous_look=observed_at)
         with self.ctx.write_session() as session:
             stored = storage.stored_snapshot(session, due.id, due.snapshot_source)
             storage.refresh_poster(session, due.id, snapshot.poster_path)
