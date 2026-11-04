@@ -22,7 +22,7 @@ One owner per instance (ADR 0001). The web is protected by a password (`WEB_PASS
 ## Features
 
 - **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1); prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark (6.2).
-- **Next:** 6.3 DLC and sequels of games; 6.4 «Входящие» (add from Telegram by a forwarded post or a name, `docs/ideas/001-telegram-inbox.md`, ADR 0010); 7 backups and NAS; 8 template for GitHub; 9 fixes after real use.
+- **Next:** 6.3 expansions and sequels of games; 6.4 «Входящие» (add from Telegram by a forwarded post or a name, `docs/ideas/001-telegram-inbox.md`, ADR 0010); 7 backups and NAS; 8 template for GitHub; 9 fixes after real use.
 - **Never:** notes and tags, the commands `/add`, `/remove`, `/watchlist`, `/note`, `/notes`, `/events`, `/search`, `/searchgame`, inline search, the events «Русская озвучка» and «KinoPub», RAWG and the unofficial PSN request, PlayStation prices (ADR 0009), anything hard-coded for one owner.
 
 ## Interface
@@ -52,12 +52,12 @@ Finished (details — `docs/history.md`, `.scratch/`):
 - Contains: `.scratch/games-2-steam-prices/` — 01 cleanup (accepted), 02 Steam client + adapter + pure prices module (complex), 03 price check in the polling pass, history, migration 0013 (complex), 04 Steam events and sending (complex), 05 what the owner sees (medium); then the review.
 - Sessions (est.): 4 tickets + review.
 
-### Stage 6.3. DLC and sequels of games
+### Stage 6.3. Expansions and sequels of games
 
-- Goal: know about DLC and new games of a series the owner follows.
-- The owner sees at the end: to be decided in the description.
-- Contains: description → spec → tickets → review.
-- Sessions (est.): not estimated.
+- Goal: know about big expansions and new games of a series the owner follows.
+- The owner sees at the end: games in «Хочу», «В процессе», «Пройдено» checked in IGDB once a week; messages «Анонсировано дополнение» and «Анонсирована новая игра серии» (on «Мои платформы», remakes included) with «Следить»; card blocks «Дополнения» and «Продолжения»; an expansion followed is a game of its own (dates, «вышла», Steam prices), marked «дополнение» in the List.
+- Contains: `.scratch/6-3-game-dlc-sequels/description.md` (accepted) → spec → tickets → review.
+- Sessions (est.): 6 (spec, about 4 tickets, review).
 
 ### Stage 6.4. «Входящие» (idea 001)
 

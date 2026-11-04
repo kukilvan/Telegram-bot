@@ -1,6 +1,6 @@
 # Stage 6.3: expansions and sequels of games
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. Decisions this stage leans on: ADR 0002 (the web is the main interface, the bot is a channel), ADR 0007 (bot, polling and web are one process). The plan of stage 6 comes from the description of 6.1 (`.scratch/games-1-list-and-releases/description.md`, «Как поделить кусок 6»): 6.3 is the third part. Stage 6.4 («Входящие») comes after it.
 

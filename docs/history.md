@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-04 — Stage 6.3, description: accepted
+
+- `.scratch/6-3-game-dlc-sequels/description.md` and `mockups/` (game card, Feed and List, bot messages). Checked on live IGDB (The Witcher 3, Elden Ring, Hades): IGDB `game_type` 1 «DLC» is small stuff (quests, gear), the big ones are `expansions` (type 2); the series is `collections` / `franchises` and holds mobile and board games.
+- Decisions with the owner: only big expansions (and standalone ones); checked statuses «Хочу», «В процессе», «Пройдено», not «Бросил»; sequels — new games of the series on «Мои платформы», remakes and remasters included; «Следить» on an expansion adds it as a game of its own; one message per announcement with its own «Следить»; no `KNOWN_ISSUES.md` entry taken (games and Steam entries wait for stage 9); the stage is not split (≈ 6 sessions).
+- Pulled-in wishes: the game sources wired to the game poller only, the game blocks of `app/web/card.py` in a module of their own, the sequel as a pair (kind, id) instead of `SequelOffer`. Nine open questions go to the spec.
+
 ## 2026-11-04 — Part 6.2, review: accepted, the part is done
 
 - `.scratch/games-2-steam-prices/review.md`: commits `4397d3c..76d55fd` (tickets 01–05) against the spec and `docs/coding-standards.md` with the `code-review` skill (a standards pass and a spec pass in sub-agents); run, not only read: the live bot, the cards on a copy of the real database, real Steam `GetItems` for 8 apps in Israel and Ukraine, a probe of the spec pass. Tests 2798 → 2801 passed (3 known Windows failures).
