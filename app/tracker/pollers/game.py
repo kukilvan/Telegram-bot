@@ -95,7 +95,8 @@ class GamePoller(Poller):
             status = session.get(Title, due.id).status
         new = games.carry_over(old, snapshot.game)
         events = game_events.detect_events(due.id, due.name, old, new, scope.country, scope.told(due.id), observed_at, today)
-        steam_id = steam_number(status, new, scope.told(due.id))
+        # «появилась страница в Steam» only where prices would be checked: without a source of prices there are none
+        steam_id = steam_number(status, new, scope.told(due.id)) if self.price_source is not None else None
         if not old.steam_id and steam_id is not None:
             events.append(price_events.steam_page_event(due.id, due.name, steam_id))
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them

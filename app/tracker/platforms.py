@@ -84,3 +84,9 @@ STORE_COUNTRIES: dict[str, StoreCountry] = {
     "ua": StoreCountry("Украина", "ru-ua", _EUROPEAN),
 }
 DEFAULT_COUNTRY = "il"
+
+
+def steam_url(steam_id: str) -> str:
+    """The page of a game in the Steam store (the same in every country): the link of the card and the button under
+    the messages of Steam."""
+    return f"https://store.steampowered.com/app/{steam_id}/"

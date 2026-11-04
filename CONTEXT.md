@@ -115,11 +115,11 @@ In code: `price history` (table `price_history`, a record — `PriceRecord`; «�
 
 **Страница в Steam** (Steam page):
 A game's page in the Steam store; its number (`steam_id`) comes from IGDB. When IGDB first learns the number of a game whose prices would be checked, the message «появилась страница в Steam» comes — once per game.
-In code: `steam page`.
+In code: `steam page`. The number is `steam_id`; where the core keeps what Steam was asked about — the price look and the price history — it is `appid`, the name Steam answers by (a key of stored snapshots and a column, so it stays, rule 5).
 
 **Проверка цен** (price check):
 Every 6 hours the tracker asks Steam about the prices of games in «Хочу» that have a Steam page and the checkmark «играю здесь» on PC (and PC among «Мои платформы») — all in one request. The first check after a game became such (added, checkmark set, restored to the list) and after the store country changed is a reference point, without messages.
-In code: `price check` (the snapshot of source `steam`; what one check saw of a game — `PriceLook`, what Steam answered — its `answer`).
+In code: `price check` (the snapshot of source `steam`; what one check saw of a game — `PriceLook`, what Steam answered — its `answer`). The rule «игра для цен» — which games have their prices checked and by which number — is `steam_number`; without the number (the card shows its block even before the page in Steam) it is `reports_prices`.
 
 **Платформа** (platform):
 Where a game comes out: PC, PlayStation 5, Xbox Series X|S, Nintendo Switch 2 or Nintendo Switch. PC is one platform wherever the game is sold (Steam is only a link in the card). A game has its own release date and its own checkmark «играю здесь» on each platform.

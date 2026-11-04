@@ -9,16 +9,14 @@ from collections.abc import Collection
 from datetime import date, datetime, timezone, tzinfo
 from typing import Any
 
-from app.tracker.cards import SteamView, format_date, format_day_month, format_past_moment, local_moment
+from app.tracker.cards import SteamView, format_date, format_past_moment, games_word, local_moment
 from app.tracker.platforms import STORE_COUNTRIES
-from app.tracker.price_events import games_word
 from app.tracker.prices import (
-    BUNDLES_ONLY, COMING_SOON, FREE, NOT_IN_COUNTRY, NOT_SOLD, UNKNOWN_APP, Money, Price, PriceLook, PricedRecord, lowest,
-    percent,
+    BUNDLES_ONLY, COMING_SOON, FREE, FREE_PCT, NOT_IN_COUNTRY, NOT_SOLD, UNKNOWN_APP, Money, Price, PriceLook,
+    PricedRecord, comparable, edition_note, lowest, percent, until,
 )
 
 BUNDLES_SHOWN = 5  # the card lists the first ones; the rest is «и ещё 3»
-_FREE_PCT = 100
 
 NO_PAGE = ("Страницы в Steam пока нет — придёт сообщение, когда появится", "страницы пока нет")
 NOT_CHECKED = ("Цену ещё не проверяли — она появится через минуту-другую", "ещё не проверяли")
@@ -40,9 +38,7 @@ def current_look(state: Any, steam_id: str, country: str) -> PriceLook | None:
     """The look a snapshot of prices keeps, when it asked about this Steam number in this country; None — nothing was
     looked at yet, or the look is of another number or country (changed since, the next check comes within a minute)."""
     look = PriceLook.from_state(state)
-    if look is None or (look.appid, look.country) != (steam_id, country):
-        return None
-    return look
+    return look if look is not None and look.is_of(steam_id, country) else None
 
 
 def shown_price(price: Price, now: datetime) -> Price:
@@ -60,30 +56,25 @@ def mark(look: PriceLook | None, now: datetime) -> str:
     return percent(price.pct) if price.discounted else ""
 
 
-def _until(ends_on: date | None) -> str:
-    return f" до {format_day_month(ends_on)}" if ends_on is not None else ""
-
-
 def _web_line(price: Price, currency: str, ends_on: date | None) -> str:
     final = Money(price.final, currency)
-    edition = f" («{price.edition}»)" if price.edition else ""
+    edition = edition_note(price.edition)
     if not price.discounted:
         return f"{'Предзаказ' if price.preorder else 'Цена'}: {final}{edition}"
     original = Money(price.original or 0, currency)
-    if price.pct == _FREE_PCT:
-        return f"Раздают бесплатно{_until(ends_on)} (обычно {original}){edition}"
+    if price.pct == FREE_PCT:
+        return f"Раздают бесплатно{until(ends_on)} (обычно {original}){edition}"
     head = "Предзаказ со скидкой" if price.preorder else "Скидка"
-    until = f", до {format_day_month(ends_on)}" if ends_on is not None else ""
-    return f"{head} {percent(price.pct)}: {original} → {final}{until}{edition}"
+    return f"{head} {percent(price.pct)}: {original} → {final}{until(ends_on, comma=True)}{edition}"
 
 
 def _bot_line(price: Price, currency: str, ends_on: date | None) -> str:
     final = Money(price.final, currency)
     if not price.discounted:
         return f"предзаказ {final}" if price.preorder else str(final)
-    if price.pct == _FREE_PCT:
-        return f"бесплатно{_until(ends_on)} (обычно {Money(price.original or 0, currency)})"
-    inside = (["предзаказ"] if price.preorder else []) + [f"{percent(price.pct)}{_until(ends_on)}"]
+    if price.pct == FREE_PCT:
+        return f"бесплатно{until(ends_on)} (обычно {Money(price.original or 0, currency)})"
+    inside = (["предзаказ"] if price.preorder else []) + [f"{percent(price.pct)}{until(ends_on)}"]
     return f"{final} ({', '.join(inside)})"
 
 
@@ -97,7 +88,7 @@ def _lowest_line(records: Collection[PricedRecord], look: PriceLook, price: Pric
         return ""
     if found.money.cents < price.final:
         return f"Самая низкая с добавления: {found.money} ({format_date(local_moment(found.seen_at, tz).date())})"
-    same = [r for r in records if (r.appid, r.country, r.currency) == (look.appid, look.country, look.currency)]
+    same = comparable(records, look.appid, look.country, look.currency)
     if price.discounted and found.money.cents == price.final and any(r.final > price.final for r in same):
         return "Сейчас — самая низкая цена с добавления"
     return ""

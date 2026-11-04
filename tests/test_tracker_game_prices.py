@@ -24,8 +24,8 @@ from app.tracker.games import GameState
 from app.tracker.models import (
     DeliveryItem, DeliveryStatus, Event, PriceRecord, SettingRecord, SourceSnapshot, Title, TitleKind,
 )
-from app.tracker.pollers import game_prices
-from app.tracker.pollers.game_prices import PRICE_INTERVAL, STEAM_EVENTS, GamePrices, is_baseline, lowest_seen
+from app.tracker import price_events
+from app.tracker.pollers.game_prices import PRICE_INTERVAL, GamePrices, is_baseline, lowest_seen
 from app.tracker.prices import FREE, PRICE, Price, PriceLook
 from app.tracker.queue import EventQueue
 from app.tracker.settings_store import MY_PLATFORMS_SETTING, STORE_COUNTRY_SETTING
@@ -455,6 +455,39 @@ def test_prices_are_checked_again_thirty_minutes_after_a_failure(tracker, igdb, 
     assert len(prices.calls) == 2 and price_snapshot(session_factory, title_id).state == price_look(HADES).state()
 
 
+@pytest.mark.parametrize("change", ["country", "number"])
+def test_a_failed_check_of_a_new_country_or_number_waits_thirty_minutes_too(
+    change, tracker, igdb, prices, session_factory, clock, caplog
+):
+    """A check of another country or Steam number is due at once; when Steam fails it, the next one is in 30 minutes,
+    as after any failure, not every minute (review of part 6.2)."""
+    caplog.set_level(logging.INFO)
+    title_id = add(tracker, igdb)
+    run(tracker.poll_due())
+    clock.advance(minutes=1)
+    if change == "country":
+        put_setting(session_factory, STORE_COUNTRY_SETTING, "ua")
+    else:
+        igdb_says(session_factory, igdb, game(steam_id="2"))
+    prices.failure = SteamError("down", 503)
+    run(tracker.poll_due())
+    assert len(prices.calls) == 2
+    assert price_snapshot(session_factory, title_id).state == {}  # the look of the old one says nothing of now
+
+    for _ in range(29):
+        clock.advance(minutes=1)
+        run(tracker.poll_due())
+    assert len(prices.calls) == 2
+
+    prices.failure = None
+    caplog.clear()
+    clock.advance(minutes=1)
+    run(tracker.poll_due())
+    expected = ([HADES], "ua") if change == "country" else (["2"], "il")
+    assert len(prices.calls) == 3 and prices.calls[-1] == expected
+    assert len(baselines(caplog)) == 1  # the check of the new one is still the reference point
+
+
 def test_230_games_are_asked_about_in_three_requests(tracker, igdb, prices, session_factory):
     ids = [add(tracker, igdb, game(steam_id=str(1000 + n)), str(n + 1), f"Игра {n}") for n in range(230)]
 
@@ -702,7 +735,7 @@ def test_withdraw_takes_all_the_undelivered_entries_of_a_title_or_only_those_of_
         run(tracker.record_event(kind_of_event, {"text": kind_of_event}, f"k:{kind_of_event}", title_id=title_id))
 
     with tracker._queue.ctx.write_session() as session:
-        EventQueue.withdraw(session, title_id, STEAM_EVENTS)
+        EventQueue.withdraw(session, title_id, price_events.TYPES)
         session.commit()
     assert pending_types(session_factory, title_id) == ["game_release"]
 
@@ -727,4 +760,4 @@ def test_build_tracker_gives_both_sources_one_steam_client(monkeypatch):
 
 
 def test_the_steam_events_are_listed_in_one_place():
-    assert game_prices.STEAM_EVENTS == ("game_discount", "game_bundle", "game_steam_page")
+    assert price_events.TYPES == ("game_discount", "game_bundle", "game_steam_page")

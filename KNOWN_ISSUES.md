@@ -64,6 +64,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | open | stage 9 |
 | KI-49 | `.env` holds variables the code does not read | `.env` | open | stage 8 |
 | KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | open | — |
+| KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | open | — |
 
 ## Entries
 
@@ -532,3 +533,12 @@ Format of a new entry:
 - Likelihood / impact: only after a hand edit or a bug (rule 9: what we wrote is read strictly); prices stop updating, nothing else breaks — dates of games and other kinds are checked as usual. Deleting the row heals it: the reconciliation makes a new one.
 - Status: open.
 - Found: 2026-11-01, ticket 03 of part 6.2.
+
+## KI-51. Steam prices: the discounts of one check can come as separate messages
+
+- Where: `app/tracker/pollers/game_prices.py` (each event is queued in a write session of its own) and the two jobs of `app/bot/main.py` (polling and delivery run every minute independently).
+- What's wrong: two discounts or more found by one price check should go out as one message «🎮 Скидки в Steam:» (spec 5.4 of part 6.2). The check queues them one game after another, and the delivery job does not wait for the check: if its minute comes while the check is between two games, the first discount goes out alone and the others a minute later, folded or alone.
+- How to reproduce: hard by hand. A titles pass that takes about a minute (many TMDb titles due, 1.5 s apart) moves the price check onto the next tick of delivery; two discounts found then can come as two messages.
+- Likelihood / impact: rare (the queueing of one check takes milliseconds); harm — two or three messages instead of one. A fix: queue the events of one check in one write session, or take `delivery_lock` while queueing them.
+- Status: open.
+- Found: 2026-11-04, review of part 6.2.

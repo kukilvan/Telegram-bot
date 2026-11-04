@@ -37,7 +37,7 @@ Status values: not started · description · spec · tickets k/n · review · fi
 ## Environment
 
 - Windows 11, PowerShell (Git Bash also available), Python 3.12.10 in `.venv/`, Docker 29.x. Runs in Docker on the owner's PC; later on a NAS (stage 7), access from outside the home via Tailscale or Cloudflare Tunnel (decided then).
-- Tests: 2610 in total. On the owner's PC (checked 2026-11-01): 2605 pass, 2 skipped; three process-launch tests (`test_app_main`, `test_docker_files`, `test_runtime`) fail on Windows without any change — known, do not count.
+- Tests: 2806 in total. On the owner's PC (checked 2026-11-04): 2801 pass, 2 skipped; three process-launch tests (`test_app_main`, `test_docker_files`, `test_runtime`) fail on Windows without any change — known, do not count.
 - `.env` (values never printed; read by `Settings` in `app/config.py` unless noted):
 
 | Variable | Required | Meaning |

@@ -5,7 +5,6 @@ The pure `price_events` is tested on its own; the rest through the facade: fake 
 IGDB a made-up source whose snapshots the test writes, the prices a fake source of looks the test writes.
 """
 
-import asyncio
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -14,7 +13,7 @@ import pytest
 from sqlalchemy import select
 
 from app.bot.tracker_handlers import actions_markup
-from app.tracker import delivery, game_events, price_events
+from app.tracker import cards, delivery, game_events, price_events
 from app.tracker.actions import CARD, STEAM, Action, event_actions
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
@@ -23,7 +22,7 @@ from app.tracker.games import GameState
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, SettingRecord, SourceSnapshot, TitleKind
 from app.tracker.prices import COMING_SOON, PRICE, Bundle, Lowest, Money, Price, PriceLook
 from app.tracker.settings_store import MY_PLATFORMS_SETTING, STORE_COUNTRY_SETTING
-from app.tracker.sources.igdb_games import GameSnapshot
+from test_tracker_game_prices import FakeClock, MadeUpGames, naive, run
 
 T0 = datetime(2026, 11, 9, 12, 0, tzinfo=timezone.utc)  # Monday
 PC, PS5 = 6, 167
@@ -31,14 +30,6 @@ HADES = "1145350"
 SHEKEL = "₪{}"
 END = datetime(2026, 11, 3, 18, 0)  # naive UTC: 3 ноября 20:00 in Jerusalem
 LATER_END = datetime(2026, 11, 20, 18, 0)
-
-
-def run(coro):
-    return asyncio.run(coro)
-
-
-def naive(moment):
-    return moment.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 def look(final=27900, original=None, pct=0, ends_at=None, bundles=(), appid=HADES, country="il", **price):
@@ -97,7 +88,7 @@ def test_the_texts_of_a_bundle_and_of_the_page():
                      (21, "21 игра"), (22, "22 игры"), (111, "111 игр")],
 )
 def test_the_number_of_games_of_a_bundle(count, words):
-    assert price_events.games_word(count) == words
+    assert cards.games_word(count) == words
 
 
 def test_the_lines_of_the_folded_message():
@@ -288,42 +279,12 @@ def test_the_bot_makes_a_link_of_a_button_with_an_address_and_a_call_of_the_othe
 # --- through the facade -------------------------------------------------------------------------------------------
 
 
-class FakeClock:
-    def __init__(self, now):
-        self.now = now
-
-    def __call__(self):
-        return self.now
-
-    def advance(self, **delta):
-        self.now += timedelta(**delta)
-
-
 class FakeSender:
     def __init__(self):
         self.sent = []  # (message, actions)
 
     async def send(self, message, actions=()):
         self.sent.append((message, list(actions)))
-
-
-class MadeUpGames:
-    source_key = "igdb"
-
-    def __init__(self):
-        self.by_id = {}
-
-    def put(self, external_id, game, name):
-        self.by_id[external_id] = GameSnapshot(external_id, name, name, 2026, game=game)
-
-    async def suggest(self, query):
-        return []
-
-    async def snapshot(self, external_id):
-        return self.by_id.get(external_id)
-
-    async def snapshot_to_add(self, external_id):
-        return self.by_id.get(external_id)
 
 
 class Looks:
@@ -648,6 +609,15 @@ def test_the_page_in_steam_does_not_come(why, tracker, igdb, session_factory, cl
 def test_a_new_steam_number_gives_no_page(tracker, igdb, session_factory):
     add(tracker, igdb)
     igdb_says(session_factory, igdb, game(steam_id="2"))
+    run(tracker.poll_due())
+    assert [e for e in events(session_factory) if e[0] == price_events.STEAM_PAGE] == []
+
+
+def test_without_a_source_of_prices_the_page_in_steam_does_not_come(session_factory, clock, sender, igdb):
+    """Spec 8: without a source of prices there are neither checks nor messages of Steam (review of part 6.2)."""
+    tracker = Tracker(session_factory, clock=clock, sender=sender, sources={TitleKind.GAME: igdb})
+    add(tracker, igdb, game(steam_id=None), name="Ведьмак 4")
+    igdb_says(session_factory, igdb, game())
     run(tracker.poll_due())
     assert [e for e in events(session_factory) if e[0] == price_events.STEAM_PAGE] == []
 

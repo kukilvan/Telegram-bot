@@ -13,13 +13,12 @@ from app.tracker.cards import PlatformRow, StoreLink
 from app.tracker.feed_rows import FeedTitle, Piece
 from app.tracker.game_events import older_tells, platforms_text
 from app.tracker.games import NOT_ANNOUNCED_LABEL, GameState, PlatformDates, has_platform, platform_dates, released_by
-from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform
+from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform, steam_url
 
 CANCELLED_LABEL = "отменена"
 NO_PLATFORMS = "Платформы пока не объявлены"
 NONE_OF_MINE = "Игры нет на ваших платформах — выбрать платформы можно в Настройках"
 
-STEAM_URL = "https://store.steampowered.com/app/{steam_id}/"
 PLAYSTATION_URL = "https://store.playstation.com/{locale}/{path}"
 
 RELEASE = "Выход"
@@ -69,7 +68,7 @@ def store_links(game: GameState, mine: Collection[Platform], country: str, origi
     original name."""
     links = []
     if game.steam_id and Platform.PC in mine:
-        links.append(StoreLink("Открыть в Steam", "Steam", STEAM_URL.format(steam_id=game.steam_id)))
+        links.append(StoreLink("Открыть в Steam", "Steam", steam_url(game.steam_id)))
     locale = STORE_COUNTRIES[country].playstation_locale
     if locale and Platform.PS5 in mine and has_platform(game, Platform.PS5):
         path = f"concept/{game.ps_concept}" if game.ps_concept else f"search/{quote(original_name, safe='')}"

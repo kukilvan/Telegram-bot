@@ -10,6 +10,7 @@ from app.tracker import movie_events, price_events, sequel_events
 from app.tracker.cards import TitleCard
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import TitleStatus
+from app.tracker.platforms import steam_url
 
 WATCHED = "watched"  # arg: title id
 FOLLOW = "follow"  # arg: "<kind>:<id of the sequel in its source>" (an old button: the id of the «sequel announced» event)
@@ -41,7 +42,7 @@ class Action:
 
 def steam_action(steam_id: str, label: str = STEAM_LABEL) -> Action:
     """The link to the page of the game in Steam."""
-    return Action(label, STEAM, steam_id, price_events.store_url(steam_id))
+    return Action(label, STEAM, steam_id, steam_url(steam_id))
 
 
 def event_actions(

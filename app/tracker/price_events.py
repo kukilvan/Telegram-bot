@@ -17,12 +17,12 @@ from collections.abc import Iterable, Mapping, Sequence
 from datetime import date, datetime, tzinfo
 from typing import Any
 
-from app.tracker.cards import format_day_month, local_moment
+from app.tracker.cards import games_word, local_moment
 from app.tracker.dedup import moved_key
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
-from app.tracker.prices import Bundle, Lowest, Money, Price, PriceLook, percent
+from app.tracker.prices import FREE_PCT, Bundle, Lowest, Money, Price, PriceLook, edition_note, percent, until
 
 _ICON = KINDS[TitleKind.GAME].icon
 
@@ -33,32 +33,9 @@ TYPES = (DISCOUNT, BUNDLE, STEAM_PAGE)  # the one list of the types of the event
 
 LOWEST_LINE = "Самая низкая цена с тех пор, как игра в списке"
 FOLDED_HEADER = f"{_ICON} Скидки в Steam:"
-_FREE_PCT = 100
-
-
-def store_url(steam_id: str) -> str:
-    """The page of the game in the Steam store."""
-    return f"https://store.steampowered.com/app/{steam_id}/"
-
-
-def games_word(count: int) -> str:
-    """«2 игры», «5 игр», «21 игра»: the number of games of a bundle (as `cards.titles_word`)."""
-    if count % 10 == 1 and count % 100 != 11:
-        return f"{count} игра"
-    if count % 10 in (2, 3, 4) and count % 100 not in (12, 13, 14):
-        return f"{count} игры"
-    return f"{count} игр"
 
 
 # --- texts ----------------------------------------------------------------------------------------------------------
-
-
-def _until(ends_on: date | None) -> str:
-    return f" до {format_day_month(ends_on)}" if ends_on is not None else ""
-
-
-def _edition(edition: str | None) -> str:
-    return f" («{edition}»)" if edition else ""
 
 
 def discount_text(name: str, price: Price, currency: str, ends_on: date | None, lowest: bool) -> str:
@@ -66,29 +43,30 @@ def discount_text(name: str, price: Price, currency: str, ends_on: date | None, 
     раздают бесплатно до 3 ноября (обычно ₪279)»; a preorder says so after the percent, an edition ends the line in
     brackets, the lowest price is the second line. `ends_on` is the last day on the owner's clock, None — unknown."""
     original = Money(price.original or 0, currency)
-    if price.pct == _FREE_PCT:
-        head = f"{_ICON} {name}: в Steam раздают бесплатно{_until(ends_on)} (обычно {original})"
+    if price.pct == FREE_PCT:
+        head = f"{_ICON} {name}: в Steam раздают бесплатно{until(ends_on)} (обычно {original})"
     else:
         preorder = " на предзаказ" if price.preorder else ""
-        until = f", до {format_day_month(ends_on)}" if ends_on is not None else ""
         head = (
             f"{_ICON} {name}: скидка {percent(price.pct)}{preorder} в Steam — "
-            f"{original} → {Money(price.final, currency)}{until}"
+            f"{original} → {Money(price.final, currency)}{until(ends_on, comma=True)}"
         )
-    head += _edition(price.edition)
+    head += edition_note(price.edition)
     return f"{head}\n{LOWEST_LINE}" if lowest else head
 
 
 def discount_line(name: str, price: Price, currency: str, ends_on: date | None, lowest: bool) -> str:
     """The line of a discount in the folded message (spec 5.4): «Hades II — −20 %, ₪110,95 → ₪88,76, до 5 ноября,
     самая низкая с добавления»; «Elden Ring — раздают бесплатно до 5 ноября»."""
-    if price.pct == _FREE_PCT:
-        line = f"{name} — раздают бесплатно{_until(ends_on)}"
+    if price.pct == FREE_PCT:
+        line = f"{name} — раздают бесплатно{until(ends_on)}"
     else:
         preorder = " на предзаказ" if price.preorder else ""
-        until = f", до {format_day_month(ends_on)}" if ends_on is not None else ""
-        line = f"{name} — {percent(price.pct)}{preorder}, {Money(price.original or 0, currency)} → {Money(price.final, currency)}{until}"
-    line += _edition(price.edition)
+        line = (
+            f"{name} — {percent(price.pct)}{preorder}, {Money(price.original or 0, currency)} → "
+            f"{Money(price.final, currency)}{until(ends_on, comma=True)}"
+        )
+    line += edition_note(price.edition)
     return f"{line}, самая низкая с добавления" if lowest else line
 
 

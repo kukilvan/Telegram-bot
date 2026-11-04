@@ -89,16 +89,6 @@ class PlatformsBlock(NamedTuple):
     stores: list[StoreLine]
 
 
-class SteamBlock(NamedTuple):
-    """«Steam» of a game: the line of the country and of the check, the price, the lowest one, the bundles."""
-
-    caption: str
-    line: str
-    lowest: str  # empty: no such line
-    bundles: list[str]  # the lines, then `more_bundles` as the last one when there are more
-    more_bundles: str
-
-
 class SequelRow(NamedTuple):
     name: str
     when: str  # «15 декабря 2028» or «дата не объявлена»
@@ -174,14 +164,6 @@ def _platforms(request: Request, card: TitleCard) -> PlatformsBlock | None:
     return PlatformsBlock(lines, note, [StoreLine(link.label, link.url) for link in card.store_links])
 
 
-def _steam(card: TitleCard) -> SteamBlock | None:
-    """The block of Steam, when the core gave one: the card holds it only for a game that prices are told about."""
-    view = card.steam
-    if view is None:
-        return None
-    return SteamBlock(view.caption, view.line, view.lowest, list(view.bundles), view.more_bundles)
-
-
 def _steps(current: int | None, first: str) -> list[ScoreChoice]:
     """The choices of a list: the first row (it takes the score off), then the scale from the highest down."""
     return [ScoreChoice("", first, current is None)] + [
@@ -246,7 +228,7 @@ def _view(request: Request, card: TitleCard, notice: str = "", sequel_error: str
         "movies": [movie_line(m) for m in card.franchise_movies],
         "platforms": platforms,
         "platforms_hint": PLATFORMS_HINT,
-        "steam": _steam(card),
+        "steam": card.steam,  # the block «Steam» as the core gave it: only a game that prices are told about has one
         "dates": [] if seasonal or platforms is not None else movie_date_lines(card),
         "start_press": kind.start_press if card.status == TitleStatus.WANT else "",
         "finish_press": kind.finish_press if card.status in (TitleStatus.WANT, TitleStatus.IN_PROGRESS) else "",

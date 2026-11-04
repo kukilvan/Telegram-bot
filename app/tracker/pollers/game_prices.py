@@ -3,8 +3,10 @@
 
 Each pass (every minute) the price snapshots (source `steam`) are first brought in line with the rule «игра для цен»
 (`steam_number`), in a number of reads that does not grow with the number of games: a game for prices without a
-snapshot gets an empty one, due now; the snapshot of a game that is no longer one goes, and with it the undelivered
-events of Steam of that game (the price history stays). No button touches the price snapshots: the rule lives here.
+snapshot gets an empty one, due now; a snapshot that looked at another Steam number or store country becomes empty,
+due now (a failure of that check waits 30 minutes, as any); the snapshot of a game that is no longer one goes, and with
+it the undelivered events of Steam of that game (the price history stays). No button touches the price snapshots: the
+rule lives here.
 Then the due games are asked about, all in the country of the stores of now; the request holds no database, and each
 game is written in a write session of its own (rule 9). Unless the check is the reference point, the previous look and
 the new one are compared (`price_events`) and the events are queued first, each in a session of its own (a new
@@ -36,9 +38,6 @@ from app.tracker.sources.steam_prices import SOURCE_KEY, UnreadAnswer
 
 PRICE_INTERVAL = timedelta(hours=6)  # after a price check that worked; after a failure — `RETRY_AFTER_FAILURE`
 
-# the types of the events of Steam (spec 5.1): what goes out of the queue when a game's prices are no longer checked
-STEAM_EVENTS = price_events.TYPES
-
 
 def reports_prices(status: TitleStatus, game: games.GameState, told: Collection[Platform]) -> bool:
     """Prices are told about in a game (spec 4.1 and 6.1): it is in «Хочу», it is on PC and the owner is told about PC
@@ -56,7 +55,26 @@ def steam_number(status: TitleStatus, game: games.GameState, told: Collection[Pl
 def is_baseline(old: PriceLook | None, new: PriceLook) -> bool:
     """The check is the reference point (spec 4.3): nothing was looked at before (the snapshot was just made), or the
     previous look asked about another Steam number or in another country. Its look is stored, no event comes of it."""
-    return old is None or (old.appid, old.country) != (new.appid, new.country)
+    return old is None or not old.is_of(new.appid, new.country)
+
+
+def priced_games(session, kind: TitleKind, settings: SettingsStore) -> tuple[GameScope, dict[int, str]]:
+    """The games for prices (`steam_number`) among the games of «Хочу», title → Steam number, with the scope they are
+    told by; the number of reads does not grow with the number of games."""
+    wanted = select(Title.id).where(Title.kind == kind, Title.status == TitleStatus.WANT)
+    states = storage.own_states_of(session, wanted)
+    scope = GameScope.read(settings, session, wanted)
+    priced = {}
+    for title_id in sorted(states):
+        appid = steam_number(TitleStatus.WANT, games.GameState.from_state(states[title_id]), scope.told(title_id))
+        if appid is not None:
+            priced[title_id] = appid
+    return scope, priced
+
+
+def price_history(session, title_id: int) -> list[PriceRecord]:
+    """The records of the price history of a game, in one read."""
+    return list(session.scalars(select(PriceRecord).where(PriceRecord.title_id == title_id)))
 
 
 def lowest_seen(session, title_id: int, look: PriceLook) -> Lowest | None:
@@ -64,8 +82,7 @@ def lowest_seen(session, title_id: int, look: PriceLook) -> Lowest | None:
     `look` (`prices.lowest`); None — no record of them, or the look has no currency."""
     if look.currency is None:
         return None
-    records = session.scalars(select(PriceRecord).where(PriceRecord.title_id == title_id))
-    return lowest(records, look.appid, look.country, look.currency)
+    return lowest(price_history(session, title_id), look.appid, look.country, look.currency)
 
 
 def _same_record(record: PriceRecord, look: PriceLook) -> bool:
@@ -102,11 +119,13 @@ def price_snapshot(session, title_id: int) -> SourceSnapshot | None:
 
 @dataclass
 class _Plan:
-    """What the reconciliation found: the games to get a snapshot, the snapshots to go, the games to ask now."""
+    """What the reconciliation found: the games to get a snapshot, the snapshots to go, the snapshots whose look is of
+    another Steam number or country (they become empty, so the next check is the reference point), the games to ask now."""
 
     country: str
     create: list[int] = field(default_factory=list)
     drop: list[SourceSnapshot] = field(default_factory=list)
+    reset: list[SourceSnapshot] = field(default_factory=list)
     due: list[DueTitle] = field(default_factory=list)
 
 
@@ -162,14 +181,19 @@ class GamePrices:
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
             plan = self._plan(session, now)
-        if not (plan.create or plan.drop):
+        if not (plan.create or plan.drop or plan.reset):
             return plan.country, plan.due
         with self.ctx.write_session() as session:
             plan = self._plan(session, now)
             for stored in plan.drop:
                 logging.info("title %s: its prices are no longer checked, the price snapshot goes", stored.title_id)
                 session.delete(stored)
-                EventQueue.withdraw(session, stored.title_id, STEAM_EVENTS)
+                EventQueue.withdraw(session, stored.title_id, price_events.TYPES)
+            for stored in plan.reset:
+                # a look of another number or country says nothing of now: checked at once, then as any snapshot
+                logging.info("title %s: another Steam number or store country, prices looked at anew", stored.title_id)
+                stored.state = {}
+                stored.next_check_at = None
             for title_id in plan.create:
                 session.add(SourceSnapshot(title_id=title_id, source=SOURCE_KEY, state={}, observed_at=now, next_check_at=None))
             session.commit()
@@ -177,29 +201,25 @@ class GamePrices:
 
     def _plan(self, session, now: datetime) -> _Plan:
         """The reconciliation in six reads, however many games there are."""
+        scope, priced = priced_games(session, self.kind, self.settings)
+        names = dict(session.execute(select(Title.id, Title.name).where(Title.id.in_(list(priced)))).all())
         of_kind = select(Title.id).where(Title.kind == self.kind)
-        wanted = of_kind.where(Title.status == TitleStatus.WANT)
-        names = dict(session.execute(select(Title.id, Title.name).where(Title.id.in_(wanted))).all())
-        states = storage.own_states_of(session, wanted)
-        scope = GameScope.read(self.settings, session, wanted)
         snapshots = {
             stored.title_id: stored
             for stored in session.scalars(
                 select(SourceSnapshot).where(SourceSnapshot.source == SOURCE_KEY, SourceSnapshot.title_id.in_(of_kind))
             )
         }
-        priced = {}
-        for title_id in sorted(states):
-            appid = steam_number(TitleStatus.WANT, games.GameState.from_state(states[title_id]), scope.told(title_id))
-            if appid is not None:
-                priced[title_id] = appid
         plan = _Plan(scope.country)
         plan.drop = [stored for title_id, stored in snapshots.items() if title_id not in priced]
         for title_id, appid in priced.items():
             stored = snapshots.get(title_id)
+            another = stored is not None and _of_another(stored, appid, scope.country)
             if stored is None:
                 plan.create.append(title_id)
-            if stored is None or _due(stored, appid, scope.country, now):
+            elif another:
+                plan.reset.append(stored)
+            if stored is None or another or _due(stored, now):
                 plan.due.append(DueTitle(title_id, self.kind, names[title_id], appid, SOURCE_KEY, sequels=False))
         return plan
 
@@ -264,11 +284,15 @@ class GamePrices:
             return True
 
 
-def _due(stored: SourceSnapshot, appid: str, country: str, now: datetime) -> bool:
-    """The snapshot's time has come, or it asked about another number or country than now (a check now, the baseline).
-    An empty one that is not due yet waits: its first check failed."""
-    if stored.next_check_at is None or stored.next_check_at <= now:
-        return True
+def _due(stored: SourceSnapshot, now: datetime) -> bool:
+    """The snapshot's time has come. An empty one that is not due yet waits: its first check failed, the next one is
+    in 30 minutes."""
+    return stored.next_check_at is None or stored.next_check_at <= now
+
+
+def _of_another(stored: SourceSnapshot, appid: str, country: str) -> bool:
+    """The snapshot keeps a look of another Steam number or store country than now (IGDB changed the number, the owner
+    changed the country): the reconciliation empties it, so its next check is now and is the reference point."""
     look = PriceLook.from_state(stored.state)
-    return look is not None and (look.appid, look.country) != (appid, country)
+    return look is not None and not look.is_of(appid, country)
 

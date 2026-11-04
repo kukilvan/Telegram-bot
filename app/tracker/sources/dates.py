@@ -70,5 +70,5 @@ def parse_moment(value: str | None) -> datetime | None:
         return None
     moment = datetime.fromisoformat(value)
     if moment.tzinfo is not None:
-        raise ValueError(f"a stored moment has no time zone: {value!r}")
+        raise ValueError(f"a stored moment has a time zone: {value!r}")
     return moment

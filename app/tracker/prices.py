@@ -8,9 +8,10 @@ with the currency as Steam writes a price («₪{}», «{}₴», «{} руб»):
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Protocol
 
+from app.tracker.cards import format_day_month
 from app.tracker.sources.dates import parse_moment
 
 # What Steam answered about a game: the `answer` of a look (spec 3.2), in the order the adapter tries them
@@ -28,6 +29,7 @@ NBSP = " "
 MINUS = "−"
 FREE_TEXT = "бесплатно"
 SLOT = "{}"  # where the amount stands in a currency
+FREE_PCT = 100  # a discount of 100 % is a giveaway: «раздают бесплатно»
 
 _NUMBER_INSIDE = re.compile(r"[\d\s.,]*")
 _COUNTRY = re.compile(r"[a-z]{2}")
@@ -68,6 +70,19 @@ class Money:
 def percent(pct: int) -> str:
     """A discount as the owner reads it: «−30 %» (the minus sign U+2212, a no-break space before «%»)."""
     return f"{MINUS}{pct}{NBSP}%"
+
+
+def until(ends_on: date | None, *, comma: bool = False) -> str:
+    """« до 3 ноября» (with `comma`, after the amounts: «, до 3 ноября»): the last day of a discount on the owner's
+    clock; empty when Steam does not say."""
+    if ends_on is None:
+        return ""
+    return f"{',' if comma else ''} до {format_day_month(ends_on)}"
+
+
+def edition_note(edition: str | None) -> str:
+    """« («Resident Evil Requiem Deluxe Edition»)» after a price that is an edition's; empty for the game itself."""
+    return f" («{edition}»)" if edition else ""
 
 
 @dataclass(frozen=True)
@@ -155,6 +170,10 @@ class PriceLook:
         if self.currency is not None and (not isinstance(self.currency, str) or self.currency.count(SLOT) != 1):
             raise ValueError(f"no currency: {self.currency!r}")
 
+    def is_of(self, appid: str, country: str) -> bool:
+        """The look asked about this Steam number in this store country: a look of another one says nothing of now."""
+        return (self.appid, self.country) == (appid, country)
+
     def money(self, cents: int) -> Money:
         """An amount of this look in its currency (a look with a price or a bundle has one)."""
         if self.currency is None:
@@ -239,10 +258,16 @@ class Lowest:
     seen_at: datetime
 
 
+def comparable(records: Iterable[PricedRecord], appid: str, country: str, currency: str) -> list[PricedRecord]:
+    """The records of the price history that compare with a price of this Steam number, store country and currency
+    (spec 4.5): the records of another one do not count."""
+    return [r for r in records if (r.appid, r.country, r.currency) == (appid, country, currency)]
+
+
 def lowest(records: Iterable[PricedRecord], appid: str, country: str, currency: str) -> Lowest | None:
-    """The lowest price among the records of the same Steam number, store country and currency (spec 4.5): records
-    of another one do not count. The moment is of the latest record with that price. No such records — None."""
-    same = [r for r in records if (r.appid, r.country, r.currency) == (appid, country, currency)]
+    """The lowest price among the `comparable` records; the moment is of the latest record with that price. No such
+    records — None."""
+    same = comparable(records, appid, country, currency)
     if not same:
         return None
     cheapest = min(r.final for r in same)
