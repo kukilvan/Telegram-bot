@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-04 — Part 6.2, review: accepted, the part is done
+
+- `.scratch/games-2-steam-prices/review.md`: commits `4397d3c..76d55fd` (tickets 01–05) against the spec and `docs/coding-standards.md` with the `code-review` skill (a standards pass and a spec pass in sub-agents); run, not only read: the live bot, the cards on a copy of the real database, real Steam `GetItems` for 8 apps in Israel and Ukraine, a probe of the spec pass. Tests 2798 → 2801 passed (3 known Windows failures).
+- Fixed now: a check of another store country or Steam number that Steam fails waits 30 minutes (it was every minute) — the reconciliation empties such a snapshot (`_Plan.reset`), `_due` reads only the time; «появилась страница в Steam» only with a source of prices; one place for each rule — `platforms.steam_url`, `PriceLook.is_of`, `prices.comparable`, `prices.FREE_PCT` / `until` / `edition_note`, `cards.games_word` over one `_plural`, `game_prices.priced_games` / `price_history`; `STEAM_EVENTS` and `web/card.SteamBlock` removed; `parse_moment` error text; duplicated test helpers; `CONTEXT.md` — `appid` and «игра для цен» (`steam_number`); rule 7 table — `game_scope`.
+- Deferred: KI-51 (the discounts of one check can come as separate messages). Left as they are: one Steam button per number, not per game; no `cause` on 400/403; extras (`line`, `prefix`, the module split); spec 7.1 said the 6.1 date tests pass unchanged — two rows had to flip. Wishes: `appid` → `steam_id` with a migration, a `Discount` type, `answer` as an enumeration, the price source only for games, one table of fold tags, `web/card.py` (422 lines) split when it grows.
+- No fix round: part 6.2 is closed; the next stage is 6.3, its description.
+
 ## 2026-11-04 — Part 6.2, ticket 05: what the owner sees — block «Steam», mark in the List, line in the bot
 
 - `app/tracker/price_rows.py` (new, pure): `steam_view` — the lines of table 6.1 for the web and the bot, «самая низкая» of three kinds (lower than now with its day; now is the lowest in a discount with a dearer record; none), up to 5 bundles and «и ещё N», the caption «Цены для страны … · проверено в …»; `mark` — «−30 %» while a discount goes; `current_look` — a look counts only for the game's Steam number and the country of now (else «ещё не проверяли»); `shown_price` — a discount whose end has come is the old full price.

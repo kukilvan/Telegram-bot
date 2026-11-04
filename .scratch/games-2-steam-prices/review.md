@@ -1,4 +1,4 @@
-Status: in review
+Status: accepted
 
 # Review of part 6.2: Steam prices, discounts and bundles
 

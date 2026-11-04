@@ -21,8 +21,7 @@ One owner per instance (ADR 0001). The web is protected by a password (`WEB_PASS
 
 ## Features
 
-- **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1).
-- **In progress (6.2):** prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark.
+- **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1); prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark (6.2).
 - **Next:** 6.3 DLC and sequels of games; 6.4 «Входящие» (add from Telegram by a forwarded post or a name, `docs/ideas/001-telegram-inbox.md`, ADR 0010); 7 backups and NAS; 8 template for GitHub; 9 fixes after real use.
 - **Never:** notes and tags, the commands `/add`, `/remove`, `/watchlist`, `/note`, `/notes`, `/events`, `/search`, `/searchgame`, inline search, the events «Русская озвучка» and «KinoPub», RAWG and the unofficial PSN request, PlayStation prices (ADR 0009), anything hard-coded for one owner.
 
@@ -46,7 +45,7 @@ Finished (details — `docs/history.md`, `.scratch/`):
 - **5.1–5.4** the web app: Docker and skeleton with login, search/list/card, feed/archive/scores, settings and PWA manifest.
 - **6.1** games in the list and release events (IGDB, my platforms, «Пройдено»).
 
-### Stage 6.2. Steam prices, discounts and bundles (in progress)
+### Stage 6.2. Steam prices, discounts and bundles (done)
 
 - Goal: tell the owner about discounts, bundles and a Steam page for games he waits for.
 - The owner sees at the end: a «Steam» block in the game card (price, discount with end day, lowest price since adding, bundles), a «−30 %» mark in the List, a price line in the bot card, messages «скидка», «бандл», «появилась страница в Steam».
