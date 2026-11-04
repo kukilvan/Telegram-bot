@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: Лента и Список (6.3)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; box-shadow: 0 1px 3px #0002; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  h3 { font-size: 15px; color: #666; margin: 14px 0 4px; font-weight: 600; }
+  ul.rows { list-style: none; margin: 0; padding: 0; }
+  ul.rows li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid #eee; }
+  .sub { color: #666; font-size: 14px; display: block; }
+  button, .btn { font: inherit; font-size: 14px; padding: 4px 14px; border-radius: 6px; border: 1px solid #3b6fd6; background: #3b6fd6; color: #fff; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .btn.ghost { background: #fff; color: #3b6fd6; }
+  .tag { font-size: 12px; background: #eef1fb; color: #2c4a9a; border-radius: 8px; padding: 1px 7px; margin-left: 6px; }
+  .mark { font-size: 13px; background: #e3f3e6; color: #1f6b33; border-radius: 8px; padding: 1px 7px; }
+  .muted { color: #999; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 6.3. «Недавно» — как у продолжений фильмов: строка события и «Следить» прямо в Ленте. В Списке у дополнения — пометка «дополнение».</p>
+
+  <section class="card">
+    <h2>Недавно</h2>
+    <h3>Вчера, 3 ноября</h3>
+    <ul class="rows">
+      <li><span>🎮 Анонсировано дополнение: Shadow of the Erdtree<span class="sub">Дополнение к игре «Elden Ring» · выход 21 июня 2024</span></span><button>Следить</button></li>
+      <li><span>🎮 Новая игра серии: The Witcher IV<span class="sub">Продолжение игры «Ведьмак 3: Дикая охота» · выход 2027</span></span><a class="btn ghost" href="#">В списке</a></li>
+    </ul>
+    <h3>1 ноября</h3>
+    <ul class="rows">
+      <li><span>🎬 Анонсировано продолжение: Дюна: Часть третья<span class="sub">Продолжение фильма «Дюна: Часть вторая»</span></span><button>Следить</button></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Список · Игры</h2>
+    <ul class="rows">
+      <li><span>Elden Ring: Shadow of the Erdtree <span class="tag">дополнение</span><span class="sub">Хочу · ПК — 21 июня 2024</span></span><span class="mark">−30 %</span></li>
+      <li><span>The Witcher IV<span class="sub">Хочу · ПК, PS5 — 2027</span></span><span></span></li>
+      <li><span>Hades II<span class="sub">В процессе</span></span><span></span></li>
+    </ul>
+    <p class="muted">Остальные строки и фильтры Списка — как сейчас.</p>
+  </section>
+</main>
+</body>
+</html>

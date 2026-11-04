@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: карточка игры (6.3)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; box-shadow: 0 1px 3px #0002; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 22px 0 8px; }
+  .meta { color: #666; margin: 0 0 8px; }
+  .hint { color: #777; font-size: 14px; margin: 4px 0 8px; }
+  .status { display: inline-block; background: #e3f3e6; color: #1f6b33; padding: 2px 10px; border-radius: 12px; font-size: 14px; }
+  ul.rows { list-style: none; margin: 0; padding: 0; }
+  ul.rows li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid #eee; }
+  .date { color: #666; margin-left: 6px; }
+  button, .btn { font: inherit; font-size: 14px; padding: 4px 14px; border-radius: 6px; border: 1px solid #3b6fd6; background: #3b6fd6; color: #fff; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .btn.ghost { background: #fff; color: #3b6fd6; }
+  .new { font-size: 12px; background: #3b6fd6; color: #fff; border-radius: 8px; padding: 0 6px; margin-left: 6px; }
+  .parent a { color: #3b6fd6; }
+  .muted { color: #999; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 6.3, грубая раскладка. Блоки «Платформы», «Steam», оценка и кнопки — как сейчас; новое — блоки «Дополнения» и «Продолжения» и строка «Дополнение к …».</p>
+
+  <!-- 1. Карточка пройденной игры -->
+  <section class="card">
+    <h1>Ведьмак 3: Дикая охота</h1>
+    <p class="meta">The Witcher 3: Wild Hunt · 2015 · Ролевая, Приключения</p>
+    <p><span class="status">Пройдено</span> · Оценка: 10</p>
+    <p class="muted">… блок «Платформы» как сейчас …</p>
+
+    <h2>Дополнения</h2>
+    <p class="hint">Проверяю раз в неделю, последняя проверка — 2 ноября</p>
+    <ul class="rows">
+      <li><span>Каменные сердца <span class="date">13 октября 2015</span></span><a class="btn ghost" href="#">В списке</a></li>
+      <li><span>Кровь и вино <span class="date">31 мая 2016</span></span><button>Следить</button></li>
+      <li><span>Songs of the Past <span class="date">дата не объявлена</span></span><button>Следить</button></li>
+    </ul>
+
+    <h2>Продолжения</h2>
+    <p class="hint">Новые игры серии «Ведьмак» на ваших платформах</p>
+    <ul class="rows">
+      <li><span>The Witcher IV <span class="date">2027</span></span><button>Следить</button></li>
+      <li><span>The Witcher 3: Wild Hunt Remastered <span class="date">дата не объявлена</span></span><button>Следить</button></li>
+      <li><span>The Witcher Remake <span class="date">дата не объявлена</span></span><button>Следить</button></li>
+    </ul>
+  </section>
+
+  <!-- 2. Пусто -->
+  <section class="card">
+    <h1>Hades II</h1>
+    <p class="meta">2025 · Экшен, Инди</p>
+    <p><span class="status">В процессе</span></p>
+    <h2>Дополнения</h2>
+    <p class="hint">Дополнений пока нет. Проверяю раз в неделю</p>
+    <h2>Продолжения</h2>
+    <p class="hint">Продолжений пока нет. Проверяю раз в неделю</p>
+  </section>
+
+  <!-- 3. Ещё не проверено -->
+  <section class="card">
+    <h1>Hollow Knight: Silksong</h1>
+    <p><span class="status">Хочу</span></p>
+    <h2>Дополнения и продолжения</h2>
+    <p class="hint">Ещё не проверял — проверю в ближайшие минуты</p>
+  </section>
+
+  <!-- 4. Карточка самого дополнения после «Следить» -->
+  <section class="card">
+    <h1>Кровь и вино</h1>
+    <p class="parent">Дополнение к игре <a href="#">«Ведьмак 3: Дикая охота»</a></p>
+    <p class="meta">The Witcher 3: Wild Hunt - Blood and Wine · 2016</p>
+    <p><span class="status" style="background:#eef1fb;color:#2c4a9a">Хочу</span></p>
+    <p class="muted">… блоки «Платформы» и «Steam» — как у любой игры: даты на ваших платформах, «играю здесь», цена и скидки …</p>
+    <p class="hint">У дополнения своих блоков «Дополнения» и «Продолжения» нет.</p>
+  </section>
+</main>
+</body>
+</html>
