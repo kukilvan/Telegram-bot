@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-04 — Stage 6.3, slicing: accepted
+
+- Four tickets in `.scratch/6-3-game-dlc-sequels/issues/` by the split of the spec's section 12: 01 source and rules (complex, not connected to the core), 02 weekly check (complex, blocked by 01), 03 what the owner sees on the web and in the bot card (medium, blocked by 02), 04 announcements, Feed, samples (medium, blocked by 02 and 03).
+- Decisions: `Poller.offers_follow_ups` and `Pollers.follows` go with their consumers in 03, the removal of `Poller.price_source` and the one IGDB client in 02; the old callers of `follow_sequel_of` move to `Tracker.follow` in 03, the Feed route and the bot texts in 04. Until 04 a real announcement would come without buttons — harmless, the first checks are silent and the next is a week later (told in ticket 02). The note on `PROJECT_CONTEXT.md`, External services (IGDB gives expansions and series), is written once, in 03.
+
 ## 2026-11-04 — Stage 6.3, spec: accepted
 
 - `.scratch/6-3-game-dlc-sequels/spec.md`, live IGDB answers in `igdb-answers/` (the follow-up query for 14 games, the game query for 6 expansions, Steam `GetItems` for 5 expansions in Israel). One request a game with three levels of nested fields works (4–144 KB); the series is `collections` (franchises add editions, bundles, crossovers) plus the game's `remakes` / `remasters`; games of the series are the types of Search (0, 4, 8, 9, 10, 11) without `version_parent`; «Мои платформы» remove the mobile, browser and board games; `GAME_QUERY` reads an expansion as it is, `parent_game.name` gives its parent; Steam prices of expansions work through part 6.2.

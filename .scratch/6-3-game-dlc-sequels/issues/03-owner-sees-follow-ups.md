@@ -18,7 +18,7 @@ Mockups for the layout: `.scratch/6-3-game-dlc-sequels/mockups/`; where they dif
 - **`card_follow`** (7.2): `POST /titles/{id}/follow` replaces `card_sequels` (`/titles/{id}/sequels`) with `kind`, `external_id` and `block` (`sequels` | `expansions`); the owner stays on the card, the row says «В списке»; an error is the line of `pages.try_follow` (the texts of now) in the block the press came from.
 - **The mark «дополнение»** (7.4): `title_rows.Row.tag` shows it after the name, class `row-tag` (small, muted) in `macros.html` and `style.css`.
 - **Bot card** (7.3): `cards.py` prints «Дополнение к игре «…»» after the names line; the bot card lists no expansions or sequels.
-- **Docs:** module docstrings, `tools\code_map.py`; `docs/coding-standards.md` — rule 7 (the actions of a poller `list_tags`, `offers_follow_ups`) and the web table of rule 10 if it lists the card modules; `docs/tests-map.md`; `PROJECT_CONTEXT.md`, External services: IGDB also gives expansions and series (one request per game a week, nested fields) — the ticket that writes this is the last one that touches it, so write it here once.
+- **Docs:** module docstrings, `tools\code_map.py`; `docs/coding-standards.md` — rule 7 (the actions of a poller `list_tags`, `offers_follow_ups`) and the web table of rule 10 if it lists the card modules; `docs/tests-map.md`; `PROJECT_CONTEXT.md`, External services: IGDB also gives expansions and series (one request per game a week, nested fields) — written once, here.
 
 ## Done when
 
