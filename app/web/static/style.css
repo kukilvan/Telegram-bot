@@ -210,6 +210,19 @@ button:disabled { opacity: 0.6; cursor: progress; }
 /* «Платформы» of a game: the rows are marks like those of the seasons; the stores are links that look like buttons */
 .store-links { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; padding: 0; list-style: none; }
 
+/* «Steam» of a game: the line of the country and of the check is small, the price stands out, the bundles are a short list */
+.steam .steam-caption { margin: 0 0 0.5rem; font-size: 0.85rem; }
+
+.steam .steam-price { margin: 0 0 0.25rem; font-weight: 600; }
+
+.steam .steam-lowest { margin: 0 0 0.5rem; color: var(--muted); }
+
+.steam h3 { margin: 0.75rem 0 0.25rem; font-size: 1rem; }
+
+.bundle-list { margin: 0 0 0.5rem; padding-left: 1.25rem; overflow-wrap: anywhere; }
+
+.bundle-more { color: var(--muted); list-style: none; margin-left: -1.25rem; }
+
 .closed-note { padding: 0.6rem 0.9rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
 
 /* «Продолжения» of a watched film: the name and the date on the left, «В списке» or «Следить» on the right */
@@ -346,6 +359,8 @@ input[type="search"] {
 .pick { margin: 0; }
 
 .row-score { flex: none; font-weight: 600; }
+
+.row-mark { flex: none; font-weight: 600; color: var(--accent); }
 
 .row-status { flex: none; color: var(--muted); font-size: 0.9rem; }
 

@@ -83,12 +83,14 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/base.py` — What every kind of title does when it is added and when it is polled: one object per kind, one set of actions.
 - `app/tracker/pollers/game.py` — A game: the dates of its platforms are compared for the country of the stores, and the owner is told only about the platforms of «Мои платформы» marked «играю здесь».
 - `app/tracker/pollers/game_prices.py` — The price check at the end of a polling pass: which games have their Steam prices checked, the requests in packs of 100, the reference point, the price history and the failures (spec 4 of part 6.2).
+- `app/tracker/pollers/game_steam.py` — What the owner reads of the Steam prices of games: the block of a card and the marks of the rows of the list.
 - `app/tracker/pollers/movie.py` — A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show the same two dates.
 - `app/tracker/pollers/seasonal.py` — What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card lists.
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.
 - `app/tracker/pollers/series.py` — A series: the fresh seasons are compared with the stored ones, and the owner's season marks keep the status.
 - `app/tracker/polling.py` — Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.
 - `app/tracker/price_events.py` — The events of Steam (pure): a discount and a bundle from two price looks, the page in Steam, texts, keys, folding.
+- `app/tracker/price_rows.py` — What the owner reads of the Steam prices of a game: the block of the card, the line of the bot and the mark of the list.
 - `app/tracker/prices.py` — Steam prices of a game: what one price check saw (`PriceLook`), an amount of money (`Money`) and «самая низкая с добавления».
 - `app/tracker/progress.py` — The status a series takes by itself from the owner's season marks and the state of the show.
 - `app/tracker/queue.py` — Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages.

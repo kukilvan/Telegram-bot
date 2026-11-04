@@ -40,15 +40,17 @@ PRICE_INTERVAL = timedelta(hours=6)  # after a price check that worked; after a 
 STEAM_EVENTS = price_events.TYPES
 
 
+def reports_prices(status: TitleStatus, game: games.GameState, told: Collection[Platform]) -> bool:
+    """Prices are told about in a game (spec 4.1 and 6.1): it is in «Хочу», it is on PC and the owner is told about PC
+    in it (`GameScope.told`: PC among «Мои платформы» and marked «играю здесь»). The card has its block of Steam by it,
+    whether IGDB gave the Steam number or not. Whether the core has a source of prices is not this rule's business."""
+    return status == TitleStatus.WANT and Platform.PC in told and games.has_platform(game, Platform.PC)
+
+
 def steam_number(status: TitleStatus, game: games.GameState, told: Collection[Platform]) -> str | None:
-    """The Steam number whose prices are checked for a game (spec 4.1); None — its prices are not checked. The game is
-    in «Хочу», IGDB gave its Steam number, it is on PC and the owner is told about PC in it (`GameScope.told`: PC among
-    «Мои платформы» and marked «играю здесь»). Whether the core has a source of prices is not this rule's business."""
-    if status != TitleStatus.WANT or not game.steam_id:
-        return None
-    if Platform.PC not in told or not games.has_platform(game, Platform.PC):
-        return None
-    return game.steam_id
+    """The Steam number whose prices are checked for a game (spec 4.1) — «игра для цен»: a game prices are told about
+    (`reports_prices`) that IGDB gave a Steam number to; None — its prices are not checked."""
+    return game.steam_id if game.steam_id and reports_prices(status, game, told) else None
 
 
 def is_baseline(old: PriceLook | None, new: PriceLook) -> bool:
@@ -92,7 +94,7 @@ def _add_to_history(session, title_id: int, look: PriceLook, now: datetime) -> N
     ))
 
 
-def _snapshot(session, title_id: int) -> SourceSnapshot | None:
+def price_snapshot(session, title_id: int) -> SourceSnapshot | None:
     return session.scalar(
         select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == SOURCE_KEY)
     )
@@ -208,7 +210,7 @@ class GamePrices:
         snapshot gone while Steam was answering (the game was deleted) is no failure: nothing is written."""
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
-            stored = _snapshot(session, game.id)
+            stored = price_snapshot(session, game.id)
             if stored is None:
                 logging.info("title %s was deleted while its prices were checked", game.id)
                 return
@@ -226,7 +228,7 @@ class GamePrices:
         if found:
             logging.info("title %s: %s events of Steam", game.id, found)
         with self.ctx.write_session() as session:
-            stored = _snapshot(session, game.id)
+            stored = price_snapshot(session, game.id)
             if stored is None:
                 logging.info("title %s was deleted while its prices were checked", game.id)
                 return
@@ -240,7 +242,7 @@ class GamePrices:
         """Queue an event of Steam; False — its fact is known already, or the game's prices are no longer checked. A
         new discount takes the undelivered one of the game out of the queue: one line about it in a summary."""
         with self.ctx.write_session() as session:
-            if _snapshot(session, title_id) is None:
+            if price_snapshot(session, title_id) is None:
                 return False
             if event.type == price_events.DISCOUNT:
                 EventQueue.withdraw(session, title_id, (price_events.DISCOUNT,))
@@ -254,7 +256,7 @@ class GamePrices:
         """The next price check of the game in 30 minutes. False — its snapshot is gone (the game was deleted while
         Steam was answering): nothing failed then."""
         with self.ctx.write_session() as session:
-            stored = _snapshot(session, game.id)
+            stored = price_snapshot(session, game.id)
             if stored is None:
                 return False
             stored.next_check_at = self.ctx.now() + RETRY_AFTER_FAILURE

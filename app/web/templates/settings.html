@@ -64,7 +64,7 @@
       <select id="store_country" name="store_country"{% if invalid.store_country %} class="invalid" aria-invalid="true"{% endif %}>
         {% for country in countries %}<option value="{{ country.value }}"{% if country.selected %} selected{% endif %}>{{ country.label }}</option>{% endfor %}
       </select>
-      <p class="hint">Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона</p>
+      <p class="hint">Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона, цены Steam — в её валюте</p>
     </div>
 
     <button type="submit">Сохранить</button>

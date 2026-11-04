@@ -5,7 +5,7 @@
 snapshot with the stored one, queues the events and stores the new state; `end_of_pass` checks what is looked at for all
 the titles of the kind at once, after the pass over the titles (the Steam prices of the games). What the owner reads is
 asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `card_part` gives what a card
-holds that depends on the kind. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
+holds that depends on the kind, `list_marks` the marks of the rows of the list. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
 """
 
 import logging
@@ -118,6 +118,11 @@ class Poller:
     def card_part(self, session, title: Title) -> CardPart:
         """What the card of the title holds that depends on its kind."""
         return CardPart()
+
+    def list_marks(self, session, titles: Sequence[Title]) -> dict[int, str]:
+        """The marks at the right of the rows of these titles (all of this kind), title → text; a title with none is
+        left out. Read in a number of reads that does not grow with the number of titles (a game: its Steam discount)."""
+        return {}
 
     # --- polling a title ---
 

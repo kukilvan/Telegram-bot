@@ -33,6 +33,7 @@ _MONTHS = (
 )
 _SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
 NOT_ANNOUNCED = "не объявлена"
+STEAM_PRICE_LABEL = "Цена в Steam"
 
 
 @dataclass(frozen=True)
@@ -91,6 +92,18 @@ class StoreLink:
 
 
 @dataclass(frozen=True)
+class SteamView:
+    """The Steam prices of a game as its card reads them (spec 6.1 of part 6.2): ready lines for the web and the bot."""
+
+    caption: str  # «Цены для страны «Израиль» · проверено в 14:05»
+    line: str  # the line of the price on the web: «Скидка −30 %: ₪279 → ₪195,30, до 3 ноября»
+    bot_line: str  # what follows «Цена в Steam: » in the bot: «₪195,30 (−30 % до 3 ноября)»
+    lowest: str = ""  # «Самая низкая с добавления: …»; empty: no such line
+    bundles: tuple[str, ...] = ()  # «Hades + Hades II» (2 игры) — ₪250, the first five in the order of Steam
+    more_bundles: str = ""  # «и ещё 3»; empty: all are listed
+
+
+@dataclass(frozen=True)
 class CardPart:
     """What a card holds that depends on the kind of the title: the poller of the kind gives it, so neither the card
     nor the list asks which kind it is. The names are the ones of `TitleCard`."""
@@ -104,6 +117,7 @@ class CardPart:
     platforms: tuple[PlatformRow, ...] = ()
     store_links: tuple[StoreLink, ...] = ()
     platform_note: str = ""
+    steam: SteamView | None = None
 
     def fields(self) -> dict[str, object]:
         return {field.name: getattr(self, field.name) for field in dataclasses.fields(self)}
@@ -131,6 +145,7 @@ class TitleCard:
     platforms: tuple[PlatformRow, ...] = ()  # a game: the platforms of «Мои платформы» it is on, in the order of the table
     store_links: tuple[StoreLink, ...] = ()  # a game: Steam and PlayStation Store, where the owner's platforms have them
     platform_note: str = ""  # a game without such platforms: why the list of platforms is empty
+    steam: SteamView | None = None  # a game in «Хочу» that is told about PC: its Steam prices; the poller decides
 
 
 def format_date(value: date | None) -> str:
@@ -264,10 +279,12 @@ def movie_date_lines(card: TitleCard) -> list[str]:
 
 def platform_lines(card: TitleCard) -> list[str]:
     """The platforms of a game, an unmarked one «(не отмечена)», or the line that says why there are none; then the
-    stores as text: «Steam: https://…»."""
+    price in Steam when the card has its block; then the stores as text: «Steam: https://…»."""
     lines = [row.text + ("" if row.playing else " (не отмечена)") for row in card.platforms]
     if not lines:
         lines.append(card.platform_note)
+    if card.steam is not None:
+        lines.append(f"{STEAM_PRICE_LABEL}: {card.steam.bot_line}")
     lines.extend(f"{link.store}: {link.url}" for link in card.store_links)
     return lines
 

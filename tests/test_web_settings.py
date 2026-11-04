@@ -407,7 +407,7 @@ def test_the_page_shows_my_platforms_pc_and_ps5_and_israel_by_default(client):
         "Великобритания", "Германия", "Израиль", "Казахстан", "Польша", "Россия", "США", "Турция", "Украина"
     ]
     assert "Игры: сообщения о выходе приходят только по этим платформам" in html
-    assert "Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона" in html
+    assert "Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона, цены Steam — в её валюте" in html
     for label in ("ПК", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch 2", "Nintendo Switch"):
         assert f"> {label}</label>" in html
 

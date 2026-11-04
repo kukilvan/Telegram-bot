@@ -102,7 +102,7 @@ In code: `edition` (the edition's name when the game's price is its price).
 
 **Цена** (price):
 The price of a game in Steam in the currency of the store country: the cheapest purchase option that holds one game (the game itself or its edition; not a bundle and not a subscription). The currency sign and its place come from how Steam writes the price. Only Steam has prices (PlayStation does not, ADR 0009).
-In code: `price` (a purchase option — `purchase option`, an amount — `Money`).
+In code: `price` (a purchase option — `purchase option`, an amount — `Money`). The owner reads it in the block «Steam» of the web card and in the line «Цена в Steam: …» of the bot card (both only for a game in «Хочу» that prices are told about: `reports_prices`), and as the mark «−30 %» of the row of the list while a discount goes (`mark`; a discount whose end has come is over for the owner before the next check): `steam view`, `price_rows`.
 
 **Скидка** (discount):
 A temporary reduction of a game's price in Steam: percent, price before and after and the end day. A message comes when a discount starts or gets deeper in the same sale; the same discount does not come twice, the next sale comes again. A 100 % discount is «раздают бесплатно». A discount that Steam itself does not show as a discount (the EU lowest-price-in-30-days law) is not counted by the tracker either.

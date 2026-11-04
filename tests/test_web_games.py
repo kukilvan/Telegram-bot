@@ -194,7 +194,7 @@ def test_the_card_of_a_game_has_its_facts_its_platforms_and_its_stores(tracker, 
     assert "🎮 Игра · 2015 · Ролевая, Приключения" in html and "Статус:</span> Хочу" in html
     assert f'src="{IGDB}/t_cover_big_2x/coaarl.jpg"' in html
     assert "<h2 id=\"platforms-heading\">Платформы</h2>" in html
-    assert "Галочка — «играю здесь»: о выходе на отмеченных платформах придёт сообщение" in html
+    assert "Галочка — «играю здесь»: о выходе на отмеченных платформах придёт сообщение; у ПК — ещё цены и скидки Steam" in html
     assert marks(html) == [
         ("ПК — 19 мая 2015", True, f"/titles/{witcher}/platforms/pc"),
         ("PS5 — 19 мая 2015 (версия для PS4)", True, f"/titles/{witcher}/platforms/ps5"),

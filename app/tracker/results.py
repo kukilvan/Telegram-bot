@@ -47,6 +47,7 @@ class TitleSummary:
     poster_path: str | None = None  # as the title stores it (a TMDb file name or a whole address); the web turns it into a picture
     score: int | None = None  # what the owner reads: the own score, else the average of the seasons to the nearest step; None: none shown
     score_by_seasons: bool = False  # `score` is the average of the seasons
+    mark: str = ""  # the mark at the right, before the status («−30 %»: a Steam discount going); empty: none
 
 
 @dataclass(frozen=True)

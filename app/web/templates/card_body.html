@@ -73,6 +73,22 @@
       </section>
       {% endif %}
 
+      {% if steam %}
+      <section class="steam" aria-labelledby="steam-heading">
+        <h2 id="steam-heading">Steam</h2>
+        <p class="hint steam-caption">{{ steam.caption }}</p>
+        <p class="steam-price">{{ steam.line }}</p>
+        {% if steam.lowest %}<p class="steam-lowest">{{ steam.lowest }}</p>{% endif %}
+        {% if steam.bundles %}
+        <h3>Бандлы</h3>
+        <ul class="bundle-list">
+          {% for bundle in steam.bundles %}<li>{{ bundle }}</li>{% endfor %}
+          {% if steam.more_bundles %}<li class="bundle-more">{{ steam.more_bundles }}</li>{% endif %}
+        </ul>
+        {% endif %}
+      </section>
+      {% endif %}
+
       {% if dates %}
       <ul class="dates">
         {% for line in dates %}<li>{{ line }}</li>{% endfor %}

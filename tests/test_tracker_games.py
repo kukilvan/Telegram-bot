@@ -8,6 +8,7 @@ saved answers of IGDB and Steam (no network); the polls take made-up snapshots, 
 import asyncio
 import json
 import pathlib
+import re
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
@@ -675,7 +676,7 @@ def test_no_place_of_the_game_poller_reads_the_scope_by_pieces():
     text = open(source, encoding="utf-8").read()
 
     assert text.count("store_country_in") == 0 and text.count("my_platforms_in") == 0
-    assert "_marks(" not in text
+    assert re.search(r"(?<![A-Za-z])_marks\(", text) is None  # the old helper (`list_marks` is the poller's action)
 
 
 # --- the snapshot of the sequel check (7.4) --------------------------------------------------------------------------

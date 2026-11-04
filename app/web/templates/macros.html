@@ -45,9 +45,10 @@
 </form>
 {% endmacro %}
 
-{# The right side of a row of titles: the score (an average of the seasons has «ср.» in front of it) and the status. #}
+{# The right side of a row of titles: the score (an average of the seasons has «ср.» in front of it), the mark of the
+   row (a game with a discount going: «−30 %») and the status. #}
 {% macro row_tail(row) %}
-{% if row.score %}<span class="row-score">{{ row.score }}</span>{% endif %}<span class="row-status">{{ row.status }}</span>
+{% if row.score %}<span class="row-score">{{ row.score }}</span>{% endif %}{% if row.mark %}<span class="row-mark">{{ row.mark }}</span>{% endif %}<span class="row-status">{{ row.status }}</span>
 {% endmacro %}
 
 {# A row of links of a filter (`links` are `Link`s): the one that is chosen is marked. #}

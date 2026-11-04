@@ -7,7 +7,8 @@ mark is set where the platform is one of «Мои платформы» at that m
 show the dates of the country of the stores as it is now: the feed only the platforms the owner is told about, the
 card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1). At the end of each polling pass
 the Steam prices of the games are checked (`pollers/game_prices`, part 6.2); the page in Steam is told here, by IGDB:
-its previous snapshot had no Steam number, the new one has, and the game is one for prices by the new snapshot.
+its previous snapshot had no Steam number, the new one has, and the game is one for prices by the new snapshot. What
+the owner reads of the prices (the block of the card, the mark of the list) is `pollers/game_steam`.
 """
 
 from collections.abc import Mapping, Sequence
@@ -25,6 +26,7 @@ from app.tracker.models import GamePlatformRecord, SeasonRecord, Title
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
 from app.tracker.pollers.game_prices import GamePrices, steam_number
+from app.tracker.pollers.game_steam import GameSteam
 
 
 def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Platform]) -> None:
@@ -40,6 +42,7 @@ class GamePoller(Poller):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.prices = GamePrices(self.kind, self.price_source, self.ctx, self.settings)
+        self.steam = GameSteam(self.kind, self.price_source, self.ctx, self.settings)
 
     async def snapshot_to_add(self, external_id: str) -> Any:
         return await self.source.snapshot_to_add(external_id)
@@ -72,7 +75,12 @@ class GamePoller(Poller):
             platforms=rows,
             store_links=game_rows.store_links(game, scope.mine, scope.country, title.original_name or title.name),
             platform_note=game_rows.platform_note(game, rows),
+            steam=self.steam.card_block(session, title, game, scope),
         )
+
+    def list_marks(self, session, titles: Sequence[Title]) -> dict[int, str]:
+        """«−30 %» for the games of the list with a Steam discount going (`pollers/game_steam`)."""
+        return self.steam.marks(session, titles)
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()
