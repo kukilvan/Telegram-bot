@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-04 — Part 6.2, ticket 05: what the owner sees — block «Steam», mark in the List, line in the bot
+
+- `app/tracker/price_rows.py` (new, pure): `steam_view` — the lines of table 6.1 for the web and the bot, «самая низкая» of three kinds (lower than now with its day; now is the lowest in a discount with a dearer record; none), up to 5 bundles and «и ещё N», the caption «Цены для страны … · проверено в …»; `mark` — «−30 %» while a discount goes; `current_look` — a look counts only for the game's Steam number and the country of now (else «ещё не проверяли»); `shown_price` — a discount whose end has come is the old full price.
+- `pollers/game_steam.py` (new): `GameSteam.card_block` (snapshot + price history of one card) and `marks` (all «Хочу» games of the kind in a constant number of reads). `game_prices.reports_prices` is the one rule «prices are told about» (status «Хочу», PC marked and mine); `steam_number` = it + the Steam number; the block follows the rule, not the snapshot.
+- New poller action `list_marks`; `Listing._marks` asks the poller of each kind once; `TitleSummary.mark`; `cards.SteamView`, `CardPart.steam`, `TitleCard.steam`; `format_card` puts «Цена в Steam: …» between the platforms and the stores.
+- Web: `<section class="steam">` after «Платформы» (the template compares no kind or status), `.row-mark` before the status, new `PLATFORMS_HINT` and the line under «Страна магазинов».
+- Tests: `test_tracker_price_rows` (45), `test_tracker_steam_card` (27), `test_web_steam_card` (11); the old check «no `_marks(` in the game poller» now means the old helper only. Owner's check on the live base — accepted (no discount was live, so the discount lines are covered by tests only).
+
 ## 2026-11-04 — Part 6.2, ticket 04: the events of Steam, folded discounts, link buttons
 
 - `app/tracker/price_events.py` (new, pure): `detect_events(old, new)` — a discount (`game_discount`) when it starts, when the previous one's end has come (the next sale) or when it gets deeper; an extension, a smaller percent, the end, price changes without a discount and bundle changes are silent; a bundle (`game_bundle`) a new bundle id; `steam_page_event` (`game_steam_page`). Texts of spec 5.2 (the end on the owner's clock, read in `_store`), keys 5.3 (an unknown end — `dedup.moved_key` with the previous look), payloads with `line` (the line of the folded message, an addition to 5.3) and `expires_at` = `ends_at`. `TYPES` is the one list of the types; `game_prices.STEAM_EVENTS` points to it. `games_word` («2 игры / 5 игр / 21 игра»). `TEST_SAMPLES`: five samples of real types (not `test`) so their buttons open Steam (Resident Evil Requiem `3764200`; the folded one has Hades II and Elden Ring with their own numbers).
