@@ -65,6 +65,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-49 | `.env` holds variables the code does not read | `.env` | open | stage 8 |
 | KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | open | — |
 | KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | open | — |
+| KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | open | — |
 
 ## Entries
 
@@ -542,3 +543,12 @@ Format of a new entry:
 - Likelihood / impact: rare (the queueing of one check takes milliseconds); harm — two or three messages instead of one. A fix: queue the events of one check in one write session, or take `delivery_lock` while queueing them.
 - Status: open.
 - Found: 2026-11-04, review of part 6.2.
+
+## KI-52. Expansions: a standalone expansion completed before 6.3 never learns it is one
+
+- Where: `app/tracker/sources/igdb_games.py` and `games.GameState` (the fields `expansion` and `parent` of the own snapshot, spec 3.3 of stage 6.3); `polling.py` polls the own source only in «Хочу», «В процессе» and «Жду».
+- What's wrong: whether a game is an expansion, and of which game, is stored in its own IGDB snapshot by every own poll. A standalone expansion (IGDB type 4: Miles Morales, The Lost Legacy) added through Search before stage 6.3 and already «Пройдено» is not polled any more, so its card has no line «Дополнение к игре «…»» and its row no mark «дополнение». Its check of expansions and sequels runs as for any game, so nothing is missed.
+- How to reproduce: before the update, add «Uncharted: The Lost Legacy» and press «Прошёл»; after the update its card has no line about Uncharted 4.
+- Likelihood / impact: rare (a standalone expansion in the archive from before 6.3); only the line and the mark are missing. «Вернуть в список» heals it with the next own poll. A fix: the follow-up check could also store the game's own type and parent.
+- Status: open.
+- Found: 2026-11-04, spec of stage 6.3.

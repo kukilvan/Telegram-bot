@@ -1,0 +1,2604 @@
+[
+ {
+  "id": 52189,
+  "first_release_date": 1795046400,
+  "name": "Grand Theft Auto VI",
+  "collections": [
+   {
+    "id": 847,
+    "games": [
+     {
+      "id": 52189,
+      "alternative_names": [
+       {
+        "id": 9265,
+        "comment": "Acronym",
+        "name": "GTA 6"
+       },
+       {
+        "id": 9263,
+        "comment": "Numerical",
+        "name": "Grand Theft Auto 6"
+       },
+       {
+        "id": 139291,
+        "comment": "Acronym",
+        "name": "GTA VI"
+       },
+       {
+        "id": 144677,
+        "comment": "Acronym",
+        "name": "GTA6"
+       },
+       {
+        "id": 279332,
+        "comment": "Acronym",
+        "name": "GTAVI"
+       }
+      ],
+      "first_release_date": 1795046400,
+      "name": "Grand Theft Auto VI",
+      "platforms": [
+       169,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 831835,
+        "date": 1795046400,
+        "m": 11,
+        "platform": 169,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 831834,
+        "date": 1795046400,
+        "m": 11,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 263913,
+      "first_release_date": 1513036800,
+      "name": "Grand Theft Auto Online: The Doomsday Heist",
+      "platforms": [
+       48,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 509092,
+        "date": 1513036800,
+        "m": 12,
+        "platform": 48,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 509093,
+        "date": 1513036800,
+        "m": 12,
+        "platform": 49,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 134710,
+      "alternative_names": [
+       {
+        "id": 36209,
+        "comment": "Abbreviation",
+        "name": "GTA Online"
+       }
+      ],
+      "first_release_date": 1416268800,
+      "name": "Grand Theft Auto Online",
+      "platforms": [
+       169,
+       9,
+       48,
+       6,
+       167,
+       12,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 346658,
+        "date": 1647302400,
+        "m": 3,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 346659,
+        "date": 1647302400,
+        "m": 3,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 753115,
+        "date": 1428969600,
+        "m": 4,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 753116,
+        "date": 1416268800,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 753117,
+        "date": 1416268800,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 753118,
+        "date": 1380585600,
+        "m": 10,
+        "platform": 9,
+        "y": 2013,
+        "status": 4,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 753119,
+        "date": 1380585600,
+        "m": 10,
+        "platform": 12,
+        "y": 2013,
+        "status": 4,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 43687,
+      "alternative_names": [
+       {
+        "id": 53325,
+        "comment": "Other Alias",
+        "name": "GTA London"
+       },
+       {
+        "id": 53326,
+        "comment": "Acronym",
+        "name": "GTA London Special Edition"
+       }
+      ],
+      "first_release_date": 978220800,
+      "name": "Grand Theft Auto: London Special Edition",
+      "platforms": [
+       7
+      ],
+      "release_dates": [
+       {
+        "id": 597892,
+        "date": 978220800,
+        "m": 12,
+        "platform": 7,
+        "y": 2000,
+        "date_format": 2,
+        "release_region": 1
+       }
+      ],
+      "version_parent": 980,
+      "game_type": 4
+     },
+     {
+      "id": 8235,
+      "alternative_names": [
+       {
+        "id": 24783,
+        "comment": "Acronym",
+        "name": "GTA: London 69"
+       },
+       {
+        "id": 52696,
+        "comment": "Other Alias",
+        "name": "GTA London"
+       }
+      ],
+      "first_release_date": 922838400,
+      "name": "Grand Theft Auto: London 1969",
+      "platforms": [
+       22,
+       6,
+       13,
+       7
+      ],
+      "release_dates": [
+       {
+        "id": 170086,
+        "date": 925430400,
+        "m": 4,
+        "platform": 7,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 170083,
+        "date": 922838400,
+        "m": 3,
+        "platform": 6,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 170085,
+        "date": 922838400,
+        "m": 3,
+        "platform": 13,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 170082,
+        "date": 922838400,
+        "m": 3,
+        "platform": 13,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 170084,
+        "date": 922838400,
+        "m": 3,
+        "platform": 6,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 170087,
+        "date": 925516800,
+        "m": 5,
+        "platform": 7,
+        "y": 1999,
+        "date_format": 1,
+        "release_region": 1
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 200403,
+      "alternative_names": [
+       {
+        "id": 89297,
+        "comment": "Abbreviation",
+        "name": "GTA 2"
+       }
+      ],
+      "first_release_date": 940550400,
+      "name": "Grand Theft Auto 2",
+      "platforms": [
+       7
+      ],
+      "release_dates": [
+       {
+        "id": 690242,
+        "date": 940982400,
+        "m": 10,
+        "platform": 7,
+        "y": 1999,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 690241,
+        "date": 940550400,
+        "m": 10,
+        "platform": 7,
+        "y": 1999,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 690206,
+        "date": 940982400,
+        "m": 10,
+        "platform": 7,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 980,
+      "alternative_names": [
+       {
+        "id": 28092,
+        "comment": "Acronym",
+        "name": "GTA1"
+       },
+       {
+        "id": 28091,
+        "comment": "Working title",
+        "name": "Race'n'Chase"
+       },
+       {
+        "id": 24775,
+        "comment": "Acronym",
+        "name": "GTA"
+       },
+       {
+        "id": 24776,
+        "comment": "Chinese title",
+        "name": "侠盗车手"
+       },
+       {
+        "id": 84966,
+        "comment": "Alternative title",
+        "name": "Grand Theft Auto 1"
+       }
+      ],
+      "first_release_date": 877392000,
+      "name": "Grand Theft Auto",
+      "platforms": [
+       9,
+       4,
+       6,
+       13,
+       7,
+       38
+      ],
+      "release_dates": [
+       {
+        "id": 574065,
+        "platform": 4,
+        "status": 5,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 957399,
+        "date": 888624000,
+        "m": 2,
+        "platform": 13,
+        "y": 1998,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 957400,
+        "date": 877392000,
+        "m": 10,
+        "platform": 13,
+        "y": 1997,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 957401,
+        "date": 877392000,
+        "m": 10,
+        "platform": 6,
+        "y": 1997,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 957402,
+        "date": 888624000,
+        "m": 2,
+        "platform": 6,
+        "y": 1998,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 957403,
+        "date": 1046476800,
+        "m": 3,
+        "platform": 6,
+        "y": 2003,
+        "status": 6,
+        "date_format": 1,
+        "release_region": 8
+       },
+       {
+        "id": 957405,
+        "date": 881884800,
+        "m": 12,
+        "platform": 7,
+        "y": 1997,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 957406,
+        "date": 899164800,
+        "m": 6,
+        "platform": 7,
+        "y": 1998,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 957407,
+        "date": 904176000,
+        "m": 8,
+        "platform": 7,
+        "y": 1998,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 957404,
+        "date": 1199404800,
+        "m": 1,
+        "platform": 6,
+        "y": 2008,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 957408,
+        "date": 881884800,
+        "m": 12,
+        "platform": 7,
+        "y": 1997,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 957409,
+        "date": 1398211200,
+        "m": 4,
+        "platform": 38,
+        "y": 2014,
+        "status": 35,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 957410,
+        "date": 1398211200,
+        "m": 4,
+        "platform": 9,
+        "y": 2014,
+        "status": 35,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 732,
+      "alternative_names": [
+       {
+        "id": 2332,
+        "comment": "Acronym",
+        "name": "GTA: SA"
+       },
+       {
+        "id": 148468,
+        "comment": "Bulgarian title",
+        "name": "GTA: Сан Андреас"
+       },
+       {
+        "id": 144662,
+        "comment": "Chinese title - simplified",
+        "name": "侠盗飞车：圣安地列斯"
+       },
+       {
+        "id": 144663,
+        "comment": "Chinese title - simplified",
+        "name": "侠盗猎车手：圣安地列斯"
+       },
+       {
+        "id": 175141,
+        "comment": "Abbreviation",
+        "name": "GTA: San Andreas"
+       },
+       {
+        "id": 175142,
+        "comment": "Abbreviation",
+        "name": "San Andreas"
+       },
+       {
+        "id": 175143,
+        "comment": "Abbreviation",
+        "name": "GTA San Andreas"
+       }
+      ],
+      "first_release_date": 1098748800,
+      "name": "Grand Theft Auto: San Andreas",
+      "platforms": [
+       11,
+       9,
+       48,
+       74,
+       34,
+       6,
+       39,
+       14,
+       12,
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 749993,
+        "date": 1099008000,
+        "m": 10,
+        "platform": 8,
+        "y": 2004,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 749990,
+        "date": 1118102400,
+        "m": 6,
+        "platform": 6,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 749994,
+        "date": 1099008000,
+        "m": 10,
+        "platform": 8,
+        "y": 2004,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 749995,
+        "date": 1169683200,
+        "m": 1,
+        "platform": 8,
+        "y": 2007,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 749992,
+        "date": 1098748800,
+        "m": 10,
+        "platform": 8,
+        "y": 2004,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 749991,
+        "date": 1118361600,
+        "m": 6,
+        "platform": 6,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 899555,
+        "date": 1387411200,
+        "m": 12,
+        "platform": 34,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 899556,
+        "date": 1386806400,
+        "m": 12,
+        "platform": 39,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 926317,
+        "date": 1449792000,
+        "m": 12,
+        "platform": 9,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 926321,
+        "date": 1449273600,
+        "m": 12,
+        "platform": 48,
+        "y": 2015,
+        "status": 35,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 926322,
+        "date": 1118102400,
+        "m": 6,
+        "platform": 11,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 926315,
+        "date": 1199404800,
+        "m": 1,
+        "platform": 6,
+        "y": 2008,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 926316,
+        "date": 1390867200,
+        "m": 1,
+        "platform": 74,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 926318,
+        "date": 1449878400,
+        "m": 12,
+        "platform": 9,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 926319,
+        "date": 1449878400,
+        "m": 12,
+        "platform": 9,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 899557,
+        "date": 1314835200,
+        "m": 9,
+        "platform": 14,
+        "y": 2011,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 899558,
+        "date": 1289520000,
+        "m": 11,
+        "platform": 14,
+        "y": 2010,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 926324,
+        "date": 1226275200,
+        "m": 11,
+        "platform": 12,
+        "y": 2008,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 926320,
+        "date": 1449878400,
+        "m": 12,
+        "platform": 9,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 4
+       },
+       {
+        "id": 926323,
+        "date": 1118361600,
+        "m": 6,
+        "platform": 11,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 926325,
+        "date": 1414972800,
+        "m": 11,
+        "platform": 12,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 3174,
+      "alternative_names": [
+       {
+        "id": 2633,
+        "comment": "Acronym",
+        "name": "GTA IV: TBoGT"
+       },
+       {
+        "id": 293010,
+        "comment": "Abbreviation",
+        "name": "Grand Theft Auto: The Ballad of Gay Tony"
+       },
+       {
+        "id": 293011,
+        "comment": "Abbreviation",
+        "name": "GTA: The Ballad of Gay Tony"
+       },
+       {
+        "id": 290713,
+        "comment": "Alternative title",
+        "name": "The Ballad of Gay Tony"
+       }
+      ],
+      "first_release_date": 1256774400,
+      "name": "Grand Theft Auto IV: The Ballad of Gay Tony",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 32626,
+        "date": 1271376000,
+        "m": 4,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 32622,
+        "date": 1256774400,
+        "m": 10,
+        "platform": 12,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 32624,
+        "date": 1271116800,
+        "m": 4,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 32623,
+        "date": 1271116800,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 32625,
+        "date": 1271376000,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 733,
+      "alternative_names": [
+       {
+        "id": 21962,
+        "comment": "Acronym",
+        "name": "GTA VC"
+       },
+       {
+        "id": 52701,
+        "comment": "Acronym",
+        "name": "GTA Vice City"
+       },
+       {
+        "id": 148467,
+        "comment": "Bulgarian title",
+        "name": "GTA: Вайс Сити"
+       },
+       {
+        "id": 276001,
+        "comment": "Alternative title",
+        "name": "Vice City"
+       },
+       {
+        "id": 276002,
+        "comment": "Chinese title - simplified",
+        "name": "侠盗车手：罪恶都市"
+       },
+       {
+        "id": 276003,
+        "comment": "Chinese title - traditional",
+        "name": "俠盜獵車手：罪惡城市"
+       }
+      ],
+      "first_release_date": 1035676800,
+      "name": "Grand Theft Auto: Vice City",
+      "platforms": [
+       11,
+       9,
+       6,
+       14,
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 468248,
+        "date": 1289520000,
+        "m": 11,
+        "platform": 14,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 147097,
+        "date": 1314230400,
+        "m": 8,
+        "platform": 14,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 968181,
+        "date": 1359417600,
+        "m": 1,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 906163,
+        "date": 1052784000,
+        "m": 5,
+        "platform": 6,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 906167,
+        "date": 1035676800,
+        "m": 10,
+        "platform": 8,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 906164,
+        "date": 1052784000,
+        "m": 5,
+        "platform": 6,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 906165,
+        "date": 1081382400,
+        "m": 4,
+        "platform": 6,
+        "y": 2004,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 906166,
+        "date": 1199404800,
+        "m": 1,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 906168,
+        "date": 1036713600,
+        "m": 11,
+        "platform": 8,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 906169,
+        "date": 1037836800,
+        "m": 11,
+        "platform": 8,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 4
+       },
+       {
+        "id": 906170,
+        "date": 1085011200,
+        "m": 5,
+        "platform": 8,
+        "y": 2004,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 906171,
+        "platform": 8,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 731,
+      "alternative_names": [
+       {
+        "id": 52714,
+        "comment": "Acronym",
+        "name": "GTAIV"
+       },
+       {
+        "id": 52717,
+        "comment": "Acronym",
+        "name": "GTA IV"
+       },
+       {
+        "id": 52718,
+        "comment": "Acronym",
+        "name": "GTA4"
+       },
+       {
+        "id": 52719,
+        "comment": "Acronym",
+        "name": "GTA 4"
+       },
+       {
+        "id": 175054,
+        "comment": "Alternative spelling",
+        "name": "Grand Theft Auto 4"
+       }
+      ],
+      "first_release_date": 1209427200,
+      "name": "Grand Theft Auto IV",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 103341,
+        "date": 1209427200,
+        "m": 4,
+        "platform": 9,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 1609,
+        "date": 1228176000,
+        "m": 12,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 103343,
+        "date": 1225324800,
+        "m": 10,
+        "platform": 9,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 3316,
+        "date": 1209427200,
+        "m": 4,
+        "platform": 12,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 3315,
+        "date": 1209427200,
+        "m": 4,
+        "platform": 9,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 103342,
+        "date": 1209427200,
+        "m": 4,
+        "platform": 9,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 44870,
+      "first_release_date": 940550400,
+      "name": "Grand Theft Auto",
+      "platforms": [
+       22
+      ],
+      "release_dates": [
+       {
+        "id": 169688,
+        "date": 940550400,
+        "m": 10,
+        "platform": 22,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 169689,
+        "date": 943228800,
+        "m": 11,
+        "platform": 22,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 3265,
+      "alternative_names": [
+       {
+        "id": 2635,
+        "comment": "Acronym",
+        "name": "GTA IV: TLAD"
+       },
+       {
+        "id": 293012,
+        "comment": "Abbreviation",
+        "name": "Grand Theft Auto: The Lost and Damned"
+       },
+       {
+        "id": 293013,
+        "comment": "Abbreviation",
+        "name": "GTA: The Lost and Damned"
+       },
+       {
+        "id": 290714,
+        "comment": "Alternative title",
+        "name": "The Lost and Damned"
+       }
+      ],
+      "first_release_date": 1234828800,
+      "name": "Grand Theft Auto IV: The Lost and Damned",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 32632,
+        "date": 1271116800,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 32629,
+        "date": 1234828800,
+        "m": 2,
+        "platform": 12,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 32630,
+        "date": 1271116800,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 32631,
+        "date": 1271116800,
+        "m": 4,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 32633,
+        "date": 1271116800,
+        "m": 4,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 730,
+      "alternative_names": [
+       {
+        "id": 52697,
+        "comment": "Acronym",
+        "name": "GTA III"
+       },
+       {
+        "id": 52699,
+        "comment": "Alternative title",
+        "name": "Grand Theft Auto 3"
+       },
+       {
+        "id": 52700,
+        "comment": "Acronym",
+        "name": "GTA3"
+       },
+       {
+        "id": 184821,
+        "comment": "Chinese title - simplified",
+        "name": "侠盗车手3 "
+       },
+       {
+        "id": 184822,
+        "comment": "Chinese title - traditional",
+        "name": "俠盜獵車手3"
+       }
+      ],
+      "first_release_date": 1003708800,
+      "name": "Grand Theft Auto III",
+      "platforms": [
+       11,
+       48,
+       34,
+       6,
+       39,
+       14,
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 147109,
+        "date": 1313625600,
+        "m": 8,
+        "platform": 14,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 796958,
+        "date": 1323907200,
+        "m": 12,
+        "platform": 39,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 796962,
+        "date": 1381708800,
+        "m": 10,
+        "platform": 34,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 796967,
+        "date": 1329091200,
+        "m": 2,
+        "platform": 14,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 796968,
+        "date": 1021852800,
+        "m": 5,
+        "platform": 6,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 796971,
+        "date": 1003708800,
+        "m": 10,
+        "platform": 8,
+        "y": 2001,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 796975,
+        "date": 1449273600,
+        "m": 12,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 796976,
+        "date": 1067904000,
+        "m": 11,
+        "platform": 11,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 796969,
+        "date": 1022198400,
+        "m": 5,
+        "platform": 6,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 796970,
+        "date": 1199404800,
+        "m": 1,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 796972,
+        "date": 1004054400,
+        "m": 10,
+        "platform": 8,
+        "y": 2001,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 796973,
+        "date": 1004313600,
+        "m": 10,
+        "platform": 8,
+        "y": 2001,
+        "date_format": 0,
+        "release_region": 4
+       },
+       {
+        "id": 796974,
+        "date": 1064448000,
+        "m": 9,
+        "platform": 8,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 796977,
+        "date": 1073001600,
+        "m": 1,
+        "platform": 11,
+        "y": 2004,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 1020,
+      "alternative_names": [
+       {
+        "id": 30476,
+        "comment": "Chinese title",
+        "name": "俠盜獵車手 5"
+       },
+       {
+        "id": 168251,
+        "comment": "Alternative title",
+        "name": "Grand Theft Auto V Legacy"
+       },
+       {
+        "id": 89447,
+        "comment": "Acronym",
+        "name": "GTA 5"
+       },
+       {
+        "id": 89445,
+        "comment": "Acronym",
+        "name": "GTA V"
+       },
+       {
+        "id": 90133,
+        "comment": "Korean title - unofficial",
+        "name": "그랜드 테프트 오토 V "
+       },
+       {
+        "id": 103297,
+        "comment": "Alternative spelling",
+        "name": "Grand Theft Auto 5"
+       },
+       {
+        "id": 119282,
+        "comment": "Acronym",
+        "name": "GTAV"
+       },
+       {
+        "id": 119283,
+        "comment": "Acronym",
+        "name": "GTA5"
+       }
+      ],
+      "first_release_date": 1379376000,
+      "name": "Grand Theft Auto V",
+      "platforms": [
+       169,
+       9,
+       48,
+       6,
+       167,
+       12,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 20291,
+        "date": 1416268800,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 403430,
+        "date": 1428883200,
+        "m": 4,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 20294,
+        "date": 1379376000,
+        "m": 9,
+        "platform": 9,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 20293,
+        "date": 1379376000,
+        "m": 9,
+        "platform": 12,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 20290,
+        "date": 1416268800,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 934896,
+        "date": 1741996800,
+        "m": 3,
+        "platform": 169,
+        "y": 2025,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 934897,
+        "date": 1741996800,
+        "m": 3,
+        "platform": 167,
+        "y": 2025,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 3263,
+      "alternative_names": [
+       {
+        "id": 52705,
+        "comment": "Acronym",
+        "name": "GTA: Liberty City Stories"
+       },
+       {
+        "id": 52706,
+        "comment": "Acronym",
+        "name": "GTA: LCS"
+       },
+       {
+        "id": 290715,
+        "comment": "Alternative title",
+        "name": "Liberty City Stories"
+       }
+      ],
+      "first_release_date": 1130112000,
+      "name": "Grand Theft Auto: Liberty City Stories",
+      "platforms": [
+       38
+      ],
+      "release_dates": [
+       {
+        "id": 742836,
+        "date": 1130112000,
+        "m": 10,
+        "platform": 38,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 742837,
+        "date": 1130457600,
+        "m": 10,
+        "platform": 38,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 742838,
+        "date": 1133481600,
+        "m": 12,
+        "platform": 38,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 251244,
+      "first_release_date": 1425945600,
+      "name": "Grand Theft Auto Online: Heists",
+      "platforms": [
+       9,
+       48,
+       6,
+       12,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 479442,
+        "date": 1425945600,
+        "m": 3,
+        "platform": 9,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 479443,
+        "date": 1425945600,
+        "m": 3,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 479444,
+        "date": 1425945600,
+        "m": 3,
+        "platform": 12,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 479445,
+        "date": 1425945600,
+        "m": 3,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 479446,
+        "date": 1428969600,
+        "m": 4,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 3262,
+      "alternative_names": [
+       {
+        "id": 52740,
+        "comment": "Acronym",
+        "name": "GTA: VCS"
+       },
+       {
+        "id": 52741,
+        "comment": "Acronym",
+        "name": "GTA: Vice City Stories"
+       },
+       {
+        "id": 289823,
+        "comment": "Acronym",
+        "name": "VCS"
+       },
+       {
+        "id": 290716,
+        "comment": "Alternative title",
+        "name": "Vice City Stories"
+       }
+      ],
+      "first_release_date": 1162252800,
+      "name": "Grand Theft Auto: Vice City Stories",
+      "platforms": [
+       9,
+       38,
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 7463,
+        "date": 1173139200,
+        "m": 3,
+        "platform": 8,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 7462,
+        "date": 1162252800,
+        "m": 10,
+        "platform": 38,
+        "y": 2006,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 568778,
+        "date": 1364860800,
+        "m": 4,
+        "platform": 9,
+        "y": 2013,
+        "status": 4,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 22930,
+      "first_release_date": 1323907200,
+      "name": "Grand Theft Auto III: 10 Year Anniversary Edition",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 222259,
+        "date": 1323907200,
+        "m": 12,
+        "platform": 39,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 222260,
+        "date": 1323907200,
+        "m": 12,
+        "platform": 34,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 198246,
+      "alternative_names": [
+       {
+        "id": 87615,
+        "comment": "Abbreviation",
+        "name": "GTA64"
+       }
+      ],
+      "name": "Grand Theft Auto 64",
+      "platforms": [
+       4
+      ],
+      "release_dates": [
+       {
+        "id": 508360,
+        "date": 946598400,
+        "m": 12,
+        "platform": 4,
+        "y": 1999,
+        "status": 5,
+        "date_format": 6,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 200401,
+      "alternative_names": [
+       {
+        "id": 144261,
+        "comment": "Abbreviation",
+        "name": "GTA 2"
+       }
+      ],
+      "first_release_date": 975888000,
+      "name": "Grand Theft Auto 2",
+      "platforms": [
+       22
+      ],
+      "release_dates": [
+       {
+        "id": 538705,
+        "date": 975888000,
+        "m": 12,
+        "platform": 22,
+        "y": 2000,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 3270,
+      "alternative_names": [
+       {
+        "id": 53893,
+        "comment": "Acronym",
+        "name": "GTA: CW"
+       },
+       {
+        "id": 3659,
+        "comment": "Acronym",
+        "name": "GTA: CTW"
+       },
+       {
+        "id": 52708,
+        "comment": "Acronym",
+        "name": "GTA: Chinatown Wars"
+       },
+       {
+        "id": 290711,
+        "comment": "Alternative title",
+        "name": "Chinatown Wars"
+       },
+       {
+        "id": 293385,
+        "comment": "Abbreviation",
+        "name": "GTA Chinatown Wars"
+       }
+      ],
+      "first_release_date": 1237248000,
+      "name": "Grand Theft Auto: Chinatown Wars",
+      "platforms": [
+       34,
+       39,
+       38,
+       20
+      ],
+      "release_dates": [
+       {
+        "id": 147527,
+        "date": 1263772800,
+        "m": 1,
+        "platform": 39,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 363480,
+        "date": 1418774400,
+        "m": 12,
+        "platform": 34,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 7478,
+        "date": 1263686400,
+        "m": 1,
+        "platform": 39,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 7476,
+        "date": 1237248000,
+        "m": 3,
+        "platform": 20,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 224368,
+        "date": 1255996800,
+        "m": 10,
+        "platform": 38,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 224370,
+        "date": 1256688000,
+        "m": 10,
+        "platform": 38,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 139965,
+        "date": 1237248000,
+        "m": 3,
+        "platform": 20,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 139966,
+        "date": 1237507200,
+        "m": 3,
+        "platform": 20,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 224369,
+        "date": 1256256000,
+        "m": 10,
+        "platform": 38,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 13233,
+      "alternative_names": [
+       {
+        "id": 24784,
+        "comment": "Acronym",
+        "name": "GTA: London 1961"
+       },
+       {
+        "id": 52744,
+        "comment": "Other Alias",
+        "name": "GTA London"
+       }
+      ],
+      "first_release_date": 928195200,
+      "name": "Grand Theft Auto: London 1961",
+      "platforms": [
+       6,
+       13
+      ],
+      "release_dates": [
+       {
+        "id": 38380,
+        "date": 928195200,
+        "m": 6,
+        "platform": 6,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 170088,
+        "date": 928195200,
+        "m": 6,
+        "platform": 13,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 239060,
+      "first_release_date": 1647302400,
+      "name": "Grand Theft Auto V: Story Mode",
+      "platforms": [
+       169,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 454258,
+        "date": 1647302400,
+        "m": 3,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 454259,
+        "date": 1647302400,
+        "m": 3,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 281320,
+      "alternative_names": [
+       {
+        "id": 145439,
+        "comment": "Acronym",
+        "name": "GTA Tokyo "
+       }
+      ],
+      "name": "Grand Theft Auto Tokyo",
+      "platforms": [
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 547680,
+        "platform": 8,
+        "status": 5,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 3266,
+      "alternative_names": [
+       {
+        "id": 24779,
+        "comment": "Chinese title",
+        "name": "侠盗车手Advance"
+       },
+       {
+        "id": 24778,
+        "comment": "Acronym",
+        "name": "GTA Advance"
+       }
+      ],
+      "first_release_date": 1098748800,
+      "name": "Grand Theft Auto Advance",
+      "platforms": [
+       24
+      ],
+      "release_dates": [
+       {
+        "id": 170069,
+        "date": 1098748800,
+        "m": 10,
+        "platform": 24,
+        "y": 2004,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 170070,
+        "date": 1099008000,
+        "m": 10,
+        "platform": 24,
+        "y": 2004,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 819,
+      "alternative_names": [
+       {
+        "id": 28110,
+        "comment": "Acronym",
+        "name": "GTA2"
+       },
+       {
+        "id": 24781,
+        "comment": "Chinese title",
+        "name": "侠盗车手2"
+       },
+       {
+        "id": 24782,
+        "comment": "Russian title",
+        "name": "GTA 2 Беспредел"
+       }
+      ],
+      "first_release_date": 940550400,
+      "name": "Grand Theft Auto 2",
+      "platforms": [
+       6,
+       23
+      ],
+      "release_dates": [
+       {
+        "id": 170079,
+        "date": 940982400,
+        "m": 10,
+        "platform": 6,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 170080,
+        "date": 1101859200,
+        "m": 12,
+        "platform": 6,
+        "y": 2004,
+        "date_format": 1,
+        "release_region": 8
+       },
+       {
+        "id": 170075,
+        "date": 957139200,
+        "m": 5,
+        "platform": 23,
+        "y": 2000,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 170076,
+        "date": 964742400,
+        "m": 7,
+        "platform": 23,
+        "y": 2000,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 170073,
+        "date": 940550400,
+        "m": 10,
+        "platform": 6,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 309110,
+      "first_release_date": 1149552000,
+      "name": "Grand Theft Auto: Liberty City Stories",
+      "platforms": [
+       9,
+       34,
+       39,
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 742839,
+        "date": 1455148800,
+        "m": 2,
+        "platform": 34,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 742840,
+        "date": 1450310400,
+        "m": 12,
+        "platform": 39,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 742841,
+        "date": 1149552000,
+        "m": 6,
+        "platform": 8,
+        "y": 2006,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 742842,
+        "date": 1151020800,
+        "m": 6,
+        "platform": 8,
+        "y": 2006,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 742843,
+        "date": 1151020800,
+        "m": 6,
+        "platform": 8,
+        "y": 2006,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 742844,
+        "date": 1189036800,
+        "m": 9,
+        "platform": 8,
+        "y": 2007,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 742845,
+        "date": 1364947200,
+        "m": 4,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 742846,
+        "date": 1364860800,
+        "m": 4,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 334254,
+      "first_release_date": 1741046400,
+      "name": "Grand Theft Auto V Enhanced",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 711889,
+        "date": 1741046400,
+        "m": 3,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 10
+     },
+     {
+      "id": 178123,
+      "alternative_names": [
+       {
+        "id": 76610,
+        "comment": "Alternative spelling",
+        "name": "GTA III: Definitive Edition"
+       },
+       {
+        "id": 246056,
+        "comment": "Windows Executable",
+        "name": "PlayGTA3.exe"
+       }
+      ],
+      "first_release_date": 1636588800,
+      "name": "Grand Theft Auto III: The Definitive Edition",
+      "platforms": [
+       169,
+       48,
+       34,
+       6,
+       39,
+       167,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 540450,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540455,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 169,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540454,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 49,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540457,
+        "date": 1702512000,
+        "m": 12,
+        "platform": 39,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540456,
+        "date": 1702512000,
+        "m": 12,
+        "platform": 34,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540453,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 167,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540451,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 6,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540452,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 48,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 178125,
+      "alternative_names": [
+       {
+        "id": 91165,
+        "comment": "Alternative title",
+        "name": "GTA Vice City - Definitive Edition"
+       },
+       {
+        "id": 230430,
+        "comment": "Windows Executable",
+        "name": "PlayGTAViceCity.exe"
+       }
+      ],
+      "first_release_date": 1636588800,
+      "name": "Grand Theft Auto: Vice City - The Definitive Edition",
+      "platforms": [
+       169,
+       48,
+       34,
+       6,
+       39,
+       167,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 540463,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540470,
+        "date": 1702512000,
+        "m": 12,
+        "platform": 39,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540466,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 167,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540467,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 49,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540464,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 6,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540465,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 48,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540469,
+        "date": 1702512000,
+        "m": 12,
+        "platform": 34,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 913383,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 169,
+        "y": 2021,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 178126,
+      "alternative_names": [
+       {
+        "id": 91164,
+        "comment": "Alternative title",
+        "name": "GTA San Andreas - Definitive Edition"
+       },
+       {
+        "id": 182100,
+        "comment": "Windows Executable",
+        "name": "PlayGTASanAndreas.exe"
+       }
+      ],
+      "first_release_date": 1636588800,
+      "name": "Grand Theft Auto: San Andreas - The Definitive Edition",
+      "platforms": [
+       169,
+       48,
+       34,
+       6,
+       39,
+       167,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 540472,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 6,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540471,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540478,
+        "date": 1702512000,
+        "m": 12,
+        "platform": 39,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540474,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 167,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540473,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 48,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540476,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 169,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540477,
+        "date": 1702512000,
+        "m": 12,
+        "platform": 34,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 540475,
+        "date": 1636588800,
+        "m": 11,
+        "platform": 49,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 378083,
+      "name": "BlueBirdRP",
+      "platforms": [
+       6
+      ],
+      "game_type": 5
+     },
+     {
+      "id": 215550,
+      "first_release_date": 1359417600,
+      "name": "Grand Theft Auto: Vice City",
+      "platforms": [
+       9,
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 386864,
+        "date": 1449273600,
+        "m": 12,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 386865,
+        "date": 1359417600,
+        "m": 1,
+        "platform": 9,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     }
+    ],
+    "name": "Grand Theft Auto"
+   }
+  ],
+  "game_type": 0
+ }
+]

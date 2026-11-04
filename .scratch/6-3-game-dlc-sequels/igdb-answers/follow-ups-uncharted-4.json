@@ -1,0 +1,890 @@
+[
+ {
+  "id": 7331,
+  "first_release_date": 1462838400,
+  "name": "Uncharted 4: A Thief's End",
+  "standalone_expansions": [
+   {
+    "id": 26193,
+    "alternative_names": [
+     {
+      "id": 52845,
+      "comment": "Japanese title - romanization",
+      "name": "Uncharted: Kodai Kami No Hihou"
+     },
+     {
+      "id": 188029,
+      "comment": "Spanish title",
+      "name": "Uncharted: El Legado Perdido"
+     },
+     {
+      "id": 188030,
+      "comment": "Alternative title",
+      "name": "Uncharted: Kayıp Miras"
+     },
+     {
+      "id": 187962,
+      "comment": "Polish title",
+      "name": "Uncharted: Zaginione dziedzictwo"
+     },
+     {
+      "id": 188031,
+      "comment": "Italian title",
+      "name": "Uncharted: L'Eredità Perduta"
+     },
+     {
+      "id": 188032,
+      "comment": "Portuguese title",
+      "name": "Uncharted: O Legado Perdido"
+     }
+    ],
+    "first_release_date": 1503360000,
+    "name": "Uncharted: The Lost Legacy",
+    "platforms": [
+     48
+    ],
+    "release_dates": [
+     {
+      "id": 68048,
+      "date": 1503446400,
+      "m": 8,
+      "platform": 48,
+      "y": 2017,
+      "date_format": 0,
+      "release_region": 1
+     },
+     {
+      "id": 68046,
+      "date": 1503360000,
+      "m": 8,
+      "platform": 48,
+      "y": 2017,
+      "date_format": 0,
+      "release_region": 2
+     }
+    ],
+    "game_type": 4
+   }
+  ],
+  "remasters": [
+   {
+    "id": 168668,
+    "alternative_names": [
+     {
+      "id": 82316,
+      "comment": "Italian title",
+      "name": "Uncharted 4: Fine di un Ladro - Remastered"
+     }
+    ],
+    "first_release_date": 1643328000,
+    "name": "Uncharted 4: A Thief's End - Remastered",
+    "platforms": [
+     6,
+     167
+    ],
+    "release_dates": [
+     {
+      "id": 346531,
+      "date": 1643328000,
+      "m": 1,
+      "platform": 167,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 403220,
+      "date": 1666137600,
+      "m": 10,
+      "platform": 6,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 9
+   }
+  ],
+  "collections": [
+   {
+    "id": 97,
+    "games": [
+     {
+      "id": 998,
+      "alternative_names": [
+       {
+        "id": 38630,
+        "comment": "Alternative title",
+        "name": "Uncharted Vita"
+       },
+       {
+        "id": 187960,
+        "comment": "Polish title",
+        "name": "Uncharted: Złota Otchłań"
+       },
+       {
+        "id": 188018,
+        "comment": "Japanese title - translated",
+        "name": "Uncharted: Chizu Naki Bōken no Hajimari"
+       },
+       {
+        "id": 188019,
+        "comment": "Italian title",
+        "name": "Uncharted: L'Abisso D'Oro"
+       },
+       {
+        "id": 188020,
+        "comment": "Portuguese title",
+        "name": "Uncharted: O Abismo Dourado"
+       },
+       {
+        "id": 188021,
+        "comment": "Russian title",
+        "name": "Uncharted: Золотая бездна"
+       }
+      ],
+      "first_release_date": 1324080000,
+      "name": "Uncharted: Golden Abyss",
+      "platforms": [
+       46
+      ],
+      "release_dates": [
+       {
+        "id": 206586,
+        "date": 1329264000,
+        "m": 2,
+        "platform": 46,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 206588,
+        "date": 1329955200,
+        "m": 2,
+        "platform": 46,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 106663,
+        "date": 1329868800,
+        "m": 2,
+        "platform": 46,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 206587,
+        "date": 1324080000,
+        "m": 12,
+        "platform": 46,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 19609,
+      "first_release_date": 1462406400,
+      "name": "Uncharted: Fortune Hunter",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 52218,
+        "date": 1462406400,
+        "m": 5,
+        "platform": 34,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 52219,
+        "date": 1462406400,
+        "m": 5,
+        "platform": 39,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 117408,
+        "date": 1462492800,
+        "m": 5,
+        "platform": 39,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 168669,
+      "alternative_names": [
+       {
+        "id": 82317,
+        "comment": "Italian title",
+        "name": "Uncharted: L'Eredità Perduta - Remastered"
+       }
+      ],
+      "first_release_date": 1643328000,
+      "name": "Uncharted: The Lost Legacy - Remastered",
+      "platforms": [
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 403221,
+        "date": 1666137600,
+        "m": 10,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 346508,
+        "date": 1643328000,
+        "m": 1,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 565,
+      "alternative_names": [
+       {
+        "id": 37442,
+        "comment": "Spanish title",
+        "name": "Uncharted 2: El Reino de los Ladrones"
+       },
+       {
+        "id": 98770,
+        "comment": "Abbreviation",
+        "name": "Uncharted II"
+       },
+       {
+        "id": 187362,
+        "comment": "Polish title",
+        "name": "Uncharted 2: Pośród złodziei"
+       }
+      ],
+      "first_release_date": 1255392000,
+      "name": "Uncharted 2: Among Thieves",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 106649,
+        "date": 1255392000,
+        "m": 10,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 214001,
+        "date": 1255564800,
+        "m": 10,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 106650,
+        "date": 1255651200,
+        "m": 10,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 106651,
+        "date": 1255564800,
+        "m": 10,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 19583,
+      "first_release_date": 1354579200,
+      "name": "Uncharted: Fight for Fortune",
+      "platforms": [
+       46
+      ],
+      "release_dates": [
+       {
+        "id": 229549,
+        "date": 1354579200,
+        "m": 12,
+        "platform": 46,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 52125,
+        "date": 1354665600,
+        "m": 12,
+        "platform": 46,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 41878,
+      "first_release_date": 1444176000,
+      "name": "Uncharted: Drake's Fortune Remastered",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 298869,
+        "date": 1444176000,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 449898,
+        "date": 1444348800,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 689446,
+        "date": 1444262400,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 26193,
+      "alternative_names": [
+       {
+        "id": 52845,
+        "comment": "Japanese title - romanization",
+        "name": "Uncharted: Kodai Kami No Hihou"
+       },
+       {
+        "id": 188029,
+        "comment": "Spanish title",
+        "name": "Uncharted: El Legado Perdido"
+       },
+       {
+        "id": 188030,
+        "comment": "Alternative title",
+        "name": "Uncharted: Kayıp Miras"
+       },
+       {
+        "id": 187962,
+        "comment": "Polish title",
+        "name": "Uncharted: Zaginione dziedzictwo"
+       },
+       {
+        "id": 188031,
+        "comment": "Italian title",
+        "name": "Uncharted: L'Eredità Perduta"
+       },
+       {
+        "id": 188032,
+        "comment": "Portuguese title",
+        "name": "Uncharted: O Legado Perdido"
+       }
+      ],
+      "first_release_date": 1503360000,
+      "name": "Uncharted: The Lost Legacy",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 68048,
+        "date": 1503446400,
+        "m": 8,
+        "platform": 48,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 68046,
+        "date": 1503360000,
+        "m": 8,
+        "platform": 48,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 431,
+      "alternative_names": [
+       {
+        "id": 37444,
+        "comment": "Spanish title",
+        "name": "Uncharted: El Tesoro de Drake"
+       },
+       {
+        "id": 21954,
+        "comment": "German Title",
+        "name": "Uncharted Drakes Schicksal"
+       },
+       {
+        "id": 98767,
+        "comment": "Abbreviation",
+        "name": "Uncharted I"
+       },
+       {
+        "id": 98768,
+        "comment": "Abbreviation",
+        "name": "Uncharted 1"
+       },
+       {
+        "id": 98766,
+        "comment": "Working title",
+        "name": "Project Big"
+       },
+       {
+        "id": 98769,
+        "comment": "Abbreviation",
+        "name": "Drake's Fortune"
+       },
+       {
+        "id": 187363,
+        "comment": "Polish title",
+        "name": "Uncharted: Fortuna Drake’a"
+       }
+      ],
+      "first_release_date": 1195171200,
+      "name": "Uncharted: Drake's Fortune",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 106658,
+        "date": 1196985600,
+        "m": 12,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 106659,
+        "date": 1196899200,
+        "m": 12,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 213981,
+        "date": 1196899200,
+        "m": 12,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 213980,
+        "date": 1195171200,
+        "m": 11,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 41877,
+      "alternative_names": [
+       {
+        "id": 50672,
+        "comment": "Alternative title",
+        "name": "Uncharted 2 HD"
+       },
+       {
+        "id": 50673,
+        "comment": "Alternative spelling",
+        "name": "Uncharted II Remastered"
+       }
+      ],
+      "first_release_date": 1444176000,
+      "name": "Uncharted 2: Among Thieves Remastered",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 298870,
+        "date": 1444176000,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 248042,
+        "date": 1479427200,
+        "m": 11,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 738527,
+        "date": 1444348800,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 41876,
+      "alternative_names": [
+       {
+        "id": 50746,
+        "comment": "Alternative title",
+        "name": "Drake's Deception Remastered"
+       },
+       {
+        "id": 50747,
+        "comment": "Alternative spelling",
+        "name": "Uncharted III: Drake's Deception Remastered"
+       },
+       {
+        "id": 50748,
+        "comment": "Acronym",
+        "name": "U3: HD"
+       }
+      ],
+      "first_release_date": 1444176000,
+      "name": "Uncharted 3: Drake's Deception Remastered",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 298871,
+        "date": 1444176000,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 449900,
+        "date": 1444348800,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 689447,
+        "date": 1444262400,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 512,
+      "alternative_names": [
+       {
+        "id": 37443,
+        "comment": "Spanish title",
+        "name": "Uncharted 3: La Traición de Drake"
+       },
+       {
+        "id": 50737,
+        "comment": "Alternative spelling",
+        "name": "Uncharted III: Drakes Deception"
+       },
+       {
+        "id": 58086,
+        "comment": "French title",
+        "name": "Uncharted 3 : L'Illusion de Drake"
+       },
+       {
+        "id": 171376,
+        "comment": "Alternative spelling",
+        "name": "Uncharted 3: Drakes Deception"
+       },
+       {
+        "id": 187361,
+        "comment": "Polish title",
+        "name": "Uncharted 3: Oszustwo Drake'a"
+       }
+      ],
+      "first_release_date": 1320105600,
+      "name": "Uncharted 3: Drake's Deception",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 948012,
+        "date": 1320192000,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 948013,
+        "date": 1320278400,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 948014,
+        "date": 1320105600,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 948015,
+        "date": 1320192000,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 948016,
+        "date": 1567468800,
+        "m": 9,
+        "platform": 9,
+        "y": 2019,
+        "status": 4,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 7331,
+      "alternative_names": [
+       {
+        "id": 61291,
+        "comment": "Japanese title - romanization",
+        "name": "Uncharted: Kaizokuou to Saigo no Hihou"
+       },
+       {
+        "id": 98764,
+        "comment": "Arabic title",
+        "name": "‏Uncharted 4: نهايةُ لِص"
+       },
+       {
+        "id": 98759,
+        "comment": "Polish title",
+        "name": "Uncharted 4: Kres złodzieja"
+       },
+       {
+        "id": 98760,
+        "comment": "Abbreviation",
+        "name": "Uncharted 4"
+       },
+       {
+        "id": 98761,
+        "comment": "Portuguese title",
+        "name": "Uncharted 4: O Fim de um Ladrão"
+       },
+       {
+        "id": 98762,
+        "comment": "Spanish title",
+        "name": "Uncharted 4: El Desenlace del Ladrón"
+       },
+       {
+        "id": 98763,
+        "comment": "Russian title",
+        "name": "Uncharted 4: Путь вора"
+       },
+       {
+        "id": 98765,
+        "comment": "Italian title",
+        "name": "Uncharted 4: Fine di un ladro"
+       }
+      ],
+      "first_release_date": 1462838400,
+      "name": "Uncharted 4: A Thief's End",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 47481,
+        "date": 1462838400,
+        "m": 5,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 168668,
+      "alternative_names": [
+       {
+        "id": 82316,
+        "comment": "Italian title",
+        "name": "Uncharted 4: Fine di un Ladro - Remastered"
+       }
+      ],
+      "first_release_date": 1643328000,
+      "name": "Uncharted 4: A Thief's End - Remastered",
+      "platforms": [
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 346531,
+        "date": 1643328000,
+        "m": 1,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 403220,
+        "date": 1666137600,
+        "m": 10,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 252195,
+      "first_release_date": 1361836800,
+      "name": "Uncharted 3: Multiplayer",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 481372,
+        "date": 1361836800,
+        "m": 2,
+        "platform": 9,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 481373,
+        "date": 1361923200,
+        "m": 2,
+        "platform": 9,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 382528,
+      "first_release_date": 1481328000,
+      "name": "Uncharted 4: A Thief's End - Patch 1.18",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 850182,
+        "date": 1481328000,
+        "m": 12,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     }
+    ],
+    "name": "Uncharted"
+   }
+  ],
+  "game_type": 0
+ }
+]

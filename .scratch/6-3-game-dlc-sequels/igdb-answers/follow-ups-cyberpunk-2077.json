@@ -1,0 +1,212 @@
+[
+ {
+  "id": 1877,
+  "expansions": [
+   {
+    "id": 215769,
+    "first_release_date": 1695686400,
+    "name": "Cyberpunk 2077: Phantom Liberty",
+    "platforms": [
+     169,
+     508,
+     6,
+     167,
+     14
+    ],
+    "release_dates": [
+     {
+      "id": 482776,
+      "date": 1695686400,
+      "m": 9,
+      "platform": 6,
+      "y": 2023,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 482777,
+      "date": 1695686400,
+      "m": 9,
+      "platform": 167,
+      "y": 2023,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 777305,
+      "date": 1752710400,
+      "m": 7,
+      "platform": 14,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 482778,
+      "date": 1695686400,
+      "m": 9,
+      "platform": 169,
+      "y": 2023,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 855692,
+      "date": 1749081600,
+      "m": 6,
+      "platform": 508,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   }
+  ],
+  "first_release_date": 1607558400,
+  "name": "Cyberpunk 2077",
+  "collections": [
+   {
+    "id": 13280,
+    "games": [
+     {
+      "id": 262905,
+      "alternative_names": [
+       {
+        "id": 181594,
+        "comment": "Working title",
+        "name": "Project Orion"
+       }
+      ],
+      "name": "Cyberpunk 2",
+      "game_type": 0
+     },
+     {
+      "id": 1877,
+      "alternative_names": [
+       {
+        "id": 71590,
+        "comment": "Chinese title - simplified",
+        "name": "赛博朋克2077"
+       },
+       {
+        "id": 71591,
+        "comment": "Chinese title - traditional",
+        "name": "電馭叛客2077"
+       },
+       {
+        "id": 71593,
+        "comment": "Russian unofficial title",
+        "name": "Киберпанк 2077"
+       },
+       {
+        "id": 53534,
+        "comment": "Korean Acroynm",
+        "name": "사펑"
+       },
+       {
+        "id": 282431,
+        "comment": "Japanese title - stylized",
+        "name": "サイバーパンク2077"
+       }
+      ],
+      "first_release_date": 1607558400,
+      "name": "Cyberpunk 2077",
+      "platforms": [
+       170,
+       169,
+       48,
+       508,
+       6,
+       167,
+       14,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 344300,
+        "date": 1644883200,
+        "m": 2,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 215923,
+        "date": 1607558400,
+        "m": 12,
+        "platform": 6,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 215922,
+        "date": 1607558400,
+        "m": 12,
+        "platform": 49,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 215920,
+        "date": 1607558400,
+        "m": 12,
+        "platform": 170,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 777304,
+        "date": 1752710400,
+        "m": 7,
+        "platform": 14,
+        "y": 2025,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 215921,
+        "date": 1607558400,
+        "m": 12,
+        "platform": 48,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 344301,
+        "date": 1644883200,
+        "m": 2,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 822649,
+        "date": 1749081600,
+        "m": 6,
+        "platform": 508,
+        "y": 2025,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     }
+    ],
+    "name": "Cyberpunk"
+   }
+  ],
+  "game_type": 0
+ }
+]

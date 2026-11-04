@@ -1,0 +1,343 @@
+[
+ {
+  "item_type": 0,
+  "id": 378648,
+  "success": 1,
+  "visible": true,
+  "name": "Ведьмак 3: Дикая Охота — Кровь и вино",
+  "store_url_path": "app/378648/Ведьмак_3_Дикая_Охота_Кровь_и_вино",
+  "store_url_slug": "Ведьмак_3_Дикая_Охота_Кровь_и_вино",
+  "appid": 378648,
+  "type": 4,
+  "related_items": {
+   "parent_appid": 292030
+  },
+  "content_descriptorids": [
+   1,
+   5
+  ],
+  "categories": {
+   "supported_player_categoryids": [
+    2
+   ],
+   "feature_categoryids": [
+    22,
+    29,
+    64,
+    66,
+    67,
+    68,
+    69,
+    70,
+    74,
+    78,
+    79,
+    23,
+    61,
+    62
+   ],
+   "controller_categoryids": [
+    28
+   ]
+  },
+  "unlisted": true,
+  "package_groups": [
+   {
+    "name": "default"
+   },
+   {
+    "name": "subscriptions",
+    "display_type": 1
+   }
+  ]
+ },
+ {
+  "item_type": 0,
+  "id": 2778580,
+  "success": 1,
+  "visible": true,
+  "name": "ELDEN RING Shadow of the Erdtree",
+  "store_url_path": "app/2778580/ELDEN_RING_Shadow_of_the_Erdtree",
+  "store_url_slug": "ELDEN_RING_Shadow_of_the_Erdtree",
+  "appid": 2778580,
+  "type": 4,
+  "related_items": {
+   "parent_appid": 1245620
+  },
+  "categories": {
+   "supported_player_categoryids": [
+    2,
+    1,
+    49,
+    36,
+    9,
+    38
+   ],
+   "feature_categoryids": [
+    22,
+    29,
+    23,
+    62
+   ],
+   "controller_categoryids": [
+    28
+   ]
+  },
+  "best_purchase_option": {
+   "packageid": 1010513,
+   "purchase_option_name": "ELDEN RING Shadow of the Erdtree",
+   "final_price_in_cents": "15900",
+   "formatted_final_price": "₪159.00",
+   "user_can_purchase_as_gift": true,
+   "hide_discount_pct_for_compliance": false,
+   "included_game_count": 0,
+   "must_purchase_as_set": false,
+   "package_group": "default",
+   "price_cannot_be_displayed_as_discount": false
+  },
+  "purchase_options": [
+   {
+    "packageid": 1010513,
+    "purchase_option_name": "ELDEN RING Shadow of the Erdtree",
+    "final_price_in_cents": "15900",
+    "formatted_final_price": "₪159.00",
+    "user_can_purchase_as_gift": true,
+    "hide_discount_pct_for_compliance": false,
+    "included_game_count": 0,
+    "must_purchase_as_set": false,
+    "package_group": "default",
+    "price_cannot_be_displayed_as_discount": false
+   },
+   {
+    "packageid": 1010505,
+    "purchase_option_name": "ELDEN RING Shadow of the Erdtree Edition",
+    "final_price_in_cents": "31900",
+    "formatted_final_price": "₪319.00",
+    "user_can_purchase_as_gift": true,
+    "hide_discount_pct_for_compliance": false,
+    "included_game_count": 1,
+    "must_purchase_as_set": false,
+    "package_group": "default",
+    "price_cannot_be_displayed_as_discount": false
+   },
+   {
+    "packageid": 1010506,
+    "purchase_option_name": "ELDEN RING Shadow of the Erdtree Deluxe Edition",
+    "final_price_in_cents": "38900",
+    "formatted_final_price": "₪389.00",
+    "user_can_purchase_as_gift": true,
+    "hide_discount_pct_for_compliance": false,
+    "included_game_count": 1,
+    "must_purchase_as_set": false,
+    "package_group": "default",
+    "price_cannot_be_displayed_as_discount": false
+   }
+  ],
+  "package_groups": [
+   {
+    "name": "default"
+   },
+   {
+    "name": "subscriptions",
+    "display_type": 1
+   }
+  ]
+ },
+ {
+  "item_type": 0,
+  "id": 2138330,
+  "success": 1,
+  "visible": true,
+  "name": "Cyberpunk 2077: Призрачная свобода",
+  "store_url_path": "app/2138330/Cyberpunk_2077_Призрачная_свобода",
+  "store_url_slug": "Cyberpunk_2077_Призрачная_свобода",
+  "appid": 2138330,
+  "type": 4,
+  "related_items": {
+   "parent_appid": 1091500
+  },
+  "content_descriptorids": [
+   1,
+   2,
+   5
+  ],
+  "categories": {
+   "supported_player_categoryids": [
+    2
+   ],
+   "feature_categoryids": [
+    22,
+    29,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    78,
+    79,
+    23,
+    61,
+    62
+   ],
+   "controller_categoryids": [
+    28,
+    55,
+    57,
+    58
+   ]
+  },
+  "best_purchase_option": {
+   "packageid": 938169,
+   "purchase_option_name": "Cyberpunk 2077: Призрачная свобода",
+   "final_price_in_cents": "12499",
+   "formatted_final_price": "₪124.99",
+   "user_can_purchase_as_gift": true,
+   "hide_discount_pct_for_compliance": false,
+   "included_game_count": 0,
+   "must_purchase_as_set": false,
+   "package_group": "default",
+   "price_cannot_be_displayed_as_discount": false
+  },
+  "purchase_options": [
+   {
+    "packageid": 938169,
+    "purchase_option_name": "Cyberpunk 2077: Призрачная свобода",
+    "final_price_in_cents": "12499",
+    "formatted_final_price": "₪124.99",
+    "user_can_purchase_as_gift": true,
+    "hide_discount_pct_for_compliance": false,
+    "included_game_count": 0,
+    "must_purchase_as_set": false,
+    "package_group": "default",
+    "price_cannot_be_displayed_as_discount": false
+   },
+   {
+    "bundleid": 54413,
+    "purchase_option_name": "Cyberpunk 2077: Phantom Liberty with Immerse Gamepack",
+    "final_price_in_cents": "17568",
+    "formatted_final_price": "₪175.68",
+    "bundle_discount_pct": 5,
+    "price_before_bundle_discount": "18493",
+    "formatted_price_before_bundle_discount": "₪184.93",
+    "user_can_purchase_as_gift": true,
+    "hide_discount_pct_for_compliance": false,
+    "included_game_count": 0,
+    "must_purchase_as_set": false,
+    "package_group": "default",
+    "price_cannot_be_displayed_as_discount": false,
+    "combined_discount_pct": 5
+   },
+   {
+    "bundleid": 32470,
+    "purchase_option_name": "Cyberpunk 2077: Полное издание",
+    "final_price_in_cents": "34407",
+    "formatted_final_price": "₪344.07",
+    "bundle_discount_pct": 8,
+    "price_before_bundle_discount": "37399",
+    "formatted_price_before_bundle_discount": "₪373.99",
+    "user_can_purchase_as_gift": true,
+    "hide_discount_pct_for_compliance": false,
+    "included_game_count": 1,
+    "must_purchase_as_set": true,
+    "package_group": "default",
+    "price_cannot_be_displayed_as_discount": false,
+    "combined_discount_pct": 8
+   }
+  ]
+ },
+ {
+  "item_type": 0,
+  "id": 5006530,
+  "success": 1,
+  "visible": true,
+  "name": "Ведьмак 3: Дикая Охота — Баллады прошлого",
+  "store_url_path": "app/5006530/Ведьмак_3_Дикая_Охота_Баллады_прошлого",
+  "store_url_slug": "Ведьмак_3_Дикая_Охота_Баллады_прошлого",
+  "appid": 5006530,
+  "type": 4,
+  "related_items": {
+   "parent_appid": 292030
+  },
+  "content_descriptorids": [
+   1,
+   5
+  ],
+  "categories": {
+   "supported_player_categoryids": [
+    2
+   ],
+   "feature_categoryids": [
+    22,
+    29,
+    30,
+    64,
+    66,
+    67,
+    68,
+    69,
+    70,
+    74,
+    78,
+    79,
+    23,
+    42,
+    61,
+    62
+   ],
+   "controller_categoryids": [
+    28,
+    55,
+    56,
+    57,
+    58
+   ]
+  },
+  "is_coming_soon": true
+ },
+ {
+  "item_type": 0,
+  "id": 2306990,
+  "success": 1,
+  "visible": true,
+  "name": "Spiderman Franchise Advertising App",
+  "store_url_path": "app/2306990/Spiderman_Franchise_Advertising_App",
+  "store_url_slug": "Spiderman_Franchise_Advertising_App",
+  "appid": 2306990,
+  "type": 14,
+  "related_items": {
+   "parent_appid": 1817190
+  },
+  "categories": {
+   "supported_player_categoryids": [
+    2
+   ],
+   "feature_categoryids": [
+    22,
+    23,
+    43,
+    62
+   ],
+   "controller_categoryids": [
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    18
+   ]
+  },
+  "store_url_path_override": "https://store.steampowered.com/sale/SpiderManFranchise2026",
+  "package_groups": [
+   {
+    "name": "default"
+   },
+   {
+    "name": "subscriptions",
+    "display_type": 1
+   }
+  ]
+ }
+]

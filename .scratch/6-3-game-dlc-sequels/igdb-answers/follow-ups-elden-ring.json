@@ -1,0 +1,420 @@
+[
+ {
+  "id": 119133,
+  "expansions": [
+   {
+    "id": 240009,
+    "first_release_date": 1718928000,
+    "name": "Elden Ring: Shadow of the Erdtree",
+    "platforms": [
+     169,
+     48,
+     508,
+     6,
+     167,
+     49
+    ],
+    "release_dates": [
+     {
+      "id": 566728,
+      "date": 1718928000,
+      "m": 6,
+      "platform": 6,
+      "y": 2024,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 566729,
+      "date": 1718928000,
+      "m": 6,
+      "platform": 48,
+      "y": 2024,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 566730,
+      "date": 1718928000,
+      "m": 6,
+      "platform": 167,
+      "y": 2024,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 566731,
+      "date": 1718928000,
+      "m": 6,
+      "platform": 49,
+      "y": 2024,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 566732,
+      "date": 1718928000,
+      "m": 6,
+      "platform": 169,
+      "y": 2024,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 879622,
+      "date": 1798675200,
+      "m": 12,
+      "platform": 508,
+      "y": 2026,
+      "status": 6,
+      "date_format": 2,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   }
+  ],
+  "first_release_date": 1645747200,
+  "name": "Elden Ring",
+  "collections": [
+   {
+    "id": 10964,
+    "games": [
+     {
+      "id": 325591,
+      "alternative_names": [
+       {
+        "id": 167117,
+        "comment": "Stylized title",
+        "name": "ELDEN RING NIGHTREIGN"
+       },
+       {
+        "id": 249159,
+        "comment": "Alternative spelling",
+        "name": "Elden Ring: Nightreign"
+       },
+       {
+        "id": 280281,
+        "comment": "Korean title - translated",
+        "name": "엘든 링 밤의 통치자"
+       }
+      ],
+      "first_release_date": 1748563200,
+      "name": "Elden Ring Nightreign",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 702631,
+        "date": 1748563200,
+        "m": 5,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 702632,
+        "date": 1748563200,
+        "m": 5,
+        "platform": 48,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 702851,
+        "date": 1748563200,
+        "m": 5,
+        "platform": 169,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 702634,
+        "date": 1748563200,
+        "m": 5,
+        "platform": 49,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 702633,
+        "date": 1748563200,
+        "m": 5,
+        "platform": 167,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 119133,
+      "alternative_names": [
+       {
+        "id": 24917,
+        "comment": "Other",
+        "name": "Great Rune"
+       },
+       {
+        "id": 79656,
+        "comment": "Stylized title",
+        "name": "ELDEN RING"
+       },
+       {
+        "id": 83944,
+        "comment": "Japanese title - translated",
+        "name": "エルデンリング"
+       },
+       {
+        "id": 123543,
+        "comment": "Chinese title - traditional",
+        "name": "艾爾登法環"
+       },
+       {
+        "id": 130570,
+        "comment": "Chinese title - simplified",
+        "name": "艾尔登法环"
+       }
+      ],
+      "first_release_date": 1645747200,
+      "name": "Elden Ring",
+      "platforms": [
+       169,
+       48,
+       508,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 831464,
+        "date": 1645747200,
+        "m": 2,
+        "platform": 6,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 831465,
+        "date": 1645747200,
+        "m": 2,
+        "platform": 48,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 831466,
+        "date": 1645747200,
+        "m": 2,
+        "platform": 167,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 831467,
+        "date": 1645747200,
+        "m": 2,
+        "platform": 49,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 831468,
+        "date": 1645747200,
+        "m": 2,
+        "platform": 169,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 921938,
+        "date": 1787875200,
+        "m": 8,
+        "platform": 508,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 240009,
+      "first_release_date": 1718928000,
+      "name": "Elden Ring: Shadow of the Erdtree",
+      "platforms": [
+       169,
+       48,
+       508,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 566728,
+        "date": 1718928000,
+        "m": 6,
+        "platform": 6,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 566729,
+        "date": 1718928000,
+        "m": 6,
+        "platform": 48,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 566730,
+        "date": 1718928000,
+        "m": 6,
+        "platform": 167,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 566731,
+        "date": 1718928000,
+        "m": 6,
+        "platform": 49,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 566732,
+        "date": 1718928000,
+        "m": 6,
+        "platform": 169,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 879622,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 508,
+        "y": 2026,
+        "status": 6,
+        "date_format": 2,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 415376,
+      "first_release_date": 1787788800,
+      "name": "Elden Ring: Tarnished Pack",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 958235,
+        "date": 1787875200,
+        "m": 8,
+        "platform": 49,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 958236,
+        "date": 1787875200,
+        "m": 8,
+        "platform": 169,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 958237,
+        "date": 1787875200,
+        "m": 8,
+        "platform": 48,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 958238,
+        "date": 1787875200,
+        "m": 8,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 958722,
+        "date": 1787788800,
+        "m": 8,
+        "platform": 6,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     }
+    ],
+    "name": "Elden Ring"
+   }
+  ],
+  "game_type": 0
+ }
+]

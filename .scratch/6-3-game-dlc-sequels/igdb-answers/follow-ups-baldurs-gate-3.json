@@ -1,0 +1,1042 @@
+[
+ {
+  "id": 119171,
+  "first_release_date": 1691020800,
+  "name": "Baldur's Gate III",
+  "collections": [
+   {
+    "id": 7,
+    "games": [
+     {
+      "id": 83,
+      "alternative_names": [
+       {
+        "id": 257669,
+        "comment": "Windows Executable",
+        "name": "Baldur's Gate - Dark Alliance.exe"
+       }
+      ],
+      "first_release_date": 1007251200,
+      "name": "Baldur's Gate: Dark Alliance",
+      "platforms": [
+       11,
+       48,
+       21,
+       3,
+       34,
+       6,
+       39,
+       14,
+       49,
+       130,
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 27652,
+        "date": 1037577600,
+        "m": 11,
+        "platform": 21,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 248350,
+        "date": 1621468800,
+        "m": 5,
+        "platform": 130,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 242938,
+        "date": 1620345600,
+        "m": 5,
+        "platform": 130,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 331917,
+        "date": 1639699200,
+        "m": 12,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 331918,
+        "date": 1639699200,
+        "m": 12,
+        "platform": 14,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 331919,
+        "date": 1639699200,
+        "m": 12,
+        "platform": 3,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 338739,
+        "date": 1621468800,
+        "m": 5,
+        "platform": 130,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 27651,
+        "date": 1048204800,
+        "m": 3,
+        "platform": 11,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 27647,
+        "date": 1007251200,
+        "m": 12,
+        "platform": 8,
+        "y": 2001,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 27653,
+        "date": 1051228800,
+        "m": 4,
+        "platform": 21,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 27649,
+        "date": 1032998400,
+        "m": 9,
+        "platform": 8,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 27648,
+        "date": 1008288000,
+        "m": 12,
+        "platform": 8,
+        "y": 2001,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 242939,
+        "date": 1620345600,
+        "m": 5,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 242940,
+        "date": 1620345600,
+        "m": 5,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 27650,
+        "date": 1035244800,
+        "m": 10,
+        "platform": 11,
+        "y": 2002,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 828599,
+        "date": 1680825600,
+        "m": 4,
+        "platform": 39,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 828600,
+        "date": 1680825600,
+        "m": 4,
+        "platform": 34,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 5,
+      "alternative_names": [
+       {
+        "id": 68625,
+        "comment": "Abbreviation",
+        "name": "BG"
+       },
+       {
+        "id": 183373,
+        "comment": "Polish title",
+        "name": "Wrota Baldura"
+       }
+      ],
+      "first_release_date": 914198400,
+      "name": "Baldur's Gate",
+      "platforms": [
+       3,
+       6,
+       39,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 28327,
+        "date": 1444780800,
+        "m": 10,
+        "platform": 3,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 149982,
+        "date": 1354233600,
+        "m": 11,
+        "platform": 39,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 178907,
+        "date": 1444780800,
+        "m": 10,
+        "platform": 14,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 799603,
+        "date": 914198400,
+        "m": 12,
+        "platform": 6,
+        "y": 1998,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 799604,
+        "date": 915148800,
+        "m": 1,
+        "platform": 6,
+        "y": 1999,
+        "status": 6,
+        "date_format": 1,
+        "release_region": 1
+       },
+       {
+        "id": 799605,
+        "date": 917654400,
+        "m": 1,
+        "platform": 6,
+        "y": 1999,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 82,
+      "alternative_names": [
+       {
+        "id": 56449,
+        "comment": "Alternative spelling",
+        "name": "Baldur's Gate 2: Throne of Bhaal "
+       },
+       {
+        "id": 56450,
+        "comment": "Abbreviation",
+        "name": "Throne of Bhaal"
+       },
+       {
+        "id": 56451,
+        "comment": "Polish title",
+        "name": "Baldur's Gate II: Tron Bhaala"
+       },
+       {
+        "id": 56452,
+        "comment": "Acronym",
+        "name": "BG2:ToB"
+       },
+       {
+        "id": 135190,
+        "comment": "German title",
+        "name": "Baldur's Gate II: Thron des Bhaal"
+       }
+      ],
+      "first_release_date": 993081600,
+      "name": "Baldur's Gate II: Throne of Bhaal",
+      "platforms": [
+       6,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 102,
+        "date": 993081600,
+        "m": 6,
+        "platform": 6,
+        "y": 2001,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 577684,
+        "date": 1070409600,
+        "m": 12,
+        "platform": 14,
+        "y": 2003,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 81,
+      "alternative_names": [
+       {
+        "id": 56447,
+        "comment": "Polish title",
+        "name": "Wrota Baldura: Opowieści z Wybrzeża Mieczy"
+       },
+       {
+        "id": 135188,
+        "comment": "German title",
+        "name": "Baldur's Gate: Die Legenden der Schwertküste"
+       }
+      ],
+      "first_release_date": 925430400,
+      "name": "Baldur's Gate: Tales of the Sword Coast",
+      "platforms": [
+       6,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 110,
+        "date": 925430400,
+        "m": 4,
+        "platform": 14,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 107,
+        "date": 925430400,
+        "m": 4,
+        "platform": 6,
+        "y": 1999,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 6,
+      "alternative_names": [
+       {
+        "id": 28476,
+        "comment": "Acronym",
+        "name": "BG2"
+       },
+       {
+        "id": 56448,
+        "comment": "Polish title",
+        "name": "Baldur's Gate II: Cienie Amn"
+       },
+       {
+        "id": 68627,
+        "comment": "Alternative title",
+        "name": "Baldurs Gate 2"
+       },
+       {
+        "id": 68628,
+        "comment": "Acronym",
+        "name": "SoA"
+       },
+       {
+        "id": 135189,
+        "comment": "German title",
+        "name": "Baldur's Gate II: Schatten von Amn"
+       }
+      ],
+      "first_release_date": 969494400,
+      "name": "Baldur's Gate II: Shadows of Amn",
+      "platforms": [
+       3,
+       6,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 647494,
+        "date": 1413244800,
+        "m": 10,
+        "platform": 3,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 647495,
+        "date": 1003104000,
+        "m": 10,
+        "platform": 14,
+        "y": 2001,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 647497,
+        "date": 970185600,
+        "m": 9,
+        "platform": 6,
+        "y": 2000,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 647498,
+        "date": 969494400,
+        "m": 9,
+        "platform": 6,
+        "y": 2000,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 647496,
+        "date": 1003104000,
+        "m": 10,
+        "platform": 14,
+        "y": 2001,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 647499,
+        "date": 994377600,
+        "m": 7,
+        "platform": 6,
+        "y": 2001,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 14292,
+      "first_release_date": 1459382400,
+      "name": "Baldur's Gate: Siege of Dragonspear",
+      "platforms": [
+       3,
+       34,
+       6,
+       39,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 363506,
+        "date": 1520380800,
+        "m": 3,
+        "platform": 34,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 50685,
+        "date": 1459382400,
+        "m": 3,
+        "platform": 6,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 150032,
+        "date": 1520467200,
+        "m": 3,
+        "platform": 39,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 201143,
+        "date": 1459382400,
+        "m": 3,
+        "platform": 3,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 201141,
+        "date": 1459382400,
+        "m": 3,
+        "platform": 14,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 5613,
+      "alternative_names": [
+       {
+        "id": 242184,
+        "comment": "Windows Executable",
+        "name": "Baldur.exe"
+       }
+      ],
+      "first_release_date": 1384473600,
+      "name": "Baldur's Gate II: Enhanced Edition",
+      "platforms": [
+       48,
+       3,
+       34,
+       6,
+       39,
+       14,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 147143,
+        "date": 1385078400,
+        "m": 11,
+        "platform": 14,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 363508,
+        "date": 1418688000,
+        "m": 12,
+        "platform": 34,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 298732,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 6,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 185167,
+        "date": 1571097600,
+        "m": 10,
+        "platform": 49,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 13647,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 39,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 13646,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 14,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 298733,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 14,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 298734,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 3,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 178908,
+        "date": 1385078400,
+        "m": 11,
+        "platform": 3,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 13645,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 6,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 13648,
+        "date": 1393632000,
+        "m": 3,
+        "platform": 34,
+        "y": 2014,
+        "date_format": 1,
+        "release_region": 8
+       },
+       {
+        "id": 175752,
+        "date": 1571097600,
+        "m": 10,
+        "platform": 130,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 148105,
+        "date": 1387929600,
+        "m": 12,
+        "platform": 39,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 185168,
+        "date": 1571097600,
+        "m": 10,
+        "platform": 48,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 119171,
+      "alternative_names": [
+       {
+        "id": 78597,
+        "comment": "Alternative spelling",
+        "name": "Baldurs Gate 3"
+       },
+       {
+        "id": 139162,
+        "comment": "Acronym",
+        "name": "BG3"
+       },
+       {
+        "id": 174931,
+        "comment": "Acronym",
+        "name": "BGIII"
+       },
+       {
+        "id": 178305,
+        "comment": "windows executable",
+        "name": "Launcher\\LariLauncher.exe"
+       },
+       {
+        "id": 179843,
+        "comment": "Alternative spelling",
+        "name": "Baldur's Gate 3"
+       },
+       {
+        "id": 183498,
+        "comment": "Stylized title",
+        "name": "Baldur's Gate 3"
+       },
+       {
+        "id": 282565,
+        "comment": "Japanese title - stylized",
+        "name": "バルダーズ・ゲート3"
+       }
+      ],
+      "first_release_date": 1691020800,
+      "name": "Baldur's Gate III",
+      "platforms": [
+       170,
+       169,
+       3,
+       6,
+       167,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 574300,
+        "date": 1695340800,
+        "m": 9,
+        "platform": 14,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 487025,
+        "date": 1693958400,
+        "m": 9,
+        "platform": 167,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 543182,
+        "date": 1701993600,
+        "m": 12,
+        "platform": 169,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 543563,
+        "date": 1601942400,
+        "m": 10,
+        "platform": 6,
+        "y": 2020,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 543566,
+        "date": 1601942400,
+        "m": 10,
+        "platform": 14,
+        "y": 2020,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 781205,
+        "platform": 170,
+        "status": 5,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 543567,
+        "date": 1601942400,
+        "m": 10,
+        "platform": 170,
+        "y": 2020,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 508258,
+        "date": 1691020800,
+        "m": 8,
+        "platform": 6,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 875774,
+        "date": 1758585600,
+        "m": 9,
+        "platform": 3,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 274016,
+      "first_release_date": 1687132800,
+      "name": "Blood in Baldur's Gate",
+      "platforms": [
+       82
+      ],
+      "release_dates": [
+       {
+        "id": 531140,
+        "date": 1687132800,
+        "m": 6,
+        "platform": 82,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 1880,
+      "alternative_names": [
+       {
+        "id": 197886,
+        "comment": "Windows Executable",
+        "name": "Baldur.exe"
+       }
+      ],
+      "first_release_date": 1353974400,
+      "name": "Baldur's Gate: Enhanced Edition",
+      "platforms": [
+       48,
+       3,
+       34,
+       6,
+       39,
+       14,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 152033,
+        "date": 1411776000,
+        "m": 9,
+        "platform": 3,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 152034,
+        "date": 1397692800,
+        "m": 4,
+        "platform": 34,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 299016,
+        "date": 1358294400,
+        "m": 1,
+        "platform": 6,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 152031,
+        "date": 1353974400,
+        "m": 11,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 152030,
+        "date": 1361491200,
+        "m": 2,
+        "platform": 14,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 152032,
+        "date": 1354752000,
+        "m": 12,
+        "platform": 39,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 175751,
+        "date": 1571097600,
+        "m": 10,
+        "platform": 130,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 577679,
+        "date": 1362960000,
+        "m": 3,
+        "platform": 14,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 185212,
+        "date": 1571097600,
+        "m": 10,
+        "platform": 49,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 299017,
+        "date": 1358294400,
+        "m": 1,
+        "platform": 14,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 185213,
+        "date": 1571097600,
+        "m": 10,
+        "platform": 48,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 299018,
+        "date": 1358294400,
+        "m": 1,
+        "platform": 3,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 317481,
+      "first_release_date": 1099612800,
+      "name": "Baldur's Gate Java Game",
+      "platforms": [
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 644734,
+        "date": 1099612800,
+        "m": 11,
+        "platform": 55,
+        "y": 2004,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 357173,
+      "alternative_names": [
+       {
+        "id": 177956,
+        "comment": "Alternative spelling",
+        "name": "Baldur's Gate 3: The Black Hound"
+       },
+       {
+        "id": 177954,
+        "comment": "Working title",
+        "name": "Project Jefferson"
+       },
+       {
+        "id": 177955,
+        "comment": "Acronym",
+        "name": "FR6"
+       }
+      ],
+      "name": "Baldur's Gate III: The Black Hound",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 776671,
+        "date": 1072828800,
+        "m": 12,
+        "platform": 6,
+        "y": 2003,
+        "status": 5,
+        "date_format": 2,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     }
+    ],
+    "name": "Baldur's Gate"
+   }
+  ],
+  "game_type": 0
+ }
+]

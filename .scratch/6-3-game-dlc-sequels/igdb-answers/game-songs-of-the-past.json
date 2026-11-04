@@ -1,0 +1,168 @@
+[
+ {
+  "id": 403150,
+  "alternative_names": [
+   {
+    "id": 278283,
+    "comment": "Polish title",
+    "name": "Wiedźmin 3: Dziki Gon - Pieśni przeszłości"
+   },
+   {
+    "id": 289750,
+    "comment": "Russian title",
+    "name": "Ведьмак 3: Дикая Охота — Баллады прошлого"
+   }
+  ],
+  "cover": {
+   "id": 565688,
+   "image_id": "coc4hk"
+  },
+  "external_games": [
+   {
+    "id": 3235819,
+    "uid": "1179418179",
+    "url": "https://www.gog.com/en/game/the_witcher_3_wild_hunt_songs_of_the_past",
+    "external_game_source": 5
+   },
+   {
+    "id": 3209237,
+    "uid": "5006530",
+    "url": "https://store.steampowered.com/app/5006530",
+    "external_game_source": 1
+   }
+  ],
+  "first_release_date": 1830211200,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "The Witcher 3: Wild Hunt - Songs of the Past",
+  "parent_game": {
+   "id": 1942,
+   "alternative_names": [
+    {
+     "id": 173745,
+     "comment": "Alternative title",
+     "name": "Witcher III"
+    },
+    {
+     "id": 2427,
+     "comment": "Russian Title",
+     "name": "Ведьмак 3: Дикая охота"
+    },
+    {
+     "id": 2495,
+     "comment": "Polish title",
+     "name": "Wiedźmin 3: Dziki Gon"
+    },
+    {
+     "id": 71879,
+     "comment": "Chinese title - simplified",
+     "name": "巫师3：狂猎"
+    },
+    {
+     "id": 51941,
+     "comment": "Alternative spelling",
+     "name": "The Witcher III: Wild Hunt"
+    },
+    {
+     "id": 74560,
+     "comment": "Alternative title",
+     "name": "Witcher 3"
+    },
+    {
+     "id": 74561,
+     "comment": "Acronym",
+     "name": "TW3"
+    },
+    {
+     "id": 121895,
+     "comment": "Chinese title - traditional",
+     "name": "巫師3：狂獵"
+    },
+    {
+     "id": 179756,
+     "comment": "Windows Executable",
+     "name": "redprelauncher.exe"
+    },
+    {
+     "id": 256031,
+     "comment": "Czech title",
+     "name": "Zaklínač 3: Divoký hon"
+    },
+    {
+     "id": 276816,
+     "comment": "Alternative title",
+     "name": "Вещерът 3 - Дивият лов"
+    },
+    {
+     "id": 282455,
+     "comment": "Japanese title - stylized",
+     "name": "ウィッチャー３　ワイルドハント"
+    },
+    {
+     "id": 276919,
+     "comment": "Alternative title",
+     "name": "Вещерът 3: Дивият лов"
+    }
+   ],
+   "name": "The Witcher 3: Wild Hunt"
+  },
+  "platforms": [
+   169,
+   508,
+   6,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 963263,
+    "date": 1830211200,
+    "m": 12,
+    "platform": 508,
+    "y": 2027,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 917997,
+    "date": 1830211200,
+    "m": 12,
+    "platform": 6,
+    "y": 2027,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 917998,
+    "date": 1830211200,
+    "m": 12,
+    "platform": 167,
+    "y": 2027,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 917999,
+    "date": 1830211200,
+    "m": 12,
+    "platform": 169,
+    "y": 2027,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ],
+  "summary": "Songs of the Past is a brand-new full-fledged expansion to The Witcher 3: Wild Hunt, one of the most acclaimed role-playing games of all time.\n\nCreated in partnership with Fool’s Theory, a team comprising veteran The Witcher 3 developers, players can once again take on the role of Geralt of Rivia and embark on a brand-new adventure before heading out on the Path as Ciri in the upcoming The Witcher 4.",
+  "game_type": 2
+ }
+]

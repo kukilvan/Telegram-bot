@@ -67,7 +67,7 @@ Final statuses. «Просмотрено» — for a movie, series and anime; «
 In code: `watched` («Просмотрено»), `completed` («Пройдено»), `dropped` («Бросил»); the "done" status of a kind — `KINDS[…].finished`. The buttons «Посмотрел» and «Прошёл» are one action `watched` (`mark_watched`; the name already lives in bot buttons), the button's label — `KINDS[…].finish_press`.
 
 **Архив** (archive):
-All titles with a final status. In the archive the owner searches by name, sorts by score and genre and picks recommendations for friends. Tracking of the title itself has stopped, but movies and games are still checked for an announced sequel.
+All titles with a final status. In the archive the owner searches by name, sorts by score and genre and picks recommendations for friends. Tracking of the title itself has stopped, but a movie in «Просмотрено» is still checked for an announced sequel, and a game in «Пройдено» for its expansions and the new games of its series.
 _Avoid_: история, просмотренное (as a section)
 In code: `archive`.
 
@@ -76,8 +76,8 @@ Cancels a final status: the title leaves the archive and is checked again. The f
 In code: `restore`.
 
 **Продолжение** (sequel):
-The next movie of the same TMDb collection that came out or was announced after a watched movie. The owner decides whether to follow it («Следить» adds it to the list).
-In code: `sequel`.
+For a movie: the next movie of the same TMDb collection that came out or was announced after a watched movie. For a game: a game of the same series of games that comes out on «Мои платформы» and did not come out before this game — a new part, a spin-off, a remake or a remaster («новая игра серии»). The owner decides whether to follow it («Следить» adds it to the list as «Хочу»).
+In code: `sequel` (the game event — `game_sequel_announced`).
 
 **Оценка** (score):
 The owner's personal score from 1 to 10 with modifiers «+» and «−» (9−, 9, 9+): 28 steps, only «1−» and «10+» do not exist. «+» and «−» weigh a third of a point, so the score is stored as an integer in thirds (9 — 27, 9+ — 28, 10− — 29). Stored only in the app. Given only to a watched title: a movie in the archive, a season with a mark. For a series and anime a score is given per season, and the title's score is its own (set by hand) or the **average over seasons**: the exact average of the visible season scores, shown as the nearest step (exactly in the middle — up).
@@ -120,6 +120,20 @@ In code: `steam page`. The number is `steam_id`; where the core keeps what Steam
 **Проверка цен** (price check):
 Every 6 hours the tracker asks Steam about the prices of games in «Хочу» that have a Steam page and the checkmark «играю здесь» on PC (and PC among «Мои платформы») — all in one request. The first check after a game became such (added, checkmark set, restored to the list) and after the store country changed is a reference point, without messages.
 In code: `price check` (the snapshot of source `steam`; what one check saw of a game — `PriceLook`, what Steam answered — its `answer`). The rule «игра для цен» — which games have their prices checked and by which number — is `steam_number`; without the number (the card shows its block even before the page in Steam) it is `reports_prices`.
+
+**Дополнение** (expansion):
+A big expansion of a game: a new story or a region (Blood and Wine, Shadow of the Erdtree) — what IGDB records as an expansion. Small DLC (a quest, gear, a soundtrack) is not one. A standalone expansion plays without its game (Miles Morales, The Lost Legacy). «Следить» makes an expansion a game of its own in the list (ADR 0011): its card says «Дополнение к игре «…»», its row in the List has the mark «дополнение». An expansion that needs its game has no expansions and sequels of its own; a standalone one has.
+_Avoid_: DLC (that is the small stuff), аддон
+In code: `expansion` (`GameState.expansion`: `expansion` or `standalone`; the game it belongs to — `parent`; the event — `game_expansion_announced`).
+
+**Серия игр** (game series):
+The games IGDB puts together under one name («The Witcher», «Hades»). In messages and on the card always with «игр» or «игра»: «новая игра серии», «серия «The Witcher»» — a bare «серия» is an episode.
+_Avoid_: франшиза (IGDB has franchises too, with editions and crossovers in them; they are not used)
+In code: `collection` (the word of IGDB; `series` is the kind of a TV series).
+
+**Проверка дополнений и продолжений** (follow-up check):
+Once a week the tracker asks IGDB about the expansions of a game and the games of its series: for a game in «Хочу», «В процессе» and «Пройдено», not in «Бросил» and not for an expansion that needs its game. The first check of a game (after adding, after «Вернуть в список» from «Бросил») only records what exists, without messages; from «Пройдено» back to «Хочу» the check goes on as it was. Each new expansion or new game of the series comes as a message of its own with «Следить»; one announced game comes once, however many games of the series are in the list. A change of «Мои платформы» or of the store country gives no messages.
+In code: `follow-up check` (`follow_ups`; the snapshot of source `igdb_follow_ups`; which games are checked — `for_follow_ups`).
 
 **Платформа** (platform):
 Where a game comes out: PC, PlayStation 5, Xbox Series X|S, Nintendo Switch 2 or Nintendo Switch. PC is one platform wherever the game is sold (Steam is only a link in the card). A game has its own release date and its own checkmark «играю здесь» on each platform.
