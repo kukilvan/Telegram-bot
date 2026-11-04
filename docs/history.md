@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-04 — Part 6.2, ticket 03: price check at the end of the pass, price history, migration 0013
+
+- `app/tracker/pollers/game_prices.py` (new): `GamePrices.check` — each pass reconciles the price snapshots (source `steam`) with the rule `steam_number` (game in «Хочу», Steam number from IGDB, on PC, PC told by `GameScope.told`) in six reads whatever the number of games: a missing snapshot is made empty and due now, a snapshot of a game no longer for prices goes with its undelivered Steam events (`STEAM_EVENTS`, the one list of the three types of ticket 04); a snapshot of another number or country is due now. The due games are asked in packs of `MAX_ITEMS` (100), one number once for duplicates; each game written in its own write session; `PRICE_INTERVAL` 6 h, 30 min after a failure; a snapshot gone while Steam answered — no write, no failure. `is_baseline(old, new)` decides the reference point in `_store` (ticket 04 connects there); `lowest_seen` reads «самая низкая» from the history.
+- `Poller.end_of_pass` (new action, every kind; a game delegates to `GamePrices`), called by `Polling.poll_due` after the titles under `poll_lock`; a bug in it — `logging.exception`, the pass goes on; its failures join the notices of the pass (shared 24-hour window with IGDB). `Poller` got `price_source`; `Tracker.price_source` (default none); `build_tracker` shares one `SteamProvider` between the IGDB source and `SteamPriceSource`.
+- `PriceRecord` / table `price_history` (migration 0013; down deletes the `steam` snapshots, then the table). `EventQueue.withdraw(session, title_id, types=None)`.
+- Found by a test: an empty snapshot after a failed first check was due every minute; fixed (an empty one waits for its time). KI-50 recorded: a spoiled price snapshot stops the price check of all games.
+- Owner's check: migration 0013 applied with a copy of the database; ELDEN RING added — snapshot and first history record ₪249 (Israel), baseline in the log; Hades II «В процессе» is not checked.
+
 ## 2026-11-01 — Part 6.2, ticket 02: Steam client, price adapter, pure prices
 
 - `app/providers/steam.py`: `store_items(appids, country)` — one `GET IStoreBrowseService/GetItems` (ids, Russian, the country in capitals, `include_all_purchase_options`), at most 100 apps (`MAX_ITEMS`; more is a `ValueError`), no apps — no request; `SteamError(status, cause)`: timeout and no connection — `cause`, 429 and 5xx — `status`, any other status — neither, so the reason is «unknown» (no key to check). `failures.source_name("steam")` — «Steam».
