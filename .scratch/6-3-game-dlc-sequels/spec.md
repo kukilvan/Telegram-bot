@@ -1,6 +1,6 @@
 # Stage 6.3: spec — expansions and sequels of games
 
-Status: in review
+Status: accepted
 
 Built from the accepted description (`description.md`, mockups in `mockups/`). Terms come from `CONTEXT.md` (written together with this spec: «Дополнение», «Продолжение» widened to games, «Серия игр», «Проверка дополнений и продолжений»). Decisions this stage leans on: ADR 0002, ADR 0007, ADR 0011 (new: a followed expansion is a game of its own). Rule numbers are those of `docs/coding-standards.md`.
 
