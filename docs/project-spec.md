@@ -63,7 +63,7 @@ Finished (details — `docs/history.md`, `.scratch/`):
 
 - Goal: add a title from Telegram by a forwarded post or a name; a «Входящие» tab in the web; posters in bot cards; the «➕ Добавить» button goes away.
 - The owner sees at the end: forward a post to the bot, find the title in «Входящие», confirm it.
-- Contains: `.scratch/6-4-inbox/description.md` (takes in `docs/ideas/001-telegram-inbox.md` and its examples; ADR 0010) → spec → tickets → review.
+- Contains: `.scratch/6-4-inbox/description.md` (accepted; takes in `docs/ideas/001-telegram-inbox.md` and its examples; ADR 0010) → spec → tickets → review.
 - Sessions (est.): about 8 (spec, slicing, about 5 tickets, review).
 
 ### Stage 7. Backups, NAS and phone

@@ -1,6 +1,6 @@
 # Stage 6.4: «Входящие» — add a title from Telegram by a post or a name
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. This stage takes in idea 001 (`docs/ideas/001-telegram-inbox.md`, the owner's 18 sample posts in `docs/ideas/001-telegram-inbox-examples.md`); the idea stays the detailed reference for texts and edge cases, this file is the source of truth where they differ. Decisions it leans on: ADR 0010 (the bot takes posts and names for adding; what is not resolved goes to «Входящие»), ADR 0002 (the web is the main interface: the list and the sorting of «Входящие» live there), ADR 0007 (bot, polling and web are one process). Mockups: `mockups/bot-messages.html`, `mockups/inbox-tab.html`.
 

@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-05 — Stage 6.4, description accepted
+
+- `.scratch/6-4-inbox/description.md` with mockups `mockups/bot-messages.html`, `mockups/inbox-tab.html`; takes in idea 001 (its `Status:` points here); `docs/project-spec.md` stage 6.4 points to it, estimate about 8 sessions.
+- Decisions with the owner: a link to a source page (Steam, TMDb, Shikimori, IMDb) skips «Что это?» and sends «Это оно?» at once (narrows «the owner always picks the kind»); the poster goes above the text as a link preview, not a photo with a 1024-character caption; «🗑 Не сохранять» under «Что это?» forgets a message sent by mistake; one stage of about five tickets.
+- By the agent: a caption, an album and a forward with a comment are one item; bold words and links are signals of candidates; the typo heading comes when the found name clearly differs; the «Входящие» table never reuses ids (lesson of KI-24); KI-9 stays open (the item is written first); new code in modules of its own (wish of the 6.3 review); games can be added in the bot, their statuses stay web-only.
+
 ## 2026-11-05 — Stage 6.3, review: stage closed
 
 - `.scratch/6-3-game-dlc-sequels/review.md`: two passes (standards, spec), the live bot checked (snapshots, the cards of «Ведьмак 3», Elden Ring, Hades II, «Кровь и Вино», the List mark — table 4.6 exactly); no fix-round finding, so the stage is closed.
