@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-05 — Stage 6.3, ticket 01: the follow-up source, the pure rules, the expansion in the game snapshot
+
+- `app/tracker/sources/igdb_follow_ups.py`: `FOLLOW_UPS_QUERY` (spec 3.1, the 15 candidate fields for `expansions`, `standalone_expansions`, `remakes`, `remasters`, `collections.games`), the soft parse `parse_follow_ups` → `FollowUpsSnapshot`, `IgdbFollowUpSource.follow_ups(id)` (source key `igdb_follow_ups`; empty answer — `TitleGone`, no keys — `SourceNotConfigured` before the network). It reuses `igdb_games.russian_name`, `is_game` and the now public `known_platforms`, `read_releases`.
+- `app/tracker/follow_ups.py` (pure, in `PURE` of `test_tracker_core_split`): `Candidate`, `FollowUpsSnapshot`, `FollowUps` (`{}` = not checked, `known`) with a strict read (any garbage → `ValueError`); `on_my_platforms`, `expansions_shown`, `sequels_shown`, `came_out_before`, `follow_up_date` (`FollowUpDate`, « (ранний доступ)»), the order of 4.5; `check(previous, now, game, mine, country, today, listed)` → `CheckResult(state, events)`, expansions first; `EXPANSION_ANNOUNCED`, `SEQUEL_ANNOUNCED`, `TYPES`, `follow_up_key`; `TEST_SAMPLES` (joins `test_samples.py` in ticket 04). The rules take «Мои платформы» and the country as two arguments, not `GameScope` (that one imports the database).
+- `games.py`: `GameState.expansion` (`EXPANSION` / `STANDALONE`) and `parent` (`Parent(id, name)`), stored only for an expansion, so the snapshots of other games keep their shape; `GAME_QUERY` asks `parent_game.name`.
+- Tests: `test_igdb_follow_up_source`, `test_igdb_game_expansion`, `test_tracker_follow_ups`; 20 saved answers copied into `tests/fixtures/igdb/`. Table 4.6 of the spec holds exactly on them.
+
 ## 2026-11-04 — Stage 6.3, slicing: accepted
 
 - Four tickets in `.scratch/6-3-game-dlc-sequels/issues/` by the split of the spec's section 12: 01 source and rules (complex, not connected to the core), 02 weekly check (complex, blocked by 01), 03 what the owner sees on the web and in the bot card (medium, blocked by 02), 04 announcements, Feed, samples (medium, blocked by 02 and 03).
