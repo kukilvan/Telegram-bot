@@ -32,6 +32,7 @@ from app.startup_report import forget_failure, report_failure
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
+from app.tracker.sources.igdb_follow_ups import IgdbFollowUpSource
 from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.steam_prices import SteamPriceSource
@@ -106,6 +107,8 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
     """The tracker core with its sources; the database is migrated (and copied first) here."""
     tmdb = TMDbProvider()
     steam = SteamProvider()  # one client for the Russian texts of a game being added and for its prices
+    # one client for the games and their expansions and sequels: one pace for every request to IGDB
+    igdb = IGDBProvider(settings.igdb_client_id, settings.igdb_client_secret)
     return Tracker(
         create_session_factory(),
         clock=lambda: dt.now(tz=timezone.utc),
@@ -114,14 +117,13 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
             TitleKind.MOVIE: TmdbMovieSource(tmdb),
             TitleKind.SERIES: TmdbSeriesSource(tmdb),
             TitleKind.ANIME: ShikimoriAnimeSource(ShikimoriClient(), AniListProvider()),
-            # without the keys of IGDB the source is «not connected»: it asks nothing and says so
-            TitleKind.GAME: IgdbGameSource(
-                IGDBProvider(settings.igdb_client_id, settings.igdb_client_secret), steam
-            ),
+            # without the keys of IGDB both sources of it are «not connected»: they ask nothing and say so
+            TitleKind.GAME: IgdbGameSource(igdb, steam),
         },
         sequel_sources={TitleKind.MOVIE: TmdbSequelSource(tmdb)},
         default_tz=time_zone_of(settings),
         price_source=SteamPriceSource(steam),
+        follow_up_source=IgdbFollowUpSource(igdb),
     )
 
 

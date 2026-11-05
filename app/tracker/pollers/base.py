@@ -3,7 +3,7 @@
 `snapshot_to_add`, `first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has,
 `known_ids` and `snapshot_ids` tell a title already in the list by the ids of the source, and `apply` compares a fresh
 snapshot with the stored one, queues the events and stores the new state; `end_of_pass` checks what is looked at for all
-the titles of the kind at once, after the pass over the titles (the Steam prices of the games). What the owner reads is
+the titles of the kind at once, after the pass over the titles (the Steam prices of the games and their expansions and sequels). What the owner reads is
 asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `card_part` gives what a card
 holds that depends on the kind, `list_marks` the marks of the rows of the list. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
 """
@@ -40,7 +40,8 @@ class DueTitle:
 
 
 class Poller:
-    """`price_source`: the source of the Steam prices (`SteamPriceSource`); only a game checks them, None — no prices."""
+    """`source`: the kind's own release source, None — the core has none (the poller still serves what the owner
+    reads). The sources only a kind has (the Steam prices of a game) go to its own poller (`polling.Pollers`)."""
 
     def __init__(
         self,
@@ -49,11 +50,9 @@ class Poller:
         ctx: CoreContext,
         settings: "SettingsStore",
         queue: "EventQueue",
-        price_source: Any = None,
     ) -> None:
         self.kind = kind
         self.source = source
-        self.price_source = price_source
         self.ctx = ctx
         self.settings = settings
         self.queue = queue
@@ -132,7 +131,7 @@ class Poller:
 
     async def end_of_pass(self) -> list[tuple[DueTitle, Exception]]:
         """The check at the end of a polling pass, of all the titles of the kind at once (a game: its prices, spec 4.2 of
-        part 6.2); the other kinds have none. Returns the titles that could not be checked, for the «could not check»
+        part 6.2, and its expansions and sequels, spec 5 of stage 6.3); the other kinds have none. Returns the titles that could not be checked, for the «could not check»
         messages of the pass."""
         return []
 

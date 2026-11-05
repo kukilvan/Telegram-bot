@@ -201,6 +201,17 @@ STANDALONE = "standalone"
 EXPANSION_KINDS = (EXPANSION, STANDALONE)
 
 
+def expansion_of(data: Any) -> str | None:
+    """Only the key `expansion` of a stored own snapshot, strictly: not a mapping or an unknown kind raises ValueError
+    (the follow-up check reads no more of it, so a spoiled date there does not stop the check)."""
+    if not isinstance(data, Mapping):
+        raise ValueError(f"not the state of a game: {data!r}")
+    expansion = data.get("expansion")
+    if expansion is not None and expansion not in EXPANSION_KINDS:
+        raise ValueError(f"unknown kind of an expansion: {expansion!r}")
+    return expansion
+
+
 @dataclass(frozen=True)
 class Parent:
     """The game an expansion belongs to: its IGDB id and its IGDB name."""
@@ -243,9 +254,7 @@ class GameState:
     def from_state(cls, data: Mapping[str, Any]) -> "GameState":
         """Strict: what the tracker stored; garbage raises. An unknown `expansion`, or a `parent` without `id` or `name`
         (or one without the other), raises ValueError."""
-        expansion = data.get("expansion")
-        if expansion is not None and expansion not in EXPANSION_KINDS:
-            raise ValueError(f"unknown kind of an expansion: {expansion!r}")
+        expansion = expansion_of(data)
         raw_parent = data.get("parent")
         if (expansion is None) != (raw_parent is None):
             raise ValueError(f"an expansion and its parent go together: {expansion!r}, {raw_parent!r}")

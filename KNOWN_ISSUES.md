@@ -66,6 +66,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | open | — |
 | KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | open | — |
 | KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | open | — |
+| KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | open | — |
 
 ## Entries
 
@@ -552,3 +553,12 @@ Format of a new entry:
 - Likelihood / impact: rare (a standalone expansion in the archive from before 6.3); only the line and the mark are missing. «Вернуть в список» heals it with the next own poll. A fix: the follow-up check could also store the game's own type and parent.
 - Status: open.
 - Found: 2026-11-04, spec of stage 6.3.
+
+## KI-53. Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point
+
+- Where: `app/tracker/pollers/game_follow_ups.py` (the reconciliation at the start of each pass removes the snapshot of a game no longer for the check).
+- What's wrong: «Вернуть в список» from «Бросил» should start the follow-up check anew, the first check being a silent reference point (spec 5.1 of stage 6.3). The snapshot of a dropped game goes only at the next pass; if the owner presses «Бросил» and then «Вернуть в список» before it (within about a minute), the snapshot stays, and the check goes on as if the game was never dropped: the next weekly check compares with the state from before «Бросил», so what was announced since that state comes as messages instead of being the silent reference point.
+- How to reproduce: a game in «Хочу» with a checked snapshot; press «Бросил» and «Вернуть в список» within a minute; when IGDB lists a new game of its series at the next weekly check, a message comes.
+- Likelihood / impact: rare (two buttons within a minute); the messages are true news that would have come without «Бросил» as well. A fix: «Бросил» could remove the snapshot itself, or the reconciliation could compare `Title.restored_at` with the snapshot.
+- Status: open.
+- Found: 2026-11-05, ticket 02 of stage 6.3.

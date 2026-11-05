@@ -71,6 +71,7 @@ class Tracker:
     sequel_sources: Mapping[TitleKind, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
     default_tz: tzinfo = timezone.utc  # the time zone when the owner has set none (BOT_TIMEZONE); the set one is read from the database
     price_source: Any = None  # the Steam prices of the games (`SteamPriceSource`); None — prices are not checked
+    follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
     _settings: SettingsStore = field(init=False, repr=False)
     _queue: EventQueue = field(init=False, repr=False)
     _polling: Polling = field(init=False, repr=False)
@@ -88,7 +89,9 @@ class Tracker:
         ctx = CoreContext(self.session_factory, self.clock, self.sender, self.default_tz)
         self._settings = SettingsStore(ctx)
         self._queue = EventQueue(ctx)
-        pollers = Pollers(ctx, self._settings, self._queue, self.sources, self.sequel_sources, self.price_source)
+        pollers = Pollers(
+            ctx, self._settings, self._queue, self.sources, self.sequel_sources, self.price_source, self.follow_up_source
+        )
         self._polling = Polling(ctx, self._queue, pollers)
         self._titles = Titles(ctx, pollers)
         self._statuses = Statuses(ctx, pollers)

@@ -1,7 +1,7 @@
 """Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.
 
 A failing source postpones only its own title; the others are still polled. After the titles, the poller of every kind
-does its check at the end of the pass (the Steam prices of the games); its failures join the «could not check» messages
+does its check at the end of the pass (the Steam prices of the games, their expansions and sequels); its failures join the «could not check» messages
 of the pass. Database work runs in a worker thread, so a slow disk never freezes the bot.
 """
 
@@ -41,6 +41,7 @@ POLLER_CLASSES: Mapping[TitleKind, type[Poller]] = {
 
 class Pollers:
     """The pollers of the kinds the core has a source for, and the sequel pollers of the kinds that have a sequel source.
+    The source of the Steam prices and the source of the follow-up check go to the game poller only.
     What the owner reads (the feed, the card) is asked of the poller of any kind, with a source or without: it reads
     only the database."""
 
@@ -52,9 +53,14 @@ class Pollers:
         sources: Mapping[TitleKind, Any],
         sequel_sources: Mapping[TitleKind, Any],
         price_source: Any = None,
+        follow_up_source: Any = None,
     ) -> None:
+        # the sources only one kind has go to the poller of that kind alone
+        own_sources: Mapping[TitleKind, Mapping[str, Any]] = {
+            TitleKind.GAME: {"price_source": price_source, "follow_up_source": follow_up_source},
+        }
         self._every = {
-            kind: poller_class(kind, sources.get(kind), ctx, settings, queue, price_source)
+            kind: poller_class(kind, sources.get(kind), ctx, settings, queue, **own_sources.get(kind, {}))
             for kind, poller_class in POLLER_CLASSES.items()
         }
         self._release = {kind: self._every[kind] for kind in sources}
