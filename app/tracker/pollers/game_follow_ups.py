@@ -55,10 +55,13 @@ def for_follow_ups(status: TitleStatus, expansion: str | None) -> bool:
     return status in FOLLOW_UP_STATUSES and expansion != games.EXPANSION
 
 
-def follow_up_snapshot(session, title_id: int) -> SourceSnapshot | None:
-    return session.scalar(
-        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == SOURCE_KEY)
-    )
+def _title_checked(session, title_id: int) -> Title | None:
+    """The title while it is still a game for the check (`for_follow_ups` on its own snapshot); None — it is gone or
+    no longer checked. A spoiled own snapshot raises ValueError."""
+    title = session.get(Title, title_id)
+    if title is None or not for_follow_ups(title.status, games.expansion_of(storage.own_state(session, title_id))):
+        return None
+    return title
 
 
 @dataclass
@@ -125,7 +128,7 @@ class GameFollowUps:
         with the lists: the snapshot, and one for the titles of the rows."""
         if self.source is None or not for_follow_ups(title.status, game.expansion):
             return None
-        stored = follow_up_snapshot(session, title.id)
+        stored = storage.snapshot_of(session, title.id, SOURCE_KEY)
         if stored is None:
             return FollowUpsView(checked=False)
         try:
@@ -260,7 +263,7 @@ class GameFollowUps:
     def _stored(self, game: DueTitle) -> follow_ups.FollowUps | None:
         """The stored state, read strictly (a spoiled one raises ValueError); None — the snapshot is gone."""
         with self.ctx.session_factory() as session:
-            stored = follow_up_snapshot(session, game.id)
+            stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             return follow_ups.FollowUps.from_state(stored.state) if stored is not None else None
 
     def _decide(
@@ -269,12 +272,9 @@ class GameFollowUps:
         """What the answer brings, by the rules of `follow_ups`, with everything they need read in one session. None —
         the game is gone or no longer for the check: nothing is queued or stored."""
         with self.ctx.session_factory() as session:
-            title = session.get(Title, game.id)
+            title = _title_checked(session, game.id)
             if title is None:
-                logging.info("title %s was deleted while its follow-ups were checked", game.id)
-                return None
-            if not for_follow_ups(title.status, games.expansion_of(storage.own_state(session, game.id))):
-                logging.info("title %s is no longer checked for follow-ups, nothing is stored", game.id)
+                logging.info("title %s was deleted or is no longer checked for follow-ups, nothing is stored", game.id)
                 return None
             scope = GameScope.read(self.settings, session)
             today = local_moment(self.ctx.now(), self.settings.time_zone(session)).date()
@@ -286,8 +286,7 @@ class GameFollowUps:
         """Queue an announcement; False — its fact is known already, or the game is no longer checked («Бросил» pressed
         meanwhile: its undelivered messages are already taken out, this one must not come after them)."""
         with self.ctx.write_session() as session:
-            title = session.get(Title, game.id)
-            if title is None or not for_follow_ups(title.status, games.expansion_of(storage.own_state(session, game.id))):
+            if _title_checked(session, game.id) is None:
                 return False
             payload = {"text": event.text, **event.data}
             if EventQueue.enqueue(session, event.type, payload, event.dedup_key, game.id, now) is None:
@@ -297,7 +296,7 @@ class GameFollowUps:
 
     def _store(self, game: DueTitle, state: follow_ups.FollowUps, now: datetime) -> None:
         with self.ctx.write_session() as session:
-            stored = follow_up_snapshot(session, game.id)
+            stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
                 logging.info("title %s was deleted while its follow-ups were checked", game.id)
                 return
@@ -308,13 +307,15 @@ class GameFollowUps:
 
     def _postpone(self, game: DueTitle) -> bool:
         """The next check of the game in 30 minutes. False — nothing failed for the owner: the snapshot is gone, or the
-        game left «Хочу», «В процессе» and «Пройдено» while IGDB answered (the next pass removes the snapshot)."""
+        game is no longer for the check (status or expansion) while IGDB answered (the next pass removes the snapshot)."""
         with self.ctx.write_session() as session:
-            stored = follow_up_snapshot(session, game.id)
+            stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
                 return False
             stored.next_check_at = self.ctx.now() + RETRY_AFTER_FAILURE
-            title = session.get(Title, game.id)
-            still_checked = title is not None and title.status in FOLLOW_UP_STATUSES
+            try:
+                still_checked = _title_checked(session, game.id) is not None
+            except ValueError:  # its own snapshot is spoiled: that is the failure to tell about
+                still_checked = True
             session.commit()
             return still_checked

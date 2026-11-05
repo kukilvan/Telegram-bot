@@ -111,12 +111,6 @@ def _add_to_history(session, title_id: int, look: PriceLook, now: datetime) -> N
     ))
 
 
-def price_snapshot(session, title_id: int) -> SourceSnapshot | None:
-    return session.scalar(
-        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == SOURCE_KEY)
-    )
-
-
 @dataclass
 class _Plan:
     """What the reconciliation found: the games to get a snapshot, the snapshots to go, the snapshots whose look is of
@@ -230,7 +224,7 @@ class GamePrices:
         snapshot gone while Steam was answering (the game was deleted) is no failure: nothing is written."""
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
-            stored = price_snapshot(session, game.id)
+            stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
                 logging.info("title %s was deleted while its prices were checked", game.id)
                 return
@@ -248,7 +242,7 @@ class GamePrices:
         if found:
             logging.info("title %s: %s events of Steam", game.id, found)
         with self.ctx.write_session() as session:
-            stored = price_snapshot(session, game.id)
+            stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
                 logging.info("title %s was deleted while its prices were checked", game.id)
                 return
@@ -262,7 +256,7 @@ class GamePrices:
         """Queue an event of Steam; False — its fact is known already, or the game's prices are no longer checked. A
         new discount takes the undelivered one of the game out of the queue: one line about it in a summary."""
         with self.ctx.write_session() as session:
-            if price_snapshot(session, title_id) is None:
+            if storage.snapshot_of(session, title_id, SOURCE_KEY) is None:
                 return False
             if event.type == price_events.DISCOUNT:
                 EventQueue.withdraw(session, title_id, (price_events.DISCOUNT,))
@@ -276,7 +270,7 @@ class GamePrices:
         """The next price check of the game in 30 minutes. False — its snapshot is gone (the game was deleted while
         Steam was answering): nothing failed then."""
         with self.ctx.write_session() as session:
-            stored = price_snapshot(session, game.id)
+            stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
                 return False
             stored.next_check_at = self.ctx.now() + RETRY_AFTER_FAILURE

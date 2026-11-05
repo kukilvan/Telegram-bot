@@ -34,7 +34,8 @@ _MONTHS = (
 _SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
 NOT_ANNOUNCED = "не объявлена"
 STEAM_PRICE_LABEL = "Цена в Steam"
-PARENT_LINE_START = "Дополнение к игре «"  # the web card links the name that follows
+PARENT_LINE_START = "Дополнение к игре «"  # the web card links the name between the start and the end
+PARENT_LINE_END = "»"
 
 
 @dataclass(frozen=True)
@@ -337,7 +338,7 @@ def platform_lines(card: TitleCard) -> list[str]:
 def parent_line(parent: ParentGame) -> str:
     """«Дополнение к игре «Ведьмак 3: Дикая охота»»: the line of an expansion under its names (the web builds its own,
     with a link)."""
-    return f"{PARENT_LINE_START}{parent.name}»"
+    return f"{PARENT_LINE_START}{parent.name}{PARENT_LINE_END}"
 
 
 def format_card(card: TitleCard) -> str:

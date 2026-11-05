@@ -190,6 +190,12 @@ def _store_id(external: list[dict[str, Any]] | None, source: int) -> str | None:
 _EXPANSION_TYPES = {2: EXPANSION, 4: STANDALONE}
 
 
+def expansion_type(raw: dict[str, Any]) -> str | None:
+    """What kind of expansion the record's `game_type` says (`EXPANSION`, `STANDALONE`), None — none; soft."""
+    game_type = raw.get("game_type")
+    return _EXPANSION_TYPES.get(game_type) if isinstance(game_type, int) else None
+
+
 def _parent(raw: dict[str, Any]) -> Parent | None:
     """`parent_game` as `{id, name}`; anything else is no parent (soft: an answer of a service)."""
     parent = raw.get("parent_game")
@@ -204,7 +210,7 @@ def parse_state(raw: dict[str, Any]) -> GameState:
     concept = _store_id(external, PS_STORE_SOURCE)
     parent = _parent(raw)
     # a remaster, a remake, a port has a parent too: «expansion» is decided by the type
-    expansion = _EXPANSION_TYPES.get(raw.get("game_type")) if parent is not None else None
+    expansion = expansion_type(raw) if parent is not None else None
     return GameState(
         steam_id=_store_id(external, STEAM_SOURCE),
         ps_concept=concept if concept and concept.isdigit() else None,  # anything else: the link is a search

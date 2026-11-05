@@ -67,6 +67,9 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | open | — |
 | KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | open | — |
 | KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | open | — |
+| KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | open | — |
+| KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | open | — |
+| KI-56 | The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | open | — |
 
 ## Entries
 
@@ -562,3 +565,30 @@ Format of a new entry:
 - Likelihood / impact: rare (two buttons within a minute); the messages are true news that would have come without «Бросил» as well. A fix: «Бросил» could remove the snapshot itself, or the reconciliation could compare `Title.restored_at` with the snapshot.
 - Status: open.
 - Found: 2026-11-05, ticket 02 of stage 6.3.
+
+## KI-54. Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series
+
+- Where: `app/tracker/queue.py` (`EventQueue.withdraw` keeps the event and its dedup key), with the key of spec 5.5 of stage 6.3 (`game:follow_up:<igdb id>`, one per announced game).
+- What's wrong: game A queues «Анонсирована новая игра серии: The Witcher IV», the message waits (quiet hours, the 15:00 summary); the owner presses «Бросил» on A, which takes the message out of the queue but keeps the event, so the key stays taken. When game B of the same series (also in the list) finds The Witcher IV at its weekly check, `enqueue` drops it as a known fact: the owner is never told.
+- How to reproduce: two games of one series in «Хочу», both checked; a new game of the series appears in IGDB; the announcement from A waits for the summary; press «Бросил» on A before it goes; B's check queues nothing.
+- Likelihood / impact: rare (an undelivered announcement, «Бросил» on exactly that game, and another game of the series in the list); one missed announcement, the card of B still shows the game in «Продолжения». A fix: a withdrawn event frees its key (delete the event, or give it a «withdrawn» mark the key check ignores).
+- Status: open.
+- Found: 2026-11-05, review of stage 6.3.
+
+## KI-55. Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet
+
+- Where: `app/tracker/pollers/game_follow_ups.py` (`_reconcile`, `_plan`).
+- What's wrong: spec 5.2 of stage 6.3 leaves such a game out of the reconciliation «with a line in the log». The reconciliation runs every pass, so the warning comes every minute while the snapshot stays spoiled. And the result depends on history: a game that already had a follow-up snapshot stays due, its check fails in `_decide` and the owner gets «could not check» once a day; a game that never had one gets no snapshot and is silently never checked.
+- How to reproduce: spoil the `expansion` key of a game's own snapshot (`source = 'igdb'`) by hand, e.g. `"expansion": "dlc"`; watch `data/logs/bot.log`.
+- Likelihood / impact: very rare (a hand edit or a bug; the own snapshot is rewritten by every own poll, which would also fail and report). Noise in the log; for a never-checked game no expansions or sequels. A fix: log once a day, and treat both cases alike (a snapshot made anyway, so the check fails and reports).
+- Status: open.
+- Found: 2026-11-05, review of stage 6.3.
+
+## KI-56. The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406
+
+- Where: `tests/test_tracker_core_split.py` (`MODULES` and `pollers/` only).
+- What's wrong: rule 7 of `docs/coding-standards.md` says no module of the core is longer than ~400 lines, and its check names this test. The test covers only the modules listed in `MODULES` and the pollers; the pure modules (`games`, `cards`, `series_events`, `feed_rows`, `follow_ups`…) are not checked. `series_events.py` has 521 lines (before stage 6.3); `games.py` went from 360 to 406 in stage 6.3 (the expansion of a game).
+- How to reproduce: `wc -l app/tracker/*.py`.
+- Likelihood / impact: no effect on the owner; long modules cost more to read in every session. A fix: the test takes every `app/tracker/*.py`; `series_events.py` and `games.py` split (e.g. `GameDate` into a module of its own).
+- Status: open.
+- Found: 2026-11-05, review of stage 6.3.

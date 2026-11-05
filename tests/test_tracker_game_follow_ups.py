@@ -501,7 +501,23 @@ def test_a_game_dropped_while_igdb_fails_gets_no_notice(tracker, igdb, follow, s
     assert report.failed == 0 and report.notices == 0
 
 
-# --- failures (spec 5.6) --------------------------------------------------------------------------------------------
+def test_a_game_igdb_turns_into_an_expansion_while_igdb_fails_gets_no_notice(tracker, igdb, follow, session_factory, clock):
+    title_id = add(tracker, igdb)
+    follow.failures["1"] = IgdbError("timeout", cause=httpx.ReadTimeout("slow"))
+
+    async def turn(external_id):
+        with session_factory() as session:
+            own = session.scalar(select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == "igdb"))
+            own.state = game(expansion=games.EXPANSION).state()
+            session.commit()
+
+    follow.during = turn
+    report = run(tracker.poll_due())
+
+    assert report.failed == 0 and report.notices == 0
+
+
+# --- failures (spec 5.6)--------------------------------------------------------------------------------------------
 
 
 @pytest.mark.parametrize(

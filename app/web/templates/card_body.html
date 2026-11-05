@@ -8,7 +8,7 @@
     <div class="card-details">
       <h1>{{ card.name }}</h1>
       {% if card.original_name and card.original_name != card.name %}<p class="title-original">{{ card.original_name }}</p>{% endif %}
-      {% if parent %}<p class="parent-line">{{ parent.start }}{% if parent.link %}<a href="{{ parent.link }}">{{ parent.name }}</a>{% else %}{{ parent.name }}{% endif %}»</p>{% endif %}
+      {% if parent %}<p class="parent-line">{{ parent.start }}{% if parent.link %}<a href="{{ parent.link }}">{{ parent.name }}</a>{% else %}{{ parent.name }}{% endif %}{{ parent.end }}</p>{% endif %}
       <p class="kind-line">{{ kind_line }}</p>
       <p class="status"><span class="status-label">Статус:</span> {{ status_label }}</p>
       {% if score %}{{ score_select(score, "Оценка") }}{% endif %}

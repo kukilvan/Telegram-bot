@@ -184,6 +184,7 @@ def test_garbage_in_the_answer_is_no_such_field():
     })
     assert found == FollowUpsSnapshot(own_date=None, collections=(), expansions=found.expansions, games=())
     assert [(c.id, c.name, c.platforms, c.releases) for c in found.expansions] == [("3", "3", (), ())]
+    assert parse_follow_ups({"expansions": [{"id": 5, "game_type": [4]}]}).expansions[0].standalone is False
 
 
 # --- the source --------------------------------------------------------------------------------------------------------

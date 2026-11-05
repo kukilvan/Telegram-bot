@@ -168,10 +168,13 @@ def sequel_snapshot(session, title_id: int, sequel_key: str | None) -> SourceSna
     """The snapshot of the title's sequel check (a watched movie has one): the one of the sequel source of its kind,
     `sequel_key` (None: the kind has no sequel source, so no such snapshot). A snapshot of any other source, the
     prices of a game, is not it (spec 7.4 of part 6.2)."""
-    if sequel_key is None:
-        return None
+    return snapshot_of(session, title_id, sequel_key) if sequel_key is not None else None
+
+
+def snapshot_of(session, title_id: int, source: str) -> SourceSnapshot | None:
+    """The title's snapshot of `source` (the prices of a game, its follow-up check…); None — it has none."""
     return session.scalar(
-        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == sequel_key)
+        select(SourceSnapshot).where(SourceSnapshot.title_id == title_id, SourceSnapshot.source == source)
     )
 
 

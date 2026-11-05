@@ -6,13 +6,13 @@ gives no messages. The snapshot keeps every candidate whatever its platforms and
 each time it is read. The reference point (the first check: the stored state is `{}`) only records what is shown.
 """
 
-from collections.abc import Collection, Iterable, Mapping
+from collections.abc import Collection, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
 from app.tracker import text
-from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, Release, platform_dates
+from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, PlatformDates, Release, platform_dates
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
@@ -151,13 +151,18 @@ def _id_order(id_: str) -> tuple[int, str]:
 # --- what is shown (spec 4) -----------------------------------------------------------------------------------------
 
 
-def on_my_platforms(candidate: Candidate, mine: Collection[Platform], country: str) -> bool:
-    """On a platform of «Мои платформы» (backward compatibility included) and not cancelled there (spec 4.1)."""
+def _dates_on_mine(candidate: Candidate, mine: Collection[Platform], country: str) -> Iterator[PlatformDates]:
+    """The dates of the candidate on each platform of «Мои платформы» it is on (backward compatibility included) and
+    not cancelled there."""
     for platform in mine:
         dates = platform_dates(candidate.game, platform, country)
         if dates is not None and not dates.cancelled:
-            return True
-    return False
+            yield dates
+
+
+def on_my_platforms(candidate: Candidate, mine: Collection[Platform], country: str) -> bool:
+    """On a platform of «Мои платформы» and not cancelled there (spec 4.1)."""
+    return next(_dates_on_mine(candidate, mine, country), None) is not None
 
 
 def came_out_before(candidate: Candidate, own_date: date | None, today: date) -> bool:
@@ -191,10 +196,7 @@ def follow_up_date(candidate: Candidate, mine: Collection[Platform], country: st
     объявлена». Cancelled platforms give nothing."""
     full: list[GameDate] = []
     early: list[GameDate] = []
-    for platform in mine:
-        dates = platform_dates(candidate.game, platform, country)
-        if dates is None or dates.cancelled:
-            continue
+    for dates in _dates_on_mine(candidate, mine, country):
         if dates.full is not None and dates.full.date.announced:
             full.append(dates.full.date)
         if dates.early is not None and dates.early.date.announced:

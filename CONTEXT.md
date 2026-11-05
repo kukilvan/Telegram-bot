@@ -77,7 +77,7 @@ In code: `restore`.
 
 **Продолжение** (sequel):
 For a movie: the next movie of the same TMDb collection that came out or was announced after a watched movie. For a game: a game of the same series of games that comes out on «Мои платформы» and did not come out before this game — a new part, a spin-off, a remake or a remaster («новая игра серии»). The owner decides whether to follow it («Следить» adds it to the list as «Хочу»).
-In code: `sequel` (the game event — `game_sequel_announced`).
+In code: `sequel` (the game event — `game_sequel_announced`). «Следить» under an announcement of a sequel or an expansion: what it adds — `Followable`, the offer in the Feed — `FollowOffer`, the event types that have it — `FOLLOW_TYPES`; the stored key of the announced title stays `sequel_id` for an expansion too.
 
 **Оценка** (score):
 The owner's personal score from 1 to 10 with modifiers «+» and «−» (9−, 9, 9+): 28 steps, only «1−» and «10+» do not exist. «+» and «−» weigh a third of a point, so the score is stored as an integer in thirds (9 — 27, 9+ — 28, 10− — 29). Stored only in the app. Given only to a watched title: a movie in the archive, a season with a mark. For a series and anime a score is given per season, and the title's score is its own (set by hand) or the **average over seasons**: the exact average of the visible season scores, shown as the nearest step (exactly in the middle — up).
@@ -122,9 +122,9 @@ Every 6 hours the tracker asks Steam about the prices of games in «Хочу» t
 In code: `price check` (the snapshot of source `steam`; what one check saw of a game — `PriceLook`, what Steam answered — its `answer`). The rule «игра для цен» — which games have their prices checked and by which number — is `steam_number`; without the number (the card shows its block even before the page in Steam) it is `reports_prices`.
 
 **Дополнение** (expansion):
-A big expansion of a game: a new story or a region (Blood and Wine, Shadow of the Erdtree) — what IGDB records as an expansion. Small DLC (a quest, gear, a soundtrack) is not one. A standalone expansion plays without its game (Miles Morales, The Lost Legacy). «Следить» makes an expansion a game of its own in the list (ADR 0011): its card says «Дополнение к игре «…»», its row in the List has the mark «дополнение». An expansion that needs its game has no expansions and sequels of its own; a standalone one has.
+A big expansion of a game: a new story or a region (Blood and Wine, Shadow of the Erdtree) — what IGDB records as an expansion. Small DLC (a quest, gear, a soundtrack) is not one. A standalone expansion plays without its game (Miles Morales, The Lost Legacy). «Следить» makes an expansion a game of its own in the list (ADR 0011): its card says «Дополнение к игре «…»», its row in the List and the Archive has the word «дополнение» after the name. An expansion that needs its game has no expansions and sequels of its own; a standalone one has.
 _Avoid_: DLC (that is the small stuff), аддон
-In code: `expansion` (`GameState.expansion`: `expansion` or `standalone`; the game it belongs to — `parent`; the event — `game_expansion_announced`).
+In code: `expansion` (`GameState.expansion`: `expansion` or `standalone`; the game it belongs to — `parent`; the event — `game_expansion_announced`; the word after the name of a row — `tag`: `Poller.list_tags`, `TitleSummary.tag`; not `mark`, which is the discount of Steam).
 
 **Серия игр** (game series):
 The games IGDB puts together under one name («The Witcher», «Hades»). In messages and on the card always with «игр» or «игра»: «новая игра серии», «серия «The Witcher»» — a bare «серия» is an episode.

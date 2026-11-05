@@ -54,6 +54,11 @@ def test_a_remaster_with_a_parent_is_no_expansion():
     assert "expansion" not in state.state() and "parent" not in state.state()
 
 
+def test_garbage_in_the_type_is_no_expansion():
+    for game_type in ([2], {"id": 2}, "2", None, True):
+        assert parse_state({**game("blood-and-wine"), "game_type": game_type}).expansion is None
+
+
 def test_an_expansion_without_a_readable_parent_is_no_expansion():
     for parent in (None, 1942, {"id": 1942}, {"id": "1942", "name": "X"}, {"id": True, "name": "X"}):
         assert parse_state({**game("blood-and-wine"), "parent_game": parent}).expansion is None

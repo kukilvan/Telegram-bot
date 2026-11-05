@@ -10,12 +10,12 @@ from typing import Any
 
 from sqlalchemy import select
 
-from app.tracker import games, price_rows
+from app.tracker import games, price_rows, storage
 from app.tracker.cards import SteamView
 from app.tracker.context import CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import SourceSnapshot, Title, TitleKind, TitleStatus
-from app.tracker.pollers.game_prices import price_history, price_snapshot, priced_games, reports_prices
+from app.tracker.pollers.game_prices import price_history, priced_games, reports_prices
 from app.tracker.settings_store import SettingsStore
 from app.tracker.sources.steam_prices import SOURCE_KEY
 
@@ -34,7 +34,7 @@ class GameSteam:
         game (`reports_prices`: «Хочу», PC marked) or the core has no source of prices."""
         if self.source is None or not reports_prices(title.status, game, scope.told(title.id)):
             return None
-        stored = price_snapshot(session, title.id)
+        stored = storage.snapshot_of(session, title.id, SOURCE_KEY)
         look = price_rows.current_look(stored.state, game.steam_id, scope.country) if stored and game.steam_id else None
         records = price_history(session, title.id)
         return price_rows.steam_view(

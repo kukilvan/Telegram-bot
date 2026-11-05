@@ -15,11 +15,10 @@ from app.tracker.errors import SourceNotConfigured
 from app.tracker.failures import TitleGone
 from app.tracker.follow_ups import Candidate, FollowUpsSnapshot
 from app.tracker.sources.dates import response_day_of_timestamp
-from app.tracker.sources.igdb_games import is_game, known_platforms, read_releases, russian_name
+from app.tracker.games import STANDALONE
+from app.tracker.sources.igdb_games import expansion_type, is_game, known_platforms, read_releases, russian_name
 
 SOURCE_KEY = "igdb_follow_ups"
-
-STANDALONE_TYPE = 4  # `game_type` of a standalone expansion
 
 # `<F>` of spec 3.1: what is read of every candidate
 CANDIDATE_FIELDS = (
@@ -59,7 +58,7 @@ def _candidate(item: dict[str, Any]) -> Candidate:
         first=response_day_of_timestamp(item.get("first_release_date")),
         platforms=known_platforms(item.get("platforms") if isinstance(item.get("platforms"), list) else ()),
         releases=read_releases(_records_of_dates(item.get("release_dates"))),
-        standalone=item.get("game_type") == STANDALONE_TYPE,
+        standalone=expansion_type(item) == STANDALONE,
     )
 
 

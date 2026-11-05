@@ -14,7 +14,7 @@ from typing import NamedTuple
 from fastapi import Request
 
 from app.tracker.cards import (
-    PARENT_LINE_START, FollowLine, FollowUpsView, SequelsView, TitleCard, format_past_moment,
+    PARENT_LINE_END, PARENT_LINE_START, FollowLine, FollowUpsView, SequelsView, TitleCard, format_past_moment,
 )
 from app.tracker.kinds import KINDS
 
@@ -92,13 +92,14 @@ class ParentLine(NamedTuple):
     start: str  # «Дополнение к игре «»
     name: str
     link: str  # the card of the game; empty: plain text
+    end: str  # «»»
 
 
 def parent_of(request: Request, card: TitleCard) -> ParentLine | None:
     if card.parent is None:
         return None
     link = address(request, "card", title_id=card.parent.title_id) if card.parent.title_id is not None else ""
-    return ParentLine(PARENT_LINE_START, card.parent.name, link)
+    return ParentLine(PARENT_LINE_START, card.parent.name, link, PARENT_LINE_END)
 
 
 # --- the follow lists -----------------------------------------------------------------------------------------------
