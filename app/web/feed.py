@@ -26,11 +26,12 @@ refreshing = pages.guarded_with_refresh("feed")  # an unexpected error on the fe
 
 
 class Follow(NamedTuple):
-    """«Следить» under an announced sequel, or «В списке» when the list has it already."""
+    """«Следить» under an announcement (a sequel, an expansion, a game of the series), or «В списке» when the list has it
+    already."""
 
-    listed: str | None  # the card of the sequel
+    listed: str | None  # the card of the announced title
     kind: str  # what the form sends
-    sequel_id: str
+    external_id: str
 
 
 class Line(NamedTuple):
@@ -88,7 +89,7 @@ def _happened(request: Request, row: RecentRow) -> Line:
     if row.follow is not None:
         offer = row.follow
         listed = None if offer.title_id is None else _card(request, offer.title_id)
-        follow = Follow(listed, offer.kind.value, offer.sequel_id)
+        follow = Follow(listed, offer.target.kind.value, offer.target.external_id)
     return Line(_card(request, title.id), title.poster_path, KINDS[title.kind].icon, "", row.headline, row.details, "", watched, follow)
 
 
@@ -113,7 +114,7 @@ def _view(request: Request, feed: Feed, notice: str = "") -> dict[str, object]:
         "recent": _days(feed.recent, _recent_label, _happened, request, feed.today),
         "size": LIST_SIZE,
         "search_address": str(request.app.url_path_for("search")),
-        "sequels_address": str(request.app.url_path_for("feed_sequels")),
+        "follow_address": str(request.app.url_path_for("feed_follow")),
     }
 
 
@@ -152,10 +153,10 @@ async def mark_watched(request: Request, title_id: int) -> Response:
     return await _pressed(request, notice)
 
 
-@router.post("/feed/sequels", name="feed_sequels")
+@router.post("/feed/follow", name="feed_follow")
 @refreshing
-async def follow_sequel(request: Request, kind: str = Form(""), sequel_id: str = Form("")) -> Response:
-    """«Следить» under an announced sequel: the sequel joins the list, and its row now says «В списке». What went wrong
-    is a line on top of the fresh feed."""
-    notice = await pages.try_follow(request, kind, sequel_id)
+async def follow_title(request: Request, kind: str = Form(""), external_id: str = Form("")) -> Response:
+    """«Следить» under an announcement: the title joins the list, and its row now says «В списке». What went wrong is a
+    line on top of the fresh feed."""
+    notice = await pages.try_follow(request, kind, external_id)
     return await _pressed(request, notice)

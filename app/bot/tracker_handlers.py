@@ -466,19 +466,21 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
                 f"✅ Просмотрено: {card.name}\nФильм в архиве. Раз в неделю я проверю, не анонсировано ли продолжение."
             )
 
-    async def follow_sequel(callback: CallbackQuery, raw: str) -> None:
-        """`raw` is "<kind>:<id>" on a button of the current kind, or the number of the announcement on an old one."""
-        kind, _, sequel_id = raw.partition(":")
+    async def follow_title(callback: CallbackQuery, raw: str) -> None:
+        """`raw` is "<kind>:<id>" on a button of the current kind (a film's sequel, an expansion or a game of the series),
+        or the number of the announcement on an old one, which is a film's."""
+        kind, _, external_id = raw.partition(":")
         old_event = raw.isascii() and raw.isdigit()
-        if not old_event and not (_kind_of(kind) and sequel_id):
+        if not old_event and not (_kind_of(kind) and external_id):
             await callback.answer(_DEAD_BUTTON)
             return
+        source = KINDS[_kind_of(kind) or TitleKind.MOVIE].source_name  # an old button has no kind: its sequel is a film's
         await callback.answer(_ADDING)  # the source may take longer than Telegram waits for the answer
         try:
             if old_event:
                 result = await tracker.follow_sequel(int(raw))
             else:
-                result = await tracker.follow(kind, sequel_id)
+                result = await tracker.follow(kind, external_id)
         except UnknownEvent:
             await tell_failure(callback, "Это объявление больше недоступно.")
             return
@@ -486,14 +488,14 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await tell_failure(callback, _DEAD_BUTTON)
             return
         except TitleNotFound:
-            await tell_failure(callback, "Не нашёл это продолжение в TMDb. Попробуйте чуть позже.")
+            await tell_failure(callback, f"Не нашёл это в {source}. Попробуйте чуть позже.")
             return
         except Exception as exc:
-            logging.warning("following a sequel failed: %r, cause: %r", exc, exc.__cause__)
-            await tell_failure(callback, "Не удалось получить данные из TMDb. Попробуйте чуть позже.")
+            logging.warning("following a title failed: %r, cause: %r", exc, exc.__cause__)
+            await tell_failure(callback, f"Не удалось получить данные из {source}. Попробуйте чуть позже.")
             return
         await drop_pressed_button(callback)
-        heading = "✅ Продолжение добавлено в список" if result.created else "Уже в списке"
+        heading = "✅ Добавлено в список" if result.created else "Уже в списке"
         await send_card(callback, await tracker.title_card(result.title_id), heading)
 
     async def open_seasons_choice(callback: CallbackQuery, title_id: int) -> None:
@@ -676,7 +678,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         name, _, raw = callback.data.removeprefix(_ACTION_PREFIX).partition(":")
         number = int(raw) if raw.isascii() and raw.isdigit() else None
         if name == FOLLOW:
-            await follow_sequel(callback, raw)
+            await follow_title(callback, raw)
         elif number is not None and name == WATCHED:
             await mark_watched(callback, number)
         elif number is not None and name == SEASONS:

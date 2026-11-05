@@ -14,10 +14,11 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
-from app.tracker import delivery, failures, feed_rows, sequel_events
+from app.tracker import delivery, failures, feed_rows
+from app.tracker.actions import FOLLOW_TYPES
 from app.tracker.cards import local_moment
 from app.tracker.context import CoreContext, naive_utc
-from app.tracker.feed_rows import Feed, FeedBasis, FeedEvent, FeedTitle, Piece
+from app.tracker.feed_rows import Feed, FeedBasis, FeedEvent, Followable, FeedTitle, Piece
 from app.tracker.models import ARCHIVE_STATUSES, Event, Title, TitleKind
 from app.tracker.settings_store import SettingsStore
 
@@ -83,17 +84,18 @@ class FeedReader:
             for e in events
         ]
 
-    def _listed(self, session, events: Iterable[FeedEvent]) -> dict[tuple[TitleKind, str], int]:
-        """The titles of the announced sequels that the list has already, by their ids in the source: one read a kind."""
+    def _listed(self, session, events: Iterable[FeedEvent]) -> dict[Followable, int]:
+        """The titles of the announced sequels, expansions and games that the list has already, by their ids in the
+        source: one read a kind."""
         wanted: dict[TitleKind, set[str]] = {}
         for event in events:
-            if event.type == sequel_events.SEQUEL_ANNOUNCED and (sequel := feed_rows.sequel_of(event.data)) is not None:
-                wanted.setdefault(sequel[0], set()).add(sequel[1])
-        listed: dict[tuple[TitleKind, str], int] = {}
+            if event.type in FOLLOW_TYPES and (target := feed_rows.followable_of(event.data)) is not None:
+                wanted.setdefault(target.kind, set()).add(target.external_id)
+        listed: dict[Followable, int] = {}
         for kind, ids in wanted.items():
             try:
                 poller = self.pollers.of(kind)
             except KeyError:  # no source of this kind: nothing of it can be in the list
                 continue
-            listed.update({(kind, external_id): title_id for external_id, title_id in poller.known_ids(session, ids).items()})
+            listed.update({Followable(kind, external_id): title_id for external_id, title_id in poller.known_ids(session, ids).items()})
         return listed

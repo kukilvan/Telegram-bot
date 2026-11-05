@@ -11,7 +11,9 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone
 from typing import Any
 
-from app.tracker import anime_events, failures, game_events, movie_events, price_events, sequel_events, series_events
+from app.tracker import (
+    anime_events, failures, follow_ups, game_events, movie_events, price_events, sequel_events, series_events,
+)
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.queue import EventQueue
@@ -89,6 +91,7 @@ class TestSamples:
             + series_events.TEST_SAMPLES
             + anime_events.TEST_SAMPLES
             + game_events.TEST_SAMPLES
+            + follow_ups.TEST_SAMPLES
             + failures.TEST_SAMPLES
         )
         for sample_id, label, text in sample_texts:

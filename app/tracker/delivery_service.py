@@ -133,11 +133,13 @@ class DeliveryService:
             lead = unit.lead
             if lead is None:
                 continue
-            name = _button_name(lead.data.get("sequel_title") or names.get(lead.title_id, ""))
+            title = _button_name(names.get(lead.title_id, ""))
+            announced = lead.data.get("sequel_title") or title  # «Следить» is never cut, its name too (spec 6.5)
             for action in event_actions(lead.type, lead.event_id, lead.title_id, lead.data):
                 if (action.name, action.arg) in shown:
                     continue
                 shown.add((action.name, action.arg))
+                name = announced if action.name == FOLLOW else title  # «Следить» names the announced game, the rest the event's title
                 actions.append(replace(action, label=f"{action.label}: {name}") if name else action)
         # «Следить» is never cut: a sequel announcement has no card or list entry to follow from. The rest fill
         # what is left of the limit, «Посмотрел», then «Открыть в Steam», then «Карточка», and are reached from «Мои

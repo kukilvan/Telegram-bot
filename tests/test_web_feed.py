@@ -303,7 +303,7 @@ def test_the_buttons_are_where_the_core_gave_them(client, session_factory):
     assert html.count(f'"/feed/titles/{wanted}/watched"') == 2  # the form and its htmx address
     assert f"/feed/titles/{seen}/watched" not in html
     assert html.count('<span class="idle">Посмотрел</span><span class="busy">Сохраняю…</span>') == 1
-    assert '<input type="hidden" name="kind" value="movie">' in html and '<input type="hidden" name="sequel_id" value="3">' in html
+    assert '<input type="hidden" name="kind" value="movie">' in html and '<input type="hidden" name="external_id" value="3">' in html
     assert '<span class="idle">Следить</span><span class="busy">Добавляю…</span>' in html
 
 
@@ -352,7 +352,7 @@ def test_follow_adds_the_sequel_and_the_fresh_feed_says_it_is_in_the_list(client
     dune = put_title(session_factory, "Дюна", TitleKind.MOVIE, TitleStatus.WATCHED)
     announce(session_factory, dune)
 
-    answer = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "3"}, headers=HTMX)
+    answer = client.post("/feed/follow", data={"kind": "movie", "external_id": "3"}, headers=HTMX)
 
     added = [t for t in run(tracker.list_titles()) if t.name == "Дюна: Часть третья"]
     assert answer.status_code == 200 and "<html" not in answer.text and len(added) == 1
@@ -364,7 +364,7 @@ def test_follow_without_htmx_goes_back_to_the_feed(client, tracker, session_fact
     dune = put_title(session_factory, "Дюна", TitleKind.MOVIE, TitleStatus.WATCHED)
     announce(session_factory, dune)
 
-    answer = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "3"})
+    answer = client.post("/feed/follow", data={"kind": "movie", "external_id": "3"})
 
     assert answer.status_code == 303 and answer.headers["location"] == "/"
     assert len(run(tracker.list_titles())) == 2
@@ -376,7 +376,7 @@ def test_follow_while_the_source_is_down_is_a_line_on_top_of_the_fresh_feed(clie
     movies.failing = True
 
     with caplog.at_level(logging.WARNING):
-        answer = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "3"}, headers=HTMX)
+        answer = client.post("/feed/follow", data={"kind": "movie", "external_id": "3"}, headers=HTMX)
 
     assert answer.status_code == 200 and "Следить" in answer.text
     assert answer.text.index("Не удалось связаться с TMDb. Попробуйте чуть позже") < answer.text.index('id="soon-heading"')
@@ -388,7 +388,7 @@ def test_follow_while_the_source_is_down_without_htmx_says_so_on_the_page(client
     announce(session_factory, dune)
     movies.failing = True
 
-    answer = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "3"})
+    answer = client.post("/feed/follow", data={"kind": "movie", "external_id": "3"})
 
     assert answer.status_code == 303
     assert "Не удалось связаться с TMDb. Попробуйте чуть позже" in client.get("/").text
@@ -399,14 +399,14 @@ def test_follow_of_a_sequel_the_source_does_not_know_says_so(client, session_fac
     dune = put_title(session_factory, "Дюна", TitleKind.MOVIE, TitleStatus.WATCHED)
     announce(session_factory, dune, "9")
 
-    answer = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "9"}, headers=HTMX)
+    answer = client.post("/feed/follow", data={"kind": "movie", "external_id": "9"}, headers=HTMX)
 
     assert "TMDb больше не знает этот тайтл. Поищите заново" in answer.text
 
 
 @pytest.mark.parametrize("kind", ["game", "series", ""])
 def test_follow_of_a_kind_without_sequels_is_refused(client, tracker, kind):
-    answer = client.post("/feed/sequels", data={"kind": kind, "sequel_id": "3"}, headers=HTMX)
+    answer = client.post("/feed/follow", data={"kind": kind, "external_id": "3"}, headers=HTMX)
 
     assert answer.status_code == 200 and "Такого типа нет" in answer.text and len(run(tracker.list_titles())) == 0
 
@@ -484,10 +484,10 @@ def test_the_presses_need_a_sign_in_and_a_foreign_origin_is_refused(client, trac
 
     assert anonymous.get("/").status_code == 303
     assert anonymous.post(f"/feed/titles/{film}/watched").status_code == 303
-    assert anonymous.post("/feed/sequels", data={"kind": "movie", "sequel_id": "3"}).status_code == 303
+    assert anonymous.post("/feed/follow", data={"kind": "movie", "external_id": "3"}).status_code == 303
     foreign = {"Origin": "http://evil.example"}
     assert client.post(f"/feed/titles/{film}/watched", headers=foreign).status_code == 403
-    assert client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "3"}, headers=foreign).status_code == 403
+    assert client.post("/feed/follow", data={"kind": "movie", "external_id": "3"}, headers=foreign).status_code == 403
     assert run(tracker.title_card(film)).status == TitleStatus.WANT
 
 

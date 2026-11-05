@@ -6,7 +6,7 @@ gives no messages. The snapshot keeps every candidate whatever its platforms and
 each time it is read. The reference point (the first check: the stored state is `{}`) only records what is shown.
 """
 
-from collections.abc import Collection, Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
@@ -317,8 +317,9 @@ def check(
 
 _SAMPLE_GAME = "Ведьмак 3: Дикая охота"
 
-# (id, menu label, message text) of the sample events; they join `test_samples` in ticket 04 of stage 6.3
-TEST_SAMPLES: Sequence[tuple[str, str, str]] = (
+# (id, menu label, message text) of the sample events: text only, no buttons (`test_samples` registers them after those of
+# the games)
+TEST_SAMPLES: list[tuple[str, str, str]] = [
     (
         "game-expansion",
         "Игра: анонсировано дополнение",
@@ -329,4 +330,4 @@ TEST_SAMPLES: Sequence[tuple[str, str, str]] = (
         "Игра: новая игра серии",
         sequel_text("The Witcher IV", _SAMPLE_GAME, FollowUpDate(GameDate(year=2028))),
     ),
-)
+]

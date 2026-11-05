@@ -17,10 +17,12 @@ from app.bot.access import AccessMiddleware
 from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.tracker.sources.tmdb_sequels import CollectionPart, SequelSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot
+from test_tracker_game_follow_ups import FakeFollowUps, MadeUpGames, game
 
 OWNER = 42
 NOW = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
@@ -70,6 +72,22 @@ class FakeSequelSource:
         return SequelSnapshot(own_date=date(2021, 9, 15), parts=[CollectionPart(DUNE_3, "Дюна: Часть третья", date(2026, 12, 15))])
 
 
+class SlowGames(MadeUpGames):
+    """The game source of IGDB: slow to answer, can fail."""
+
+    def __init__(self, journal):
+        super().__init__()
+        self.journal = journal
+        self.failing = False
+
+    async def snapshot_to_add(self, external_id):
+        self.journal.append(("source", external_id))
+        await asyncio.sleep(0.02)
+        if self.failing:
+            raise ConnectionError("igdb is down")
+        return self.by_id.get(external_id)
+
+
 class FakeSender:
     async def send(self, message, actions=()):
         pass
@@ -112,6 +130,21 @@ def tracker(series, movies):
         sender=FakeSender(),
         sources={"series": series, "movie": movies},
         sequel_sources={"movie": FakeSequelSource()},
+    )
+
+
+@pytest.fixture
+def games(journal):
+    source = SlowGames(journal)
+    source.put("3", game(), "Elden Ring: Shadow of the Erdtree")
+    return source
+
+
+@pytest.fixture
+def game_tracker(games):
+    return Tracker(
+        create_session_factory("sqlite://"), clock=lambda: NOW, sender=FakeSender(), sources={TitleKind.GAME: games},
+        follow_up_source=FakeFollowUps(),
     )
 
 
@@ -228,7 +261,7 @@ def test_following_answers_the_press_before_the_source_is_asked(tracker, telegra
     assert [entry[0] for entry in telegram][:2] == ["answer", "source"]
     assert telegram.of("answer") == [("answer", ADDING)]
     [card] = texts(telegram)
-    assert card.startswith("✅ Продолжение добавлено в список") and "Дюна: Часть третья" in card
+    assert card.startswith("✅ Добавлено в список") and "Дюна: Часть третья" in card
 
 
 def test_a_source_failure_while_following_comes_as_a_message(tracker, movies, telegram):
@@ -245,7 +278,7 @@ def test_a_sequel_the_source_does_not_know_comes_as_a_message(tracker, telegram)
     press(tracker, "tact:follow:movie:1")
 
     assert telegram.of("answer") == [("answer", ADDING)]
-    assert texts(telegram) == ["Не нашёл это продолжение в TMDb. Попробуйте чуть позже."]
+    assert texts(telegram) == ["Не нашёл это в TMDb. Попробуйте чуть позже."]
 
 
 def test_an_old_button_without_its_announcement_comes_as_a_message(tracker, telegram):
@@ -278,4 +311,51 @@ def test_following_without_a_message_goes_to_the_log_only(tracker, movies, teleg
 
     assert telegram.of("answer") == [("answer", ADDING)]
     assert texts(telegram) == []
-    assert any("following a sequel failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)
+    assert any("following a title failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)
+
+
+# --- «Следить» under the announcement of a game ---------------------------------------------------------
+
+
+def test_following_a_game_answers_first_adds_it_and_shows_its_card(game_tracker, telegram):
+    press(game_tracker, "tact:follow:game:3")
+
+    assert [entry[0] for entry in telegram][:2] == ["answer", "source"]
+    assert telegram.of("answer") == [("answer", ADDING)]
+    [card] = texts(telegram)
+    assert card.startswith("✅ Добавлено в список") and "Elden Ring: Shadow of the Erdtree" in card
+    assert [t.name for t in run(game_tracker.list_titles())] == ["Elden Ring: Shadow of the Erdtree"]
+
+
+def test_following_a_game_that_is_in_the_list_says_so(game_tracker, telegram):
+    run(game_tracker.add_title(TitleKind.GAME, "3"))  # the owner followed it from the card meanwhile
+    telegram.clear()
+
+    press(game_tracker, "tact:follow:game:3")
+
+    assert telegram.of("answer") == [("answer", ADDING)]
+    [card] = texts(telegram)
+    assert card.startswith("Уже в списке") and len(run(game_tracker.list_titles())) == 1
+
+
+def test_a_game_the_source_does_not_know_names_igdb(game_tracker, telegram):
+    press(game_tracker, "tact:follow:game:99")
+
+    assert telegram.of("answer") == [("answer", ADDING)]
+    assert texts(telegram) == ["Не нашёл это в IGDB. Попробуйте чуть позже."]
+
+
+def test_a_failure_of_igdb_while_following_names_igdb(game_tracker, games, telegram):
+    games.failing = True
+
+    press(game_tracker, "tact:follow:game:3")
+
+    assert telegram.of("answer") == [("answer", ADDING)]
+    assert texts(telegram) == ["Не удалось получить данные из IGDB. Попробуйте чуть позже."]
+    assert run(game_tracker.list_titles()) == []
+
+
+def test_an_old_button_with_a_number_still_names_tmdb(tracker, telegram):
+    press(tracker, "tact:follow:999")  # no such announcement: the failure names the source of a film's sequel
+
+    assert texts(telegram) == ["Это объявление больше недоступно."]

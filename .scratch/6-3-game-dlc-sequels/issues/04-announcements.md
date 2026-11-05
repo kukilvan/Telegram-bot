@@ -1,6 +1,6 @@
 # 04: Announcements — buttons, summary names, Feed «Следить», bot texts, samples
 
-Status: open
+Status: in review
 Complexity: medium (one shared list of event types, button and summary naming, a renamed Feed route and the types `Followable` / `FollowOffer`, the bot texts by the kind's source; each part is small, together they touch delivery, Feed, bot and web)
 Blocked by: 02, 03
 

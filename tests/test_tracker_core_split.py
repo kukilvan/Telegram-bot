@@ -108,7 +108,7 @@ def test_the_public_names_of_the_core_stay_importable_from_the_facade():
         "Tracker", "TestSample", "TitleNotFound", "UnknownEvent", "UnknownKind", "UnknownSeason", "UnknownTitle",
         "TitleSummary", "WatchableSeason", "AddResult", "DeleteResult", "ChangeResult", "SummaryResult",
         "TestEventResult", "DeliveryReport", "PollReport", "CannotScore", "ScoreView", "Feed", "FeedDay", "FeedTitle", "SettingsField",
-        "UpcomingRow", "RecentRow", "SequelOffer", "SettingsView", "SettingsChange", "SettingsRefused", "ZoneOption",
+        "UpcomingRow", "RecentRow", "FollowOffer", "Followable", "SettingsView", "SettingsChange", "SettingsRefused", "ZoneOption",
         "UnknownPlatform", "SourceNotConfigured",
     ):
         assert hasattr(core, name), name

@@ -54,11 +54,18 @@ class UpcomingRow:
 
 
 @dataclass(frozen=True)
-class SequelOffer:
-    """«Следить» under a sequel announcement: the sequel, and its title when the list has it already («В списке»)."""
+class Followable:
+    """What a «Следить» adds: a title by its kind and its id in the source (a sequel of a film, an expansion or a game)."""
 
     kind: TitleKind
-    sequel_id: str
+    external_id: str
+
+
+@dataclass(frozen=True)
+class FollowOffer:
+    """«Следить» under an announcement: what it adds, and the title when the list has it already («В списке»)."""
+
+    target: Followable
     title_id: int | None
 
 
@@ -71,7 +78,7 @@ class RecentRow:
     details: tuple[str, ...]  # the other lines, smaller
     at: datetime  # when it was found, on the owner's clock (naive); a folded row: the latest of its events
     watched: bool = False  # «Посмотрел»: an event of a movie that is still «Хочу»
-    follow: SequelOffer | None = None
+    follow: FollowOffer | None = None
 
 
 @dataclass(frozen=True)
@@ -239,19 +246,19 @@ def upcoming(
 # --- what happened ----------------------------------------------------------------------------------
 
 
-def sequel_of(data: Mapping[str, Any]) -> tuple[TitleKind, str] | None:
-    """The sequel a «Следить» names: its kind and id in the source. None: an announcement of the old format (or one of
-    a kind the core does not know), which offers no button."""
-    kind, sequel_id = data.get("kind"), data.get("sequel_id")
-    if not kind or not sequel_id:
+def followable_of(data: Mapping[str, Any]) -> Followable | None:
+    """The title a «Следить» names: its kind and id in the source (the keys `kind` and `sequel_id` of an announcement).
+    None: an announcement of the old format (or one of a kind the core does not know), which offers no button."""
+    kind, external_id = data.get("kind"), data.get("sequel_id")
+    if not kind or not external_id:
         return None
     try:
-        return TitleKind(kind), str(sequel_id)
+        return Followable(TitleKind(kind), str(external_id))
     except ValueError:
         return None
 
 
-def _recent_row(unit: delivery.Unit, events: Mapping[int, FeedEvent], listed: Mapping[tuple[TitleKind, str], int]) -> RecentRow:
+def _recent_row(unit: delivery.Unit, events: Mapping[int, FeedEvent], listed: Mapping[Followable, int]) -> RecentRow:
     latest = events[unit.members[0].event_id]  # the events come latest first, and a folded unit stands at its first one
     headline, *details = unit.text.split("\n")
     watched, follow = False, None
@@ -259,17 +266,17 @@ def _recent_row(unit: delivery.Unit, events: Mapping[int, FeedEvent], listed: Ma
     if lead is not None:
         names = {action.name for action in event_actions(lead.type, lead.event_id, lead.title_id, lead.data)}
         watched = WATCHED in names and latest.status == TitleStatus.WANT
-        sequel = sequel_of(lead.data) if FOLLOW in names else None
-        follow = SequelOffer(sequel[0], sequel[1], listed.get(sequel)) if sequel else None
+        target = followable_of(lead.data) if FOLLOW in names else None
+        follow = FollowOffer(target, listed.get(target)) if target else None
     return RecentRow(latest.title, headline, tuple(d for d in details if d), latest.at, watched, follow)
 
 
 def recent(
-    events: Iterable[FeedEvent], today: date, listed: Mapping[tuple[TitleKind, str], int]
+    events: Iterable[FeedEvent], today: date, listed: Mapping[Followable, int]
 ) -> tuple[FeedDay[RecentRow], ...]:
     """«Недавно»: the days from today back to today − 6 that have something, the latest first; in a day the latest event
     first. Episodes of one season of a title found on one day are one row, as in the summary. `listed` gives the title
-    of a sequel the list has already."""
+    of an announced title the list has already."""
     first = today - timedelta(days=RECENT_DAYS - 1)
     days: dict[date, list[FeedEvent]] = {}
     for event in events:

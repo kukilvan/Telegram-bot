@@ -382,7 +382,7 @@ def test_pressing_follow_adds_the_sequel_as_wanted_and_shows_its_card(tracker, s
 
     assert [(t.name, t.status) for t in run(tracker.list_titles())] == [("Дюна", "watched"), ("Дюна: Часть третья", "want")]
     [(_, text, card_buttons)] = [r for r in replies if r[0] == "message"]
-    assert "Продолжение добавлено" in text and "Хочу" in text
+    assert "Добавлено в список" in text and "Хочу" in text
     assert [b.text for b in card_buttons] == ["✅ Посмотрел", "🗑 Удалить"]
     assert replies.dropped == [None]  # its only button is spent: the keyboard comes off whole
 
@@ -445,7 +445,7 @@ def test_follow_works_after_the_original_film_is_deleted(tracker, sequels, clock
     Chat_(tracker).press(buttons[0].callback_data)
 
     assert [(t.name, t.status) for t in run(tracker.list_titles())] == [("Дюна: Часть третья", "want")]
-    assert "Продолжение добавлено" in messages(replies)[0][1]
+    assert "Добавлено в список" in messages(replies)[0][1]
 
 
 def test_an_old_follow_button_with_an_event_number_still_works_while_the_event_exists(

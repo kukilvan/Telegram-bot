@@ -26,7 +26,7 @@ from app.tracker.errors import (
     UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
-from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, RecentRow, SequelOffer, UpcomingRow
+from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, FollowOffer, Followable, RecentRow, UpcomingRow
 from app.tracker.listing import Listing
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
@@ -55,7 +55,7 @@ from app.tracker.titles import Titles
 
 __all__ = [
     "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
-    "FeedTitle", "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SequelOffer",
+    "FeedTitle", "FollowOffer", "Followable", "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
     "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
     "UnknownEvent", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason", "ZoneOption",

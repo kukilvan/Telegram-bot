@@ -69,9 +69,9 @@
         {% if line.follow.listed %}
         <a class="row-action button-link" href="{{ line.follow.listed }}">В списке</a>
         {% else %}
-        <form class="row-action" method="post" action="{{ sequels_address }}" hx-post="{{ sequels_address }}" hx-target="#feed" hx-swap="outerHTML" hx-disabled-elt="find button">
+        <form class="row-action" method="post" action="{{ follow_address }}" hx-post="{{ follow_address }}" hx-target="#feed" hx-swap="outerHTML" hx-disabled-elt="find button">
           <input type="hidden" name="kind" value="{{ line.follow.kind }}">
-          <input type="hidden" name="sequel_id" value="{{ line.follow.sequel_id }}">
+          <input type="hidden" name="external_id" value="{{ line.follow.external_id }}">
           {{ busy_button("Следить", "Добавляю…") }}
         </form>
         {% endif %}

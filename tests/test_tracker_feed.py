@@ -409,8 +409,8 @@ def test_follow_is_offered_under_a_sequel_announcement_with_its_title_when_the_l
 
     rows = {r.headline: r for r in feed(tracker).recent[0].rows}
 
-    assert rows["🎬 Анонсировано продолжение 3"].follow == feed_rows.SequelOffer(MOVIE, "3", three)
-    assert rows["🎬 Анонсировано продолжение 4"].follow == feed_rows.SequelOffer(MOVIE, "4", None)
+    assert rows["🎬 Анонсировано продолжение 3"].follow == feed_rows.FollowOffer(feed_rows.Followable(MOVIE, "3"), three)
+    assert rows["🎬 Анонсировано продолжение 4"].follow == feed_rows.FollowOffer(feed_rows.Followable(MOVIE, "4"), None)
     assert rows["🎬 Старый формат"].follow is None
     assert not any(r.watched for r in rows.values())
 

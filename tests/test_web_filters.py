@@ -206,7 +206,7 @@ def test_the_card_and_the_feed_say_the_same_sentence_for_each_error(client, sess
     # a film without a look at its sequels has no block for the line: without HTMX the line crosses to the card page
     pressed = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "9"})
     on_card = client.get(pressed.headers["location"])
-    on_feed = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "9"}, headers=HTMX)
+    on_feed = client.post("/feed/follow", data={"kind": "movie", "external_id": "9"}, headers=HTMX)
 
     assert phrase_of_it in on_card.text and phrase_of_it in on_feed.text
 
