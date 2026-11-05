@@ -1,6 +1,6 @@
 # 02: The weekly check — reconciliation, 10 a pass, reference point, events queued, failures
 
-Status: in review
+Status: accepted
 Complexity: complex (a new poller step with reconciliation by the status rule, a bounded queue per pass, a race with «Бросил», failure handling, a change of who owns the price source)
 Blocked by: 01
 

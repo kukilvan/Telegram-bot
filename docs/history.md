@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-05 — Stage 6.3, ticket 02: the weekly follow-up check
+
+- `app/tracker/pollers/game_follow_ups.py`: `for_follow_ups(status, expansion)` (the one place of the rule; it takes `GameState.expansion`, not the whole state, because the reconciliation reads only that key), `FOLLOW_UP_STATUSES` («Хочу», «В процессе», «Пройдено» = `COMPLETED`), `GameFollowUps.check`: the reconciliation in three reads (a game whose own snapshot cannot be read is left out with a warning and keeps its snapshot; its due check then fails and is told), `FOLLOW_UPS_PER_PASS = 10` by `next_check_at`, then title; per game — strict read of the state, the request with no database open, one read session, `follow_ups.check`, events each in a write session that re-checks the rule, then the store and `FOLLOW_UP_INTERVAL = 7 days`. Failures (any error of the request, a spoiled state or own snapshot) wait 30 minutes and are told, unless the game left the check meanwhile; a bug in one game is logged with its traceback and postponed.
+- `games.expansion_of`: the strict read of the key `expansion` only (used by `GameState.from_state` too).
+- `GamePoller.end_of_pass`: prices, then follow-ups, each guarded. `Poller` has no `price_source`; `Pollers` passes `price_source` and `follow_up_source` through a small table by kind to the game poller only; `Tracker.follow_up_source`; `app/main.py` builds one `IGDBProvider` for `IgdbGameSource` and `IgdbFollowUpSource`.
+- Tests: `test_tracker_game_follow_ups` (39). KI-53: «Бросил» and «Вернуть в список» within a minute keep the old reference point. Live: the first pass checked the 5 games of the list silently (The Witcher 3 — 7 known, Elden Ring — 2, the others 0).
+
 ## 2026-11-05 — Stage 6.3, ticket 01: the follow-up source, the pure rules, the expansion in the game snapshot
 
 - `app/tracker/sources/igdb_follow_ups.py`: `FOLLOW_UPS_QUERY` (spec 3.1, the 15 candidate fields for `expansions`, `standalone_expansions`, `remakes`, `remasters`, `collections.games`), the soft parse `parse_follow_ups` → `FollowUpsSnapshot`, `IgdbFollowUpSource.follow_ups(id)` (source key `igdb_follow_ups`; empty answer — `TitleGone`, no keys — `SourceNotConfigured` before the network). It reuses `igdb_games.russian_name`, `is_game` and the now public `known_platforms`, `read_releases`.
