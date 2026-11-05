@@ -1,4 +1,4 @@
-Status: in review
+Status: accepted
 
 # Review of stage 6.3: expansions and sequels of games
 

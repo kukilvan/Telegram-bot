@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-05 — Stage 6.3, review: stage closed
+
+- `.scratch/6-3-game-dlc-sequels/review.md`: two passes (standards, spec), the live bot checked (snapshots, the cards of «Ведьмак 3», Elden Ring, Hades II, «Кровь и Вино», the List mark — table 4.6 exactly); no fix-round finding, so the stage is closed.
+- Fixed now: one `_title_checked` in `pollers/game_follow_ups.py` for `_decide`, `_queue` and `_postpone` (a game IGDB turned into a type-2 expansion while its request failed gets no notice); `storage.snapshot_of` replaces `price_snapshot` and `follow_up_snapshot`; `igdb_games.expansion_type` — one soft reading of `game_type` for both adapters (a list there no longer raises); `cards.PARENT_LINE_END` carried by `ParentLine.end`; `follow_ups._dates_on_mine`; `CONTEXT.md` names `tag`, `Followable`, `FollowOffer`, `FOLLOW_TYPES`.
+- Deferred: KI-54 (an announcement withdrawn by «Бросил» keeps its key), KI-55 (an unreadable own snapshot: a log line every minute, two behaviours), KI-56 (the size test misses the pure modules: `games.py` 406, `series_events.py` 521).
+- Kept as the spec says: «Следить» in a summary is not cut, for movie sequels too; any failure of the source is a failure of the game with a notice, as in `polling._poll_one`; the card reads stay in `pollers/game_follow_ups.py` (spec 2.1).
+- Tests: 3042 passed (two new), the three known Windows failures only.
+
 ## 2026-11-05 — Stage 6.3, ticket 04: announcements, Feed and bot «Следить», samples
 
 - `actions.FOLLOW_TYPES` — the one list of the event types with «Следить» (the movie `SEQUEL_ANNOUNCED` and `follow_ups.TYPES`); under a game announcement «👀 Следить» (`game:<igdb id>`) and «📄 Карточка» of the checked game, a movie announcement keeps «Следить» alone.
