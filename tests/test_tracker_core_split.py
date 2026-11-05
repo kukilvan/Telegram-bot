@@ -18,13 +18,13 @@ from app.tracker.pollers.base import Poller
 TRACKER = Path(core.__file__).parent
 MODULES = (
     "context", "settings_store", "storage", "queue", "titles", "statuses", "listing", "feed", "polling", "delivery_service",
-    "test_samples", "core", "prices", "price_rows", "sources/steam_prices",
+    "test_samples", "core", "prices", "price_rows", "sources/steam_prices", "follow_ups", "sources/igdb_follow_ups",
 )
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
     "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
     "cards", "kinds", "scores", "text", "genres", "feed_rows", "zones", "platforms", "games", "game_events", "game_rows",
-    "prices", "price_rows",
+    "prices", "price_rows", "follow_ups",
 )
 MAX_LINES = 400
 

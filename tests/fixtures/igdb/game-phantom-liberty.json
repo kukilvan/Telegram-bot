@@ -1,0 +1,143 @@
+[
+ {
+  "id": 215769,
+  "cover": {
+   "id": 333294,
+   "image_id": "co7566"
+  },
+  "external_games": [
+   {
+    "id": 2728712,
+    "uid": "09e93226982146418cadd046cdd292af",
+    "url": "https://store.epicgames.com/en-US/p/cyberpunk-2077--phantom-liberty",
+    "external_game_source": 26
+   },
+   {
+    "id": 2746662,
+    "uid": "10d85eb96fec4edea3fbe213a8583973",
+    "url": "https://store.epicgames.com/en-US/p/cyberpunk-2077--phantom-liberty",
+    "external_game_source": 26
+   },
+   {
+    "id": 2712618,
+    "uid": "2138330",
+    "url": "https://store.steampowered.com/app/2138330",
+    "external_game_source": 1
+   },
+   {
+    "id": 2712803,
+    "uid": "1256837418",
+    "url": "https://www.gog.com/en/game/cyberpunk_2077_phantom_liberty",
+    "external_game_source": 5
+   }
+  ],
+  "first_release_date": 1695686400,
+  "genres": [
+   {
+    "id": 5,
+    "name": "Shooter"
+   },
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Cyberpunk 2077: Phantom Liberty",
+  "parent_game": {
+   "id": 1877,
+   "alternative_names": [
+    {
+     "id": 71590,
+     "comment": "Chinese title - simplified",
+     "name": "赛博朋克2077"
+    },
+    {
+     "id": 71591,
+     "comment": "Chinese title - traditional",
+     "name": "電馭叛客2077"
+    },
+    {
+     "id": 71593,
+     "comment": "Russian unofficial title",
+     "name": "Киберпанк 2077"
+    },
+    {
+     "id": 53534,
+     "comment": "Korean Acroynm",
+     "name": "사펑"
+    },
+    {
+     "id": 282431,
+     "comment": "Japanese title - stylized",
+     "name": "サイバーパンク2077"
+    }
+   ],
+   "name": "Cyberpunk 2077"
+  },
+  "platforms": [
+   169,
+   508,
+   6,
+   167,
+   14
+  ],
+  "release_dates": [
+   {
+    "id": 482776,
+    "date": 1695686400,
+    "m": 9,
+    "platform": 6,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 482777,
+    "date": 1695686400,
+    "m": 9,
+    "platform": 167,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 777305,
+    "date": 1752710400,
+    "m": 7,
+    "platform": 14,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 482778,
+    "date": 1695686400,
+    "m": 9,
+    "platform": 169,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 855692,
+    "date": 1749081600,
+    "m": 6,
+    "platform": 508,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "summary": "Phantom Liberty is a spy-thriller expansion for the open-world action RPG Cyberpunk 2077. The narrative centers on the aftermath of the President of the New United States of America's orbital shuttle being shot down over Dogtown, one of Night City’s most dangerous districts. Players control V, a mercenary tasked with navigating a complex web of espionage and political intrigue.\n\nThe expansion introduces Dogtown, a heavily militarized, autonomous zone ruled by a strict and authoritarian leader. With support from NUSA sleeper agent Solomon Reed (voiced by Idris Elba) and returning character Johnny Silverhand (voiced by Keanu Reeves), players engage in a story involving shifting alliances and covert operations. Designed for next-generation hardware, Phantom Liberty features new gameplay mechanics, side activities, and a main storyline centered on themes of power, trust, and survival.",
+  "game_type": 2
+ }
+]

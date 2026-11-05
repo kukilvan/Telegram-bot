@@ -1,0 +1,596 @@
+[
+ {
+  "id": 14593,
+  "first_release_date": 1487894400,
+  "name": "Hollow Knight",
+  "collections": [
+   {
+    "id": 5702,
+    "games": [
+     {
+      "id": 106817,
+      "first_release_date": 1508976000,
+      "name": "Hollow Knight: The Grimm Troupe",
+      "platforms": [
+       3,
+       6,
+       14,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 156629,
+        "date": 1508976000,
+        "m": 10,
+        "platform": 14,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 343889,
+        "date": 1528761600,
+        "m": 6,
+        "platform": 130,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 343890,
+        "date": 1508976000,
+        "m": 10,
+        "platform": 3,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 156628,
+        "date": 1508976000,
+        "m": 10,
+        "platform": 6,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 115289,
+      "alternative_names": [
+       {
+        "id": 182388,
+        "comment": "Alternative title",
+        "name": "Silksong"
+       },
+       {
+        "id": 184785,
+        "comment": "Windows Executable",
+        "name": "Hollow Knight Silksong.exe"
+       }
+      ],
+      "first_release_date": 1756944000,
+      "name": "Hollow Knight: Silksong",
+      "platforms": [
+       169,
+       48,
+       3,
+       508,
+       6,
+       167,
+       14,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 789226,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 3,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789227,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 14,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789229,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 508,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789230,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789234,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 169,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789228,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 130,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789231,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 48,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789232,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 167,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 789233,
+        "date": 1756944000,
+        "m": 9,
+        "platform": 49,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 14593,
+      "alternative_names": [
+       {
+        "id": 169043,
+        "comment": "Alternative title",
+        "name": "Hollow Knight: Voidheart Edition"
+       },
+       {
+        "id": 182108,
+        "comment": "Windows Executable",
+        "name": "hollow_knight.exe"
+       }
+      ],
+      "first_release_date": 1487894400,
+      "name": "Hollow Knight",
+      "platforms": [
+       169,
+       48,
+       3,
+       508,
+       6,
+       167,
+       14,
+       41,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 607803,
+        "date": 1528761600,
+        "m": 6,
+        "platform": 130,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 716337,
+        "date": 1514678400,
+        "m": 12,
+        "platform": 41,
+        "y": 2017,
+        "status": 5,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 499738,
+        "date": 1487894400,
+        "m": 2,
+        "platform": 3,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 714898,
+        "date": 1537833600,
+        "m": 9,
+        "platform": 49,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 499739,
+        "date": 1491868800,
+        "m": 4,
+        "platform": 14,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 714899,
+        "date": 1537833600,
+        "m": 9,
+        "platform": 48,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 499741,
+        "date": 1487894400,
+        "m": 2,
+        "platform": 6,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 867729,
+        "date": 1770249600,
+        "m": 2,
+        "platform": 508,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 867816,
+        "date": 1770249600,
+        "m": 2,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 867817,
+        "date": 1770249600,
+        "m": 2,
+        "platform": 169,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 105420,
+      "alternative_names": [
+       {
+        "id": 290126,
+        "comment": "Working title",
+        "name": "Hollow Knight: Gods & Glory"
+       }
+      ],
+      "first_release_date": 1534982400,
+      "name": "Hollow Knight: Godmaster",
+      "platforms": [
+       48,
+       3,
+       6,
+       14,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 188976,
+        "date": 1534982400,
+        "m": 8,
+        "platform": 130,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188977,
+        "date": 1534982400,
+        "m": 8,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188978,
+        "date": 1534982400,
+        "m": 8,
+        "platform": 14,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188979,
+        "date": 1534982400,
+        "m": 8,
+        "platform": 3,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188981,
+        "date": 1537833600,
+        "m": 9,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188980,
+        "date": 1537833600,
+        "m": 9,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 136396,
+      "first_release_date": 1524182400,
+      "name": "Hollow Knight: Lifeblood",
+      "platforms": [
+       3,
+       6,
+       14,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 301562,
+        "date": 1524182400,
+        "m": 4,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 301563,
+        "date": 1524182400,
+        "m": 4,
+        "platform": 14,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 301564,
+        "date": 1524182400,
+        "m": 4,
+        "platform": 3,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 343888,
+        "date": 1528761600,
+        "m": 6,
+        "platform": 130,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 106818,
+      "first_release_date": 1501718400,
+      "name": "Hollow Knight: Hidden Dreams",
+      "platforms": [
+       3,
+       6,
+       14,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 343886,
+        "date": 1501718400,
+        "m": 8,
+        "platform": 3,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 343887,
+        "date": 1528761600,
+        "m": 6,
+        "platform": 130,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 156632,
+        "date": 1501718400,
+        "m": 8,
+        "platform": 14,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 156631,
+        "date": 1501718400,
+        "m": 8,
+        "platform": 6,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 381684,
+      "first_release_date": 1798675200,
+      "name": "Hollow Knight: Silksong - Sea of Sorrow",
+      "platforms": [
+       169,
+       48,
+       3,
+       508,
+       6,
+       167,
+       14,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 847250,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 167,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847251,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 130,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847252,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 48,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847256,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 49,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847083,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 6,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847084,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 508,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847253,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 169,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847254,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 14,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 847255,
+        "date": 1798675200,
+        "m": 12,
+        "platform": 3,
+        "y": 2026,
+        "date_format": 2,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     }
+    ],
+    "name": "Hollow Knight"
+   }
+  ],
+  "game_type": 0
+ }
+]

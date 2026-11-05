@@ -1,0 +1,6808 @@
+[
+ {
+  "id": 133004,
+  "expansions": [
+   {
+    "id": 185706,
+    "alternative_names": [
+     {
+      "id": 80675,
+      "comment": "Alternative spelling",
+      "name": "Assassin's Creed Valhalla: Dawn of Ragnarok"
+     },
+     {
+      "id": 135118,
+      "comment": "German title",
+      "name": "Assassin's Creed Valhalla: Die Zeichen Ragnaröks"
+     }
+    ],
+    "first_release_date": 1646870400,
+    "name": "Assassin's Creed Valhalla: Dawn of Ragnarök",
+    "platforms": [
+     170,
+     169,
+     48,
+     6,
+     167,
+     49
+    ],
+    "release_dates": [
+     {
+      "id": 329982,
+      "date": 1646870400,
+      "m": 3,
+      "platform": 6,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 329986,
+      "date": 1646870400,
+      "m": 3,
+      "platform": 167,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 329985,
+      "date": 1646870400,
+      "m": 3,
+      "platform": 48,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 329983,
+      "date": 1646870400,
+      "m": 3,
+      "platform": 169,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 329987,
+      "date": 1646870400,
+      "m": 3,
+      "platform": 170,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 329984,
+      "date": 1646870400,
+      "m": 3,
+      "platform": 49,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   },
+   {
+    "id": 140174,
+    "alternative_names": [
+     {
+      "id": 135116,
+      "comment": "German title",
+      "name": "Assassin's Creed Valhalla: Zorn der Druiden"
+     }
+    ],
+    "first_release_date": 1620864000,
+    "name": "Assassin's Creed Valhalla: Wrath of the Druids",
+    "platforms": [
+     169,
+     48,
+     6,
+     167,
+     49
+    ],
+    "release_dates": [
+     {
+      "id": 238437,
+      "date": 1620864000,
+      "m": 5,
+      "platform": 6,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 238435,
+      "date": 1620864000,
+      "m": 5,
+      "platform": 167,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 238436,
+      "date": 1620864000,
+      "m": 5,
+      "platform": 169,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 238438,
+      "date": 1620864000,
+      "m": 5,
+      "platform": 48,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 238439,
+      "date": 1620864000,
+      "m": 5,
+      "platform": 49,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   },
+   {
+    "id": 140175,
+    "alternative_names": [
+     {
+      "id": 135117,
+      "comment": "German title",
+      "name": "Assassin's Creed Valhalla: Die Belagerung von Paris"
+     }
+    ],
+    "first_release_date": 1628726400,
+    "name": "Assassin's Creed Valhalla: The Siege of Paris",
+    "platforms": [
+     170,
+     169,
+     48,
+     6,
+     167,
+     49
+    ],
+    "release_dates": [
+     {
+      "id": 315068,
+      "date": 1628726400,
+      "m": 8,
+      "platform": 167,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 315069,
+      "date": 1628726400,
+      "m": 8,
+      "platform": 169,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 315070,
+      "date": 1628726400,
+      "m": 8,
+      "platform": 49,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 315071,
+      "date": 1628726400,
+      "m": 8,
+      "platform": 48,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 315073,
+      "date": 1628726400,
+      "m": 8,
+      "platform": 170,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 315072,
+      "date": 1628726400,
+      "m": 8,
+      "platform": 6,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   }
+  ],
+  "first_release_date": 1604966400,
+  "name": "Assassin's Creed Valhalla",
+  "standalone_expansions": [
+   {
+    "id": 152231,
+    "alternative_names": [
+     {
+      "id": 83313,
+      "comment": "Alternative title",
+      "name": "Assassin’s Creed Valhalla Discovery Tour: Viking Age"
+     }
+    ],
+    "first_release_date": 1634601600,
+    "name": "Discovery Tour: Viking Age",
+    "platforms": [
+     170,
+     169,
+     48,
+     6,
+     167,
+     49
+    ],
+    "release_dates": [
+     {
+      "id": 366264,
+      "date": 1655164800,
+      "m": 6,
+      "platform": 169,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 2
+     },
+     {
+      "id": 367366,
+      "date": 1655164800,
+      "m": 6,
+      "platform": 167,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 367783,
+      "date": 1655164800,
+      "m": 6,
+      "platform": 48,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 423047,
+      "date": 1655164800,
+      "m": 6,
+      "platform": 170,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 329998,
+      "date": 1634601600,
+      "m": 10,
+      "platform": 6,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 366263,
+      "date": 1655164800,
+      "m": 6,
+      "platform": 49,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 2
+     }
+    ],
+    "game_type": 4
+   }
+  ],
+  "collections": [
+   {
+    "id": 18,
+    "games": [
+     {
+      "id": 228706,
+      "first_release_date": 1639440000,
+      "name": "Assassin's Creed Valhalla: A Fated Encounter",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 466412,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466410,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466411,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466413,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466414,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 216321,
+      "alternative_names": [
+       {
+        "id": 143404,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed: Neo"
+       }
+      ],
+      "name": "Assassin's Creed: Codename Hexe",
+      "platforms": [
+       169,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 387872,
+        "platform": 167,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 387873,
+        "platform": 6,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 387871,
+        "platform": 169,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 18865,
+      "alternative_names": [
+       {
+        "id": 68476,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed 2: Discovery"
+       }
+      ],
+      "first_release_date": 1258416000,
+      "name": "Assassin's Creed II: Discovery",
+      "platforms": [
+       39,
+       20
+      ],
+      "release_dates": [
+       {
+        "id": 49993,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 20,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 49994,
+        "date": 1258588800,
+        "m": 11,
+        "platform": 20,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 49995,
+        "date": 1258675200,
+        "m": 11,
+        "platform": 20,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 49996,
+        "date": 1262822400,
+        "m": 1,
+        "platform": 39,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 77209,
+      "first_release_date": 1319155200,
+      "name": "Assassin's Creed: Multiplayer Rearmed",
+      "platforms": [
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 159353,
+        "date": 1319155200,
+        "m": 10,
+        "platform": 39,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 128,
+      "alternative_names": [
+       {
+        "id": 4073,
+        "comment": "Acronym",
+        "name": "AC 1"
+       },
+       {
+        "id": 24518,
+        "comment": "Acronym",
+        "name": "AC1"
+       },
+       {
+        "id": 2511,
+        "comment": "Acronym",
+        "name": "AC"
+       },
+       {
+        "id": 68472,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed"
+       },
+       {
+        "id": 148270,
+        "comment": "Working title",
+        "name": "Prince of Persia: Assassin"
+       }
+      ],
+      "first_release_date": 1194912000,
+      "name": "Assassin's Creed",
+      "platforms": [
+       9,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 107329,
+        "date": 1195171200,
+        "m": 11,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 107328,
+        "date": 1196294400,
+        "m": 11,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 169191,
+        "date": 1195603200,
+        "m": 11,
+        "platform": 12,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 169190,
+        "date": 1195603200,
+        "m": 11,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 165493,
+        "date": 1194912000,
+        "m": 11,
+        "platform": 12,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 165492,
+        "date": 1194912000,
+        "m": 11,
+        "platform": 9,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 169188,
+        "date": 1195171200,
+        "m": 11,
+        "platform": 12,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 27827,
+      "first_release_date": 1207612800,
+      "name": "Assassin's Creed: Director's Cut Edition",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 169200,
+        "date": 1207872000,
+        "m": 4,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 169198,
+        "date": 1207612800,
+        "m": 4,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 169199,
+        "date": 1207785600,
+        "m": 4,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 3
+       }
+      ],
+      "game_type": 10
+     },
+     {
+      "id": 68526,
+      "first_release_date": 1191801600,
+      "name": "Assassin's Creed Mobile",
+      "platforms": [
+       34,
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 844114,
+        "date": 1191801600,
+        "m": 10,
+        "platform": 34,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 114318,
+        "date": 1191801600,
+        "m": 10,
+        "platform": 55,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 127,
+      "alternative_names": [
+       {
+        "id": 60600,
+        "comment": "Acronym",
+        "name": "ACII"
+       },
+       {
+        "id": 60601,
+        "comment": "Acronym",
+        "name": "AC2"
+       },
+       {
+        "id": 60603,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed 2"
+       },
+       {
+        "id": 243603,
+        "comment": "Windows Executable",
+        "name": "AssassinsCreedIIGame.exe"
+       },
+       {
+        "id": 272884,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed 2"
+       }
+      ],
+      "first_release_date": 1258416000,
+      "name": "Assassin's Creed II",
+      "platforms": [
+       9,
+       6,
+       14,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 107336,
+        "date": 1259798400,
+        "m": 12,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 242527,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 12,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 107338,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 107337,
+        "date": 1258588800,
+        "m": 11,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 458861,
+        "date": 1300320000,
+        "m": 3,
+        "platform": 14,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 242528,
+        "date": 1283299200,
+        "m": 9,
+        "platform": 14,
+        "y": 2010,
+        "date_format": 1,
+        "release_region": 8
+       },
+       {
+        "id": 242529,
+        "date": 1268092800,
+        "m": 3,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 221822,
+      "first_release_date": 1479168000,
+      "name": "Assassin's Creed II",
+      "platforms": [
+       48,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 689433,
+        "date": 1645056000,
+        "m": 2,
+        "platform": 130,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689434,
+        "date": 1479168000,
+        "m": 11,
+        "platform": 48,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689435,
+        "date": 1479168000,
+        "m": 11,
+        "platform": 49,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 68527,
+      "first_release_date": 1255996800,
+      "name": "Assassin's Creed II Mobile",
+      "platforms": [
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 114319,
+        "date": 1255996800,
+        "m": 10,
+        "platform": 55,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 22974,
+      "first_release_date": 1266451200,
+      "name": "Assassin's Creed II: Bonfire of the Vanities",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 162503,
+        "date": 1267833600,
+        "m": 3,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 162504,
+        "date": 1266451200,
+        "m": 2,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 162738,
+        "date": 1266451200,
+        "m": 2,
+        "platform": 12,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 9562,
+      "alternative_names": [
+       {
+        "id": 130396,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed II: Battle of Forli"
+       }
+      ],
+      "first_release_date": 1264636800,
+      "name": "Assassin's Creed II: Battle of Forlì",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 38020,
+        "date": 1264636800,
+        "m": 1,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 38018,
+        "date": 1267833600,
+        "m": 3,
+        "platform": 6,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 38019,
+        "date": 1264636800,
+        "m": 1,
+        "platform": 12,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 77265,
+      "first_release_date": 1325289600,
+      "name": "Assassin's Creed: Recollection",
+      "platforms": [
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 159352,
+        "date": 1325289600,
+        "m": 12,
+        "platform": 39,
+        "y": 2011,
+        "date_format": 2,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 17028,
+      "first_release_date": 1456358400,
+      "name": "Assassin's Creed Identity",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 654155,
+        "date": 1633046400,
+        "m": 10,
+        "platform": 34,
+        "y": 2021,
+        "status": 4,
+        "date_format": 1,
+        "release_region": 8
+       },
+       {
+        "id": 654156,
+        "date": 1412035200,
+        "m": 9,
+        "platform": 39,
+        "y": 2014,
+        "status": 2,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 654157,
+        "date": 1456358400,
+        "m": 2,
+        "platform": 39,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 654158,
+        "date": 1633046400,
+        "m": 10,
+        "platform": 39,
+        "y": 2021,
+        "status": 4,
+        "date_format": 1,
+        "release_region": 8
+       },
+       {
+        "id": 654154,
+        "date": 1463529600,
+        "m": 5,
+        "platform": 34,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 113,
+      "alternative_names": [
+       {
+        "id": 60595,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed: Brotherhood"
+       },
+       {
+        "id": 60596,
+        "comment": "Abbreviation",
+        "name": "AC Brotherhood"
+       },
+       {
+        "id": 60597,
+        "comment": "Abbreviation",
+        "name": "ACB"
+       },
+       {
+        "id": 257133,
+        "comment": "Windows Executable",
+        "name": "ACBSP.exe"
+       },
+       {
+        "id": 279042,
+        "comment": "Russian title",
+        "name": "Assassin's Creed: Братство крови"
+       }
+      ],
+      "first_release_date": 1289865600,
+      "name": "Assassin's Creed Brotherhood",
+      "platforms": [
+       9,
+       6,
+       14,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 107365,
+        "date": 1291852800,
+        "m": 12,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 64481,
+        "date": 1290038400,
+        "m": 11,
+        "platform": 12,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 107363,
+        "date": 1289865600,
+        "m": 11,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 373769,
+        "date": 1289865600,
+        "m": 11,
+        "platform": 14,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 64480,
+        "date": 1290038400,
+        "m": 11,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 64472,
+        "date": 1289865600,
+        "m": 11,
+        "platform": 12,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 64478,
+        "date": 1291852800,
+        "m": 12,
+        "platform": 12,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 64482,
+        "date": 1300320000,
+        "m": 3,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 64476,
+        "date": 1300320000,
+        "m": 3,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 64475,
+        "date": 1290038400,
+        "m": 11,
+        "platform": 12,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 64479,
+        "date": 1307059200,
+        "m": 6,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 64473,
+        "date": 1300579200,
+        "m": 3,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 459850,
+        "date": 1305763200,
+        "m": 5,
+        "platform": 14,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 107364,
+        "date": 1290124800,
+        "m": 11,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 68528,
+      "first_release_date": 1287619200,
+      "name": "Assassin's Creed: Brotherhood Mobile",
+      "platforms": [
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 114320,
+        "date": 1287619200,
+        "m": 10,
+        "platform": 55,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 221823,
+      "first_release_date": 1479168000,
+      "name": "Assassin's Creed Brotherhood",
+      "platforms": [
+       48,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 398450,
+        "date": 1479168000,
+        "m": 11,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 398452,
+        "date": 1645056000,
+        "m": 2,
+        "platform": 130,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 398451,
+        "date": 1479168000,
+        "m": 11,
+        "platform": 49,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 8216,
+      "alternative_names": [
+       {
+        "id": 3043,
+        "comment": "French title",
+        "name": "Assassin's Creed: Brotherhood: La disparition de Da Vinci"
+       }
+      ],
+      "first_release_date": 1299542400,
+      "name": "Assassin's Creed Brotherhood: The Da Vinci Disappearance",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 326994,
+        "date": 1300320000,
+        "m": 3,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 229037,
+        "date": 1299628800,
+        "m": 3,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 231249,
+        "date": 1299542400,
+        "m": 3,
+        "platform": 12,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 64133,
+      "first_release_date": 1289260800,
+      "name": "Assassin's Creed Brotherhood: Copernicus Conspiracy",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 112787,
+        "date": 1289260800,
+        "m": 11,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 112788,
+        "date": 1289952000,
+        "m": 11,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 537,
+      "alternative_names": [
+       {
+        "id": 60598,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed Revelations"
+       },
+       {
+        "id": 60599,
+        "comment": "Abbreviation",
+        "name": "AC: Revelations"
+       },
+       {
+        "id": 279060,
+        "comment": "Russian title",
+        "name": "Assassin's Creed: Откровения"
+       }
+      ],
+      "first_release_date": 1321228800,
+      "name": "Assassin's Creed Revelations",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 242525,
+        "date": 1321315200,
+        "m": 11,
+        "platform": 12,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 242526,
+        "date": 1321315200,
+        "m": 11,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 134438,
+        "date": 1321401600,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 134439,
+        "date": 1322524800,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 134437,
+        "date": 1321228800,
+        "m": 11,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 8217,
+      "alternative_names": [
+       {
+        "id": 3044,
+        "comment": "French title",
+        "name": "Assassin's Creed: Revelations: L'archive perdue"
+       }
+      ],
+      "first_release_date": 1330387200,
+      "name": "Assassin's Creed Revelations: The Lost Archive",
+      "platforms": [
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 204606,
+        "date": 1330387200,
+        "m": 2,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 23401,
+        "date": 1330387200,
+        "m": 2,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 204607,
+        "date": 1330387200,
+        "m": 2,
+        "platform": 9,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 64759,
+      "first_release_date": 1408579200,
+      "name": "Assassin's Creed: Memories",
+      "platforms": [
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 112845,
+        "date": 1408579200,
+        "m": 8,
+        "platform": 39,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 64737,
+      "alternative_names": [
+       {
+        "id": 68496,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed: Project Legacy"
+       },
+       {
+        "id": 68497,
+        "comment": "Alternative title",
+        "name": "Assassins Creed: Lost Legacy"
+       }
+      ],
+      "name": "Assassin's Creed: Project Legacy",
+      "platforms": [
+       82
+      ],
+      "release_dates": [
+       {
+        "id": 474050,
+        "date": 1285804800,
+        "m": 9,
+        "platform": 82,
+        "y": 2010,
+        "status": 4,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 1266,
+      "alternative_names": [
+       {
+        "id": 68477,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed 3"
+       },
+       {
+        "id": 68478,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed III"
+       },
+       {
+        "id": 68479,
+        "comment": "Acronym",
+        "name": "AC3"
+       },
+       {
+        "id": 68480,
+        "comment": "Acronym",
+        "name": "ACIII"
+       },
+       {
+        "id": 68481,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed 3"
+       }
+      ],
+      "first_release_date": 1351555200,
+      "name": "Assassin's Creed III",
+      "platforms": [
+       9,
+       6,
+       41,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 405866,
+        "date": 1353369600,
+        "m": 11,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 68639,
+        "date": 1351555200,
+        "m": 10,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 68640,
+        "date": 1353196800,
+        "m": 11,
+        "platform": 41,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 68642,
+        "date": 1354233600,
+        "m": 11,
+        "platform": 41,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 68645,
+        "date": 1352937600,
+        "m": 11,
+        "platform": 9,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 68646,
+        "date": 1351641600,
+        "m": 10,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 68647,
+        "date": 1352937600,
+        "m": 11,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 68648,
+        "date": 1353628800,
+        "m": 11,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 68649,
+        "date": 1356048000,
+        "m": 12,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 107340,
+        "date": 1351641600,
+        "m": 10,
+        "platform": 9,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 107339,
+        "date": 1351555200,
+        "m": 10,
+        "platform": 9,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 68643,
+        "date": 1354924800,
+        "m": 12,
+        "platform": 41,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 68530,
+      "first_release_date": 1353024000,
+      "name": "Assassin's Creed III Mobile",
+      "platforms": [
+       34,
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 397185,
+        "date": 1353024000,
+        "m": 11,
+        "platform": 55,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 397186,
+        "date": 1353024000,
+        "m": 11,
+        "platform": 34,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 109532,
+      "alternative_names": [
+       {
+        "id": 25155,
+        "comment": "Russian title",
+        "name": "Assassin's Creed III. Обновленная версия"
+       },
+       {
+        "id": 84208,
+        "name": "Assassin's Creed® III Обновленная версия"
+       }
+      ],
+      "first_release_date": 1553817600,
+      "name": "Assassin's Creed III Remastered",
+      "platforms": [
+       170,
+       48,
+       6,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 930121,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 170,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930122,
+        "date": 1558396800,
+        "m": 5,
+        "platform": 130,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930123,
+        "date": 1553817600,
+        "m": 3,
+        "platform": 6,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930124,
+        "date": 1553817600,
+        "m": 3,
+        "platform": 48,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930125,
+        "date": 1553817600,
+        "m": 3,
+        "platform": 49,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 8218,
+      "alternative_names": [
+       {
+        "id": 3046,
+        "comment": "French title",
+        "name": "Assassin's Creed III: La Tyrannie du Roi Washington"
+       }
+      ],
+      "first_release_date": 1366675200,
+      "name": "Assassin's Creed III: The Tyranny of King Washington",
+      "platforms": [
+       9,
+       6,
+       41,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 626937,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626938,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626939,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626936,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 261996,
+      "first_release_date": 1351555200,
+      "name": "Assassin's Creed III: Benedict Arnold",
+      "platforms": [
+       9,
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 504456,
+        "date": 1351555200,
+        "m": 10,
+        "platform": 9,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 504457,
+        "date": 1353542400,
+        "m": 11,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 158763,
+      "first_release_date": 1361232000,
+      "name": "Assassin's Creed III: Tyranny of King Washington - The Infamy",
+      "platforms": [
+       9,
+       6,
+       41,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 626950,
+        "date": 1361232000,
+        "m": 2,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626960,
+        "date": 1361318400,
+        "m": 2,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626961,
+        "date": 1361318400,
+        "m": 2,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626962,
+        "date": 1361318400,
+        "m": 2,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626963,
+        "date": 1361404800,
+        "m": 2,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 6
+     },
+     {
+      "id": 151549,
+      "first_release_date": 1355270400,
+      "name": "Assassin's Creed III: The Hidden Secrets Pack",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 288729,
+        "date": 1355270400,
+        "m": 12,
+        "platform": 6,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 1970,
+      "alternative_names": [
+       {
+        "id": 68488,
+        "comment": "Acronym",
+        "name": "AC4"
+       },
+       {
+        "id": 68490,
+        "comment": "Abbreviation",
+        "name": "Assassins Creed 4"
+       },
+       {
+        "id": 68491,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed 4: Black Flag"
+       },
+       {
+        "id": 88537,
+        "comment": "Russian title",
+        "name": "Assassin's Creed IV Черный флаг"
+       },
+       {
+        "id": 88538,
+        "comment": "Alternative spelling",
+        "name": "ACIV"
+       },
+       {
+        "id": 164395,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed IV: Black Flag"
+       },
+       {
+        "id": 184300,
+        "comment": "Windows Executable",
+        "name": "AC4BFSP.exe"
+       }
+      ],
+      "first_release_date": 1383004800,
+      "name": "Assassin's Creed IV Black Flag",
+      "platforms": [
+       170,
+       9,
+       48,
+       6,
+       41,
+       12,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 710454,
+        "date": 1631577600,
+        "m": 9,
+        "platform": 170,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710455,
+        "date": 1575590400,
+        "m": 12,
+        "platform": 130,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710456,
+        "date": 1384819200,
+        "m": 11,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 710460,
+        "date": 1385683200,
+        "m": 11,
+        "platform": 48,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 710461,
+        "date": 1384473600,
+        "m": 11,
+        "platform": 48,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 710466,
+        "date": 1385078400,
+        "m": 11,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 710463,
+        "date": 1383004800,
+        "m": 10,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 710462,
+        "date": 1385683200,
+        "m": 11,
+        "platform": 48,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 710464,
+        "date": 1385424000,
+        "m": 11,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 10
+       },
+       {
+        "id": 710457,
+        "date": 1385078400,
+        "m": 11,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 710458,
+        "date": 1384992000,
+        "m": 11,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 710459,
+        "date": 1383004800,
+        "m": 10,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710465,
+        "date": 1384992000,
+        "m": 11,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 710467,
+        "date": 1383004800,
+        "m": 10,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710468,
+        "date": 1385078400,
+        "m": 11,
+        "platform": 49,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 26095,
+      "first_release_date": 1384819200,
+      "name": "Assassin's Creed IV Black Flag: Aveline",
+      "platforms": [
+       48,
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 189160,
+        "date": 1396310400,
+        "m": 4,
+        "platform": 48,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 568440,
+        "date": 1384819200,
+        "m": 11,
+        "platform": 6,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 81205,
+      "first_release_date": 1521504000,
+      "name": "Assassin's Creed: Rogue Remastered",
+      "platforms": [
+       170,
+       48,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 488834,
+        "date": 1633392000,
+        "m": 10,
+        "platform": 170,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 488835,
+        "date": 1521504000,
+        "m": 3,
+        "platform": 48,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 488836,
+        "date": 1521504000,
+        "m": 3,
+        "platform": 49,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 5606,
+      "alternative_names": [
+       {
+        "id": 2428,
+        "comment": "Russian title",
+        "name": "Assassin’s Creed: Единство"
+       },
+       {
+        "id": 68502,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed V"
+       },
+       {
+        "id": 180151,
+        "comment": "Windows Executable",
+        "name": "ACU.exe"
+       }
+      ],
+      "first_release_date": 1415664000,
+      "name": "Assassin's Creed Unity",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 889918,
+        "date": 1772668800,
+        "m": 3,
+        "platform": 167,
+        "y": 2026,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 889919,
+        "date": 1772668800,
+        "m": 3,
+        "platform": 169,
+        "y": 2026,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 920106,
+        "date": 1607990400,
+        "m": 12,
+        "platform": 170,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 920107,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 6,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 920108,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 6,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 920109,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 6,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 920110,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 920111,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 920112,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 920113,
+        "date": 1416441600,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 920114,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 920115,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 920116,
+        "date": 1416441600,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 920117,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 222679,
+      "alternative_names": [
+       {
+        "id": 115221,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Unity: Chemical Revolution"
+       },
+       {
+        "id": 115222,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Unity: Chemical Revolution Mission"
+       }
+      ],
+      "first_release_date": 1415664000,
+      "name": "Assassin's Creed Unity: The Chemical Revolution",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 398762,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 398764,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 6,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 398763,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 239352,
+      "first_release_date": 1421625600,
+      "name": "Assassin's Creed Unity: Secrets of the Revolution",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 640467,
+        "date": 1421625600,
+        "m": 1,
+        "platform": 48,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 640468,
+        "date": 1421625600,
+        "m": 1,
+        "platform": 49,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 640469,
+        "date": 1421625600,
+        "m": 1,
+        "platform": 6,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 21349,
+      "alternative_names": [
+       {
+        "id": 290443,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed: Altair's Chronicles"
+       },
+       {
+        "id": 290444,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed: Altairs Chronicles"
+       },
+       {
+        "id": 291639,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed: Altaïrs Chronicles"
+       }
+      ],
+      "first_release_date": 1202169600,
+      "name": "Assassin's Creed: Altair's Chronicles",
+      "platforms": [
+       74,
+       34,
+       39,
+       20,
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 846582,
+        "date": 1240444800,
+        "m": 4,
+        "platform": 34,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 846583,
+        "date": 1240444800,
+        "m": 4,
+        "platform": 55,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 56054,
+        "date": 1289433600,
+        "m": 11,
+        "platform": 74,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 56055,
+        "date": 1202169600,
+        "m": 2,
+        "platform": 20,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 56053,
+        "date": 1240444800,
+        "m": 4,
+        "platform": 39,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 56056,
+        "date": 1207180800,
+        "m": 4,
+        "platform": 20,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 56057,
+        "date": 1207872000,
+        "m": 4,
+        "platform": 20,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 10661,
+      "alternative_names": [
+       {
+        "id": 68474,
+        "comment": "Abbreviation",
+        "name": "AC: Bloodlines"
+       },
+       {
+        "id": 68475,
+        "comment": "Alternative title",
+        "name": "Assassins Creed: Bloodlines"
+       }
+      ],
+      "first_release_date": 1258416000,
+      "name": "Assassin's Creed: Bloodlines",
+      "platforms": [
+       38
+      ],
+      "release_dates": [
+       {
+        "id": 107361,
+        "date": 1258675200,
+        "m": 11,
+        "platform": 38,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 30026,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 38,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 107362,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 38,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 26094,
+      "alternative_names": [
+       {
+        "id": 106363,
+        "comment": "Korean title",
+        "name": "어쌔신 크리드 4: 블랙 플래그 MP 캐릭터 팩 2: 악당들"
+       },
+       {
+        "id": 106334,
+        "comment": "Korean title",
+        "name": "Assassin's Creed IV Black Flag MP 캐릭터 팩 2: 악당들 (DLC)"
+       }
+      ],
+      "first_release_date": 1392076800,
+      "name": "Assassin's Creed IV Black Flag: Guild of Rogues",
+      "platforms": [
+       9,
+       48,
+       6,
+       41,
+       12,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 710778,
+        "date": 1392076800,
+        "m": 2,
+        "platform": 6,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710779,
+        "date": 1392076800,
+        "m": 2,
+        "platform": 9,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710780,
+        "date": 1392076800,
+        "m": 2,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710781,
+        "date": 1392076800,
+        "m": 2,
+        "platform": 12,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710782,
+        "date": 1392076800,
+        "m": 2,
+        "platform": 49,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 710783,
+        "date": 1392076800,
+        "m": 2,
+        "platform": 41,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 26092,
+      "alternative_names": [
+       {
+        "id": 138066,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed IV Black Flag: MP Character Pack - Blackbeard's Wrath"
+       }
+      ],
+      "first_release_date": 1386633600,
+      "name": "Assassin's Creed IV Black Flag: Blackbeard's Wrath",
+      "platforms": [
+       9,
+       48,
+       6,
+       12,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 733701,
+        "date": 1386633600,
+        "m": 12,
+        "platform": 49,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 733700,
+        "date": 1386633600,
+        "m": 12,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 733699,
+        "date": 1386720000,
+        "m": 12,
+        "platform": 48,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 733697,
+        "date": 1386633600,
+        "m": 12,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 733698,
+        "date": 1386720000,
+        "m": 12,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 216319,
+      "alternative_names": [
+       {
+        "id": 139321,
+        "comment": "Stylized title",
+        "name": "Assassin's Creed: JADE"
+       },
+       {
+        "id": 139322,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed: Jade"
+       },
+       {
+        "id": 139343,
+        "comment": "Working title",
+        "name": "Assassin's Creed Codename: Jade"
+       }
+      ],
+      "name": "Assassin's Creed Jade",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 848393,
+        "platform": 34,
+        "status": 6,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 848394,
+        "platform": 39,
+        "status": 6,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 7570,
+      "alternative_names": [
+       {
+        "id": 2456,
+        "comment": "Russian title",
+        "name": "Assassin’s Creed: Изгой"
+       },
+       {
+        "id": 68498,
+        "comment": "Abbreviation",
+        "name": "AC Rogue"
+       },
+       {
+        "id": 250004,
+        "comment": "Windows Executable",
+        "name": "ACC.exe"
+       }
+      ],
+      "first_release_date": 1415664000,
+      "name": "Assassin's Creed Rogue",
+      "platforms": [
+       9,
+       6,
+       12,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 625066,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 9,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 625065,
+        "date": 1425859200,
+        "m": 3,
+        "platform": 6,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 625068,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 12,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 625067,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 12,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 625069,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 12,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 919168,
+        "date": 1575590400,
+        "m": 12,
+        "platform": 130,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 8219,
+      "first_release_date": 1421107200,
+      "name": "Assassin's Creed Unity: Dead Kings",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 26187,
+        "date": 1421107200,
+        "m": 1,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 208787,
+        "date": 1421107200,
+        "m": 1,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 208788,
+        "date": 1421193600,
+        "m": 1,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 208785,
+        "date": 1421107200,
+        "m": 1,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 208786,
+        "date": 1421193600,
+        "m": 1,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 3195,
+      "alternative_names": [
+       {
+        "id": 78599,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Liberation"
+       },
+       {
+        "id": 68483,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed III: Lady Liberty"
+       },
+       {
+        "id": 68484,
+        "comment": "Abbreviation",
+        "name": "AC3 Liberation"
+       },
+       {
+        "id": 68485,
+        "comment": "Abbreviation",
+        "name": "ACIII Liberation"
+       },
+       {
+        "id": 68486,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed 3: Liberation"
+       },
+       {
+        "id": 68487,
+        "comment": "Abbreviation",
+        "name": "AC Liberation"
+       },
+       {
+        "id": 213284,
+        "comment": "Windows Executable",
+        "name": "ac3lhd_32.exe"
+       }
+      ],
+      "first_release_date": 1351555200,
+      "name": "Assassin's Creed III: Liberation",
+      "platforms": [
+       46
+      ],
+      "release_dates": [
+       {
+        "id": 789099,
+        "date": 1351555200,
+        "m": 10,
+        "platform": 46,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 789101,
+        "date": 1352937600,
+        "m": 11,
+        "platform": 46,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 982766,
+        "date": 1351641600,
+        "m": 10,
+        "platform": 46,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 20077,
+      "alternative_names": [
+       {
+        "id": 152689,
+        "comment": "Abbreviation",
+        "name": "AC Pirates"
+       }
+      ],
+      "first_release_date": 1386201600,
+      "name": "Assassin's Creed: Pirates",
+      "platforms": [
+       74,
+       34,
+       6,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 599306,
+        "date": 1407888000,
+        "m": 8,
+        "platform": 74,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 599305,
+        "date": 1407888000,
+        "m": 8,
+        "platform": 6,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 86979,
+        "date": 1386201600,
+        "m": 12,
+        "platform": 34,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 121813,
+        "date": 1386201600,
+        "m": 12,
+        "platform": 34,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 86978,
+        "date": 1386201600,
+        "m": 12,
+        "platform": 39,
+        "y": 2013,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 41030,
+      "alternative_names": [
+       {
+        "id": 63186,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed Rebellion"
+       }
+      ],
+      "first_release_date": 1542758400,
+      "name": "Assassin's Creed: Rebellion",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 162129,
+        "date": 1542758400,
+        "m": 11,
+        "platform": 39,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 162128,
+        "date": 1542758400,
+        "m": 11,
+        "platform": 34,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 251353,
+      "first_release_date": 1496275200,
+      "name": "Assassin's Creed Unity: Arno's Chronicles",
+      "platforms": [
+       34
+      ],
+      "release_dates": [
+       {
+        "id": 479854,
+        "date": 1496275200,
+        "m": 6,
+        "platform": 34,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 113098,
+      "alternative_names": [
+       {
+        "id": 135114,
+        "comment": "German title",
+        "name": "Assassin's Creed Odyssey: Das Schicksal von Atlantis"
+       }
+      ],
+      "first_release_date": 1555977600,
+      "name": "Assassin's Creed Odyssey: The Fate of Atlantis",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 168301,
+        "date": 1555977600,
+        "m": 4,
+        "platform": 49,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 168300,
+        "date": 1555977600,
+        "m": 4,
+        "platform": 6,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 239757,
+        "date": 1574121600,
+        "m": 11,
+        "platform": 170,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675820,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675821,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 168302,
+        "date": 1555977600,
+        "m": 4,
+        "platform": 48,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 112732,
+      "alternative_names": [
+       {
+        "id": 135115,
+        "comment": "German title",
+        "name": "Assassin's Creed Odyssey: Das Vermächtnis der ersten Klinge"
+       }
+      ],
+      "first_release_date": 1543881600,
+      "name": "Assassin's Creed Odyssey: Legacy of the First Blade",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 161813,
+        "date": 1543881600,
+        "m": 12,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 161812,
+        "date": 1543881600,
+        "m": 12,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 239758,
+        "date": 1574121600,
+        "m": 11,
+        "platform": 170,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675823,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675822,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 161814,
+        "date": 1543881600,
+        "m": 12,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 8223,
+      "alternative_names": [
+       {
+        "id": 264418,
+        "comment": "Windows Executable",
+        "name": "ACCGame-Win32-Shipping.exe"
+       }
+      ],
+      "first_release_date": 1429574400,
+      "name": "Assassin's Creed Chronicles: China",
+      "platforms": [
+       48,
+       6,
+       46,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 29210,
+        "date": 1429574400,
+        "m": 4,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 29211,
+        "date": 1429574400,
+        "m": 4,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 29212,
+        "date": 1429574400,
+        "m": 4,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 120774,
+        "date": 1429574400,
+        "m": 4,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 117050,
+        "date": 1459814400,
+        "m": 4,
+        "platform": 46,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 41943,
+        "date": 1459814400,
+        "m": 4,
+        "platform": 46,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 241432,
+      "first_release_date": 1538697600,
+      "name": "Assassin's Creed Odyssey: The Blind King",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 502195,
+        "date": 1574121600,
+        "m": 11,
+        "platform": 170,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 502196,
+        "date": 1538697600,
+        "m": 10,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 502197,
+        "date": 1538697600,
+        "m": 10,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 502198,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 502199,
+        "date": 1538697600,
+        "m": 10,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 502200,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 241431,
+      "first_release_date": 1541030400,
+      "name": "Assassin's Creed Odyssey: The Lost Tales of Greece",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 478512,
+        "date": 1541030400,
+        "m": 11,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 478513,
+        "date": 1541030400,
+        "m": 11,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 478514,
+        "date": 1541030400,
+        "m": 11,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675824,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675825,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 215060,
+      "alternative_names": [
+       {
+        "id": 106360,
+        "comment": "Korean title",
+        "name": "어쌔신 크리드 미라지"
+       },
+       {
+        "id": 182073,
+        "comment": "Windows Executable",
+        "name": "ACMirage.exe"
+       }
+      ],
+      "first_release_date": 1696464000,
+      "name": "Assassin's Creed Mirage",
+      "platforms": [
+       169,
+       48,
+       6,
+       39,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 515300,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 6,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 515301,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 48,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 527083,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 49,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 527084,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 169,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 515302,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 167,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 590002,
+        "date": 1717632000,
+        "m": 6,
+        "platform": 39,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 221824,
+      "first_release_date": 1479168000,
+      "name": "Assassin's Creed Revelations",
+      "platforms": [
+       48,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 398457,
+        "date": 1479168000,
+        "m": 11,
+        "platform": 49,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 398456,
+        "date": 1479168000,
+        "m": 11,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 398458,
+        "date": 1645056000,
+        "m": 2,
+        "platform": 130,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 111830,
+      "first_release_date": 1530403200,
+      "name": "Escape the Lost Pyramid",
+      "platforms": [
+       162
+      ],
+      "release_dates": [
+       {
+        "id": 296369,
+        "date": 1530403200,
+        "m": 7,
+        "platform": 162,
+        "y": 2018,
+        "date_format": 1,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 103054,
+      "alternative_names": [
+       {
+        "id": 50274,
+        "comment": "Korean title",
+        "name": "어쌔신 크리드: 오디세이"
+       },
+       {
+        "id": 184237,
+        "comment": "Windows Executable",
+        "name": "ACOdyssey.exe"
+       }
+      ],
+      "first_release_date": 1538697600,
+      "name": "Assassin's Creed Odyssey",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 153846,
+        "date": 1538697600,
+        "m": 10,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 178547,
+        "date": 1574121600,
+        "m": 11,
+        "platform": 170,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 153845,
+        "date": 1538697600,
+        "m": 10,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 153847,
+        "date": 1538697600,
+        "m": 10,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 743551,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 743552,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 64765,
+      "name": "Assassin's Creed Online: Alliance",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 112846,
+        "platform": 39,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 112847,
+        "platform": 34,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 61278,
+      "name": "Assassin's Creed: Utopia",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 395769,
+        "platform": 34,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 395889,
+        "platform": 39,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 26917,
+      "alternative_names": [
+       {
+        "id": 51186,
+        "comment": "Chinese title - traditional",
+        "name": "刺客信条: 血帆"
+       }
+      ],
+      "name": "Assassin's Creed: Bloodsail",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 691787,
+        "platform": 34,
+        "date_format": 7,
+        "release_region": 6
+       },
+       {
+        "id": 691788,
+        "platform": 39,
+        "date_format": 7,
+        "release_region": 6
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 68529,
+      "first_release_date": 1318291200,
+      "name": "Assassin's Creed Revelations Mobile",
+      "platforms": [
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 114321,
+        "date": 1318291200,
+        "m": 10,
+        "platform": 55,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 152231,
+      "alternative_names": [
+       {
+        "id": 83313,
+        "comment": "Alternative title",
+        "name": "Assassin’s Creed Valhalla Discovery Tour: Viking Age"
+       }
+      ],
+      "first_release_date": 1634601600,
+      "name": "Discovery Tour: Viking Age",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 366264,
+        "date": 1655164800,
+        "m": 6,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 367366,
+        "date": 1655164800,
+        "m": 6,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 367783,
+        "date": 1655164800,
+        "m": 6,
+        "platform": 48,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 423047,
+        "date": 1655164800,
+        "m": 6,
+        "platform": 170,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 329998,
+        "date": 1634601600,
+        "m": 10,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 366263,
+        "date": 1655164800,
+        "m": 6,
+        "platform": 49,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 135506,
+      "alternative_names": [
+       {
+        "id": 60492,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Origins: Discovery Tour"
+       },
+       {
+        "id": 83324,
+        "comment": "Polish alternative title",
+        "name": "Wycieczka z Assassin's Creed: Starożytny Egipt"
+       },
+       {
+        "id": 83325,
+        "comment": "Alternative title",
+        "name": "Discovery Tour by Assassin’s Creed: Ancient Egypt"
+       }
+      ],
+      "first_release_date": 1519084800,
+      "name": "Discovery Tour: Ancient Egypt",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 202136,
+        "date": 1519084800,
+        "m": 2,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 218069,
+        "date": 1519084800,
+        "m": 2,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 218070,
+        "date": 1519084800,
+        "m": 2,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 133962,
+      "alternative_names": [
+       {
+        "id": 83321,
+        "comment": "Alternative title",
+        "name": "Discovery Tour: Ancient Greece by Ubisoft"
+       },
+       {
+        "id": 83322,
+        "comment": "Alternative title",
+        "name": "Discovery Tour by Assassin's Creed: Ancient Greece"
+       },
+       {
+        "id": 83323,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Odyssey: Discovery Tour"
+       },
+       {
+        "id": 83326,
+        "comment": "Polish alternative title",
+        "name": "Wycieczka z Assassin's Creed: Starożytna Grecja"
+       }
+      ],
+      "first_release_date": 1568073600,
+      "name": "Discovery Tour: Ancient Greece",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 196011,
+        "date": 1568073600,
+        "m": 9,
+        "platform": 6,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 154791,
+      "name": "Assassin's Creed Infinity",
+      "game_type": 0
+     },
+     {
+      "id": 251568,
+      "alternative_names": [
+       {
+        "id": 134862,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Nexus"
+       }
+      ],
+      "first_release_date": 1700092800,
+      "name": "Assassin's Creed Nexus VR",
+      "platforms": [
+       386,
+       471
+      ],
+      "release_dates": [
+       {
+        "id": 524848,
+        "date": 1700092800,
+        "m": 11,
+        "platform": 386,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 524849,
+        "date": 1700092800,
+        "m": 11,
+        "platform": 471,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 28540,
+      "alternative_names": [
+       {
+        "id": 21989,
+        "comment": "Acronym",
+        "name": "ACO"
+       },
+       {
+        "id": 68495,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed Origins"
+       },
+       {
+        "id": 180291,
+        "comment": "Windows Executable",
+        "name": "ACOrigins.exe"
+       }
+      ],
+      "first_release_date": 1508976000,
+      "name": "Assassin's Creed Origins",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 856188,
+        "date": 1509062400,
+        "m": 10,
+        "platform": 49,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 856185,
+        "date": 1607990400,
+        "m": 12,
+        "platform": 170,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 856186,
+        "date": 1508976000,
+        "m": 10,
+        "platform": 6,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 856187,
+        "date": 1509062400,
+        "m": 10,
+        "platform": 48,
+        "y": 2017,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 743554,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 169,
+        "y": 2022,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 743553,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 167,
+        "y": 2022,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 17783,
+      "first_release_date": 1520899200,
+      "name": "Assassin's Creed Origins: The Curse of the Pharaohs",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 149030,
+        "date": 1520899200,
+        "m": 3,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 149031,
+        "date": 1520899200,
+        "m": 3,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 149029,
+        "date": 1520899200,
+        "m": 3,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676160,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676161,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 22964,
+      "first_release_date": 1516665600,
+      "name": "Assassin's Creed Origins: The Hidden Ones",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 149033,
+        "date": 1516665600,
+        "m": 1,
+        "platform": 49,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 149034,
+        "date": 1516665600,
+        "m": 1,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676158,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676159,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 149032,
+        "date": 1516665600,
+        "m": 1,
+        "platform": 6,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 8263,
+      "alternative_names": [
+       {
+        "id": 68499,
+        "comment": "Working title",
+        "name": "Assassin's Creed: Victory"
+       },
+       {
+        "id": 68500,
+        "comment": "Acronym",
+        "name": "ACS"
+       },
+       {
+        "id": 68501,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Victory"
+       },
+       {
+        "id": 180267,
+        "comment": "Windows Executable",
+        "name": "ACS.exe"
+       }
+      ],
+      "first_release_date": 1445558400,
+      "name": "Assassin's Creed Syndicate",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 150807,
+        "date": 1447286400,
+        "m": 11,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 150810,
+        "date": 1445558400,
+        "m": 10,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 412963,
+        "date": 1447804800,
+        "m": 11,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 150808,
+        "date": 1447286400,
+        "m": 11,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 239703,
+        "date": 1607990400,
+        "m": 12,
+        "platform": 170,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 150809,
+        "date": 1445558400,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 890037,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 167,
+        "y": 2024,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 890038,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 169,
+        "y": 2024,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 15169,
+      "first_release_date": 1450137600,
+      "name": "Assassin's Creed Syndicate: Jack the Ripper",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 229041,
+        "date": 1450137600,
+        "m": 12,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 229042,
+        "date": 1450137600,
+        "m": 12,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 229043,
+        "date": 1450742400,
+        "m": 12,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 677884,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 167,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 677885,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 169,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 18146,
+      "first_release_date": 1456790400,
+      "name": "Assassin's Creed Syndicate: The Last Maharaja",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 55094,
+        "date": 1456790400,
+        "m": 3,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 55096,
+        "date": 1456790400,
+        "m": 3,
+        "platform": 6,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 55095,
+        "date": 1456790400,
+        "m": 3,
+        "platform": 49,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 677882,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 167,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 677883,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 169,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 109432,
+      "first_release_date": 1460332800,
+      "name": "Assassin's Creed Syndicate: The Dreadful Crimes",
+      "platforms": [
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 677880,
+        "date": 1478217600,
+        "m": 11,
+        "platform": 48,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 677881,
+        "date": 1731888000,
+        "m": 11,
+        "platform": 167,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 158371,
+        "date": 1460332800,
+        "m": 4,
+        "platform": 6,
+        "y": 2016,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 140174,
+      "alternative_names": [
+       {
+        "id": 135116,
+        "comment": "German title",
+        "name": "Assassin's Creed Valhalla: Zorn der Druiden"
+       }
+      ],
+      "first_release_date": 1620864000,
+      "name": "Assassin's Creed Valhalla: Wrath of the Druids",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 238437,
+        "date": 1620864000,
+        "m": 5,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 238435,
+        "date": 1620864000,
+        "m": 5,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 238436,
+        "date": 1620864000,
+        "m": 5,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 238438,
+        "date": 1620864000,
+        "m": 5,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 238439,
+        "date": 1620864000,
+        "m": 5,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 140175,
+      "alternative_names": [
+       {
+        "id": 135117,
+        "comment": "German title",
+        "name": "Assassin's Creed Valhalla: Die Belagerung von Paris"
+       }
+      ],
+      "first_release_date": 1628726400,
+      "name": "Assassin's Creed Valhalla: The Siege of Paris",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 315068,
+        "date": 1628726400,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 315069,
+        "date": 1628726400,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 315070,
+        "date": 1628726400,
+        "m": 8,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 315071,
+        "date": 1628726400,
+        "m": 8,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 315073,
+        "date": 1628726400,
+        "m": 8,
+        "platform": 170,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 315072,
+        "date": 1628726400,
+        "m": 8,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 185706,
+      "alternative_names": [
+       {
+        "id": 80675,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed Valhalla: Dawn of Ragnarok"
+       },
+       {
+        "id": 135118,
+        "comment": "German title",
+        "name": "Assassin's Creed Valhalla: Die Zeichen Ragnaröks"
+       }
+      ],
+      "first_release_date": 1646870400,
+      "name": "Assassin's Creed Valhalla: Dawn of Ragnarök",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 329982,
+        "date": 1646870400,
+        "m": 3,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 329986,
+        "date": 1646870400,
+        "m": 3,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 329985,
+        "date": 1646870400,
+        "m": 3,
+        "platform": 48,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 329983,
+        "date": 1646870400,
+        "m": 3,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 329987,
+        "date": 1646870400,
+        "m": 3,
+        "platform": 170,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 329984,
+        "date": 1646870400,
+        "m": 3,
+        "platform": 49,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 217563,
+      "first_release_date": 1669680000,
+      "name": "Assassin's Creed Valhalla: The Last Chapter",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 466031,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466032,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 49,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466033,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 48,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466034,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466035,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 211296,
+      "first_release_date": 1659398400,
+      "name": "Assassin's Creed Valhalla: Forgotten Saga",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 377284,
+        "date": 1659398400,
+        "m": 8,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 377285,
+        "date": 1659398400,
+        "m": 8,
+        "platform": 48,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 377286,
+        "date": 1659398400,
+        "m": 8,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 377287,
+        "date": 1659398400,
+        "m": 8,
+        "platform": 170,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 377288,
+        "date": 1659398400,
+        "m": 8,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 150042,
+      "first_release_date": 1604966400,
+      "name": "Assassin's Creed Valhalla: The Way of the Berserker",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 672358,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 6,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 672359,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 48,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 672360,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 49,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 672361,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 169,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 931922,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 133004,
+      "alternative_names": [
+       {
+        "id": 54226,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed® Valhalla"
+       },
+       {
+        "id": 37994,
+        "comment": "Working title",
+        "name": "Assassin's Creed Kingdom"
+       },
+       {
+        "id": 52028,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed: Valhalla"
+       },
+       {
+        "id": 142629,
+        "comment": "Abbreviation",
+        "name": "AC Valhalla"
+       },
+       {
+        "id": 178857,
+        "comment": "Windows Executable",
+        "name": "ACValhalla.exe"
+       }
+      ],
+      "first_release_date": 1604966400,
+      "name": "Assassin's Creed Valhalla",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 209837,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 49,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 209838,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 6,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 213506,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 213504,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 170,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 213505,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 209840,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 169,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 209839,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 48,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 213507,
+        "date": 1605744000,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 222834,
+      "first_release_date": 1636416000,
+      "name": "Assassin's Creed Valhalla: Tombs of the Fallen",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 399485,
+        "date": 1636416000,
+        "m": 11,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399486,
+        "date": 1636416000,
+        "m": 11,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399484,
+        "date": 1636416000,
+        "m": 11,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399722,
+        "date": 1636416000,
+        "m": 11,
+        "platform": 170,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399487,
+        "date": 1636416000,
+        "m": 11,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399483,
+        "date": 1636416000,
+        "m": 11,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 222835,
+      "first_release_date": 1664236800,
+      "name": "Assassin's Creed Valhalla: Tombs of the Fallen Pack 2",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 399495,
+        "date": 1664236800,
+        "m": 9,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399496,
+        "date": 1664236800,
+        "m": 9,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399497,
+        "date": 1664236800,
+        "m": 9,
+        "platform": 170,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399494,
+        "date": 1664236800,
+        "m": 9,
+        "platform": 49,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399492,
+        "date": 1664236800,
+        "m": 9,
+        "platform": 48,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399493,
+        "date": 1664236800,
+        "m": 9,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 228704,
+      "first_release_date": 1613433600,
+      "name": "Assassin's Creed Valhalla: River Raids",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 466026,
+        "date": 1613433600,
+        "m": 2,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466027,
+        "date": 1613433600,
+        "m": 2,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466028,
+        "date": 1613433600,
+        "m": 2,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466029,
+        "date": 1613433600,
+        "m": 2,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466030,
+        "date": 1613433600,
+        "m": 2,
+        "platform": 170,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 466036,
+        "date": 1613433600,
+        "m": 2,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 222819,
+      "alternative_names": [
+       {
+        "id": 116822,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Valhalla: Mastery Challenge Pack 2"
+       }
+      ],
+      "first_release_date": 1650326400,
+      "name": "Assassin's Creed Valhalla: Title Update 1.5.1",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 399379,
+        "date": 1650326400,
+        "m": 4,
+        "platform": 48,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399380,
+        "date": 1650326400,
+        "m": 4,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399381,
+        "date": 1650326400,
+        "m": 4,
+        "platform": 49,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399382,
+        "date": 1650326400,
+        "m": 4,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399383,
+        "date": 1650326400,
+        "m": 4,
+        "platform": 170,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399384,
+        "date": 1650326400,
+        "m": 4,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 78709,
+      "alternative_names": [
+       {
+        "id": 68494,
+        "comment": "Alternative spelling",
+        "name": "Assassins Creed: Lost Legacy"
+       }
+      ],
+      "name": "Assassin's Creed: Lost Legacy",
+      "platforms": [
+       37
+      ],
+      "release_dates": [
+       {
+        "id": 668798,
+        "date": 1309478400,
+        "m": 7,
+        "platform": 37,
+        "y": 2011,
+        "status": 5,
+        "date_format": 1,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 314612,
+      "first_release_date": 1696464000,
+      "name": "Assassin's Creed Mirage: The Forty Thieves",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 633864,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 169,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 633865,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 49,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 633866,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 48,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 633867,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 167,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 633868,
+        "date": 1696464000,
+        "m": 10,
+        "platform": 6,
+        "y": 2023,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 300976,
+      "alternative_names": [
+       {
+        "id": 152157,
+        "comment": "Working title",
+        "name": "Assassin's Creed: Codename RED"
+       },
+       {
+        "id": 178347,
+        "comment": "windows executable",
+        "name": "ACShadows.exe"
+       }
+      ],
+      "first_release_date": 1742428800,
+      "name": "Assassin's Creed Shadows",
+      "platforms": [
+       169,
+       508,
+       6,
+       167,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 836361,
+        "date": 1764633600,
+        "m": 12,
+        "platform": 508,
+        "y": 2025,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688750,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 169,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688748,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688749,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 167,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688747,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 14,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 222815,
+      "first_release_date": 1623715200,
+      "name": "Assassin's Creed Valhalla: Mastery Challenge",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 399366,
+        "date": 1623715200,
+        "m": 6,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399365,
+        "date": 1623715200,
+        "m": 6,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399367,
+        "date": 1623715200,
+        "m": 6,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399368,
+        "date": 1623715200,
+        "m": 6,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399369,
+        "date": 1623715200,
+        "m": 6,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 399370,
+        "date": 1623715200,
+        "m": 6,
+        "platform": 170,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 301432,
+      "first_release_date": 1742428800,
+      "name": "Assassin's Creed Shadows: Thrown to the Dogs",
+      "platforms": [
+       169,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 690125,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 690126,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 167,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 690127,
+        "date": 1742428800,
+        "m": 3,
+        "platform": 169,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 302628,
+      "first_release_date": 1363737600,
+      "name": "Assassin's Creed III: Tyranny of King Washington - The Betrayal",
+      "platforms": [
+       9,
+       6,
+       41,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 626943,
+        "date": 1363737600,
+        "m": 3,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626944,
+        "date": 1363737600,
+        "m": 3,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626945,
+        "date": 1363737600,
+        "m": 3,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626964,
+        "date": 1364342400,
+        "m": 3,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 6
+     },
+     {
+      "id": 124163,
+      "first_release_date": 1563235200,
+      "name": "Assassin's Creed Odyssey: The Fate of Atlantis - Episode 3: Judgment of Atlantis",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 668481,
+        "date": 1563235200,
+        "m": 7,
+        "platform": 48,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 668480,
+        "date": 1563235200,
+        "m": 7,
+        "platform": 6,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 668482,
+        "date": 1563235200,
+        "m": 7,
+        "platform": 49,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689896,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689897,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 6
+     },
+     {
+      "id": 302629,
+      "first_release_date": 1366675200,
+      "name": "Assassin's Creed III: Tyranny of King Washington - The Redemption",
+      "platforms": [
+       9,
+       6,
+       41,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 626942,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 6,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626947,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626948,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 626949,
+        "date": 1366675200,
+        "m": 4,
+        "platform": 41,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 6
+     },
+     {
+      "id": 323775,
+      "first_release_date": 1604966400,
+      "name": "Assassin's Creed Valhalla: The Legend of Beowulf",
+      "platforms": [
+       170,
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 671427,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 6,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 671429,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 169,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 671430,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 48,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 671431,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 49,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 671432,
+        "date": 1604966400,
+        "m": 11,
+        "platform": 170,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 931923,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 325330,
+      "first_release_date": 1639353600,
+      "name": "Assassin's Creed Odyssey: Those Who Are Treasured",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 676150,
+        "date": 1639353600,
+        "m": 12,
+        "platform": 48,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676151,
+        "date": 1639353600,
+        "m": 12,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676149,
+        "date": 1639353600,
+        "m": 12,
+        "platform": 6,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676152,
+        "date": 1639353600,
+        "m": 12,
+        "platform": 49,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 676153,
+        "date": 1639353600,
+        "m": 12,
+        "platform": 169,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 325329,
+      "first_release_date": 1669680000,
+      "name": "Assassin's Creed Valhalla: Shared History",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 675814,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675815,
+        "date": 1732838400,
+        "m": 11,
+        "platform": 169,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675816,
+        "date": 1732838400,
+        "m": 11,
+        "platform": 49,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675817,
+        "date": 1732838400,
+        "m": 11,
+        "platform": 48,
+        "y": 2024,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 675818,
+        "date": 1669680000,
+        "m": 11,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 327770,
+      "first_release_date": 1509062400,
+      "name": "Assassin's Creed Origins: Secrets of the First Pyramids",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 688800,
+        "date": 1509062400,
+        "m": 10,
+        "platform": 48,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688801,
+        "date": 1509062400,
+        "m": 10,
+        "platform": 6,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688802,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688803,
+        "date": 1654128000,
+        "m": 6,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 688799,
+        "date": 1509062400,
+        "m": 10,
+        "platform": 49,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 327927,
+      "first_release_date": 1559606400,
+      "name": "Assassin's Creed Odyssey: The Fate of Atlantis - Episode 2: Torment of Hades",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 689753,
+        "date": 1559606400,
+        "m": 6,
+        "platform": 48,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689754,
+        "date": 1559606400,
+        "m": 6,
+        "platform": 49,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689899,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689755,
+        "date": 1559606400,
+        "m": 6,
+        "platform": 6,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689898,
+        "date": 1629763200,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 6
+     },
+     {
+      "id": 327929,
+      "first_release_date": 1555977600,
+      "name": "Assassin's Creed Odyssey: The Fate of Atlantis - Episode 1: Fields of Elysium",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 689758,
+        "date": 1555977600,
+        "m": 4,
+        "platform": 48,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689759,
+        "date": 1555977600,
+        "m": 4,
+        "platform": 49,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 689760,
+        "date": 1555977600,
+        "m": 4,
+        "platform": 6,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 6
+     },
+     {
+      "id": 329312,
+      "first_release_date": 1757980800,
+      "name": "Assassin's Creed Shadows: Claws of Awaji",
+      "platforms": [
+       169,
+       508,
+       6,
+       167,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 776122,
+        "date": 1757980800,
+        "m": 9,
+        "platform": 14,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 776123,
+        "date": 1757980800,
+        "m": 9,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 776124,
+        "date": 1757980800,
+        "m": 9,
+        "platform": 167,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 776125,
+        "date": 1757980800,
+        "m": 9,
+        "platform": 169,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 938241,
+        "date": 1773100800,
+        "m": 3,
+        "platform": 508,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 3775,
+      "alternative_names": [
+       {
+        "id": 2628,
+        "comment": "French title",
+        "name": "Assassin's creed: Black Flag: Le prix de la liberté"
+       },
+       {
+        "id": 103403,
+        "comment": "Acronym",
+        "name": "AC:FC"
+       },
+       {
+        "id": 103404,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed IV: Black Flag - Freedom Cry"
+       },
+       {
+        "id": 260223,
+        "comment": "Windows Executable",
+        "name": "ACFC.exe"
+       }
+      ],
+      "first_release_date": 1387238400,
+      "name": "Assassin's Creed: Freedom Cry",
+      "platforms": [
+       170,
+       9,
+       48,
+       6,
+       12,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 661405,
+        "date": 1387238400,
+        "m": 12,
+        "platform": 12,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 661399,
+        "date": 1631577600,
+        "m": 9,
+        "platform": 170,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 661403,
+        "date": 1392681600,
+        "m": 2,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 661400,
+        "date": 1393286400,
+        "m": 2,
+        "platform": 6,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 661404,
+        "date": 1392768000,
+        "m": 2,
+        "platform": 48,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 661401,
+        "date": 1392681600,
+        "m": 2,
+        "platform": 9,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 661402,
+        "date": 1392768000,
+        "m": 2,
+        "platform": 9,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 661406,
+        "date": 1387238400,
+        "m": 12,
+        "platform": 49,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 779081,
+        "date": 1575504000,
+        "m": 12,
+        "platform": 130,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 371880,
+      "first_release_date": 1763424000,
+      "name": "Assassin’s Creed Mirage: Valley of Memory",
+      "platforms": [
+       169,
+       48,
+       6,
+       39,
+       167,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 816240,
+        "date": 1763424000,
+        "m": 11,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 816241,
+        "date": 1763424000,
+        "m": 11,
+        "platform": 167,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 816242,
+        "date": 1763424000,
+        "m": 11,
+        "platform": 48,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 816243,
+        "date": 1763424000,
+        "m": 11,
+        "platform": 49,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 816244,
+        "date": 1763424000,
+        "m": 11,
+        "platform": 169,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 816245,
+        "date": 1763424000,
+        "m": 11,
+        "platform": 39,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 337738,
+      "alternative_names": [
+       {
+        "id": 283313,
+        "comment": "Windows Executable",
+        "name": "ACBlackFlag.exe"
+       },
+       {
+        "id": 283459,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed: Black Flag Resynced"
+       },
+       {
+        "id": 265324,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed Black Flag Remake"
+       },
+       {
+        "id": 274768,
+        "comment": "Acronym",
+        "name": "AC4 Remake"
+       }
+      ],
+      "first_release_date": 1783555200,
+      "name": "Assassin's Creed Black Flag Resynced",
+      "platforms": [
+       169,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 900759,
+        "date": 1783555200,
+        "m": 7,
+        "platform": 6,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 900760,
+        "date": 1783555200,
+        "m": 7,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 900761,
+        "date": 1783555200,
+        "m": 7,
+        "platform": 169,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 8
+     },
+     {
+      "id": 399890,
+      "alternative_names": [
+       {
+        "id": 275485,
+        "comment": "Alternative title",
+        "name": "A Long Night Out on the Town"
+       }
+      ],
+      "first_release_date": 1445731200,
+      "name": "Assassin's Creed Syndicate: A Long Night",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 922644,
+        "date": 1445731200,
+        "m": 10,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 922648,
+        "platform": 49,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 922649,
+        "platform": 48,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 399891,
+      "first_release_date": 1445472000,
+      "name": "Assassin's Creed Syndicate: Runaway Train",
+      "platforms": [
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 920183,
+        "date": 1445472000,
+        "m": 10,
+        "platform": 49,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 399892,
+      "first_release_date": 1415664000,
+      "name": "Assassin's Creed Unity: The Fleur-de-Lys",
+      "platforms": [
+       48,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 955818,
+        "date": 1415664000,
+        "m": 11,
+        "platform": 49,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 955819,
+        "date": 1415836800,
+        "m": 11,
+        "platform": 48,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 13
+     },
+     {
+      "id": 399893,
+      "first_release_date": 1445558400,
+      "name": "Assassin's Creed Syndicate: Season Pass",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 928672,
+        "date": 1445558400,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 928673,
+        "date": 1445558400,
+        "m": 10,
+        "platform": 6,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 928674,
+        "date": 1445558400,
+        "m": 10,
+        "platform": 49,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 3
+     },
+     {
+      "id": 97806,
+      "first_release_date": 1509494400,
+      "name": "The Tower Assassin's Creed",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 558492,
+        "date": 1509494400,
+        "m": 11,
+        "platform": 34,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 558493,
+        "date": 1509494400,
+        "m": 11,
+        "platform": 39,
+        "y": 2017,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 20864,
+      "alternative_names": [
+       {
+        "id": 68492,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed 3: Liberation HD"
+       },
+       {
+        "id": 68493,
+        "comment": "Alternative spelling",
+        "name": "Assassin's Creed III: Liberation HD"
+       }
+      ],
+      "first_release_date": 1389744000,
+      "name": "Assassin's Creed: Liberation HD",
+      "platforms": [
+       170,
+       9,
+       6,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 625034,
+        "date": 1639440000,
+        "m": 12,
+        "platform": 170,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 625035,
+        "date": 1389744000,
+        "m": 1,
+        "platform": 6,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 625036,
+        "date": 1389744000,
+        "m": 1,
+        "platform": 9,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 625037,
+        "date": 1389744000,
+        "m": 1,
+        "platform": 12,
+        "y": 2014,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 625044,
+        "date": 1661990400,
+        "m": 9,
+        "platform": 170,
+        "y": 2022,
+        "status": 4,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 109533,
+      "alternative_names": [
+       {
+        "id": 175943,
+        "comment": "Alternative title",
+        "name": "Assassin's Creed III: Liberation Remastered"
+       }
+      ],
+      "first_release_date": 1553817600,
+      "name": "Assassin's Creed: Liberation Remastered",
+      "platforms": [
+       48,
+       6,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 930113,
+        "date": 1558396800,
+        "m": 5,
+        "platform": 130,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930114,
+        "date": 1553817600,
+        "m": 3,
+        "platform": 6,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930115,
+        "date": 1553817600,
+        "m": 3,
+        "platform": 48,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 930116,
+        "date": 1553817600,
+        "m": 3,
+        "platform": 49,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     }
+    ],
+    "name": "Assassin's Creed"
+   }
+  ],
+  "game_type": 0
+ }
+]

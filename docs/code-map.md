@@ -55,6 +55,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/failures.py` — Source failure notices: why a title could not be checked, and how the message to the owner reads.
 - `app/tracker/feed.py` — The feed (`Tracker.feed()`): one read of the database for «Скоро», «Позже» and «Недавно».
 - `app/tracker/feed_rows.py` — The rows of the feed (`Tracker.feed()`): what comes out in the next days, what comes later, and what happened in the last week.
+- `app/tracker/follow_ups.py` — The follow-up check of a game (pure): its stored state, which expansions and games of its series are shown, their dates, what is new and the events.
 - `app/tracker/game_events.py` — Game events: what changed between two snapshots of a game on the platforms the owner is told about, and how the message reads.
 - `app/tracker/game_rows.py` — What the owner reads of a game: the lines of its platforms on the card, the links to the stores, the pieces of the feed.
 - `app/tracker/game_scope.py` — What the owner sees of the games: the country of the stores, «Мои платформы» and the marks «играю здесь».
@@ -102,6 +103,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/settings_store.py` — The owner's settings in the `settings` table: the break that splits a season into parts, the delivery rules, the time zone, the platforms of the games and the country of the stores.
 - `app/tracker/sources/anilist_schedule.py` — AniList adapter for anime: the airing schedule of one source entry (a season, or a part of it).
 - `app/tracker/sources/dates.py` — Reading a date from text: two readers, and which one to use depends on who wrote the text.
+- `app/tracker/sources/igdb_follow_ups.py` — IGDB adapter of the follow-up check: one request a game for its expansions and the games of its series, parsed into a `FollowUpsSnapshot`.
 - `app/tracker/sources/igdb_games.py` — IGDB adapter for games: search suggestions and the game snapshot, with the Russian texts of Steam when a game is added.
 - `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the franchise built from the chain of sequels.
 - `app/tracker/sources/steam_prices.py` — Steam adapter for prices: what Steam answered about each game becomes its price look (`PriceLook`), source `steam`.

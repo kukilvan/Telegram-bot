@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.tracker.errors import SourceNotConfigured
-from app.tracker.games import CANCELLED, EARLY, FULL, GameDate, GameState, Release
+from app.tracker.games import CANCELLED, EARLY, EXPANSION, FULL, STANDALONE, GameDate, GameState, Parent, Release
 from app.tracker.models import TitleKind
 from app.tracker.platforms import IGDB_LABELS
 from app.tracker.sources.dates import response_day_of_timestamp
@@ -33,7 +33,7 @@ SEARCH_QUERY = (
     f"{_ONLY_GAMES}; limit 10;"
 )
 GAME_QUERY = (
-    "fields name,game_type,version_parent,parent_game,first_release_date,summary,genres.name,cover.image_id,platforms,"
+    "fields name,game_type,version_parent,parent_game.name,first_release_date,summary,genres.name,cover.image_id,platforms,"
     "alternative_names.name,alternative_names.comment,release_dates.date,release_dates.date_format,release_dates.y,"
     "release_dates.m,release_dates.platform,release_dates.release_region,release_dates.status,external_games.uid,"
     "external_games.external_game_source,external_games.url; "
@@ -152,7 +152,8 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
     ]
 
 
-def _known(numbers: Any) -> tuple[int, ...]:
+def known_platforms(numbers: Any) -> tuple[int, ...]:
+    """The `platforms` of an answer the tracker knows, ascending (garbage and the others are left out)."""
     return tuple(sorted({number for number in numbers or () if number in IGDB_LABELS}))
 
 
@@ -163,7 +164,9 @@ def _region(value: Any) -> int:
     return value if isinstance(value, int) and not isinstance(value, bool) else NO_REGION
 
 
-def _releases(raw: list[dict[str, Any]] | None) -> tuple[Release, ...]:
+def read_releases(raw: list[dict[str, Any]] | None) -> tuple[Release, ...]:
+    """The `release_dates` of an answer: the records of the platforms the tracker knows whose status is a full release,
+    an early access or a cancellation."""
     return tuple(
         Release(
             platform=entry["platform"],
@@ -183,14 +186,32 @@ def _store_id(external: list[dict[str, Any]] | None, source: int) -> str | None:
     return None
 
 
+# `game_type` of an expansion (spec 3.3 of stage 6.3): 2 needs its game, 4 is played alone
+_EXPANSION_TYPES = {2: EXPANSION, 4: STANDALONE}
+
+
+def _parent(raw: dict[str, Any]) -> Parent | None:
+    """`parent_game` as `{id, name}`; anything else is no parent (soft: an answer of a service)."""
+    parent = raw.get("parent_game")
+    if not isinstance(parent, dict) or isinstance(parent.get("id"), bool) or not isinstance(parent.get("id"), int):
+        return None
+    name = parent.get("name")
+    return Parent(str(parent["id"]), name) if isinstance(name, str) and name else None
+
+
 def parse_state(raw: dict[str, Any]) -> GameState:
     external = raw.get("external_games")
     concept = _store_id(external, PS_STORE_SOURCE)
+    parent = _parent(raw)
+    # a remaster, a remake, a port has a parent too: «expansion» is decided by the type
+    expansion = _EXPANSION_TYPES.get(raw.get("game_type")) if parent is not None else None
     return GameState(
         steam_id=_store_id(external, STEAM_SOURCE),
         ps_concept=concept if concept and concept.isdigit() else None,  # anything else: the link is a search
-        platforms=_known(raw.get("platforms")),
-        releases=_releases(raw.get("release_dates")),
+        platforms=known_platforms(raw.get("platforms")),
+        releases=read_releases(raw.get("release_dates")),
+        expansion=expansion,
+        parent=parent if expansion is not None else None,
     )
 
 

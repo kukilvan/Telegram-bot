@@ -1,0 +1,330 @@
+[
+ {
+  "id": 134581,
+  "alternative_names": [
+   {
+    "id": 153265,
+    "comment": "Alternative title",
+    "name": "Spider-Man: Miles Morales"
+   },
+   {
+    "id": 188554,
+    "comment": "Windows Executable",
+    "name": "MilesMorales.exe"
+   }
+  ],
+  "cover": {
+   "id": 534007,
+   "image_id": "cobg1j"
+  },
+  "external_games": [
+   {
+    "id": 3190322,
+    "uid": "B08RFC9DRQ",
+    "external_game_source": 20
+   },
+   {
+    "id": 2001969,
+    "uid": "B08KX65571",
+    "url": "https://amazon.fr/dp/B08KX65571",
+    "external_game_source": 20
+   },
+   {
+    "id": 2629877,
+    "uid": "12833f9cb86d4a9ba78afd8c4ef5bd7f",
+    "url": "https://store.epicgames.com/en-US/p/marvels-spider-man-miles-morales",
+    "external_game_source": 26
+   },
+   {
+    "id": 1942896,
+    "uid": "B08JH7X56V",
+    "external_game_source": 20
+   },
+   {
+    "id": 1997968,
+    "uid": "B08QFZCGVJ",
+    "url": "https://amazon.com/dp/B08QFZCGVJ",
+    "external_game_source": 20
+   },
+   {
+    "id": 3190341,
+    "uid": "B08LFBM5JV",
+    "external_game_source": 20
+   },
+   {
+    "id": 3183498,
+    "uid": "2306990",
+    "url": "https://store.steampowered.com/app/2306990/",
+    "external_game_source": 1
+   },
+   {
+    "id": 1941757,
+    "uid": "B089X9PTFD",
+    "url": "https://amazon.co.uk/dp/B089X9PTFD",
+    "external_game_source": 20
+   },
+   {
+    "id": 1997627,
+    "uid": "B08QFZCGVJ",
+    "url": "https://amazon.com/dp/B08QFZCGVJ",
+    "external_game_source": 20
+   },
+   {
+    "id": 1997661,
+    "uid": "B08QFXCNNZ",
+    "url": "https://amazon.com/dp/B08QFXCNNZ",
+    "external_game_source": 20
+   },
+   {
+    "id": 2630419,
+    "uid": "B089X9PTFD",
+    "url": "https://amazon.de/dp/B089X9PTFD",
+    "external_game_source": 20
+   },
+   {
+    "id": 2609447,
+    "uid": "2f1bad41-fd37-4291-9ece-85c2fbf0cbf3",
+    "url": "https://www.epicgames.com/store/p/marvels-spider-man-miles-morales",
+    "external_game_source": 26
+   },
+   {
+    "id": 2623976,
+    "uid": "606a65a2df604b308542175e45ebb4a3",
+    "url": "https://store.epicgames.com/en-US/p/marvels-spider-man-miles-morales",
+    "external_game_source": 26
+   },
+   {
+    "id": 2857578,
+    "uid": "B089X9PTFD",
+    "url": "https://amazon.de/dp/B089X9PTFD",
+    "external_game_source": 20
+   },
+   {
+    "id": 2061021,
+    "uid": "B08QFZCGVJ",
+    "url": "https://amazon.com/dp/B08QFZCGVJ",
+    "external_game_source": 20
+   },
+   {
+    "id": 1942027,
+    "uid": "B08KSN7GF4",
+    "url": "https://amazon.fr/dp/B08KSN7GF4",
+    "external_game_source": 20
+   },
+   {
+    "id": 2750515,
+    "uid": "B089X9PTFD",
+    "url": "https://amazon.com/dp/B089X9PTFD",
+    "external_game_source": 20
+   },
+   {
+    "id": 1942209,
+    "uid": "B08JH8VW9F",
+    "external_game_source": 20
+   },
+   {
+    "id": 2411018,
+    "uid": "B08KSN7GF4",
+    "url": "https://amazon.es/dp/B08KSN7GF4",
+    "external_game_source": 20
+   },
+   {
+    "id": 1942402,
+    "uid": "B08JH9755X",
+    "external_game_source": 20
+   },
+   {
+    "id": 2749735,
+    "uid": "B089X9PTFD",
+    "url": "https://amazon.com/dp/B089X9PTFD",
+    "external_game_source": 20
+   },
+   {
+    "id": 2749874,
+    "uid": "B0CFP7X7HG",
+    "url": "https://amazon.com/dp/B0CFP7X7HG",
+    "external_game_source": 20
+   },
+   {
+    "id": 2178385,
+    "uid": "B089X4XCLB",
+    "url": "https://amazon.de/dp/B089X4XCLB",
+    "external_game_source": 20
+   },
+   {
+    "id": 2898432,
+    "uid": "B08QFXCNNZ",
+    "url": "https://amazon.com/dp/B08QFXCNNZ",
+    "external_game_source": 20
+   },
+   {
+    "id": 1998003,
+    "uid": "B08QFXCNNZ",
+    "url": "https://amazon.com/dp/B08QFXCNNZ",
+    "external_game_source": 20
+   },
+   {
+    "id": 3219010,
+    "uid": "B0DCRZGNGD",
+    "url": "https://www.amazon.in/dp/B0DCRZGNGD",
+    "external_game_source": 20
+   },
+   {
+    "id": 3218912,
+    "uid": "B0DJ381YYJ",
+    "url": "https://www.amazon.in/dp/B0DJ381YYJ",
+    "external_game_source": 20
+   },
+   {
+    "id": 2175669,
+    "uid": "10000649",
+    "url": "https://store.playstation.com/en-us/concept/10000649",
+    "external_game_source": 36
+   },
+   {
+    "id": 2606231,
+    "uid": "1817190",
+    "url": "https://store.steampowered.com/app/1817190",
+    "external_game_source": 1
+   },
+   {
+    "id": 1883008,
+    "uid": "518007",
+    "url": "https://www.twitch.tv/directory/game/Marvel's%20Spider-Man%3A%20Miles%20Morales",
+    "external_game_source": 14
+   }
+  ],
+  "first_release_date": 1605139200,
+  "genres": [
+   {
+    "id": 25,
+    "name": "Hack and slash/Beat 'em up"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Marvel's Spider-Man: Miles Morales",
+  "parent_game": {
+   "id": 19565,
+   "alternative_names": [
+    {
+     "id": 121135,
+     "comment": "Alternative title",
+     "name": "Spider-Man"
+    },
+    {
+     "id": 139297,
+     "comment": "Alternative spelling",
+     "name": "Marvel's SpiderMan"
+    },
+    {
+     "id": 139298,
+     "comment": "Alternative title",
+     "name": "SpiderMan"
+    }
+   ],
+   "name": "Marvel's Spider-Man"
+  },
+  "platforms": [
+   48,
+   6,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 210957,
+    "date": 1605139200,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 5
+   },
+   {
+    "id": 397020,
+    "date": 1668729600,
+    "m": 11,
+    "platform": 6,
+    "y": 2022,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 210954,
+    "date": 1605139200,
+    "m": 11,
+    "platform": 48,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 210958,
+    "date": 1605139200,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 9
+   },
+   {
+    "id": 210956,
+    "date": 1605139200,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 4
+   },
+   {
+    "id": 210959,
+    "date": 1605744000,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 1
+   },
+   {
+    "id": 210960,
+    "date": 1605744000,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 6
+   },
+   {
+    "id": 210953,
+    "date": 1605139200,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 2
+   },
+   {
+    "id": 210955,
+    "date": 1605139200,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 3
+   },
+   {
+    "id": 210961,
+    "date": 1605744000,
+    "m": 11,
+    "platform": 167,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 7
+   }
+  ],
+  "summary": "Marvel's Spider-Man: Miles Morales is a third-person action-adventure game and a standalone continuation of Marvel's Spider-Man (2018). Set in an open-world version of New York City during winter, the game follows Miles Morales as he takes on the role of Spider-Man while Peter Parker is abroad. Gameplay focuses on traversal, combat, and completing missions across the city. Miles has unique abilities distinct from Peter, including bio-electric \"Venom\" attacks and temporary invisibility. The game features unlockable suits, gadgets, and a skill tree progression system.",
+  "game_type": 4
+ }
+]

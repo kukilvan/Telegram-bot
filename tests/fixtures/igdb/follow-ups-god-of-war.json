@@ -1,0 +1,1194 @@
+[
+ {
+  "id": 19560,
+  "first_release_date": 1524182400,
+  "name": "God of War",
+  "collections": [
+   {
+    "id": 70,
+    "games": [
+     {
+      "id": 224438,
+      "alternative_names": [
+       {
+        "id": 187964,
+        "comment": "Polish title",
+        "name": "God of War: Duch Sparty"
+       },
+       {
+        "id": 188035,
+        "comment": "Italian title",
+        "name": "God of War: Il Fantasma di Sparta"
+       },
+       {
+        "id": 116229,
+        "comment": "Alternative title",
+        "name": "God of War: Ghost of Sparta HD"
+       }
+      ],
+      "first_release_date": 1315872000,
+      "name": "God of War: Ghost of Sparta",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 417085,
+        "date": 1316131200,
+        "m": 9,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 417086,
+        "date": 1317254400,
+        "m": 9,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 417087,
+        "date": 1317859200,
+        "m": 10,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 417084,
+        "date": 1315872000,
+        "m": 9,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 117883,
+      "alternative_names": [
+       {
+        "id": 37978,
+        "comment": "Abbreviation",
+        "name": "GoW HD PS3"
+       },
+       {
+        "id": 37979,
+        "comment": "Abbreviation",
+        "name": "GoW1 HD"
+       },
+       {
+        "id": 207777,
+        "comment": "Alternative title",
+        "name": "God of War HD"
+       }
+      ],
+      "first_release_date": 1258416000,
+      "name": "God of War",
+      "platforms": [
+       9,
+       46
+      ],
+      "release_dates": [
+       {
+        "id": 400841,
+        "date": 1272499200,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 400842,
+        "date": 1272585600,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 400843,
+        "date": 1400025600,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 400844,
+        "date": 1400112000,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 400845,
+        "date": 1399334400,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 400846,
+        "date": 1399593600,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 400839,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 400840,
+        "date": 1268870400,
+        "m": 3,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 117882,
+      "alternative_names": [
+       {
+        "id": 37985,
+        "comment": "Japanese title - translated",
+        "name": "God of War II Overture to the End HD"
+       },
+       {
+        "id": 37983,
+        "comment": "Japanese title - romanization",
+        "name": "God of War II: Shūen no Jokyoku HD"
+       },
+       {
+        "id": 37980,
+        "comment": "Abbreviation",
+        "name": "God of War 2 HD PS3"
+       },
+       {
+        "id": 37981,
+        "comment": "Abbreviation",
+        "name": "GoWII HD"
+       },
+       {
+        "id": 37982,
+        "comment": "Abbreviation",
+        "name": "GoW2HD"
+       }
+      ],
+      "first_release_date": 1258416000,
+      "name": "God of War II",
+      "platforms": [
+       9,
+       46
+      ],
+      "release_dates": [
+       {
+        "id": 400836,
+        "date": 1400112000,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 400834,
+        "date": 1272585600,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 400838,
+        "date": 1399593600,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 400832,
+        "date": 1268870400,
+        "m": 3,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 400831,
+        "date": 1258416000,
+        "m": 11,
+        "platform": 9,
+        "y": 2009,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 400837,
+        "date": 1399334400,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 400835,
+        "date": 1400025600,
+        "m": 5,
+        "platform": 46,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 400833,
+        "date": 1272499200,
+        "m": 4,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 3
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 112875,
+      "alternative_names": [
+       {
+        "id": 37966,
+        "comment": "Alternative title",
+        "name": "God of War Part II"
+       },
+       {
+        "id": 74587,
+        "comment": "Alternative spelling",
+        "name": "God of War: Ragnarok"
+       },
+       {
+        "id": 116503,
+        "comment": "Chinese title - traditional",
+        "name": "戰神: 諸神黃昏"
+       },
+       {
+        "id": 152960,
+        "comment": "Chinese title - simplified",
+        "name": "战神:诸神黄昏"
+       },
+       {
+        "id": 174909,
+        "comment": "Alternative spelling",
+        "name": "God of War Ragnarok"
+       },
+       {
+        "id": 174910,
+        "comment": "Alternative spelling",
+        "name": "God of War: Ragnarök"
+       },
+       {
+        "id": 276211,
+        "comment": "Russian title",
+        "name": "God of War Рагнарёк"
+       }
+      ],
+      "first_release_date": 1667952000,
+      "name": "God of War Ragnarök",
+      "platforms": [
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 598945,
+        "date": 1726704000,
+        "m": 9,
+        "platform": 6,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 707257,
+        "date": 1667952000,
+        "m": 11,
+        "platform": 48,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 707258,
+        "date": 1667952000,
+        "m": 11,
+        "platform": 167,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 224439,
+      "alternative_names": [
+       {
+        "id": 116230,
+        "comment": "Alternative title",
+        "name": "God of War: Chains of Olympus HD"
+       }
+      ],
+      "first_release_date": 1315872000,
+      "name": "God of War: Chains of Olympus",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 417090,
+        "date": 1317254400,
+        "m": 9,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 417088,
+        "date": 1315872000,
+        "m": 9,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 417089,
+        "date": 1316131200,
+        "m": 9,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 417091,
+        "date": 1317859200,
+        "m": 10,
+        "platform": 9,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 1291,
+      "alternative_names": [
+       {
+        "id": 37903,
+        "comment": "Alternative title",
+        "name": "God of War 4"
+       },
+       {
+        "id": 37904,
+        "comment": "Alternative title",
+        "name": "God of War 0"
+       },
+       {
+        "id": 177240,
+        "comment": "Abbreviation",
+        "name": "GoW: Ascension"
+       },
+       {
+        "id": 177241,
+        "comment": "Alternative spelling",
+        "name": "God of War Ascension"
+       },
+       {
+        "id": 187965,
+        "comment": "Polish title",
+        "name": "God of War: Wstąpienie"
+       }
+      ],
+      "first_release_date": 1363046400,
+      "name": "God of War: Ascension",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 873482,
+        "date": 1363046400,
+        "m": 3,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 873483,
+        "date": 1363132800,
+        "m": 3,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 873484,
+        "date": 1363219200,
+        "m": 3,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 873481,
+        "date": 1383177600,
+        "m": 10,
+        "platform": 9,
+        "y": 2013,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 549,
+      "alternative_names": [
+       {
+        "id": 37969,
+        "comment": "Abbreviation",
+        "name": "GOW 1"
+       },
+       {
+        "id": 66600,
+        "comment": "Acronym",
+        "name": "GOW"
+       }
+      ],
+      "first_release_date": 1111449600,
+      "name": "God of War",
+      "platforms": [
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 746403,
+        "date": 1132185600,
+        "m": 11,
+        "platform": 8,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 746405,
+        "date": 1111449600,
+        "m": 3,
+        "platform": 8,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 746404,
+        "date": 1120780800,
+        "m": 7,
+        "platform": 8,
+        "y": 2005,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 19560,
+      "alternative_names": [
+       {
+        "id": 78548,
+        "comment": "Acronym",
+        "name": "GOW"
+       },
+       {
+        "id": 6681,
+        "comment": "theoretical title",
+        "name": "God of War: New Omega"
+       },
+       {
+        "id": 6680,
+        "comment": "Chronological order",
+        "name": "God of War 4"
+       },
+       {
+        "id": 30761,
+        "comment": "Portuguese title",
+        "name": "Deus da Guerra"
+       },
+       {
+        "id": 37967,
+        "comment": "Alternative spelling",
+        "name": "God of War IV"
+       },
+       {
+        "id": 37968,
+        "comment": "Abbreviation",
+        "name": "GoW 4"
+       },
+       {
+        "id": 85870,
+        "comment": "Korean title - alternative",
+        "name": "갓 오브 워"
+       },
+       {
+        "id": 175720,
+        "comment": "Chinese title - simplified",
+        "name": "战神4"
+       },
+       {
+        "id": 188537,
+        "comment": "Windows Executable",
+        "name": "GoW.exe"
+       }
+      ],
+      "first_release_date": 1524182400,
+      "name": "God of War",
+      "platforms": [
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 889910,
+        "date": 1612224000,
+        "m": 2,
+        "platform": 167,
+        "y": 2021,
+        "status": 36,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 931591,
+        "date": 1642118400,
+        "m": 1,
+        "platform": 6,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 931592,
+        "date": 1524182400,
+        "m": 4,
+        "platform": 48,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 551,
+      "alternative_names": [
+       {
+        "id": 37972,
+        "comment": "Alternative spelling",
+        "name": "God of War 2"
+       },
+       {
+        "id": 37976,
+        "comment": "Japanese title - romanization",
+        "name": "God of War II: Shūen no Jokyoku"
+       },
+       {
+        "id": 37977,
+        "comment": "Japanese title - translated",
+        "name": "God of War II Overture to the End"
+       },
+       {
+        "id": 66868,
+        "comment": "Alternative spelling",
+        "name": "GOW2"
+       },
+       {
+        "id": 66869,
+        "comment": "Acronym",
+        "name": "GOWII"
+       }
+      ],
+      "first_release_date": 1173744000,
+      "name": "God of War II",
+      "platforms": [
+       8
+      ],
+      "release_dates": [
+       {
+        "id": 205446,
+        "date": 1177632000,
+        "m": 4,
+        "platform": 8,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 205447,
+        "date": 1178150400,
+        "m": 5,
+        "platform": 8,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 205448,
+        "date": 1193270400,
+        "m": 10,
+        "platform": 8,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 205445,
+        "date": 1173744000,
+        "m": 3,
+        "platform": 8,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 19959,
+      "alternative_names": [
+       {
+        "id": 37992,
+        "comment": "Alternative spelling",
+        "name": "God of War 3: Remastered"
+       },
+       {
+        "id": 71386,
+        "comment": "Acronym",
+        "name": "GoW3: Remastered"
+       },
+       {
+        "id": 173273,
+        "comment": "Alternative spelling",
+        "name": "God of War 3 Remastered"
+       },
+       {
+        "id": 173274,
+        "comment": "Alternative spelling",
+        "name": "GoW3 Remastered"
+       },
+       {
+        "id": 125349,
+        "comment": "Chinese title - traditional",
+        "name": "戰神3重製版"
+       },
+       {
+        "id": 141557,
+        "comment": "Alternative spelling",
+        "name": "God of War III Remastered"
+       },
+       {
+        "id": 266842,
+        "comment": "Russian title",
+        "name": "Бог Войны 3: Remastered"
+       }
+      ],
+      "first_release_date": 1436832000,
+      "name": "God of War III: Remastered",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 103300,
+        "date": 1437091200,
+        "m": 7,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 103301,
+        "date": 1436832000,
+        "m": 7,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 205488,
+        "date": 1561593600,
+        "m": 6,
+        "platform": 48,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 499,
+      "alternative_names": [
+       {
+        "id": 37991,
+        "comment": "Alternative title",
+        "name": "God of War 3"
+       },
+       {
+        "id": 61763,
+        "comment": "Acronym",
+        "name": "GOW3"
+       },
+       {
+        "id": 61764,
+        "comment": "Alternative spelling",
+        "name": "GOWIII"
+       }
+      ],
+      "first_release_date": 1268697600,
+      "name": "God of War III",
+      "platforms": [
+       9
+      ],
+      "release_dates": [
+       {
+        "id": 103298,
+        "date": 1268956800,
+        "m": 3,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 103297,
+        "date": 1269475200,
+        "m": 3,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 66596,
+        "date": 1268870400,
+        "m": 3,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 103299,
+        "date": 1268697600,
+        "m": 3,
+        "platform": 9,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 552,
+      "alternative_names": [
+       {
+        "id": 61761,
+        "comment": "Acronym",
+        "name": "GoW CoO"
+       }
+      ],
+      "first_release_date": 1204588800,
+      "name": "God of War: Chains of Olympus",
+      "platforms": [
+       38
+      ],
+      "release_dates": [
+       {
+        "id": 103304,
+        "date": 1204588800,
+        "m": 3,
+        "platform": 38,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 206010,
+        "date": 1215648000,
+        "m": 7,
+        "platform": 38,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 206009,
+        "date": 1206576000,
+        "m": 3,
+        "platform": 38,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 103305,
+        "date": 1206662400,
+        "m": 3,
+        "platform": 38,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 550,
+      "alternative_names": [
+       {
+        "id": 38307,
+        "comment": "Abbreviation",
+        "name": "GoW: Ghost of Sparta"
+       },
+       {
+        "id": 188033,
+        "comment": "Acronym",
+        "name": "GoW:GoS"
+       },
+       {
+        "id": 187963,
+        "comment": "Polish title",
+        "name": "God of War: Duch Sparty"
+       },
+       {
+        "id": 188034,
+        "comment": "Italian title",
+        "name": "God of War: Il Fantasma di Sparta"
+       }
+      ],
+      "first_release_date": 1288656000,
+      "name": "God of War: Ghost of Sparta",
+      "platforms": [
+       38
+      ],
+      "release_dates": [
+       {
+        "id": 206012,
+        "date": 1289433600,
+        "m": 11,
+        "platform": 38,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 206011,
+        "date": 1288828800,
+        "m": 11,
+        "platform": 38,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 133717,
+        "date": 1288742400,
+        "m": 11,
+        "platform": 38,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 133718,
+        "date": 1288656000,
+        "m": 11,
+        "platform": 38,
+        "y": 2010,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 21233,
+      "alternative_names": [
+       {
+        "id": 37988,
+        "comment": "Abbreviation",
+        "name": "GoW: Betrayal"
+       }
+      ],
+      "first_release_date": 1182297600,
+      "name": "God of War: Betrayal",
+      "platforms": [
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 205480,
+        "date": 1182297600,
+        "m": 6,
+        "platform": 55,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 279623,
+      "first_release_date": 1702339200,
+      "name": "God of War Ragnarök: Valhalla",
+      "platforms": [
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 598946,
+        "date": 1726704000,
+        "m": 9,
+        "platform": 6,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 543186,
+        "date": 1702339200,
+        "m": 12,
+        "platform": 167,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 543185,
+        "date": 1702339200,
+        "m": 12,
+        "platform": 48,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 341416,
+      "first_release_date": 1517443200,
+      "name": "God of War: A Call from the Wilds",
+      "platforms": [
+       82,
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 732344,
+        "date": 1517443200,
+        "m": 2,
+        "platform": 34,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 732342,
+        "date": 1517443200,
+        "m": 2,
+        "platform": 82,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 732343,
+        "date": 1517443200,
+        "m": 2,
+        "platform": 39,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 389450,
+      "name": "God of War Remake",
+      "platforms": [
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 874107,
+        "platform": 167,
+        "status": 6,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 8
+     },
+     {
+      "id": 389451,
+      "name": "God of War II Remake",
+      "platforms": [
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 874108,
+        "platform": 167,
+        "status": 6,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 8
+     },
+     {
+      "id": 389452,
+      "name": "God of War III Remake",
+      "platforms": [
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 874110,
+        "platform": 167,
+        "status": 6,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 8
+     },
+     {
+      "id": 411299,
+      "name": "Untitled God of War Sequel",
+      "game_type": 0
+     },
+     {
+      "id": 404063,
+      "first_release_date": 1802736000,
+      "name": "God of War Laufey",
+      "platforms": [
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 945988,
+        "date": 1802736000,
+        "m": 2,
+        "platform": 167,
+        "y": 2027,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 389443,
+      "first_release_date": 1770854400,
+      "name": "God of War Sons of Sparta",
+      "platforms": [
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 874115,
+        "date": 1770854400,
+        "m": 2,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     }
+    ],
+    "name": "God of War"
+   }
+  ],
+  "game_type": 0
+ }
+]

@@ -1,0 +1,279 @@
+[
+ {
+  "id": 228525,
+  "first_release_date": 1758758400,
+  "name": "Hades II",
+  "collections": [
+   {
+    "id": 8454,
+    "games": [
+     {
+      "id": 113112,
+      "alternative_names": [
+       {
+        "id": 186710,
+        "comment": "Windows Executable",
+        "name": "Hades.exe"
+       }
+      ],
+      "first_release_date": 1600300800,
+      "name": "Hades",
+      "platforms": [
+       169,
+       48,
+       6,
+       39,
+       167,
+       14,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 465216,
+        "date": 1600300800,
+        "m": 9,
+        "platform": 6,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482856,
+        "date": 1628812800,
+        "m": 8,
+        "platform": 167,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482857,
+        "date": 1628812800,
+        "m": 8,
+        "platform": 49,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482858,
+        "date": 1628812800,
+        "m": 8,
+        "platform": 169,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 575593,
+        "date": 1710806400,
+        "m": 3,
+        "platform": 39,
+        "y": 2024,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482849,
+        "date": 1600300800,
+        "m": 9,
+        "platform": 14,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482850,
+        "date": 1624492800,
+        "m": 6,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 482855,
+        "date": 1628812800,
+        "m": 8,
+        "platform": 48,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482848,
+        "date": 1575936000,
+        "m": 12,
+        "platform": 14,
+        "y": 2019,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482851,
+        "date": 1600300800,
+        "m": 9,
+        "platform": 130,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 482852,
+        "date": 1616025600,
+        "m": 3,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 482853,
+        "date": 1600300800,
+        "m": 9,
+        "platform": 130,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 482854,
+        "date": 1544140800,
+        "m": 12,
+        "platform": 6,
+        "y": 2018,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 228525,
+      "alternative_names": [
+       {
+        "id": 118119,
+        "comment": "Alternative title",
+        "name": "Hades 2"
+       },
+       {
+        "id": 178774,
+        "comment": "Windows Executable",
+        "name": "Hades2.exe"
+       }
+      ],
+      "first_release_date": 1758758400,
+      "name": "Hades II",
+      "platforms": [
+       169,
+       508,
+       6,
+       167,
+       14,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 655046,
+        "date": 1729036800,
+        "m": 10,
+        "platform": 14,
+        "y": 2024,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 591682,
+        "date": 1714953600,
+        "m": 5,
+        "platform": 6,
+        "y": 2024,
+        "status": 3,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 800771,
+        "date": 1758758400,
+        "m": 9,
+        "platform": 14,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 800772,
+        "date": 1758758400,
+        "m": 9,
+        "platform": 130,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 800773,
+        "date": 1758758400,
+        "m": 9,
+        "platform": 508,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 800774,
+        "date": 1758758400,
+        "m": 9,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 893566,
+        "date": 1776124800,
+        "m": 4,
+        "platform": 169,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 893567,
+        "date": 1776124800,
+        "m": 4,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     }
+    ],
+    "name": "Hades"
+   }
+  ],
+  "game_type": 0
+ }
+]

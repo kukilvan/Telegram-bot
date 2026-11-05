@@ -1,0 +1,144 @@
+[
+ {
+  "id": 240009,
+  "cover": {
+   "id": 363670,
+   "image_id": "co7sly"
+  },
+  "external_games": [
+   {
+    "id": 2891129,
+    "uid": "B0CW4HZZRC",
+    "url": "https://amazon.es/dp/B0CW4HZZRC",
+    "external_game_source": 20
+   },
+   {
+    "id": 2891011,
+    "uid": "B0CW4C89FN",
+    "url": "https://amazon.es/dp/B0CW4C89FN",
+    "external_game_source": 20
+   },
+   {
+    "id": 2889558,
+    "uid": "2778580",
+    "url": "https://store.steampowered.com/app/2778580",
+    "external_game_source": 1
+   }
+  ],
+  "first_release_date": 1718928000,
+  "genres": [
+   {
+    "id": 12,
+    "name": "Role-playing (RPG)"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Elden Ring: Shadow of the Erdtree",
+  "parent_game": {
+   "id": 119133,
+   "alternative_names": [
+    {
+     "id": 24917,
+     "comment": "Other",
+     "name": "Great Rune"
+    },
+    {
+     "id": 79656,
+     "comment": "Stylized title",
+     "name": "ELDEN RING"
+    },
+    {
+     "id": 83944,
+     "comment": "Japanese title - translated",
+     "name": "エルデンリング"
+    },
+    {
+     "id": 123543,
+     "comment": "Chinese title - traditional",
+     "name": "艾爾登法環"
+    },
+    {
+     "id": 130570,
+     "comment": "Chinese title - simplified",
+     "name": "艾尔登法环"
+    }
+   ],
+   "name": "Elden Ring"
+  },
+  "platforms": [
+   169,
+   48,
+   508,
+   6,
+   167,
+   49
+  ],
+  "release_dates": [
+   {
+    "id": 566728,
+    "date": 1718928000,
+    "m": 6,
+    "platform": 6,
+    "y": 2024,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 566729,
+    "date": 1718928000,
+    "m": 6,
+    "platform": 48,
+    "y": 2024,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 566730,
+    "date": 1718928000,
+    "m": 6,
+    "platform": 167,
+    "y": 2024,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 566731,
+    "date": 1718928000,
+    "m": 6,
+    "platform": 49,
+    "y": 2024,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 566732,
+    "date": 1718928000,
+    "m": 6,
+    "platform": 169,
+    "y": 2024,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 879622,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 508,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ],
+  "summary": "The Shadow of the Erdtree is a fully-fledged expansion that features an all-new story set in the Land of Shadow. It adds a whole new map with 70 new weapons, ten new shields, 39 new Talismans, 14 new sorceries, 28 new incantations, 20 new Spirit Ashes, 25 New Ashes of War, 30 new armour sets, and new consumables and craftables.",
+  "game_type": 2
+ }
+]

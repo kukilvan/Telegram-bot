@@ -1,0 +1,228 @@
+[
+ {
+  "id": 26193,
+  "alternative_names": [
+   {
+    "id": 52845,
+    "comment": "Japanese title - romanization",
+    "name": "Uncharted: Kodai Kami No Hihou"
+   },
+   {
+    "id": 188029,
+    "comment": "Spanish title",
+    "name": "Uncharted: El Legado Perdido"
+   },
+   {
+    "id": 188030,
+    "comment": "Alternative title",
+    "name": "Uncharted: Kayıp Miras"
+   },
+   {
+    "id": 187962,
+    "comment": "Polish title",
+    "name": "Uncharted: Zaginione dziedzictwo"
+   },
+   {
+    "id": 188031,
+    "comment": "Italian title",
+    "name": "Uncharted: L'Eredità Perduta"
+   },
+   {
+    "id": 188032,
+    "comment": "Portuguese title",
+    "name": "Uncharted: O Legado Perdido"
+   }
+  ],
+  "cover": {
+   "id": 85149,
+   "image_id": "co1tp9"
+  },
+  "external_games": [
+   {
+    "id": 1938211,
+    "uid": "B06Y5S2JML",
+    "external_game_source": 20
+   },
+   {
+    "id": 189255,
+    "uid": "UCfvGllouZl3janSVOyycX6A",
+    "url": "https://gaming.youtube.com/game/UCfvGllouZl3janSVOyycX6A",
+    "external_game_source": 10
+   },
+   {
+    "id": 1929407,
+    "uid": "B06ZYW7ZHB",
+    "url": "https://amazon.com/dp/B06ZYW7ZHB",
+    "external_game_source": 20
+   },
+   {
+    "id": 104774,
+    "uid": "57210",
+    "url": "https://www.giantbomb.com/games/3030-57210/",
+    "external_game_source": 3
+   },
+   {
+    "id": 3229884,
+    "uid": "B07YQ73Y8V",
+    "external_game_source": 20
+   },
+   {
+    "id": 1928760,
+    "uid": "B07XQWS8W7",
+    "url": "https://amazon.com/dp/B07XQWS8W7",
+    "external_game_source": 20
+   },
+   {
+    "id": 1929511,
+    "uid": "B07XZJBGM9",
+    "external_game_source": 20
+   },
+   {
+    "id": 1934918,
+    "uid": "B0734L2TFT",
+    "external_game_source": 20
+   },
+   {
+    "id": 1935221,
+    "uid": "B07XQTZSVQ",
+    "external_game_source": 20
+   },
+   {
+    "id": 1936446,
+    "uid": "B07Y1T1F5Y",
+    "external_game_source": 20
+   },
+   {
+    "id": 1936996,
+    "uid": "B0722KNG9C",
+    "external_game_source": 20
+   },
+   {
+    "id": 1936984,
+    "uid": "B07YT2XM8Y",
+    "external_game_source": 20
+   },
+   {
+    "id": 1937435,
+    "uid": "B01LTI9IEA",
+    "external_game_source": 20
+   },
+   {
+    "id": 1937363,
+    "uid": "B07YY2JZFF",
+    "external_game_source": 20
+   },
+   {
+    "id": 2001854,
+    "uid": "B0893PQ8HZ",
+    "url": "https://amazon.co.uk/dp/B0893PQ8HZ",
+    "external_game_source": 20
+   },
+   {
+    "id": 2058604,
+    "uid": "B094DBLVHD",
+    "url": "https://amazon.jp/dp/B094DBLVHD",
+    "external_game_source": 20
+   },
+   {
+    "id": 3218950,
+    "uid": "B077HHQTPD",
+    "url": "https://www.amazon.in/dp/B077HHQTPD",
+    "external_game_source": 20
+   },
+   {
+    "id": 253952,
+    "uid": "494558",
+    "url": "https://www.twitch.tv/directory/game/Uncharted: The Lost Legacy",
+    "external_game_source": 14
+   }
+  ],
+  "first_release_date": 1503360000,
+  "genres": [
+   {
+    "id": 5,
+    "name": "Shooter"
+   },
+   {
+    "id": 9,
+    "name": "Puzzle"
+   },
+   {
+    "id": 31,
+    "name": "Adventure"
+   }
+  ],
+  "name": "Uncharted: The Lost Legacy",
+  "parent_game": {
+   "id": 7331,
+   "alternative_names": [
+    {
+     "id": 61291,
+     "comment": "Japanese title - romanization",
+     "name": "Uncharted: Kaizokuou to Saigo no Hihou"
+    },
+    {
+     "id": 98764,
+     "comment": "Arabic title",
+     "name": "‏Uncharted 4: نهايةُ لِص"
+    },
+    {
+     "id": 98759,
+     "comment": "Polish title",
+     "name": "Uncharted 4: Kres złodzieja"
+    },
+    {
+     "id": 98760,
+     "comment": "Abbreviation",
+     "name": "Uncharted 4"
+    },
+    {
+     "id": 98761,
+     "comment": "Portuguese title",
+     "name": "Uncharted 4: O Fim de um Ladrão"
+    },
+    {
+     "id": 98762,
+     "comment": "Spanish title",
+     "name": "Uncharted 4: El Desenlace del Ladrón"
+    },
+    {
+     "id": 98763,
+     "comment": "Russian title",
+     "name": "Uncharted 4: Путь вора"
+    },
+    {
+     "id": 98765,
+     "comment": "Italian title",
+     "name": "Uncharted 4: Fine di un ladro"
+    }
+   ],
+   "name": "Uncharted 4: A Thief's End"
+  },
+  "platforms": [
+   48
+  ],
+  "release_dates": [
+   {
+    "id": 68048,
+    "date": 1503446400,
+    "m": 8,
+    "platform": 48,
+    "y": 2017,
+    "date_format": 0,
+    "release_region": 1
+   },
+   {
+    "id": 68046,
+    "date": 1503360000,
+    "m": 8,
+    "platform": 48,
+    "y": 2017,
+    "date_format": 0,
+    "release_region": 2
+   }
+  ],
+  "summary": "Uncharted: The Lost Legacy is a single-player action-adventure game played from a third-person perspective, and a standalone expansion in the Uncharted series. Players guide treasure hunter Chloe Frazer through towns, ruins, and temples across the Western Ghats of India, using firearms, melee combat, and stealth against hostile forces. Gameplay combines gunfights, climbing and platforming, environmental puzzles, and vehicle sections across larger, more open environments than earlier entries. It also grants access to the multiplayer component of Uncharted 4.",
+  "game_type": 4
+ }
+]

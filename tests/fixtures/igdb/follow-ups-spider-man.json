@@ -1,0 +1,640 @@
+[
+ {
+  "id": 19565,
+  "first_release_date": 1536278400,
+  "name": "Marvel's Spider-Man",
+  "standalone_expansions": [
+   {
+    "id": 134581,
+    "alternative_names": [
+     {
+      "id": 153265,
+      "comment": "Alternative title",
+      "name": "Spider-Man: Miles Morales"
+     },
+     {
+      "id": 188554,
+      "comment": "Windows Executable",
+      "name": "MilesMorales.exe"
+     }
+    ],
+    "first_release_date": 1605139200,
+    "name": "Marvel's Spider-Man: Miles Morales",
+    "platforms": [
+     48,
+     6,
+     167
+    ],
+    "release_dates": [
+     {
+      "id": 210957,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 5
+     },
+     {
+      "id": 397020,
+      "date": 1668729600,
+      "m": 11,
+      "platform": 6,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 210954,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 48,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 210958,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 9
+     },
+     {
+      "id": 210956,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 4
+     },
+     {
+      "id": 210959,
+      "date": 1605744000,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 1
+     },
+     {
+      "id": 210960,
+      "date": 1605744000,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 6
+     },
+     {
+      "id": 210953,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 2
+     },
+     {
+      "id": 210955,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 3
+     },
+     {
+      "id": 210961,
+      "date": 1605744000,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 7
+     }
+    ],
+    "game_type": 4
+   }
+  ],
+  "remasters": [
+   {
+    "id": 138949,
+    "alternative_names": [
+     {
+      "id": 96619,
+      "comment": "Korean title",
+      "name": "마블스 스파이더맨 리마스터드"
+     },
+     {
+      "id": 181598,
+      "comment": "Windows Executable",
+      "name": "Spider-Man.exe"
+     }
+    ],
+    "first_release_date": 1605139200,
+    "name": "Marvel's Spider-Man Remastered",
+    "platforms": [
+     6,
+     167
+    ],
+    "release_dates": [
+     {
+      "id": 362572,
+      "date": 1660262400,
+      "m": 8,
+      "platform": 6,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 211034,
+      "date": 1605744000,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 211033,
+      "date": 1605139200,
+      "m": 11,
+      "platform": 167,
+      "y": 2020,
+      "date_format": 0,
+      "release_region": 2
+     }
+    ],
+    "game_type": 9
+   }
+  ],
+  "collections": [
+   {
+    "id": 7292,
+    "games": [
+     {
+      "id": 138949,
+      "alternative_names": [
+       {
+        "id": 96619,
+        "comment": "Korean title",
+        "name": "마블스 스파이더맨 리마스터드"
+       },
+       {
+        "id": 181598,
+        "comment": "Windows Executable",
+        "name": "Spider-Man.exe"
+       }
+      ],
+      "first_release_date": 1605139200,
+      "name": "Marvel's Spider-Man Remastered",
+      "platforms": [
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 362572,
+        "date": 1660262400,
+        "m": 8,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 211034,
+        "date": 1605744000,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 211033,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 9
+     },
+     {
+      "id": 109422,
+      "alternative_names": [
+       {
+        "id": 157696,
+        "comment": "Alternative title",
+        "name": "Marvel's Spider-Man: Silver Lining - DLC 3"
+       },
+       {
+        "id": 157649,
+        "comment": "Alternative title",
+        "name": "Marvel's Spider-Man: The City That Never Sleeps - Silver Lining"
+       }
+      ],
+      "first_release_date": 1545350400,
+      "name": "Marvel's Spider-Man: Silver Lining",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 162290,
+        "date": 1545350400,
+        "m": 12,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 19565,
+      "alternative_names": [
+       {
+        "id": 121135,
+        "comment": "Alternative title",
+        "name": "Spider-Man"
+       },
+       {
+        "id": 139297,
+        "comment": "Alternative spelling",
+        "name": "Marvel's SpiderMan"
+       },
+       {
+        "id": 139298,
+        "comment": "Alternative title",
+        "name": "SpiderMan"
+       }
+      ],
+      "first_release_date": 1536278400,
+      "name": "Marvel's Spider-Man",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 153411,
+        "date": 1536278400,
+        "m": 9,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 134581,
+      "alternative_names": [
+       {
+        "id": 153265,
+        "comment": "Alternative title",
+        "name": "Spider-Man: Miles Morales"
+       },
+       {
+        "id": 188554,
+        "comment": "Windows Executable",
+        "name": "MilesMorales.exe"
+       }
+      ],
+      "first_release_date": 1605139200,
+      "name": "Marvel's Spider-Man: Miles Morales",
+      "platforms": [
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 210957,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 397020,
+        "date": 1668729600,
+        "m": 11,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 210954,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 48,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 210958,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 9
+       },
+       {
+        "id": 210956,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 4
+       },
+       {
+        "id": 210959,
+        "date": 1605744000,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 210960,
+        "date": 1605744000,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 6
+       },
+       {
+        "id": 210953,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 210955,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 210961,
+        "date": 1605744000,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 7
+       }
+      ],
+      "game_type": 4
+     },
+     {
+      "id": 127044,
+      "alternative_names": [
+       {
+        "id": 173740,
+        "comment": "Abbreviation",
+        "name": "Spider-Man 2"
+       },
+       {
+        "id": 178236,
+        "comment": "windows executable",
+        "name": "Spider-Man2.exe"
+       },
+       {
+        "id": 276209,
+        "comment": "Russian title",
+        "name": "Marvel Человек-Паук 2"
+       }
+      ],
+      "first_release_date": 1697760000,
+      "name": "Marvel's Spider-Man 2",
+      "platforms": [
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 481925,
+        "date": 1697760000,
+        "m": 10,
+        "platform": 167,
+        "y": 2023,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 656113,
+        "date": 1738195200,
+        "m": 1,
+        "platform": 6,
+        "y": 2025,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 109421,
+      "alternative_names": [
+       {
+        "id": 157697,
+        "comment": "Alternative title",
+        "name": "Marvel's Spider-Man: Turf Wars - DLC 2"
+       },
+       {
+        "id": 157648,
+        "comment": "Alternative title",
+        "name": "Marvel's Spider-Man: The City That Never Sleeps - Turf Wars"
+       }
+      ],
+      "first_release_date": 1542672000,
+      "name": "Marvel's Spider-Man: Turf Wars",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 161795,
+        "date": 1542672000,
+        "m": 11,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 109419,
+      "alternative_names": [
+       {
+        "id": 157647,
+        "comment": "Alternative title",
+        "name": "Marvel's Spider-Man: The City That Never Sleeps - The Heist"
+       },
+       {
+        "id": 157698,
+        "comment": "Alternative title",
+        "name": "Marvel's Spider-Man: The Heist - DLC 1"
+       }
+      ],
+      "first_release_date": 1540252800,
+      "name": "Marvel's Spider-Man: The Heist",
+      "platforms": [
+       48
+      ],
+      "release_dates": [
+       {
+        "id": 158332,
+        "date": 1540252800,
+        "m": 10,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 109234,
+      "alternative_names": [
+       {
+        "id": 290772,
+        "comment": "Alternative title",
+        "name": "Spider-Man: The City that Never Sleeps"
+       }
+      ],
+      "first_release_date": 1540252800,
+      "name": "Marvel's Spider-Man: The City That Never Sleeps",
+      "platforms": [
+       48,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 206141,
+        "date": 1540252800,
+        "m": 10,
+        "platform": 48,
+        "y": 2018,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 527488,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 167,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 527489,
+        "date": 1660262400,
+        "m": 8,
+        "platform": 6,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 3
+     },
+     {
+      "id": 139968,
+      "first_release_date": 1605139200,
+      "name": "Marvel's Spider-Man: Miles Morales - Launch Edition",
+      "platforms": [
+       48,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 312136,
+        "date": 1605139200,
+        "m": 11,
+        "platform": 48,
+        "y": 2020,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 312137,
+        "date": 1636675200,
+        "m": 11,
+        "platform": 167,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "version_parent": 134581,
+      "game_type": 0
+     },
+     {
+      "id": 168667,
+      "alternative_names": [
+       {
+        "id": 187829,
+        "comment": "Abbreviation",
+        "name": "Wolverine"
+       }
+      ],
+      "first_release_date": 1789430400,
+      "name": "Marvel's Wolverine",
+      "platforms": [
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 880516,
+        "date": 1789430400,
+        "m": 9,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     }
+    ],
+    "name": "Marvel's Spider-Man"
+   }
+  ],
+  "game_type": 0
+ }
+]

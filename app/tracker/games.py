@@ -6,7 +6,8 @@ whoever needs the dates reads it from the settings. Everything that depends on a
 
 The snapshot of a game holds every record of IGDB for the platforms the tracker knows, of every region (spec 4.3 of
 part 6.1); which of them is the date of the owner is decided here each time the dates are read, so a new country in the
-settings shows its dates at once and gives no messages (spec 5.2).
+settings shows its dates at once and gives no messages (spec 5.2). `GameState` also says whether the game is an
+expansion and of which game (spec 3.3 of stage 6.3).
 """
 
 import calendar
@@ -194,31 +195,67 @@ class Release:
         )
 
 
+# What an expansion is (`GameState.expansion`): one that needs its game (IGDB type 2) or one played alone (type 4)
+EXPANSION = "expansion"
+STANDALONE = "standalone"
+EXPANSION_KINDS = (EXPANSION, STANDALONE)
+
+
+@dataclass(frozen=True)
+class Parent:
+    """The game an expansion belongs to: its IGDB id and its IGDB name."""
+
+    id: str
+    name: str
+
+    def state(self) -> dict[str, str]:
+        return {"id": self.id, "name": self.name}
+
+    @classmethod
+    def from_state(cls, data: Any) -> "Parent":
+        """Strict: a parent without a text `id` or `name` raises ValueError."""
+        if not isinstance(data, Mapping) or not isinstance(data.get("id"), str) or not isinstance(data.get("name"), str):
+            raise ValueError(f"not a parent game: {data!r}")
+        return cls(data["id"], data["name"])
+
+
 @dataclass(frozen=True)
 class GameState:
-    """The part of a game that changes over time, as the snapshot stores it (`source_snapshots.state`, source `igdb`)."""
+    """The part of a game that changes over time, as the snapshot stores it (`source_snapshots.state`, source `igdb`).
+    `expansion` and `parent` are set together, only for an expansion (spec 3.3 of stage 6.3), and stored only then."""
 
     steam_id: str | None = None
     ps_concept: str | None = None  # the number of the concept in PlayStation Store; None — a search is the link
     platforms: tuple[int, ...] = ()  # the IGDB platforms the tracker knows, ascending
     releases: tuple[Release, ...] = ()
+    expansion: str | None = None  # `EXPANSION`, `STANDALONE` or None: not an expansion
+    parent: Parent | None = None
 
     def state(self) -> dict[str, Any]:
-        return {
-            "steam_id": self.steam_id,
-            "ps_concept": self.ps_concept,
-            "platforms": list(self.platforms),
-            "releases": [release.state() for release in self.releases],
-        }
+        state = {"steam_id": self.steam_id, "ps_concept": self.ps_concept, "platforms": list(self.platforms)}
+        state["releases"] = [release.state() for release in self.releases]
+        if self.expansion is not None:
+            state["expansion"] = self.expansion
+            state["parent"] = self.parent.state() if self.parent is not None else None
+        return state
 
     @classmethod
     def from_state(cls, data: Mapping[str, Any]) -> "GameState":
-        """Strict: what the tracker stored; garbage raises."""
+        """Strict: what the tracker stored; garbage raises. An unknown `expansion`, or a `parent` without `id` or `name`
+        (or one without the other), raises ValueError."""
+        expansion = data.get("expansion")
+        if expansion is not None and expansion not in EXPANSION_KINDS:
+            raise ValueError(f"unknown kind of an expansion: {expansion!r}")
+        raw_parent = data.get("parent")
+        if (expansion is None) != (raw_parent is None):
+            raise ValueError(f"an expansion and its parent go together: {expansion!r}, {raw_parent!r}")
         return cls(
             steam_id=data.get("steam_id"),
             ps_concept=data.get("ps_concept"),
             platforms=tuple(int(number) for number in data.get("platforms") or ()),
             releases=tuple(Release.from_state(release) for release in data.get("releases") or ()),
+            expansion=expansion,
+            parent=Parent.from_state(raw_parent) if raw_parent is not None else None,
         )
 
 

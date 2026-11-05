@@ -1,0 +1,1981 @@
+[
+ {
+  "id": 1942,
+  "expansions": [
+   {
+    "id": 13166,
+    "alternative_names": [
+     {
+      "id": 49556,
+      "comment": "Russian title",
+      "name": "Ведьмак 3: Дикая Охота - Кровь и Вино"
+     },
+     {
+      "id": 8059,
+      "comment": "Polish title",
+      "name": "Wiedźmin 3: Dziki Gon - Krew i wino"
+     }
+    ],
+    "first_release_date": 1464566400,
+    "name": "The Witcher 3: Wild Hunt - Blood and Wine",
+    "platforms": [
+     169,
+     48,
+     6,
+     167,
+     49,
+     130
+    ],
+    "release_dates": [
+     {
+      "id": 432098,
+      "date": 1670976000,
+      "m": 12,
+      "platform": 169,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 432097,
+      "date": 1670976000,
+      "m": 12,
+      "platform": 167,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 900499,
+      "date": 1611792000,
+      "m": 1,
+      "platform": 130,
+      "y": 2021,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 900500,
+      "date": 1464566400,
+      "m": 5,
+      "platform": 6,
+      "y": 2016,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 900501,
+      "date": 1464652800,
+      "m": 5,
+      "platform": 48,
+      "y": 2016,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 900502,
+      "date": 1464652800,
+      "m": 5,
+      "platform": 49,
+      "y": 2016,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   },
+   {
+    "id": 12503,
+    "alternative_names": [
+     {
+      "id": 49557,
+      "comment": "Russian title",
+      "name": "Ведьмак 3: Дикая Охота - Каменные сердца"
+     },
+     {
+      "id": 8058,
+      "comment": "Polish title",
+      "name": "Wiedźmin 3: Dziki Gon - Serca z kamienia"
+     }
+    ],
+    "first_release_date": 1444608000,
+    "name": "The Witcher 3: Wild Hunt - Hearts of Stone",
+    "platforms": [
+     169,
+     48,
+     6,
+     167,
+     49,
+     130
+    ],
+    "release_dates": [
+     {
+      "id": 253826,
+      "date": 1444608000,
+      "m": 10,
+      "platform": 6,
+      "y": 2015,
+      "date_format": 0,
+      "release_region": 2
+     },
+     {
+      "id": 409024,
+      "date": 1444608000,
+      "m": 10,
+      "platform": 6,
+      "y": 2015,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 451680,
+      "date": 1611792000,
+      "m": 1,
+      "platform": 130,
+      "y": 2021,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 432095,
+      "date": 1670976000,
+      "m": 12,
+      "platform": 167,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 38586,
+      "date": 1444694400,
+      "m": 10,
+      "platform": 49,
+      "y": 2015,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 38587,
+      "date": 1444694400,
+      "m": 10,
+      "platform": 48,
+      "y": 2015,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 432096,
+      "date": 1670976000,
+      "m": 12,
+      "platform": 169,
+      "y": 2022,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   },
+   {
+    "id": 403150,
+    "alternative_names": [
+     {
+      "id": 278283,
+      "comment": "Polish title",
+      "name": "Wiedźmin 3: Dziki Gon - Pieśni przeszłości"
+     },
+     {
+      "id": 289750,
+      "comment": "Russian title",
+      "name": "Ведьмак 3: Дикая Охота — Баллады прошлого"
+     }
+    ],
+    "first_release_date": 1830211200,
+    "name": "The Witcher 3: Wild Hunt - Songs of the Past",
+    "platforms": [
+     169,
+     508,
+     6,
+     167
+    ],
+    "release_dates": [
+     {
+      "id": 963263,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 508,
+      "y": 2027,
+      "status": 6,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 917997,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 6,
+      "y": 2027,
+      "status": 6,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 917998,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 167,
+      "y": 2027,
+      "status": 6,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 917999,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 169,
+      "y": 2027,
+      "status": 6,
+      "date_format": 2,
+      "release_region": 8
+     }
+    ],
+    "game_type": 2
+   }
+  ],
+  "first_release_date": 1431993600,
+  "name": "The Witcher 3: Wild Hunt",
+  "remasters": [
+   {
+    "id": 415005,
+    "alternative_names": [
+     {
+      "id": 289552,
+      "comment": "Abbreviation",
+      "name": "The Witcher 3 Remastered"
+     }
+    ],
+    "first_release_date": 1790640000,
+    "name": "The Witcher 3: Wild Hunt Remastered",
+    "platforms": [
+     169,
+     508,
+     6,
+     167
+    ],
+    "release_dates": [
+     {
+      "id": 957238,
+      "date": 1790640000,
+      "m": 9,
+      "platform": 6,
+      "y": 2026,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 957250,
+      "date": 1790640000,
+      "m": 9,
+      "platform": 508,
+      "y": 2026,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 957251,
+      "date": 1790640000,
+      "m": 9,
+      "platform": 169,
+      "y": 2026,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 957252,
+      "date": 1790640000,
+      "m": 9,
+      "platform": 167,
+      "y": 2026,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ],
+    "game_type": 9
+   }
+  ],
+  "collections": [
+   {
+    "id": 62,
+    "games": [
+     {
+      "id": 226413,
+      "first_release_date": 1434412800,
+      "name": "The Witcher 3: Wild Hunt - New Quest: Scavenger Hunt: Wolf School Gear",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 426550,
+        "date": 1434412800,
+        "m": 6,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426551,
+        "date": 1434412800,
+        "m": 6,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426552,
+        "date": 1434499200,
+        "m": 6,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 194662,
+      "alternative_names": [
+       {
+        "id": 163253,
+        "comment": "Alternative spelling",
+        "name": "The Witcher 4"
+       },
+       {
+        "id": 107761,
+        "comment": "Working title",
+        "name": "Project Polaris"
+       },
+       {
+        "id": 141777,
+        "comment": "Alternative title",
+        "name": "Untitled New Witcher Game "
+       },
+       {
+        "id": 163252,
+        "comment": "Working title",
+        "name": "The Witcher"
+       },
+       {
+        "id": 288833,
+        "comment": "Alternative title",
+        "name": "Witcher 4"
+       },
+       {
+        "id": 288834,
+        "comment": "Alternative title",
+        "name": "Witcher IV"
+       }
+      ],
+      "first_release_date": 1861833600,
+      "name": "The Witcher IV",
+      "platforms": [
+       169,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 956710,
+        "date": 1861833600,
+        "m": 12,
+        "platform": 6,
+        "y": 2028,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 956711,
+        "date": 1861833600,
+        "m": 12,
+        "platform": 167,
+        "y": 2028,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 956712,
+        "date": 1861833600,
+        "m": 12,
+        "platform": 169,
+        "y": 2028,
+        "date_format": 2,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 12503,
+      "alternative_names": [
+       {
+        "id": 49557,
+        "comment": "Russian title",
+        "name": "Ведьмак 3: Дикая Охота - Каменные сердца"
+       },
+       {
+        "id": 8058,
+        "comment": "Polish title",
+        "name": "Wiedźmin 3: Dziki Gon - Serca z kamienia"
+       }
+      ],
+      "first_release_date": 1444608000,
+      "name": "The Witcher 3: Wild Hunt - Hearts of Stone",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 253826,
+        "date": 1444608000,
+        "m": 10,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 409024,
+        "date": 1444608000,
+        "m": 10,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 451680,
+        "date": 1611792000,
+        "m": 1,
+        "platform": 130,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 432095,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 38586,
+        "date": 1444694400,
+        "m": 10,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 38587,
+        "date": 1444694400,
+        "m": 10,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 432096,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 9689,
+      "alternative_names": [
+       {
+        "id": 4706,
+        "comment": "Acronym",
+        "name": "twba"
+       }
+      ],
+      "first_release_date": 1421884800,
+      "name": "The Witcher Battle Arena",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 28689,
+        "date": 1421884800,
+        "m": 1,
+        "platform": 39,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 28690,
+        "date": 1421884800,
+        "m": 1,
+        "platform": 34,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 478,
+      "alternative_names": [
+       {
+        "id": 7392,
+        "comment": "Russian title",
+        "name": "Ведьмак 2: Убийцы королей"
+       },
+       {
+        "id": 2493,
+        "comment": "Polish title",
+        "name": "Wiedźmin 2: Zabójcy królów"
+       },
+       {
+        "id": 256032,
+        "comment": "Czech title",
+        "name": "Zaklínač 2: Vrahové králů"
+       }
+      ],
+      "first_release_date": 1305590400,
+      "name": "The Witcher 2: Assassins of Kings",
+      "platforms": [
+       3,
+       6,
+       14,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 19664,
+        "date": 1400716800,
+        "m": 5,
+        "platform": 3,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 19661,
+        "date": 1334707200,
+        "m": 4,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 19663,
+        "date": 1350518400,
+        "m": 10,
+        "platform": 14,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 19659,
+        "date": 1334620800,
+        "m": 4,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 19660,
+        "date": 1334620800,
+        "m": 4,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 19662,
+        "date": 1345680000,
+        "m": 8,
+        "platform": 12,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 19658,
+        "date": 1305590400,
+        "m": 5,
+        "platform": 6,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 170449,
+      "first_release_date": 1435622400,
+      "name": "The Witcher 3: Wild Hunt - New Quest 'Where the Cat and Wolf Play...'",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 426548,
+        "date": 1435622400,
+        "m": 6,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 312725,
+        "date": 1435708800,
+        "m": 7,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426549,
+        "date": 1435622400,
+        "m": 6,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 13166,
+      "alternative_names": [
+       {
+        "id": 49556,
+        "comment": "Russian title",
+        "name": "Ведьмак 3: Дикая Охота - Кровь и Вино"
+       },
+       {
+        "id": 8059,
+        "comment": "Polish title",
+        "name": "Wiedźmin 3: Dziki Gon - Krew i wino"
+       }
+      ],
+      "first_release_date": 1464566400,
+      "name": "The Witcher 3: Wild Hunt - Blood and Wine",
+      "platforms": [
+       169,
+       48,
+       6,
+       167,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 432098,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 169,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 432097,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 167,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 900499,
+        "date": 1611792000,
+        "m": 1,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 900500,
+        "date": 1464566400,
+        "m": 5,
+        "platform": 6,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 900501,
+        "date": 1464652800,
+        "m": 5,
+        "platform": 48,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 900502,
+        "date": 1464652800,
+        "m": 5,
+        "platform": 49,
+        "y": 2016,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 220276,
+      "alternative_names": [
+       {
+        "id": 108352,
+        "comment": "Alternative title",
+        "name": "The Witcher: Sirius"
+       },
+       {
+        "id": 108353,
+        "comment": "Alternative title",
+        "name": "Project Sirius"
+       }
+      ],
+      "name": "The Witcher: Project Sirius",
+      "game_type": 0
+     },
+     {
+      "id": 170451,
+      "first_release_date": 1432598400,
+      "name": "The Witcher 3: Wild Hunt - New Quest 'Contract: Missing Miners'",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 312726,
+        "date": 1432684800,
+        "m": 5,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426546,
+        "date": 1432598400,
+        "m": 5,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426547,
+        "date": 1432598400,
+        "m": 5,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 1942,
+      "alternative_names": [
+       {
+        "id": 173745,
+        "comment": "Alternative title",
+        "name": "Witcher III"
+       },
+       {
+        "id": 2427,
+        "comment": "Russian Title",
+        "name": "Ведьмак 3: Дикая охота"
+       },
+       {
+        "id": 2495,
+        "comment": "Polish title",
+        "name": "Wiedźmin 3: Dziki Gon"
+       },
+       {
+        "id": 71879,
+        "comment": "Chinese title - simplified",
+        "name": "巫师3：狂猎"
+       },
+       {
+        "id": 51941,
+        "comment": "Alternative spelling",
+        "name": "The Witcher III: Wild Hunt"
+       },
+       {
+        "id": 74560,
+        "comment": "Alternative title",
+        "name": "Witcher 3"
+       },
+       {
+        "id": 74561,
+        "comment": "Acronym",
+        "name": "TW3"
+       },
+       {
+        "id": 121895,
+        "comment": "Chinese title - traditional",
+        "name": "巫師3：狂獵"
+       },
+       {
+        "id": 179756,
+        "comment": "Windows Executable",
+        "name": "redprelauncher.exe"
+       },
+       {
+        "id": 256031,
+        "comment": "Czech title",
+        "name": "Zaklínač 3: Divoký hon"
+       },
+       {
+        "id": 276816,
+        "comment": "Alternative title",
+        "name": "Вещерът 3 - Дивият лов"
+       },
+       {
+        "id": 282455,
+        "comment": "Japanese title - stylized",
+        "name": "ウィッチャー３　ワイルドハント"
+       },
+       {
+        "id": 276919,
+        "comment": "Alternative title",
+        "name": "Вещерът 3: Дивият лов"
+       }
+      ],
+      "first_release_date": 1431993600,
+      "name": "The Witcher 3: Wild Hunt",
+      "platforms": [
+       169,
+       48,
+       508,
+       6,
+       167,
+       49,
+       130
+      ],
+      "release_dates": [
+       {
+        "id": 974208,
+        "date": 1431993600,
+        "m": 5,
+        "platform": 48,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 974209,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 167,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 974210,
+        "date": 1431993600,
+        "m": 5,
+        "platform": 49,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 974211,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 169,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 974206,
+        "date": 1611792000,
+        "m": 1,
+        "platform": 130,
+        "y": 2021,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 974207,
+        "date": 1431993600,
+        "m": 5,
+        "platform": 6,
+        "y": 2015,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 974212,
+        "date": 1790640000,
+        "m": 9,
+        "platform": 508,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 198179,
+      "alternative_names": [
+       {
+        "id": 87550,
+        "comment": "Working title",
+        "name": "The Witcher: DuelMail"
+       }
+      ],
+      "first_release_date": 1215561600,
+      "name": "The Witcher: Versus",
+      "platforms": [
+       82,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 354836,
+        "date": 1215561600,
+        "m": 7,
+        "platform": 82,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 354837,
+        "date": 1300924800,
+        "m": 3,
+        "platform": 39,
+        "y": 2011,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 80,
+      "alternative_names": [
+       {
+        "id": 4211,
+        "comment": "Czech title",
+        "name": "Zaklínač"
+       },
+       {
+        "id": 4212,
+        "comment": "Russian title",
+        "name": "Ведьмак"
+       },
+       {
+        "id": 2492,
+        "comment": "Polish title",
+        "name": "Wiedźmin"
+       },
+       {
+        "id": 51638,
+        "comment": "Abbreviation",
+        "name": "Witcher"
+       }
+      ],
+      "first_release_date": 1193356800,
+      "name": "The Witcher",
+      "platforms": [
+       6,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 19957,
+        "date": 1193702400,
+        "m": 10,
+        "platform": 6,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 19958,
+        "date": 1194566400,
+        "m": 11,
+        "platform": 6,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 19956,
+        "date": 1193356800,
+        "m": 10,
+        "platform": 6,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 19959,
+        "date": 1207872000,
+        "m": 4,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 19960,
+        "date": 1333584000,
+        "m": 4,
+        "platform": 14,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 157580,
+      "first_release_date": 1435017600,
+      "name": "The Witcher 3: Wild Hunt - New Quest 'Contract: Skellige's Most Wanted'",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 426542,
+        "date": 1435017600,
+        "m": 6,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 312722,
+        "date": 1435104000,
+        "m": 6,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426543,
+        "date": 1435017600,
+        "m": 6,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 220277,
+      "alternative_names": [
+       {
+        "id": 108344,
+        "comment": "Alternative title",
+        "name": "Project Canis Majoris "
+       },
+       {
+        "id": 108343,
+        "comment": "Alternative title",
+        "name": "The Witcher: Canis Majoris "
+       }
+      ],
+      "name": "The Witcher Remake",
+      "platforms": [
+       169,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 399646,
+        "platform": 6,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 440515,
+        "platform": 167,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 440516,
+        "platform": 169,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 8
+     },
+     {
+      "id": 230102,
+      "first_release_date": 1670976000,
+      "name": "The Witcher 3: Wild Hunt - Free Next-Gen Update",
+      "platforms": [
+       169,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 480962,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 6,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 480963,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 169,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 480964,
+        "date": 1670976000,
+        "m": 12,
+        "platform": 167,
+        "y": 2022,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 14
+     },
+     {
+      "id": 187249,
+      "alternative_names": [
+       {
+        "id": 81736,
+        "comment": "Polish title",
+        "name": "Wiedźmin: Krwawy Szlak"
+       },
+       {
+        "id": 81737,
+        "comment": "Alternative title",
+        "name": "The WItcher Mobile"
+       }
+      ],
+      "first_release_date": 1195516800,
+      "name": "The Witcher: Crimson Trail",
+      "platforms": [
+       55
+      ],
+      "release_dates": [
+       {
+        "id": 337646,
+        "date": 1195516800,
+        "m": 11,
+        "platform": 55,
+        "y": 2007,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 137125,
+      "first_release_date": 1626739200,
+      "name": "The Witcher: Monster Slayer",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 352830,
+        "date": 1626739200,
+        "m": 7,
+        "platform": 39,
+        "y": 2021,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 208104,
+        "platform": 34,
+        "date_format": 7,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 8765,
+      "alternative_names": [
+       {
+        "id": 216901,
+        "comment": "Windows Executable",
+        "name": "TheWitcherAdventureGame.exe"
+       }
+      ],
+      "first_release_date": 1417046400,
+      "name": "The Witcher: Adventure Game",
+      "platforms": [
+       34,
+       6,
+       39,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 357122,
+        "date": 1417046400,
+        "m": 11,
+        "platform": 39,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 421087,
+        "date": 1417046400,
+        "m": 11,
+        "platform": 6,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 421088,
+        "date": 1417046400,
+        "m": 11,
+        "platform": 14,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 27452,
+        "date": 1419292800,
+        "m": 12,
+        "platform": 34,
+        "y": 2014,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 170450,
+      "first_release_date": 1433808000,
+      "name": "The Witcher 3: Wild Hunt - New Quest 'Fool's Gold'",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 426544,
+        "date": 1433808000,
+        "m": 6,
+        "platform": 48,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 312727,
+        "date": 1433894400,
+        "m": 6,
+        "platform": 6,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 426545,
+        "date": 1433808000,
+        "m": 6,
+        "platform": 49,
+        "y": 2015,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 1
+     },
+     {
+      "id": 19474,
+      "alternative_names": [
+       {
+        "id": 82867,
+        "comment": "Abbreviation",
+        "name": "Gwent"
+       },
+       {
+        "id": 83296,
+        "comment": "Polish title",
+        "name": "Gwint: Wiedźmińska Gra Karciana"
+       },
+       {
+        "id": 207852,
+        "comment": "Windows Executable",
+        "name": "REDprelauncher.exe"
+       }
+      ],
+      "first_release_date": 1540252800,
+      "name": "Gwent: The Witcher Card Game",
+      "platforms": [
+       48,
+       34,
+       6,
+       39,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 854731,
+        "date": 1585008000,
+        "m": 3,
+        "platform": 34,
+        "y": 2020,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 854732,
+        "date": 1572307200,
+        "m": 10,
+        "platform": 39,
+        "y": 2019,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 854733,
+        "date": 1540252800,
+        "m": 10,
+        "platform": 6,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 854734,
+        "date": 1543881600,
+        "m": 12,
+        "platform": 48,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 854735,
+        "date": 1543881600,
+        "m": 12,
+        "platform": 49,
+        "y": 2018,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 215843,
+      "first_release_date": 1662422400,
+      "name": "Roach Race",
+      "platforms": [
+       34,
+       39
+      ],
+      "release_dates": [
+       {
+        "id": 387113,
+        "date": 1662422400,
+        "m": 9,
+        "platform": 34,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 387114,
+        "date": 1662422400,
+        "m": 9,
+        "platform": 39,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 0
+     },
+     {
+      "id": 20740,
+      "alternative_names": [
+       {
+        "id": 169386,
+        "comment": "Polish title",
+        "name": "Wiedźmin 2: Zabójcy Królów - Edycja Rozszerzona"
+       },
+       {
+        "id": 169387,
+        "comment": "Russian title",
+        "name": "Ведьмак 2: Убийцы королей. Расширенное издание"
+       },
+       {
+        "id": 195366,
+        "comment": "Windows Executable",
+        "name": "launcher.exe"
+       },
+       {
+        "id": 260313,
+        "comment": "Czech title",
+        "name": "Zaklínač 2: Vrahové Králů - rozšířená edice"
+       }
+      ],
+      "first_release_date": 1334534400,
+      "name": "The Witcher 2: Assassins of Kings - Enhanced Edition",
+      "platforms": [
+       3,
+       6,
+       14,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 718474,
+        "date": 1350518400,
+        "m": 10,
+        "platform": 14,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 718479,
+        "date": 1334620800,
+        "m": 4,
+        "platform": 12,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 718475,
+        "date": 1353542400,
+        "m": 11,
+        "platform": 14,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 718477,
+        "date": 1334880000,
+        "m": 4,
+        "platform": 6,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       },
+       {
+        "id": 718473,
+        "date": 1334534400,
+        "m": 4,
+        "platform": 3,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 718478,
+        "date": 1334707200,
+        "m": 4,
+        "platform": 12,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 718476,
+        "date": 1334534400,
+        "m": 4,
+        "platform": 6,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 718480,
+        "date": 1334620800,
+        "m": 4,
+        "platform": 12,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 718481,
+        "date": 1345680000,
+        "m": 8,
+        "platform": 12,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 5
+       }
+      ],
+      "game_type": 10
+     },
+     {
+      "id": 80342,
+      "name": "The Witcher: Rise of the White Wolf",
+      "platforms": [
+       9,
+       12
+      ],
+      "release_dates": [
+       {
+        "id": 474053,
+        "platform": 9,
+        "status": 5,
+        "date_format": 7,
+        "release_region": 8
+       },
+       {
+        "id": 649359,
+        "date": 1262217600,
+        "m": 12,
+        "platform": 12,
+        "y": 2009,
+        "status": 5,
+        "date_format": 6,
+        "release_region": 8
+       }
+      ],
+      "game_type": 11
+     },
+     {
+      "id": 224493,
+      "first_release_date": 1221523200,
+      "name": "The Witcher: Side Effects",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 421523,
+        "date": 1221523200,
+        "m": 9,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 5
+     },
+     {
+      "id": 115776,
+      "first_release_date": 1553731200,
+      "name": "Gwent: Crimson Curse",
+      "platforms": [
+       48,
+       6,
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 188682,
+        "date": 1553731200,
+        "m": 3,
+        "platform": 6,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188683,
+        "date": 1553731200,
+        "m": 3,
+        "platform": 48,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 188684,
+        "date": 1553731200,
+        "m": 3,
+        "platform": 49,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 122661,
+      "first_release_date": 1569974400,
+      "name": "Gwent: Iron Judgment",
+      "platforms": [
+       49
+      ],
+      "release_dates": [
+       {
+        "id": 176738,
+        "date": 1569974400,
+        "m": 10,
+        "platform": 49,
+        "y": 2019,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 224492,
+      "first_release_date": 1207785600,
+      "name": "The Witcher: The Price of Neutrality",
+      "platforms": [
+       6
+      ],
+      "release_dates": [
+       {
+        "id": 421522,
+        "date": 1207785600,
+        "m": 4,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 5
+     },
+     {
+      "id": 20275,
+      "first_release_date": 1221523200,
+      "name": "The Witcher: Enhanced Edition",
+      "platforms": [
+       6,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 55047,
+        "date": 1221782400,
+        "m": 9,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 1
+       },
+       {
+        "id": 55046,
+        "date": 1221523200,
+        "m": 9,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 55049,
+        "date": 1333584000,
+        "m": 4,
+        "platform": 14,
+        "y": 2012,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 55048,
+        "date": 1222732800,
+        "m": 9,
+        "platform": 6,
+        "y": 2008,
+        "date_format": 0,
+        "release_region": 3
+       },
+       {
+        "id": 461179,
+        "date": 1658966400,
+        "m": 7,
+        "platform": 14,
+        "y": 2022,
+        "date_format": 0,
+        "release_region": 1
+       }
+      ],
+      "game_type": 10
+     },
+     {
+      "id": 27832,
+      "alternative_names": [
+       {
+        "id": 268910,
+        "comment": "Windows Executable",
+        "name": "witcher.exe"
+       }
+      ],
+      "first_release_date": 1221523200,
+      "name": "The Witcher: Enhanced Edition Director's Cut",
+      "platforms": [
+       6,
+       14
+      ],
+      "release_dates": [
+       {
+        "id": 851053,
+        "date": 1221523200,
+        "m": 9,
+        "platform": 6,
+        "y": 2008,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       },
+       {
+        "id": 851055,
+        "date": 1333584000,
+        "m": 4,
+        "platform": 14,
+        "y": 2012,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 2
+       }
+      ],
+      "game_type": 10
+     },
+     {
+      "id": 403150,
+      "alternative_names": [
+       {
+        "id": 278283,
+        "comment": "Polish title",
+        "name": "Wiedźmin 3: Dziki Gon - Pieśni przeszłości"
+       },
+       {
+        "id": 289750,
+        "comment": "Russian title",
+        "name": "Ведьмак 3: Дикая Охота — Баллады прошлого"
+       }
+      ],
+      "first_release_date": 1830211200,
+      "name": "The Witcher 3: Wild Hunt - Songs of the Past",
+      "platforms": [
+       169,
+       508,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 963263,
+        "date": 1830211200,
+        "m": 12,
+        "platform": 508,
+        "y": 2027,
+        "status": 6,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 917997,
+        "date": 1830211200,
+        "m": 12,
+        "platform": 6,
+        "y": 2027,
+        "status": 6,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 917998,
+        "date": 1830211200,
+        "m": 12,
+        "platform": 167,
+        "y": 2027,
+        "status": 6,
+        "date_format": 2,
+        "release_region": 8
+       },
+       {
+        "id": 917999,
+        "date": 1830211200,
+        "m": 12,
+        "platform": 169,
+        "y": 2027,
+        "status": 6,
+        "date_format": 2,
+        "release_region": 8
+       }
+      ],
+      "game_type": 2
+     },
+     {
+      "id": 415005,
+      "alternative_names": [
+       {
+        "id": 289552,
+        "comment": "Abbreviation",
+        "name": "The Witcher 3 Remastered"
+       }
+      ],
+      "first_release_date": 1790640000,
+      "name": "The Witcher 3: Wild Hunt Remastered",
+      "platforms": [
+       169,
+       508,
+       6,
+       167
+      ],
+      "release_dates": [
+       {
+        "id": 957238,
+        "date": 1790640000,
+        "m": 9,
+        "platform": 6,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 957250,
+        "date": 1790640000,
+        "m": 9,
+        "platform": 508,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 957251,
+        "date": 1790640000,
+        "m": 9,
+        "platform": 169,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       },
+       {
+        "id": 957252,
+        "date": 1790640000,
+        "m": 9,
+        "platform": 167,
+        "y": 2026,
+        "status": 6,
+        "date_format": 0,
+        "release_region": 8
+       }
+      ],
+      "game_type": 9
+     }
+    ],
+    "name": "The Witcher"
+   }
+  ],
+  "game_type": 0
+ }
+]

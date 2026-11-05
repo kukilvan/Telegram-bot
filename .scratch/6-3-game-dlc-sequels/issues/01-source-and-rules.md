@@ -1,6 +1,6 @@
 # 01: The source and the rules — IGDB follow-up query, snapshot, pure rules, expansion as a game
 
-Status: open
+Status: in review
 Complexity: complex (a new IGDB adapter with a three-level query, the pure rules of what is shown and what is new, a strict change of the own game snapshot)
 Blocked by: —
 
