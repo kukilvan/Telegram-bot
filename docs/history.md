@@ -2,6 +2,15 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-05 — Stage 6.3, ticket 04: announcements, Feed and bot «Следить», samples
+
+- `actions.FOLLOW_TYPES` — the one list of the event types with «Следить» (the movie `SEQUEL_ANNOUNCED` and `follow_ups.TYPES`); under a game announcement «👀 Следить» (`game:<igdb id>`) and «📄 Карточка» of the checked game, a movie announcement keeps «Следить» alone.
+- `delivery_service._summary_actions`: «Следить» is named by the announced game (`sequel_title`) and is not cut by `BUTTON_NAME_LIMIT` (the example of spec 6.5 is 33 characters), every other button by the event's title (cut at 30). Announcements are never folded: a line of the summary and a message of its own each.
+- Feed: `Followable(kind, external_id)` and `FollowOffer(target, title_id)` replace the bare tuple and `SequelOffer`; `feed_rows.followable_of` replaces `sequel_of`; `FeedReader._listed` reads every type of `FOLLOW_TYPES`; `POST /feed/follow` (`feed_follow`, form fields `kind`, `external_id`) replaces `/feed/sequels`.
+- Bot: `follow_title` handles `game:<id>` like a movie's; after it «✅ Добавлено в список» with the card for every kind («Продолжение добавлено» goes), «Уже в списке» as before; errors name the source of the kind (`KINDS[…].source_name`, an old button with a number is TMDb).
+- `follow_ups.TEST_SAMPLES` (a list now) registered in `test_samples` after the game samples: `game-expansion`, `game-sequel`, text only.
+- Tests: `test_tracker_announcements` (20), `test_web_feed_follow_ups` (6), game cases in `test_tracker_early_answer`; older tests moved to the new names. Full run: 3040 passed, the three known Windows failures only.
+
 ## 2026-11-05 — Stage 6.3, ticket 03: what the owner sees of expansions and sequels
 
 - `cards.py`: `FollowLine` (replaces `SequelLine`; `when` is the ready date text, a film's row says «дата не объявлена»), `FollowUpsView(checked, checked_at, expansions, sequels, collections)`, `ParentGame(name, title_id)`; `CardPart` / `TitleCard` get `parent` and `follow_ups`; the bot card prints «Дополнение к игре «…»» after the names line (`parent_line`).
