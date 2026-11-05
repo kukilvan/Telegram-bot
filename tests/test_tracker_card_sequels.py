@@ -92,8 +92,8 @@ def test_the_sequels_come_by_date_with_the_undated_last_and_the_earlier_films_le
     view = cards.sequel_view(Sequels(OWN, parts), True, {})
 
     assert view.checked is True
-    assert [(line.external_id, line.date) for line in view.lines] == [
-        ("2", date(2024, 2, 27)), ("3", date(2028, 12, 15)), ("4", None),
+    assert [(line.external_id, line.when) for line in view.lines] == [
+        ("2", "27 февраля 2024"), ("3", "15 декабря 2028"), ("4", "дата не объявлена"),
     ]
 
 
@@ -143,10 +143,10 @@ def test_the_sequels_found_are_listed_and_the_one_already_followed_is_marked(tra
     view = run(tracker.title_card(film)).sequels
 
     assert view.checked is True
-    assert [(line.name, line.date, line.title_id) for line in view.lines] == [
-        ("Дюна: Часть вторая", date(2024, 2, 27), followed),
-        ("Дюна: Часть третья", date(2028, 12, 15), None),
-        ("Дюна: Часть четвёртая", None, None),
+    assert [(line.name, line.when, line.title_id) for line in view.lines] == [
+        ("Дюна: Часть вторая", "27 февраля 2024", followed),
+        ("Дюна: Часть третья", "15 декабря 2028", None),
+        ("Дюна: Часть четвёртая", "дата не объявлена", None),
     ]
 
 
@@ -156,7 +156,7 @@ def test_following_a_sequel_marks_it_in_the_list_on_the_next_card(tracker, seque
     run(tracker.mark_watched(film))
     run(tracker.poll_due())
 
-    result = run(tracker.follow_sequel_of("movie", "2"))
+    result = run(tracker.follow("movie", "2"))
 
     assert run(tracker.title_card(film)).sequels.lines[0].title_id == result.title_id
 

@@ -136,21 +136,23 @@ class Titles:
 
     # --- sequels --------------------------------------------------------------------------------
 
-    async def follow_sequel_of(self, kind: str, sequel_id: str) -> AddResult:
-        """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it.
-        The button names the sequel, so it works even when the announcement or its film is gone."""
+    async def follow(self, kind: str, external_id: str) -> AddResult:
+        """«Следить» under an announcement or at a row of a card: the title joins the list as «Хочу» — a sequel of a film,
+        an expansion or a game of the series (an IGDB id of any type goes through `add_title`). Pressing twice opens it.
+        The button names the title, so it works even when the announcement or the game it came from is gone. UnknownKind
+        for a kind that announces nothing (`Pollers.follows`)."""
         try:
             title_kind = TitleKind(kind)  # `kind` is text from a button or a stored event
         except ValueError:
             raise UnknownKind(kind) from None
-        if self.pollers.sequels_of(title_kind) is None:
+        if not self.pollers.follows(title_kind):
             raise UnknownKind(kind)
-        return await self.add_title(title_kind, sequel_id)
+        return await self.add_title(title_kind, external_id)
 
     async def follow_sequel(self, event_id: int) -> AddResult:
         """The same for an old button, which holds only the number of the announcement: works while the event exists."""
         kind, sequel_id = await asyncio.to_thread(self._announced_sequel, event_id)
-        return await self.follow_sequel_of(kind, sequel_id)
+        return await self.follow(kind, sequel_id)
 
     def _announced_sequel(self, event_id: int) -> tuple[str, str]:
         with self.ctx.session_factory() as session:

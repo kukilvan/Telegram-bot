@@ -84,6 +84,11 @@ class Pollers:
     def sequels_of(self, kind: TitleKind) -> SequelPoller | None:
         return self._sequels.get(kind)
 
+    def follows(self, kind: TitleKind) -> bool:
+        """Whether titles of this kind announce titles to follow: the kind has a sequel source (a movie), or its poller
+        offers follow-ups (a game, while the core has the source of its follow-up check). The one place that says it."""
+        return kind in self._sequels or self._every[kind].offers_follow_ups
+
     def sequel_key_of(self, kind: TitleKind) -> str | None:
         """The key of the snapshot of the kind's sequel check; None — the kind has none. The one place that says which
         snapshot of a title is its sequel check: any other snapshot (the prices of a game) is not."""

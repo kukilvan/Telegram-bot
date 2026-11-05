@@ -217,9 +217,10 @@ class Tracker:
         """Remove a title and everything that belongs to it, in one transaction: all of it or nothing."""
         return await self._titles.delete_title(title_id)
 
-    async def follow_sequel_of(self, kind: str, sequel_id: str) -> AddResult:
-        """«Следить» under a sequel announcement: the sequel joins the list as «Хочу». Pressing twice opens it."""
-        return await self._titles.follow_sequel_of(kind, sequel_id)
+    async def follow(self, kind: str, external_id: str) -> AddResult:
+        """«Следить»: a sequel of a film, an expansion or a game of the series joins the list as «Хочу» (by its id in the
+        source of the kind). Pressing twice opens it. UnknownKind for a kind that announces nothing."""
+        return await self._titles.follow(kind, external_id)
 
     async def follow_sequel(self, event_id: int) -> AddResult:
         """The same for an old button, which holds only the number of the announcement."""

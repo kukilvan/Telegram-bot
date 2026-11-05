@@ -361,6 +361,8 @@ input[type="search"] {
 .row-score { flex: none; font-weight: 600; }
 
 .row-mark { flex: none; font-weight: 600; color: var(--accent); }
+.row-tag { color: var(--muted); font-size: 0.8rem; font-weight: 400; }
+.parent-line { margin: 0 0 0.5rem; color: var(--muted); font-size: 0.9rem; }
 
 .row-status { flex: none; color: var(--muted); font-size: 0.9rem; }
 

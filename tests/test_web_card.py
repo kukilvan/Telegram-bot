@@ -521,7 +521,7 @@ def test_the_card_is_a_module_with_a_router_of_its_own_and_the_app_only_assemble
     assert mine == {
         "/titles/{title_id:int}", "/titles/{title_id:int}/seasons/{season_id:int}", "/titles/{title_id:int}/released-watched",
         "/titles/{title_id:int}/watched", "/titles/{title_id:int}/dropped", "/titles/{title_id:int}/restore",
-        "/titles/{title_id:int}/sequels", "/titles/{title_id:int}/delete", "/titles/{title_id:int}/score",
+        "/titles/{title_id:int}/follow", "/titles/{title_id:int}/delete", "/titles/{title_id:int}/score",
         "/titles/{title_id:int}/seasons/{season_id:int}/score", "/titles/{title_id:int}/started",
         "/titles/{title_id:int}/platforms/{platform}",
     }

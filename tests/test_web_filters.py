@@ -184,7 +184,7 @@ def test_the_result_fragments_of_both_pages_still_push_their_addresses(client, s
 # ---- «Следить» is one handling -----------------------------------------------------------------------------------
 
 def test_the_handling_of_follow_is_in_pages_and_nowhere_else():
-    users = [path.name for path in sorted(WEB.glob("*.py")) if "follow_sequel_of(" in path.read_text(encoding="utf-8")]
+    users = [path.name for path in sorted(WEB.glob("*.py")) if ".follow(" in path.read_text(encoding="utf-8")]
 
     assert users == ["pages.py"]
 
@@ -198,13 +198,13 @@ def test_the_handling_of_follow_is_in_pages_and_nowhere_else():
 def test_the_card_and_the_feed_say_the_same_sentence_for_each_error(client, session_factory, monkeypatch, error, phrase_of_it):
     film = put(session_factory, "Дюна", TitleStatus.WATCHED)
 
-    async def refuse(self, kind, sequel_id):
+    async def refuse(self, kind, external_id):
         raise error
 
-    monkeypatch.setattr(Tracker, "follow_sequel_of", refuse)
+    monkeypatch.setattr(Tracker, "follow", refuse)
 
     # a film without a look at its sequels has no block for the line: without HTMX the line crosses to the card page
-    pressed = client.post(f"/titles/{film}/sequels", data={"kind": "movie", "sequel_id": "9"})
+    pressed = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "9"})
     on_card = client.get(pressed.headers["location"])
     on_feed = client.post("/feed/sequels", data={"kind": "movie", "sequel_id": "9"}, headers=HTMX)
 
@@ -223,4 +223,4 @@ def test_the_helpers_of_pages_say_what_they_do():
             assert not re.search(name, text), (path.name, name)
     from app.web import pages
 
-    assert callable(pages.report_source_failure) and callable(pages.try_follow_sequel) and callable(pages._under_net)
+    assert callable(pages.report_source_failure) and callable(pages.try_follow) and callable(pages._under_net)

@@ -1,6 +1,6 @@
 # 03: What the owner sees on the web and in the bot card — blocks, «Следить», parent line, mark «дополнение»
 
-Status: open
+Status: in review
 Complexity: medium (a view in the core, one row type for three lists, a moved block, a renamed route and facade method, two small lines; no new external behaviour)
 Blocked by: 02
 

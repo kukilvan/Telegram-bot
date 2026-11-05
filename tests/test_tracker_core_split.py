@@ -129,5 +129,5 @@ def test_titles_keeps_searching_adding_deleting_and_following_while_marks_and_ro
         for name in names:
             assert f"async def {name}(" in source, (module, name)
             assert f"def {name}(" not in titles and f"def _{name}(" not in titles, (module, name)
-    for name in ("search", "add_title", "delete_title", "follow_sequel_of", "follow_sequel"):
+    for name in ("search", "add_title", "delete_title", "follow", "follow_sequel"):
         assert f"async def {name}(" in titles, name

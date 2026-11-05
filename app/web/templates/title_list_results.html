@@ -18,7 +18,7 @@
     <li class="title-row">
       <label class="check pick">
         <input type="checkbox" name="id" value="{{ row.id }}"{% if row.id in ticked %} checked{% endif %}>
-        {{ title_main(row.poster, size, row.icon, row.name, "", row.year) }}
+        {{ title_main(row.poster, size, row.icon, row.name, "", row.year, "", row.tag) }}
         {{ row_tail(row) }}
       </label>
     </li>
@@ -31,7 +31,7 @@
   {% for row in rows %}
   <li class="title-row">
     <a class="row-link" href="{{ row.address }}">
-      {{ title_main(row.poster, size, row.icon, row.name, "", row.year) }}
+      {{ title_main(row.poster, size, row.icon, row.name, "", row.year, "", row.tag) }}
       {{ row_tail(row) }}
     </a>
   </li>

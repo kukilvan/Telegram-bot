@@ -54,12 +54,13 @@ def not_found(kind: TitleKind) -> str:
     return f"{KINDS[kind].source_name} больше не знает этот тайтл. Поищите заново"
 
 
-async def try_follow_sequel(request: Request, kind: str, sequel_id: str) -> str:
-    """«Следить» at a sequel (the card and the feed press it): asks the core and returns the sentence of what went wrong,
-    or an empty string when the sequel joined the list. A source that did not answer is written to the log."""
+async def try_follow(request: Request, kind: str, external_id: str) -> str:
+    """«Следить» at a sequel, an expansion or a game of the series (the card and the feed press it): asks the core and
+    returns the sentence of what went wrong, or an empty string when the title joined the list. A source that did not
+    answer is written to the log."""
     try:
-        await tracker_of(request).follow_sequel_of(kind, sequel_id)
-    except (UnknownKind, KeyError):  # no such kind, or one without sequels or a source
+        await tracker_of(request).follow(kind, external_id)
+    except (UnknownKind, KeyError):  # no such kind, or one that announces nothing or has no source
         return NO_SUCH_KIND
     except TitleNotFound:
         return not_found(TitleKind(kind))

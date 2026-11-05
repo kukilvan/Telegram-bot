@@ -157,5 +157,5 @@ async def mark_watched(request: Request, title_id: int) -> Response:
 async def follow_sequel(request: Request, kind: str = Form(""), sequel_id: str = Form("")) -> Response:
     """«Следить» under an announced sequel: the sequel joins the list, and its row now says «В списке». What went wrong
     is a line on top of the fresh feed."""
-    notice = await pages.try_follow_sequel(request, kind, sequel_id)
+    notice = await pages.try_follow(request, kind, sequel_id)
     return await _pressed(request, notice)

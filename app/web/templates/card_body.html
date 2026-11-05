@@ -1,6 +1,6 @@
 {# The whole card: the page includes it, and every press on it answers with it again (HTMX puts it in place of
    `#card`). A plain form sends the same press and is sent back to the card. #}
-{% from "macros.html" import poster, busy_button, score_select %}
+{% from "macros.html" import poster, busy_button, score_select, follow_block %}
 <article id="card" class="card">
   {% if card_notice %}<p class="notice" role="status">{{ card_notice }}</p>{% endif %}
   <div class="card-layout">
@@ -8,6 +8,7 @@
     <div class="card-details">
       <h1>{{ card.name }}</h1>
       {% if card.original_name and card.original_name != card.name %}<p class="title-original">{{ card.original_name }}</p>{% endif %}
+      {% if parent %}<p class="parent-line">{{ parent.start }}{% if parent.link %}<a href="{{ parent.link }}">{{ parent.name }}</a>{% else %}{{ parent.name }}{% endif %}»</p>{% endif %}
       <p class="kind-line">{{ kind_line }}</p>
       <p class="status"><span class="status-label">Статус:</span> {{ status_label }}</p>
       {% if score %}{{ score_select(score, "Оценка") }}{% endif %}
@@ -97,31 +98,7 @@
 
       {% if closed_note %}<p class="closed-note">{{ closed_note }}</p>{% endif %}
 
-      {% if sequels %}
-      <section class="sequels" aria-labelledby="sequels-heading">
-        <h2 id="sequels-heading">Продолжения</h2>
-        {% if sequels.error %}<p class="error" role="alert">{{ sequels.error }}</p>{% endif %}
-        {% if sequels.sentence %}<p class="hint">{{ sequels.sentence }}</p>{% endif %}
-        {% if sequels.rows %}
-        <ul class="sequel-list">
-          {% for row in sequels.rows %}
-          <li class="sequel-row">
-            <span class="sequel-text"><span class="sequel-name">{{ row.name }}</span> <span class="sequel-date">{{ row.when }}</span></span>
-            {% if row.card %}
-            <a class="row-action button-link" href="{{ row.card }}">В списке</a>
-            {% else %}
-            <form class="row-action" method="post" action="{{ sequels.address }}" hx-post="{{ sequels.address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
-              <input type="hidden" name="kind" value="{{ card.kind.value }}">
-              <input type="hidden" name="sequel_id" value="{{ row.external_id }}">
-              {{ busy_button("Следить", "Добавляю…") }}
-            </form>
-            {% endif %}
-          </li>
-          {% endfor %}
-        </ul>
-        {% endif %}
-      </section>
-      {% endif %}
+      {% for block in follow_blocks %}{{ follow_block(block) }}{% endfor %}
 
       <div class="actions">
         {% if start_press %}

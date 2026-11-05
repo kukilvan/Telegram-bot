@@ -478,7 +478,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             if old_event:
                 result = await tracker.follow_sequel(int(raw))
             else:
-                result = await tracker.follow_sequel_of(kind, sequel_id)
+                result = await tracker.follow(kind, sequel_id)
         except UnknownEvent:
             await tell_failure(callback, "Это объявление больше недоступно.")
             return

@@ -123,7 +123,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/app.py` — The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages behind them.
 - `app/web/archive.py` — The archive: the titles with a final status («Просмотрено», «Пройдено», «Бросил») with a search by name, a filter by kind, by genre and by status, and an order (links, so «Назад» and bookmarks work).
 - `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the lock after wrong tries.
-- `app/web/card.py` — The card of a title: what is known of it, the season marks, the platforms of a game with their marks «играю здесь», the sequels of a watched film and the buttons.
+- `app/web/card.py` — The card of a title: its details, the marks of seasons and platforms, «Следить» at a row of a follow list, the buttons.
+- `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms, the line of an expansion and the follow lists.
 - `app/web/feed.py` — The feed, the main page after the sign-in: «Скоро» (the next two weeks, by days), «Позже» (the nearest date of the titles with nothing in those days) and «Недавно» (the events of the last week).
 - `app/web/filters.py` — What the list and the archive share about their filters: a value read from the address, the row of links for the kind, the sentence of an empty page and the answer under the search field.
 - `app/web/menu.py` — The menu of the app and the one list of the addresses that need no sign-in.

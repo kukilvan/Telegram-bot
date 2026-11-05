@@ -28,6 +28,7 @@ class Row(NamedTuple):
     status: str  # the label
     score: str  # «9+», «ср. 9−» (the average of the seasons); empty: none to show
     mark: str  # «−30 %»: a Steam discount going; empty: none
+    tag: str  # «дополнение»: the word after the name; empty: none
 
 
 def clean_query(raw: str) -> str:
@@ -45,7 +46,7 @@ def rows(request: Request, titles: Sequence) -> list[Row]:
     return [
         Row(
             str(request.app.url_path_for("card", title_id=t.id)), t.id, t.poster_path, KINDS[t.kind].icon, t.name, t.year,
-            STATUS_LABELS[t.status], score_text(t.score, t.score_by_seasons), t.mark,
+            STATUS_LABELS[t.status], score_text(t.score, t.score_by_seasons), t.mark, t.tag,
         )
         for t in titles
     ]

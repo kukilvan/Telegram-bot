@@ -12,13 +12,13 @@
 {% endmacro %}
 
 {# The title of a row of a suggestion or of the list: the poster, the kind's icon, the name, the original name (smaller),
-   the year and `details` (the platforms of a game in the search; empty: none). The page puts the button to the right of
-   it. #}
-{% macro title_main(stored_poster, size, icon, name, original_name, year, details="") %}
+   the year and `details` (the platforms of a game in the search; empty: none). `tag` is the small word after the name
+   («дополнение»; empty: none). The page puts the button to the right of it. #}
+{% macro title_main(stored_poster, size, icon, name, original_name, year, details="", tag="") %}
 <span class="title-main">
   {{ poster(stored_poster, size, icon) }}
   <span class="title-text">
-    <span class="title-name"><span aria-hidden="true">{{ icon }}</span> {{ name }}</span>
+    <span class="title-name"><span aria-hidden="true">{{ icon }}</span> {{ name }}{% if tag %} <span class="row-tag">{{ tag }}</span>{% endif %}</span>
     {% if original_name and original_name != name %}<span class="title-original">{{ original_name }}</span>{% endif %}
     {% if year %}<span class="title-year">{{ year }}</span>{% endif %}
     {% if details %}<span class="title-details">{{ details }}</span>{% endif %}
@@ -43,6 +43,36 @@
   </label>
   {% if field.note %}<span class="score-note">{{ field.note }}</span>{% endif %}
 </form>
+{% endmacro %}
+
+{# A list of titles to follow on the card (`block` is a `FollowBlock`): the sequels of a watched film, the expansions or the
+   sequels of a game. A row says «В списке» with a link, or has «Следить», which sends the kind, the id of the row and the
+   key of the block, so an error stays in the block the press came from. #}
+{% macro follow_block(block) %}
+<section class="sequels" aria-labelledby="{{ block.key }}-heading">
+  <h2 id="{{ block.key }}-heading">{{ block.heading }}</h2>
+  {% if block.error %}<p class="error" role="alert">{{ block.error }}</p>{% endif %}
+  {% if block.sentence %}<p class="hint">{{ block.sentence }}</p>{% endif %}
+  {% if block.rows %}
+  <ul class="sequel-list">
+    {% for row in block.rows %}
+    <li class="sequel-row">
+      <span class="sequel-text"><span class="sequel-name">{{ row.name }}</span> <span class="sequel-date">{{ row.when }}</span></span>
+      {% if row.card %}
+      <a class="row-action button-link" href="{{ row.card }}">В списке</a>
+      {% else %}
+      <form class="row-action" method="post" action="{{ block.address }}" hx-post="{{ block.address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+        <input type="hidden" name="kind" value="{{ block.kind }}">
+        <input type="hidden" name="external_id" value="{{ row.external_id }}">
+        <input type="hidden" name="block" value="{{ block.key }}">
+        {{ busy_button("Следить", "Добавляю…") }}
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</section>
 {% endmacro %}
 
 {# The right side of a row of titles: the score (an average of the seasons has «ср.» in front of it), the mark of the

@@ -242,9 +242,9 @@ def test_the_sequels_are_rows_with_their_dates_and_follow_or_in_the_list(tracker
         ("Дюна: Часть четвёртая", "дата не объявлена"),
     ]
     assert f'<a class="row-action button-link" href="/titles/{followed}">В списке</a>' in html
-    follows = re.findall(r'name="kind" value="([^"]+)">\s*<input type="hidden" name="sequel_id" value="([^"]+)">', html)
+    follows = re.findall(r'name="kind" value="([^"]+)">\s*<input type="hidden" name="external_id" value="([^"]+)">', html)
     assert follows == [("movie", "3"), ("movie", "4")]
-    assert html.count(f'action="/titles/{film}/sequels"') == 2 and "Добавляю…" in html
+    assert html.count(f'action="/titles/{film}/follow"') == 2 and "Добавляю…" in html
     assert "Продолжений пока нет" not in html and "Ищу продолжения" not in html
 
 
@@ -252,7 +252,7 @@ def test_follow_adds_the_sequel_and_the_fresh_card_says_it_is_in_the_list(tracke
     movies.by_id["3"] = MovieSnapshot(external_id="3", name="Дюна: Часть третья", original_name="", year=2028, genres=[])
     film = watched_film(tracker, sequels, SEQUEL_THREE)
 
-    answer = client.post(f"/titles/{film}/sequels", data={"kind": "movie", "sequel_id": "3"}, headers=HTMX)
+    answer = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "3"}, headers=HTMX)
 
     assert answer.status_code == 200 and 'id="card"' in answer.text and "<html" not in answer.text
     added = next(row.id for row in run(tracker.list_titles()) if row.name == "Дюна: Часть третья")
@@ -263,7 +263,7 @@ def test_follow_adds_the_sequel_and_the_fresh_card_says_it_is_in_the_list(tracke
 def test_follow_without_htmx_is_a_303_back_to_the_card(tracker, client, sequels):
     film = watched_film(tracker, sequels, SEQUEL_TWO)
 
-    answer = client.post(f"/titles/{film}/sequels", data={"kind": "movie", "sequel_id": "2"})
+    answer = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "2"})
 
     assert answer.status_code == 303 and answer.headers["location"] == f"/titles/{film}"
     assert len(run(tracker.list_titles())) == 2
@@ -274,7 +274,7 @@ def test_follow_while_the_source_is_down_is_a_line_in_the_block(tracker, client,
     movies.failing = True
 
     with caplog.at_level(logging.WARNING):
-        answer = client.post(f"/titles/{film}/sequels", data={"kind": "movie", "sequel_id": "2"}, headers=HTMX)
+        answer = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "2"}, headers=HTMX)
 
     assert answer.status_code == 200
     assert '<p class="error" role="alert">Не удалось связаться с TMDb. Попробуйте чуть позже</p>' in answer.text
@@ -285,7 +285,7 @@ def test_follow_while_the_source_is_down_without_htmx_says_so_on_the_card(tracke
     film = watched_film(tracker, sequels, SEQUEL_TWO)
     movies.failing = True
 
-    answer = client.post(f"/titles/{film}/sequels", data={"kind": "movie", "sequel_id": "2"})
+    answer = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "2"})
 
     assert answer.status_code == 303
     assert "Не удалось связаться с TMDb. Попробуйте чуть позже" in client.get(answer.headers["location"]).text
@@ -294,7 +294,7 @@ def test_follow_while_the_source_is_down_without_htmx_says_so_on_the_card(tracke
 def test_follow_of_a_sequel_the_source_does_not_know_says_so(tracker, client, sequels):
     film = watched_film(tracker, sequels, SEQUEL_FOUR)
 
-    answer = client.post(f"/titles/{film}/sequels", data={"kind": "movie", "sequel_id": "4"}, headers=HTMX)
+    answer = client.post(f"/titles/{film}/follow", data={"kind": "movie", "external_id": "4"}, headers=HTMX)
 
     assert "TMDb больше не знает этот тайтл. Поищите заново" in answer.text
 
@@ -303,7 +303,7 @@ def test_follow_of_a_sequel_the_source_does_not_know_says_so(tracker, client, se
 def test_follow_of_a_kind_without_sequels_is_refused(tracker, client, sequels, kind):
     film = watched_film(tracker, sequels, SEQUEL_TWO)
 
-    answer = client.post(f"/titles/{film}/sequels", data={"kind": kind, "sequel_id": "2"}, headers=HTMX)
+    answer = client.post(f"/titles/{film}/follow", data={"kind": kind, "external_id": "2"}, headers=HTMX)
 
     assert answer.status_code == 200 and "Такого типа нет" in answer.text
     assert len(run(tracker.list_titles())) == 1
@@ -363,35 +363,35 @@ def test_a_press_that_changes_nothing_is_just_the_fresh_card(tracker, client, pa
     assert answer.status_code == 200 and 'id="card"' in answer.text
 
 
-@pytest.mark.parametrize("path", ["/dropped", "/restore", "/sequels"])
+@pytest.mark.parametrize("path", ["/dropped", "/restore", "/follow"])
 def test_a_press_on_a_title_deleted_elsewhere_is_the_gone_fragment(tracker, client, path):
     film = add(tracker, "movie", "1")
     run(tracker.delete_title(film))
 
     # a sequel the source does not know: an added one would take the freed number (KI-24)
-    answer = client.post(f"/titles/{film}{path}", data={"kind": "movie", "sequel_id": "9"}, headers=HTMX)
+    answer = client.post(f"/titles/{film}{path}", data={"kind": "movie", "external_id": "9"}, headers=HTMX)
 
     assert answer.status_code == 200 and GONE in answer.text and "<html" not in answer.text
 
 
-@pytest.mark.parametrize("path", ["/dropped", "/restore", "/sequels"])
+@pytest.mark.parametrize("path", ["/dropped", "/restore", "/follow"])
 def test_an_unexpected_error_is_logged_and_told_in_a_fragment(tracker, client, monkeypatch, caplog, path):
     film = add(tracker, "movie", "1")
 
     async def broken(self, *args, **kwargs):
         raise RuntimeError("the database is gone")
 
-    for name in ("mark_dropped", "restore_title", "follow_sequel_of"):
+    for name in ("mark_dropped", "restore_title", "follow"):
         monkeypatch.setattr(Tracker, name, broken)
 
     with caplog.at_level(logging.ERROR):
-        answer = client.post(f"/titles/{film}{path}", data={"kind": "movie", "sequel_id": "2"}, headers=HTMX)
+        answer = client.post(f"/titles/{film}{path}", data={"kind": "movie", "external_id": "2"}, headers=HTMX)
 
     assert answer.status_code == 200 and "Не получилось. Попробуйте ещё раз; подробности — в журнале" in answer.text
     assert any(r.exc_info for r in caplog.records if "unexpected error" in r.getMessage())
 
 
-@pytest.mark.parametrize("path", ["/dropped", "/restore", "/sequels"])
+@pytest.mark.parametrize("path", ["/dropped", "/restore", "/follow"])
 def test_a_press_from_a_foreign_page_is_refused(tracker, client, path):
     film = add(tracker, "movie", "1")
 
@@ -400,7 +400,7 @@ def test_a_press_from_a_foreign_page_is_refused(tracker, client, path):
     assert answer.status_code == 403 and run(tracker.title_card(film)).status == TitleStatus.WANT
 
 
-@pytest.mark.parametrize("path", ["/dropped", "/restore", "/sequels"])
+@pytest.mark.parametrize("path", ["/dropped", "/restore", "/follow"])
 def test_the_presses_need_a_sign_in(tracker, client, path):
     film = add(tracker, "movie", "1")
     anonymous = TestClient(client.app, follow_redirects=False)

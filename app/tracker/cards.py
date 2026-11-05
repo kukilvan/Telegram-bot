@@ -34,6 +34,7 @@ _MONTHS = (
 _SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
 NOT_ANNOUNCED = "не объявлена"
 STEAM_PRICE_LABEL = "Цена в Steam"
+PARENT_LINE_START = "Дополнение к игре «"  # the web card links the name that follows
 
 
 @dataclass(frozen=True)
@@ -45,14 +46,18 @@ class MovieLine:
     released: bool
 
 
-@dataclass(frozen=True)
-class SequelLine:
-    """A sequel of a watched movie, as the web card lists it."""
+NO_DATE = f"дата {NOT_ANNOUNCED}"  # «дата не объявлена»: what a row of a follow list says when it has no date
 
-    external_id: str  # in the movie source (TMDb)
+
+@dataclass(frozen=True)
+class FollowLine:
+    """One row of a follow list on the web card: a sequel of a watched movie, an expansion of a game or a game of its
+    series (spec 7.1 of stage 6.3)."""
+
+    external_id: str  # in the source of the kind: what «Следить» sends
     name: str
-    date: date | None  # None: not announced
-    title_id: int | None  # the sequel's title when it is in the list already
+    when: str  # the ready date text: «15 декабря 2028», «2027», «дата не объявлена»
+    title_id: int | None  # the title when the list has it already
 
 
 @dataclass(frozen=True)
@@ -60,7 +65,27 @@ class SequelsView:
     """The sequels of a watched movie: whether its collection was looked at yet, and the sequels found there."""
 
     checked: bool
-    lines: tuple[SequelLine, ...] = ()
+    lines: tuple[FollowLine, ...] = ()
+
+
+@dataclass(frozen=True)
+class FollowUpsView:
+    """The expansions and the games of the series of a game for the check (spec 7.1 of stage 6.3): `checked` — the
+    check has answered once; `checked_at` — when, on the owner's clock (aware); `collections` — the names of the series."""
+
+    checked: bool
+    checked_at: datetime | None = None
+    expansions: tuple[FollowLine, ...] = ()
+    sequels: tuple[FollowLine, ...] = ()
+    collections: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class ParentGame:
+    """The game an expansion belongs to: its name in the list when it is there (`title_id` set), else the one IGDB gave."""
+
+    name: str
+    title_id: int | None = None
 
 
 def sequel_view(sequels: "Sequels", checked: bool, listed: Mapping[str, int]) -> SequelsView:
@@ -70,7 +95,12 @@ def sequel_view(sequels: "Sequels", checked: bool, listed: Mapping[str, int]) ->
         (part for part in sequels.parts if sequels.is_sequel(part)),
         key=lambda part: (part.date is None, part.date or date.max),
     )
-    return SequelsView(checked, tuple(SequelLine(p.id, p.name, p.date, listed.get(p.id)) for p in found))
+    return SequelsView(
+        checked,
+        tuple(
+            FollowLine(p.id, p.name, format_date(p.date) if p.date else NO_DATE, listed.get(p.id)) for p in found
+        ),
+    )
 
 
 @dataclass(frozen=True)
@@ -118,6 +148,8 @@ class CardPart:
     store_links: tuple[StoreLink, ...] = ()
     platform_note: str = ""
     steam: SteamView | None = None
+    parent: ParentGame | None = None
+    follow_ups: FollowUpsView | None = None
 
     def fields(self) -> dict[str, object]:
         return {field.name: getattr(self, field.name) for field in dataclasses.fields(self)}
@@ -146,6 +178,8 @@ class TitleCard:
     store_links: tuple[StoreLink, ...] = ()  # a game: Steam and PlayStation Store, where the owner's platforms have them
     platform_note: str = ""  # a game without such platforms: why the list of platforms is empty
     steam: SteamView | None = None  # a game in «Хочу» that is told about PC: its Steam prices; the poller decides
+    parent: ParentGame | None = None  # an expansion: the game it belongs to
+    follow_ups: FollowUpsView | None = None  # a game for the follow-up check: its expansions and sequels; for the web
 
 
 def format_date(value: date | None) -> str:
@@ -300,12 +334,20 @@ def platform_lines(card: TitleCard) -> list[str]:
     return lines
 
 
+def parent_line(parent: ParentGame) -> str:
+    """«Дополнение к игре «Ведьмак 3: Дикая охота»»: the line of an expansion under its names (the web builds its own,
+    with a link)."""
+    return f"{PARENT_LINE_START}{parent.name}»"
+
+
 def format_card(card: TitleCard) -> str:
     kind = KINDS[card.kind]
     names = card.name
     if card.original_name and card.original_name != card.name:
         names = f"{card.name} · {card.original_name}"
     lines = [f"{kind.icon} {kind.label} · {STATUS_LABELS[card.status]}", names]
+    if card.parent is not None:
+        lines.append(parent_line(card.parent))
     if card.year:
         lines.append(f"Год: {card.year}")
     if card.genres:

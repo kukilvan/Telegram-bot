@@ -9,7 +9,9 @@ card every platform of «Мои платформы» the game is on, with its ma
 the Steam prices of the games are checked (`pollers/game_prices`, part 6.2), then their expansions and the new games of
 their series (`pollers/game_follow_ups`, stage 6.3); the page in Steam is told here, by IGDB:
 its previous snapshot had no Steam number, the new one has, and the game is one for prices by the new snapshot. What
-the owner reads of the prices (the block of the card, the mark of the list) is `pollers/game_steam`.
+the owner reads of the prices (the block of the card, the mark of the list) is `pollers/game_steam`; of the expansions
+and sequels (the blocks of the card, the line of the parent) `pollers/game_follow_ups`, and the word «дополнение» after the
+name of an expansion in the List is `list_tags` (spec 7.4 of stage 6.3).
 """
 
 import logging
@@ -30,6 +32,9 @@ from app.tracker.pollers.base import DueTitle, Poller
 from app.tracker.pollers.game_follow_ups import GameFollowUps
 from app.tracker.pollers.game_prices import GamePrices, steam_number
 from app.tracker.pollers.game_steam import GameSteam
+
+
+EXPANSION_TAG = "дополнение"  # the word after the name of an expansion in the List and the Archive
 
 
 def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Platform]) -> None:
@@ -77,18 +82,38 @@ class GamePoller(Poller):
     def card_part(self, session, title: Title) -> CardPart:
         game = games.GameState.from_state(storage.own_state(session, title.id))
         scope = GameScope.read(self.settings, session, [title.id])
-        today = local_moment(self.ctx.now(), self.settings.time_zone(session)).date()
+        tz = self.settings.time_zone(session)
+        today = local_moment(self.ctx.now(), tz).date()
         rows = game_rows.platform_rows(game, scope.mine, scope.marks_of(title.id), scope.country, today)
         return CardPart(
             platforms=rows,
             store_links=game_rows.store_links(game, scope.mine, scope.country, title.original_name or title.name),
             platform_note=game_rows.platform_note(game, rows),
             steam=self.steam.card_block(session, title, game, scope),
+            parent=self.follow_ups.parent(session, game),
+            follow_ups=self.follow_ups.card_view(session, title, game, scope, tz),
         )
 
     def list_marks(self, session, titles: Sequence[Title]) -> dict[int, str]:
         """«−30 %» for the games of the list with a Steam discount going (`pollers/game_steam`)."""
         return self.steam.marks(session, titles)
+
+    def list_tags(self, session, titles: Sequence[Title]) -> dict[int, str]:
+        """«дополнение» for the games that are expansions, of either kind (spec 7.4 of stage 6.3); one read for all of them.
+        A game whose stored state cannot be read has none."""
+        states = storage.own_states_of(session, select(Title.id).where(Title.id.in_([title.id for title in titles])))
+        tags: dict[int, str] = {}
+        for title_id, state in states.items():
+            try:
+                if games.expansion_of(state) is not None:
+                    tags[title_id] = EXPANSION_TAG
+            except ValueError as spoiled:
+                logging.warning("title %s: its own state cannot be read for the list: %r", title_id, spoiled)
+        return tags
+
+    @property
+    def offers_follow_ups(self) -> bool:
+        return self.follow_ups.source is not None
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()

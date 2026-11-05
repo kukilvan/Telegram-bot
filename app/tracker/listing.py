@@ -1,9 +1,9 @@
 """What the owner reads of the list: its rows, the numbers of the whole list and the card of a title. The part of a card
-that depends on the kind (a film's dates, the seasons, a game's platforms and prices) is given by the poller of the
-kind, and so is the mark of a row (a game's discount)."""
+that depends on the kind (a film's dates, the seasons, a game's platforms, prices, expansions and sequels) is given by the
+poller of the kind, and so are the mark of a row (a game's discount) and the word after its name (an expansion)."""
 
 import asyncio
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from datetime import timezone
 from fractions import Fraction
 from typing import TYPE_CHECKING
@@ -23,6 +23,7 @@ from app.tracker.results import ListOrder, Overview, TitleSummary
 from app.tracker.settings_store import SettingsStore
 
 if TYPE_CHECKING:
+    from app.tracker.pollers.base import Poller
     from app.tracker.polling import Pollers
 
 
@@ -88,7 +89,8 @@ class Listing:
             titles = list(session.scalars(selected))
             titles = self._matching(titles, query, genre)
             views = self._scores(session, titles)  # one reading for every row, not one for each title
-            marks = self._marks(session, titles)
+            marks = self._of_kinds(titles, lambda poller, own: poller.list_marks(session, own))
+            tags = self._of_kinds(titles, lambda poller, own: poller.list_tags(session, own))
         if order == ListOrder.NAME:
             titles.sort(key=lambda t: (text_key(t.name), t.id))
         elif order == ListOrder.ARCHIVED:
@@ -101,7 +103,7 @@ class Listing:
             TitleSummary(
                 t.id, t.kind, t.name, t.year, t.status, t.poster_path,
                 views[t.id].shown if views[t.id] else None, bool(views[t.id] and views[t.id].by_seasons),
-                marks.get(t.id, ""),
+                marks.get(t.id, ""), tags.get(t.id, ""),
             )
             for t in titles
         ]
@@ -116,12 +118,15 @@ class Listing:
             titles = [t for t in titles if wanted in genre_keys(t.genres)]
         return titles
 
-    def _marks(self, session, titles: list[Title]) -> dict[int, str]:
-        """The marks of the rows, from the poller of each kind among them, one asking per kind."""
-        marks: dict[int, str] = {}
+    def _of_kinds(
+        self, titles: list[Title], ask: Callable[["Poller", list[Title]], dict[int, str]]
+    ) -> dict[int, str]:
+        """What the poller of each kind among the titles says of its rows (`ask`: its `list_marks`, the marks at the right,
+        or its `list_tags`, the words after the name), one asking per kind."""
+        said: dict[int, str] = {}
         for kind in {t.kind for t in titles}:
-            marks.update(self.pollers.reader_of(kind).list_marks(session, [t for t in titles if t.kind == kind]))
-        return marks
+            said.update(ask(self.pollers.reader_of(kind), [t for t in titles if t.kind == kind]))
+        return said
 
     @staticmethod
     def _scores(session, titles: list[Title]) -> dict[int, scores.ScoreView | None]:

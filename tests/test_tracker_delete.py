@@ -390,7 +390,7 @@ def test_the_follow_button_under_an_old_announcement_still_works_after_the_film_
     run(tracker.deliver_pending())
 
     run(tracker.delete_title(original))
-    result = run(tracker.follow_sequel_of("movie", DUNE_3))  # the button carries the kind and the id, not the event
+    result = run(tracker.follow("movie", DUNE_3))  # the button carries the kind and the id, not the event
 
     assert result.created is True
     assert [t.name for t in run(tracker.list_titles())] == ["Дюна: Часть третья"]
@@ -412,7 +412,7 @@ def test_the_old_kind_of_follow_button_needs_its_event_and_says_so_when_it_is_go
 
 def test_following_a_kind_nobody_announces_sequels_for_is_refused(tracker):
     with pytest.raises(UnknownKind):
-        run(tracker.follow_sequel_of("game", "1"))
+        run(tracker.follow("game", "1"))
 
 
 def test_an_announcement_nobody_has_seen_goes_with_the_film(tracker, movies, sequels, clock, session_factory):

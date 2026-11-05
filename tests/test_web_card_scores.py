@@ -385,17 +385,17 @@ def test_the_card_of_a_number_too_long_is_not_in_the_list_and_the_core_is_not_as
 
 @pytest.mark.parametrize("path", [
     f"/titles/{LONG}/seasons/1", f"/titles/{LONG}/score", f"/titles/{LONG}/seasons/1/score", f"/titles/{LONG}/released-watched",
-    f"/titles/{LONG}/watched", f"/titles/{LONG}/dropped", f"/titles/{LONG}/restore", f"/titles/{LONG}/sequels",
+    f"/titles/{LONG}/watched", f"/titles/{LONG}/dropped", f"/titles/{LONG}/restore", f"/titles/{LONG}/follow",
 ])
 def test_a_press_at_a_number_too_long_is_the_gone_title_and_the_core_is_not_asked(tracker, client, monkeypatch, path):
     async def never(self, *args, **kwargs):
         raise AssertionError("the core was asked about a number that cannot be ours")
 
     for name in ("title_card", "set_season_watched", "set_title_score", "set_season_score", "mark_all_released",
-                 "mark_watched", "mark_dropped", "restore_title", "follow_sequel_of"):
+                 "mark_watched", "mark_dropped", "restore_title", "follow"):
         monkeypatch.setattr(Tracker, name, never)
 
-    answer = client.post(path, data={"score": "27", "kind": "movie", "sequel_id": "2"}, headers=HTMX)
+    answer = client.post(path, data={"score": "27", "kind": "movie", "external_id": "2"}, headers=HTMX)
 
     assert answer.status_code == 200 and GONE in answer.text
 

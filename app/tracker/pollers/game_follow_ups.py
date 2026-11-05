@@ -15,19 +15,22 @@ check while IGDB answered is skipped: nothing queued, nothing stored. The events
 its own, then the new state is stored and the next check is in 7 days, so a failed store finds the same facts again and
 their keys drop them. A failure (IGDB, the game gone from IGDB, no keys, a spoiled state) waits 30 minutes and joins
 the «could not check» messages of the pass.
+
+What the owner reads (spec 7.1): `card_view` gives the expansions and the games of the series of a card, `parent` the
+game an expansion belongs to; both in a number of reads that does not grow with the lists.
 """
 
 import asyncio
 import logging
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, tzinfo
 from typing import Any
 
 from sqlalchemy import or_, select
 
 from app.tracker import follow_ups, games, storage
-from app.tracker.cards import local_moment
+from app.tracker.cards import FollowLine, FollowUpsView, ParentGame, local_moment
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
@@ -100,6 +103,56 @@ class GameFollowUps:
         if due:
             logging.info("follow-up check: %s games, %s failed", len(due), len(broken))
         return broken
+
+    # --- what the card reads (spec 7.1) ---
+
+    def parent(self, session, game: games.GameState) -> ParentGame | None:
+        """The game an expansion belongs to: its name in the list when the list has it, else the name IGDB gave. None —
+        the game is no expansion. At most two reads."""
+        if game.parent is None:
+            return None
+        title_id = self.known_ids(session, [game.parent.id]).get(game.parent.id)
+        if title_id is None:
+            return ParentGame(game.parent.name)
+        return ParentGame(session.scalar(select(Title.name).where(Title.id == title_id)) or game.parent.name, title_id)
+
+    def card_view(
+        self, session, title: Title, game: games.GameState, scope: GameScope, tz: tzinfo
+    ) -> FollowUpsView | None:
+        """The expansions and the games of the series for the card of `title` (`game`: its own state): None when the game
+        is not one for the check or the core has no source of it; «not checked yet» while its snapshot is empty or not
+        made yet. A spoiled stored state shows no blocks (the check reports it). The number of reads does not grow
+        with the lists: the snapshot, and one for the titles of the rows."""
+        if self.source is None or not for_follow_ups(title.status, game.expansion):
+            return None
+        stored = follow_up_snapshot(session, title.id)
+        if stored is None:
+            return FollowUpsView(checked=False)
+        try:
+            state = follow_ups.FollowUps.from_state(stored.state)
+        except ValueError as spoiled:
+            logging.warning("title %s: a spoiled state of the follow-up check, no blocks on its card: %r", title.id, spoiled)
+            return None
+        if state.snapshot is None:
+            return FollowUpsView(checked=False)
+        today = local_moment(self.ctx.now(), tz).date()
+        expansions = follow_ups.expansions_shown(state.snapshot, scope.mine, scope.country)
+        sequels = follow_ups.sequels_shown(state.snapshot, scope.mine, scope.country, today)
+        listed = self.known_ids(session, [candidate.id for candidate in expansions + sequels])
+
+        def lines(candidates: list[follow_ups.Candidate]) -> tuple[FollowLine, ...]:
+            return tuple(
+                FollowLine(
+                    candidate.id, candidate.name,
+                    follow_ups.follow_up_date(candidate, scope.mine, scope.country).label, listed.get(candidate.id),
+                )
+                for candidate in candidates
+            )
+
+        return FollowUpsView(
+            True, stored.observed_at.replace(tzinfo=timezone.utc).astimezone(tz), lines(expansions), lines(sequels),
+            state.snapshot.collections,
+        )
 
     # --- the reconciliation (spec 5.2) ---
 

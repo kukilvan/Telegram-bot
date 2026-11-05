@@ -48,6 +48,7 @@ class TitleSummary:
     score: int | None = None  # what the owner reads: the own score, else the average of the seasons to the nearest step; None: none shown
     score_by_seasons: bool = False  # `score` is the average of the seasons
     mark: str = ""  # the mark at the right, before the status («−30 %»: a Steam discount going); empty: none
+    tag: str = ""  # the word after the name («дополнение»: a game that is an expansion); empty: none
 
 
 @dataclass(frozen=True)

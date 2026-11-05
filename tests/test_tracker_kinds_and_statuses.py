@@ -180,7 +180,7 @@ def test_following_a_sequel_of_an_unknown_kind_says_so():
     tracker = Tracker(create_session_factory("sqlite://"), clock=lambda: datetime(2026, 1, 1), sender=None, sources={})
     for kind in ("book", "game"):  # no such kind / a kind with no sequel source
         with pytest.raises(UnknownKind):
-            asyncio.run(tracker.follow_sequel_of(kind, "1"))
+            asyncio.run(tracker.follow(kind, "1"))
 
 
 def test_the_table_says_what_the_owner_has_always_read():
