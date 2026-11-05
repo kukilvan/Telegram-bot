@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: сообщения бота (6.4)</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; background: #d9e6f2; color: #1d1d22; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  .msg { background: #fff; border-radius: 12px 12px 12px 4px; padding: 10px 14px; margin: 0 0 4px; white-space: pre-line; box-shadow: 0 1px 2px #0002; }
+  .mine { background: #e1fec6; border-radius: 12px 12px 4px 12px; margin-left: 48px; }
+  .fwd { color: #2c6db5; font-size: 13px; display: block; margin-bottom: 2px; }
+  .poster { display: block; width: 100%; height: 150px; border-radius: 8px; margin: 0 0 8px; background: linear-gradient(135deg, #5a6b8c, #2b3447); color: #fff; font-size: 13px; text-align: center; line-height: 150px; }
+  .kb { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 20px; }
+  .kb span { flex: 1 1 40%; text-align: center; background: #ffffffaa; border-radius: 8px; padding: 6px; font-size: 14px; color: #2c6db5; }
+  .reply { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 20px; }
+  .reply span { flex: 1 1 40%; text-align: center; background: #f4f4f6; border-radius: 6px; padding: 8px; font-size: 14px; }
+  h2 { font-size: 15px; color: #445; margin: 18px 0 6px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок части 6.4. Тексты — черновик; точные решает спека. Постер — картинка над текстом (как превью ссылки): карточка остаётся текстом любой длины, не загрузился постер — просто текст.</p>
+
+  <h2>1. Пересланный пост</h2>
+  <div class="msg mine"><span class="fwd">Переслано от Синдром Гравця</span>⚡️Опубліковано перші оцінки The Wolf Among Us Remastered від преси:
+PlayStation LifeStyle 9/10 …</div>
+  <div class="msg">Что это?</div>
+  <div class="kb"><span>Фильм</span><span>Сериал</span><span>Аниме</span><span>Игра</span><span>🗑 Не сохранять</span></div>
+
+  <h2>2. После «Игра» — первый кандидат</h2>
+  <div class="msg"><span class="poster">[ постер ]</span>Это оно?
+
+🎮 The Wolf Among Us Remastered
+2026 · ПК, PS5, Xbox Series
+Выход: 29 октября 2026</div>
+  <div class="kb"><span>✅ Да</span><span>❌ Нет</span></div>
+
+  <h2>3. После «Да»</h2>
+  <div class="msg"><span class="poster">[ постер ]</span>✅ Добавлено в список
+
+🎮 The Wolf Among Us Remastered
+Статус: Хочу
+ПК — 29 октября 2026 · PS5 — 29 октября 2026</div>
+  <div class="kb"><span>Карточка</span></div>
+
+  <h2>4. Название с опечаткой</h2>
+  <div class="msg mine">Реинкарнация безработнго</div>
+  <div class="msg">Что это?</div>
+  <div class="kb"><span>Фильм</span><span>Сериал</span><span>Аниме</span><span>Игра</span><span>🗑 Не сохранять</span></div>
+  <div class="msg"><span class="poster">[ постер ]</span>Возможно, вы имели в виду:
+
+🍥 Реинкарнация безработного
+Mushoku Tensei · 2021–2026 · 3 сезона</div>
+  <div class="kb"><span>✅ Да</span><span>❌ Нет</span></div>
+
+  <h2>5. Ссылка на страницу тайтла — без «Что это?»</h2>
+  <div class="msg mine">https://store.steampowered.com/app/1245620/</div>
+  <div class="msg"><span class="poster">[ постер ]</span>Это оно?
+
+🎮 Elden Ring
+2022 · ПК, PS5</div>
+  <div class="kb"><span>✅ Да</span><span>❌ Нет</span></div>
+
+  <h2>6. Уже в списке</h2>
+  <div class="msg"><span class="poster">[ постер ]</span>Уже в списке
+
+🎮 Phantom Blade Zero
+Статус: Хочу</div>
+  <div class="kb"><span>Карточка</span></div>
+
+  <h2>7. Не нашлось / «Нет» на последнем кандидате</h2>
+  <div class="msg">Не нашёл — сохранил во «Входящие». Разберите в веб-приложении.</div>
+
+  <h2>8. Источник не ответил</h2>
+  <div class="msg">Не удалось связаться с IGDB — сохранил во «Входящие».</div>
+
+  <h2>9. Нет ключей IGDB</h2>
+  <div class="msg">Игры не подключены: нет ключей IGDB в .env — сохранил во «Входящие».</div>
+
+  <h2>10. Сообщение без текста (картинка, видео)</h2>
+  <div class="msg">В сообщении нет текста — сохранил во «Входящие».</div>
+
+  <h2>11. Новый пост, а на прошлый ответа нет</h2>
+  <div class="msg">Предыдущий пост без ответа ушёл во «Входящие».</div>
+  <div class="msg">Что это?</div>
+  <div class="kb"><span>Фильм</span><span>Сериал</span><span>Аниме</span><span>Игра</span><span>🗑 Не сохранять</span></div>
+
+  <h2>12. «🗑 Не сохранять»</h2>
+  <div class="msg">Не сохраняю.</div>
+
+  <h2>13. Старая кнопка записи, убранной в вебе</h2>
+  <div class="msg">Эта запись уже разобрана.</div>
+
+  <h2>14. Меню бота внизу (без «➕ Добавить»)</h2>
+  <div class="reply"><span>📚 Мои тайтлы</span><span>Сводка сейчас</span><span>Тестовое событие</span></div>
+
+  <h2>15. Карточка по кнопке «Карточка» под событием — тоже с постером</h2>
+  <div class="msg"><span class="poster">[ постер ]</span>📺 Dead-End Job
+Статус: Хочу
+Сезон 1: 8 серий, вышли все</div>
+  <div class="kb"><span>Посмотрел</span><span>Удалить</span></div>
+</main>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: вкладка «Входящие» (6.4)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 16px; font-size: 15px; }
+  nav a { color: #3b6fd6; text-decoration: none; }
+  nav a.on { color: #1d1d22; font-weight: 600; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; box-shadow: 0 1px 3px #0002; }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  h2 { font-size: 15px; color: #666; margin: 0 0 8px; font-weight: 600; }
+  .item { border-top: 1px solid #eee; padding: 12px 0; }
+  .item:first-of-type { border-top: 0; padding-top: 0; }
+  .head { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 14px; color: #666; margin: 0 0 6px; }
+  .tag { font-size: 12px; background: #eef1fb; color: #2c4a9a; border-radius: 8px; padding: 1px 7px; }
+  .why { font-size: 12px; background: #fdecec; color: #8a2a2a; border-radius: 8px; padding: 1px 7px; }
+  .text { white-space: pre-line; margin: 0 0 8px; }
+  .more { font-size: 14px; color: #3b6fd6; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .btn { font: inherit; font-size: 14px; padding: 4px 14px; border-radius: 6px; border: 1px solid #3b6fd6; background: #3b6fd6; color: #fff; text-decoration: none; white-space: nowrap; }
+  .btn.ghost { background: #fff; color: #3b6fd6; }
+  .link { font-size: 14px; color: #3b6fd6; text-decoration: none; }
+  .empty { color: #666; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок части 6.4. Шестой пункт меню — «Входящие» с числом записей. Записи — сначала новые. «Найти» открывает Поиск с типом и лучшим кандидатом; добавление оттуда убирает запись. «Убрать» — без подтверждения.</p>
+
+  <nav><a href="#">Лента</a><a href="#">Список</a><a href="#">Архив</a><a href="#">Поиск</a><a class="on" href="#">Входящие (4)</a><a href="#">Настройки</a></nav>
+
+  <section class="card">
+    <h1>Входящие</h1>
+
+    <div class="item">
+      <div class="head"><span>Сегодня, 14:20</span><span class="tag">🎮 Игра</span><span class="why">не нашёл</span></div>
+      <p class="text">12 ноября на Quest выйдет Fabula Rasa — средневековое VR-приключение с ИИ-персонажами
+
+В Fabula Rasa игрок оказывается в клетке посреди средневекового города…</p>
+      <div class="actions"><a class="btn" href="#">Найти</a><a class="btn ghost" href="#">Убрать</a><a class="more" href="#">показать всё</a><a class="link" href="#">Открыть пост ↗</a></div>
+    </div>
+
+    <div class="item">
+      <div class="head"><span>Сегодня, 11:05</span><span class="tag">тип не выбран</span><span class="why">без ответа</span></div>
+      <p class="text">На Netflix состоялась премьера корейского сериала Dead-End Job. На основе описания в сети дораму прозвали смесью «Разделения» и «Игры в кальмара».</p>
+      <div class="actions"><a class="btn" href="#">Найти</a><a class="btn ghost" href="#">Убрать</a><a class="link" href="#">Открыть пост ↗</a></div>
+    </div>
+
+    <div class="item">
+      <div class="head"><span>Вчера, 22:41</span><span class="tag">🎬 Фильм</span><span class="why">источник не ответил</span></div>
+      <p class="text">Elden Ring</p>
+      <div class="actions"><a class="btn" href="#">Найти</a><a class="btn ghost" href="#">Убрать</a></div>
+    </div>
+
+    <div class="item">
+      <div class="head"><span>3 ноября, 09:12</span><span class="tag">тип не выбран</span><span class="why">нет текста</span></div>
+      <p class="text"><i>(картинка без подписи)</i></p>
+      <div class="actions"><a class="btn ghost" href="#">Убрать</a><a class="link" href="#">Открыть пост ↗</a></div>
+    </div>
+  </section>
+
+  <h2>Когда всё разобрано</h2>
+  <nav><a href="#">Лента</a><a href="#">Список</a><a href="#">Архив</a><a href="#">Поиск</a><a class="on" href="#">Входящие</a><a href="#">Настройки</a></nav>
+  <section class="card">
+    <h1>Входящие</h1>
+    <p class="empty">Здесь пусто: всё, что вы присылали боту, разобрано.</p>
+  </section>
+
+  <h2>Поиск после «Найти» (тип и название уже вписаны)</h2>
+  <section class="card">
+    <div class="head"><span class="tag">Фильм</span><span class="tag">Сериал</span><span class="tag">Аниме</span><span class="tag" style="background:#3b6fd6;color:#fff">Игра</span></div>
+    <p style="border:1px solid #ccc;border-radius:6px;padding:6px 10px;margin:8px 0">Fabula Rasa</p>
+    <p class="empty" style="font-size:14px">Из «Входящих»: добавленный тайтл уберёт эту запись.</p>
+  </section>
+</main>
+</body>
+</html>
