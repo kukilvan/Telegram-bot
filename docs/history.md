@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-06 — Stage 6.4, ticket 02: name candidates and links of sources
+
+- `app/tracker/candidates.py` (pure, 322 lines): `candidates(text, bold, links, forwarded)` → `Candidate(name, weight, first)` ranked by weight, then first appearance; `name_key` (the one place names are compared: `text.key`, then signs are spaces); `years`; `source_links(text, links)` → up to 3 `SourceLink(source, ref, kind, prefix)` (`steam`, `tmdb_movie`, `tmdb_tv`, `shikimori` with the letter, `imdb`; `kind` is a `TitleKind`, `None` for IMDb); `text_query` (60 characters cut at a word, moved from `inbox.py`) and `query_of` (first candidate, else the text cut). jut.su / jutsu.ru slugs are name candidates of weight 50, once per slug.
+- Decisions: a bold piece, a name message, an episode head, a slug and the fallback are the same occurrence as the text and add no +2; a name message is judged on the lines left after cleaning but before the lone-label drop (so «Main:» lines of samples 13–14 keep them from being name messages); the stop list wins over the table of 4.6 («Meta Horizon» is no candidate in sample 11); the marker «известн… по» does not take the word «серии» (the table wants Pixel Ripped at 6); a bare number after `: ` ends a Latin run («Bleach: 3 серия»); a name is over-long by whitespace words, not by key words.
+- Tests: new `test_tracker_candidates` (173) on `tests/fixtures/inbox_samples.md`, a copy of the 18 samples; `candidates` joins `MODULES` and `PURE` of `test_tracker_core_split`. KI-58…60. Self-check: 3291 pass, the three known Windows failures; bot rebuilt, health ok, `poll_due` executed without errors.
+
 ## 2026-11-06 — Stage 6.4, ticket 01: «Входящие» in the database and taking in a message
 
 - Migration 0014: table `inbox_items` (`sqlite_autoincrement`, index on `state`), model `InboxRecord` with `InboxState` (`waiting` / `inbox`) and `InboxReason` (`not_found`, `no_answer`, `no_text`, `source_failed`, `not_connected`); `_stored_as_text` takes a length.
