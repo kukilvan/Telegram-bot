@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-06 — Stage 6.4, ticket 03: posters above the text in every bot card
+
+- `app/tracker/posters.py` (pure): `PosterSize`, `LIST_SIZE`, `CARD_SIZE`, `poster_url`, the two image sites, moved from `app/web/posters.py`; `core` re-exports them (in `__all__`). `app/web/posters.py` keeps only `image_sources` and imports the sites from `core`; web modules take the sizes from `core`. Rule 10's list of pure modules and the skeleton test now include `posters`.
+- `app/bot/card_message.py`: `poster_preview(address)` (`LinkPreviewOptions(url, show_above_text, prefer_large_media)`, or `is_disabled=True` without an address) and `send_card_message(message, text, poster, reply_markup)` — the one function for a card; `send_card` of `tracker_handlers.py` calls it with `poster_url(card.poster_path, CARD_SIZE)`, so all title cards carry the poster; event messages, the summary and the list stay as they were. The offer card of ticket 04 gives its own address, text and keyboard.
+- Tests: new `test_poster_cards` (13): addresses per source and size, the preview, a card with and without a poster, a non-title card, no preview options on the list and the rules check; the web tests import the sizes from `core`. Self-check: 3304 pass, the three known Windows failures; bot rebuilt, health ok, no errors in the log.
+
 ## 2026-11-06 — Stage 6.4, ticket 02: name candidates and links of sources
 
 - `app/tracker/candidates.py` (pure, 322 lines): `candidates(text, bold, links, forwarded)` → `Candidate(name, weight, first)` ranked by weight, then first appearance; `name_key` (the one place names are compared: `text.key`, then signs are spaces); `years`; `source_links(text, links)` → up to 3 `SourceLink(source, ref, kind, prefix)` (`steam`, `tmdb_movie`, `tmdb_tv`, `shikimori` with the letter, `imdb`; `kind` is a `TitleKind`, `None` for IMDb); `text_query` (60 characters cut at a word, moved from `inbox.py`) and `query_of` (first candidate, else the text cut). jut.su / jutsu.ru slugs are name candidates of weight 50, once per slug.
