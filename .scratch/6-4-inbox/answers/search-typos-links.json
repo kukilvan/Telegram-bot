@@ -1,0 +1,1889 @@
+{
+ "game:Phantom Blade Zer0": [],
+ "game:Phantom Blad Zero": [],
+ "game:Silent Hil Townfall": [],
+ "game:Cyberpnk 2077": [],
+ "game:Ведьмак 3 Дикая охта": [],
+ "game:Ghost in the SQL Dat": [],
+ "anime:Реинкарнация": [
+  {
+   "id": "54748",
+   "malId": "54748",
+   "name": "Rinne",
+   "russian": "Реинкарнация",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-11-03",
+    "year": 2021
+   },
+   "franchise": "schwarzesmarken",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/54748/935adb79f42ae96abf11cabe6eca9a9d.jpeg"
+   }
+  },
+  {
+   "id": "55605",
+   "malId": "55605",
+   "name": "Reincarnation",
+   "russian": "Реинкарнация",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-05-12",
+    "year": 2021
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55605/01b7324263d8f4129dc458f3c4f4782b.jpeg"
+   }
+  },
+  {
+   "id": "50360",
+   "malId": "50360",
+   "name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+   "english": "Mushoku Tensei: Jobless Reincarnation - Eris the Goblin Slayer",
+   "kind": "special",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-03-16",
+    "year": 2022
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/50360/408a5fbdc393de3e94cbdddd03364ea6.jpeg"
+   }
+  },
+  {
+   "id": "50932",
+   "malId": "50932",
+   "name": "Saikyou Onmyouji no Isekai Tenseiki",
+   "russian": "Реинкарнация сильнейшего оммёдзи: Эти монстры слишком слабы по сравнению с моим ёкаем",
+   "english": "The Reincarnation of the Strongest Exorcist in Another World",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 13,
+   "episodesAired": 13,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-01-07",
+    "year": 2023
+   },
+   "franchise": "saikyou_onmyouji_mini",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/50932/e33199e4fe4cb2e895d7d658b8a2cb15.jpeg"
+   }
+  },
+  {
+   "id": "50481",
+   "malId": "50481",
+   "name": "Eiyuuou, Bu wo Kiwameru Tame Tenseisu: Soshite, Sekai Saikyou no Minarai Kishi♀",
+   "russian": "Перевоплотившийся король-герой, ставший самой сильной ученицей рыцаря",
+   "english": "Reborn to Master the Blade: From Hero-King to Extraordinary Squire ♀",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-01-10",
+    "year": 2023
+   },
+   "franchise": "eiyuuou_bu_wo_kiwameru_tame_tenseisu",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/50481/d5716fc7d37f32d3201bdee4fe864c2c.jpeg"
+   }
+  },
+  {
+   "id": "60692",
+   "malId": "60692",
+   "name": "Kizoku Tensei: Megumareta Umare kara Saikyou no Chikara wo Eru",
+   "russian": "Реинкарнация аристократа: Благословенный с рождения величайшей силой",
+   "english": "Noble Reincarnation: Born Blessed, So I'll Obtain Ultimate Power",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2026-01-08",
+    "year": 2026
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/60692/9eaa9cb4f6001cb05690e628d1b3941f.jpeg"
+   }
+  },
+  {
+   "id": "51179",
+   "malId": "51179",
+   "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-07-10",
+    "year": 2023
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+   }
+  },
+  {
+   "id": "55888",
+   "malId": "55888",
+   "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2024-04-08",
+    "year": 2024
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+   }
+  },
+  {
+   "id": "55818",
+   "malId": "55818",
+   "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 2 - Episode 0 \"Guardian Fitz\"",
+   "kind": "tv_special",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 1,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-07-03",
+    "year": 2023
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55818/b433b012e6d3b6d12c041bb4cd1ac56b.jpeg"
+   }
+  },
+  {
+   "id": "39535",
+   "malId": "39535",
+   "name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире",
+   "english": "Mushoku Tensei: Jobless Reincarnation",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 11,
+   "episodesAired": 11,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-01-11",
+    "year": 2021
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+   }
+  },
+  {
+   "id": "47792",
+   "malId": "47792",
+   "name": "Maou Evelogia ni Mi wo Sasage yo",
+   "russian": "Реинкарнация в мире короля демонов Евалогии",
+   "english": "Everything for Demon King Evelogia",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 9,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-10-02",
+    "year": 2021
+   },
+   "franchise": null,
+   "poster": null
+  },
+  {
+   "id": "45576",
+   "malId": "45576",
+   "name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Part 2",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-10-04",
+    "year": 2021
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/45576/0a98f6e5dbcc1d4c643c1b7b9874902e.jpeg"
+   }
+  },
+  {
+   "id": "47163",
+   "malId": "47163",
+   "name": "Tensei Kenja no Isekai Life: Dai-2 no Shokugyou wo Ete, Sekai Saikyou ni Narimashita",
+   "russian": "Жизнь перерождённого мудреца в другом мире. Получение второй профессии и становление сильнейшим",
+   "english": "My Isekai Life: I Gained a Second Character Class and Became the Strongest Sage in the World",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-07-04",
+    "year": 2022
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/47163/5efc53155044ed487684851495513f24.jpeg"
+   }
+  },
+  {
+   "id": "63706",
+   "malId": "63706",
+   "name": "Game Sekai Tensei \"Dankatsu\": Gamer wa \"Dungeon Shuukatsu no Susume\" wo \"Hajime kara\" Play suru",
+   "russian": "Реинкарнация в игровом мире «Жизнь в подземелье»: Геймер проходит «Руководство по трудоустройству в подземельях» с самого начала",
+   "english": null,
+   "kind": "tv",
+   "status": "anons",
+   "episodes": 0,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2027-01-01",
+    "year": 2027
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/63706/e3145b430f6d91ff64016236d0eaa8b1.jpeg"
+   }
+  },
+  {
+   "id": "63730",
+   "malId": "63730",
+   "name": "Isekai Tensei Soudouki",
+   "russian": "Реинкарнация и растроение личности",
+   "english": null,
+   "kind": "tv",
+   "status": "anons",
+   "episodes": 0,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2027-01-01",
+    "year": 2027
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/63730/196b5937742a4154e508a2599e5001ae.jpeg"
+   }
+  }
+ ],
+ "anime:Реинкарнация безработного история": [
+  {
+   "id": "39535",
+   "malId": "39535",
+   "name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире",
+   "english": "Mushoku Tensei: Jobless Reincarnation",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 11,
+   "episodesAired": 11,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-01-11",
+    "year": 2021
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+   }
+  },
+  {
+   "id": "51179",
+   "malId": "51179",
+   "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-07-10",
+    "year": 2023
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+   }
+  },
+  {
+   "id": "55888",
+   "malId": "55888",
+   "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2024-04-08",
+    "year": 2024
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+   }
+  },
+  {
+   "id": "59193",
+   "malId": "59193",
+   "name": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 3",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 3",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 14,
+   "episodesAired": 14,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2026-07-06",
+    "year": 2026
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/59193/22f02167e562e703fef2cbed82b93d06.jpeg"
+   }
+  },
+  {
+   "id": "45576",
+   "malId": "45576",
+   "name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Part 2",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-10-04",
+    "year": 2021
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/45576/0a98f6e5dbcc1d4c643c1b7b9874902e.jpeg"
+   }
+  },
+  {
+   "id": "50360",
+   "malId": "50360",
+   "name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+   "english": "Mushoku Tensei: Jobless Reincarnation - Eris the Goblin Slayer",
+   "kind": "special",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-03-16",
+    "year": 2022
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/50360/408a5fbdc393de3e94cbdddd03364ea6.jpeg"
+   }
+  },
+  {
+   "id": "55818",
+   "malId": "55818",
+   "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 2 - Episode 0 \"Guardian Fitz\"",
+   "kind": "tv_special",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 1,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-07-03",
+    "year": 2023
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55818/b433b012e6d3b6d12c041bb4cd1ac56b.jpeg"
+   }
+  },
+  {
+   "id": "65077",
+   "malId": "65077",
+   "name": "Mushoku Tensei III: Isekai Ittara Honki Dasu Part 2",
+   "russian": "Реинкарнация безработного: История о приключениях в другом мире 3. Часть 2",
+   "english": "Mushoku Tensei: Jobless Reincarnation Season 3 Part 2",
+   "kind": "tv",
+   "status": "anons",
+   "episodes": 0,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2027-01-01",
+    "year": 2027
+   },
+   "franchise": "mushoku_tensei",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/65077/5ba597d4ea11ab92303f123d4e83440d.jpeg"
+   }
+  },
+  {
+   "id": "57315",
+   "malId": "57315",
+   "name": "Meitou \"Isekai no Yu\" Kaitakuki: Around 40 Onsen Mania no Tensei Saki wa, Nonbiri Onsen Tengoku deshita",
+   "russian": "История покорения знаменитого горячего источника в другом мире: Реинкарнация сорокалетнего любителя горячих источников в умиротворяющем курортном раю",
+   "english": "Isekai Onsen Paradise",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2024-01-12",
+    "year": 2024
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/57315/31f24bd9b7d408a209be5e89aab6925f.jpeg"
+   }
+  },
+  {
+   "id": "23003",
+   "malId": "23003",
+   "name": "Tanoshii Bunmeishi: Tetsu Monogatari",
+   "russian": "Увлекательная история цивилизации: Железная история",
+   "english": null,
+   "kind": "movie",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1962-04-22",
+    "year": 1962
+   },
+   "franchise": null,
+   "poster": null
+  },
+  {
+   "id": "54748",
+   "malId": "54748",
+   "name": "Rinne",
+   "russian": "Реинкарнация",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-11-03",
+    "year": 2021
+   },
+   "franchise": "schwarzesmarken",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/54748/935adb79f42ae96abf11cabe6eca9a9d.jpeg"
+   }
+  },
+  {
+   "id": "55605",
+   "malId": "55605",
+   "name": "Reincarnation",
+   "russian": "Реинкарнация",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-05-12",
+    "year": 2021
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55605/01b7324263d8f4129dc458f3c4f4782b.jpeg"
+   }
+  },
+  {
+   "id": "50158",
+   "malId": "50158",
+   "name": "Ugoku Ehon: Miyoko-san no Monogatari",
+   "russian": "История Миёко",
+   "english": null,
+   "kind": "special",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2007-12-05",
+    "year": 2007
+   },
+   "franchise": "doraemon",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/50158/f12697509b128d352bde0ecc83caa5fc.jpeg"
+   }
+  },
+  {
+   "id": "49738",
+   "malId": "49738",
+   "name": "Heike Monogatari",
+   "russian": "Повесть о доме Тайра",
+   "english": "The Heike Story",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 11,
+   "episodesAired": 11,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-01-13",
+    "year": 2022
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/49738/e237e031a55b439316fd6d7afee56c33.jpeg"
+   }
+  },
+  {
+   "id": "49796",
+   "malId": "49796",
+   "name": "Shanghai Gushi",
+   "russian": "Шанхайская история",
+   "english": "Shanghai Melody",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 8,
+   "episodesAired": 8,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-07-10",
+    "year": 2022
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/49796/59c4456994182ee4f798c2b2cc8ad2a3.jpeg"
+   }
+  }
+ ],
+ "anime:Mushoku Tensi": [
+  {
+   "id": "22231",
+   "malId": "22231",
+   "name": "Tenshi no Shippo Chu!: Tenshi no Utagoe",
+   "russian": "Ангельский хвостик 2: Поющий ангел",
+   "english": null,
+   "kind": "ova",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2004-01-22",
+    "year": 2004
+   },
+   "franchise": "tenshi_no_shippo_chu",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/22231/928e4d16b5dc862e7164a790be8649c4.jpeg"
+   }
+  },
+  {
+   "id": "109",
+   "malId": "109",
+   "name": "Bakuretsu Tenshi",
+   "russian": "Ангелы смерти",
+   "english": "Burst Angel",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 24,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2004-04-07",
+    "year": 2004
+   },
+   "franchise": "bakuretsu_tenshi",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/109/47e0fb54ac7d6138062a56baf366a1d8.jpeg"
+   }
+  },
+  {
+   "id": "51",
+   "malId": "51",
+   "name": "Tenshi Kinryouku",
+   "russian": "Обитель ангелов",
+   "english": "Angel Sanctuary",
+   "kind": "ova",
+   "status": "released",
+   "episodes": 3,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2000-05-25",
+    "year": 2000
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/51/a3dc4ced91521db76677042447748f38.jpeg"
+   }
+  },
+  {
+   "id": "53841",
+   "malId": "53841",
+   "name": "Tenshi no Pants",
+   "russian": "Штанишки ангела",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1977-06-01",
+    "year": 1977
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/53841/045808bfb2dc35df11a7ceac329ed712.jpeg"
+   }
+  },
+  {
+   "id": "51564",
+   "malId": "51564",
+   "name": "Tenshi no Agape",
+   "russian": "Любовь ангела",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-12-27",
+    "year": 2021
+   },
+   "franchise": "umisea",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/51564/2692e6b02fedda3fe31e013b762f1ae9.jpeg"
+   }
+  },
+  {
+   "id": "41174",
+   "malId": "41174",
+   "name": "Watashi no Tenshi",
+   "russian": "Мой ангел",
+   "english": "My Angel",
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2019-12-21",
+    "year": 2019
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/41174/2a18a82554abe6b6953ea4309f3b3181.jpeg"
+   }
+  },
+  {
+   "id": "35994",
+   "malId": "35994",
+   "name": "Satsuriku no Tenshi",
+   "russian": "Ангел кровопролития",
+   "english": "Angels of Death",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 16,
+   "episodesAired": 16,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2018-07-06",
+    "year": 2018
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/35994/0e35dc79c95e03711f198c7ae3a0e93c.jpeg"
+   }
+  },
+  {
+   "id": "1360",
+   "malId": "1360",
+   "name": "Makai Tenshi Djibril",
+   "russian": "Дьявольский ангелочек Джибрил",
+   "english": "Jiburiru: The Devil Angel",
+   "kind": "ova",
+   "status": "released",
+   "episodes": 4,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2004-11-26",
+    "year": 2004
+   },
+   "franchise": "makai_tenshi_djibril",
+   "poster": null
+  },
+  {
+   "id": "1780",
+   "malId": "1780",
+   "name": "Choukou Tenshi Escalayer",
+   "russian": "Боевой ангел Эскалейер",
+   "english": "Beat Angel Escalayer",
+   "kind": "ova",
+   "status": "released",
+   "episodes": 3,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2002-09-27",
+    "year": 2002
+   },
+   "franchise": null,
+   "poster": null
+  },
+  {
+   "id": "5108",
+   "malId": "5108",
+   "name": "Ryuusei Tenshi Primaveil",
+   "russian": "Прима-ангел",
+   "english": null,
+   "kind": "ova",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2006-02-24",
+    "year": 2006
+   },
+   "franchise": null,
+   "poster": null
+  },
+  {
+   "id": "13379",
+   "malId": "13379",
+   "name": "Okusama wa Michael",
+   "russian": "Моя жена — архангел Михаил",
+   "english": null,
+   "kind": "ova",
+   "status": "released",
+   "episodes": 2,
+   "episodesAired": 1,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2012-04-20",
+    "year": 2012
+   },
+   "franchise": null,
+   "poster": null
+  },
+  {
+   "id": "885",
+   "malId": "885",
+   "name": "Tenshi no Tamago",
+   "russian": "Яйцо ангела",
+   "english": "Angel's Egg",
+   "kind": "ova",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1985-12-22",
+    "year": 1985
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/885/786d635eec916681e69bb266de9d2b92.jpeg"
+   }
+  },
+  {
+   "id": "554",
+   "malId": "554",
+   "name": "Koutetsu Tenshi Kurumi",
+   "russian": "Стальной ангел Куруми",
+   "english": "Steel Angel Kurumi",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 24,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1999-10-05",
+    "year": 1999
+   },
+   "franchise": "koutetsu_tenshi_kurumi",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/554/2ad8a98d9b30e8f8783e6b56ef13a5e9.jpeg"
+   }
+  },
+  {
+   "id": "605",
+   "malId": "605",
+   "name": "Tenshi ni Narumon!",
+   "russian": "Я стану ангелом!",
+   "english": "I'm Gonna Be an Angel!",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 26,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1999-04-07",
+    "year": 1999
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/605/651b25c9ede1142446d5e87619945a35.jpeg"
+   }
+  },
+  {
+   "id": "200",
+   "malId": "200",
+   "name": "Tenshi na Konamaiki",
+   "russian": "Нахальный ангел",
+   "english": "Cheeky Angel",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 50,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2002-04-07",
+    "year": 2002
+   },
+   "franchise": "tenshi_na_konamaiki",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/200/41cabcbec5f71b5e72390b1fac039577.jpeg"
+   }
+  }
+ ],
+ "anime:Блич Тысячелетняя кровавая война": [
+  {
+   "id": "41467",
+   "malId": "41467",
+   "name": "Bleach: Sennen Kessen-hen",
+   "russian": "Блич: Тысячелетняя кровавая война",
+   "english": "Bleach: Thousand-Year Blood War",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 13,
+   "episodesAired": 13,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-10-11",
+    "year": 2022
+   },
+   "franchise": "bleach",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/41467/1623d51618ebb272e4f0c1d6d9a33078.jpeg"
+   }
+  },
+  {
+   "id": "53998",
+   "malId": "53998",
+   "name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan",
+   "russian": "Блич: Тысячелетняя кровавая война — Прощание",
+   "english": "Bleach: Thousand-Year Blood War - The Separation",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 13,
+   "episodesAired": 13,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-07-08",
+    "year": 2023
+   },
+   "franchise": "bleach",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/53998/c401c0c012981dfd01ee1ab1f6c6bc61.jpeg"
+   }
+  },
+  {
+   "id": "56784",
+   "malId": "56784",
+   "name": "Bleach: Sennen Kessen-hen - Soukoku-tan",
+   "russian": "Блич: Тысячелетняя кровавая война — Конфликт",
+   "english": "Bleach: Thousand-Year Blood War - The Conflict",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 14,
+   "episodesAired": 14,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2024-10-05",
+    "year": 2024
+   },
+   "franchise": "bleach",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/56784/648cc266689c756f5f72095b7bd86cf0.jpeg"
+   }
+  },
+  {
+   "id": "60636",
+   "malId": "60636",
+   "name": "Bleach: Sennen Kessen-hen - Kashin-tan",
+   "russian": "Блич: Тысячелетняя кровавая война — Бедствие",
+   "english": "Bleach: Thousand-Year Blood War - The Calamity",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 10,
+   "episodesAired": 10,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2026-07-25",
+    "year": 2026
+   },
+   "franchise": "bleach",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/60636/d155567a5040597064e73fa18394dc37.jpeg"
+   }
+  },
+  {
+   "id": "56442",
+   "malId": "56442",
+   "name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan Recap",
+   "russian": "Блич: Тысячелетняя кровавая война — Прощание. Рекап",
+   "english": "Bleach: Thousand-Year Blood War - The Separation Recap",
+   "kind": "tv_special",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-09-02",
+    "year": 2023
+   },
+   "franchise": "bleach",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/56442/2bf46eb4567db9011ead8f1958e3d8bc.jpeg"
+   }
+  },
+  {
+   "id": "51517",
+   "malId": "51517",
+   "name": "Zhan Qiannian",
+   "russian": "Война королевств",
+   "english": "Millenniums Of Warring States",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 16,
+   "episodesAired": 16,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-07-23",
+    "year": 2022
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/51517/9298eb562da4727b21c7d59307870b15.jpeg"
+   }
+  },
+  {
+   "id": "269",
+   "malId": "269",
+   "name": "Bleach",
+   "russian": "Блич",
+   "english": "Bleach",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 366,
+   "episodesAired": 366,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2004-10-05",
+    "year": 2004
+   },
+   "franchise": "bleach",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/269/9cfa24e177619cf3c0f39a6098cf47de.jpeg"
+   }
+  },
+  {
+   "id": "53298",
+   "malId": "53298",
+   "name": "Akui Sensou",
+   "russian": "Злая война",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-06-15",
+    "year": 2022
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/53298/9583574bbd2be0c41f1db6535f85c4cc.jpeg"
+   }
+  },
+  {
+   "id": "57422",
+   "malId": "57422",
+   "name": "Cong Hong Yue Kaishi",
+   "russian": "С тех пор как появилась красная луна",
+   "english": "Since The Red Moon Appeared",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 16,
+   "episodesAired": 8,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-12-25",
+    "year": 2023
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/57422/f5d69131362b446746c0c77f5459f8d3.jpeg"
+   }
+  },
+  {
+   "id": "55673",
+   "malId": "55673",
+   "name": "Bloody Mary",
+   "russian": "Кровавая Мэри",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-02-19",
+    "year": 2021
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55673/0a313896898e8fa25518fc40432ae416.jpeg"
+   }
+  },
+  {
+   "id": "51618",
+   "malId": "51618",
+   "name": "Boku no Sensou",
+   "russian": "Моя война",
+   "english": "My War",
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2022-04-03",
+    "year": 2022
+   },
+   "franchise": "shingeki_no_kyojin",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/51618/a969ae03b211dcb4c697240dd4ee80b8.jpeg"
+   }
+  },
+  {
+   "id": "49433",
+   "malId": "49433",
+   "name": "Youxia Zhanji",
+   "russian": "Война рейнджеров",
+   "english": null,
+   "kind": "ona",
+   "status": "released",
+   "episodes": 20,
+   "episodesAired": 20,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2021-07-27",
+    "year": 2021
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/49433/a6f476dbac140cea740830f009d8f146.jpeg"
+   }
+  },
+  {
+   "id": "3613",
+   "malId": "3613",
+   "name": "Toshokan Sensou",
+   "russian": "Библиотечная война",
+   "english": "Library Wars",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2008-04-11",
+    "year": 2008
+   },
+   "franchise": "toshokan_sensou",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/3613/6b8ad1ad1d46709ab978ea5d179c24d3.jpeg"
+   }
+  },
+  {
+   "id": "9500",
+   "malId": "9500",
+   "name": "Starlight Scramble Renai Kouhosei",
+   "russian": "Звёздная война",
+   "english": null,
+   "kind": "ova",
+   "status": "released",
+   "episodes": 2,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1998-11-28",
+    "year": 1998
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/9500/39bbe9f17bec92bddf829111bfdba41a.jpeg"
+   }
+  },
+  {
+   "id": "11869",
+   "malId": "11869",
+   "name": "Bloody Night",
+   "russian": "Кровавая ночь",
+   "english": "Bloody Night",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2006-04-05",
+    "year": 2006
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/11869/821f87da5911ecc12f545f69ecb04007.jpeg"
+   }
+  }
+ ],
+ "anime:Магия вернувшегося должна быть особеной": [
+  {
+   "id": "54852",
+   "malId": "54852",
+   "name": "Kikansha no Mahou wa Tokubetsu desu",
+   "russian": "Магия вернувшегося должна быть особенной",
+   "english": "A Returner's Magic Should Be Special",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2023-10-08",
+    "year": 2023
+   },
+   "franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/54852/f705c6fccd5dc0b32b88bbff5a065e07.jpeg"
+   }
+  },
+  {
+   "id": "57612",
+   "malId": "57612",
+   "name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+   "russian": "Магия вернувшегося должна быть особенной 2",
+   "english": "A Returner's Magic Should Be Special Season 2",
+   "kind": "tv",
+   "status": "ongoing",
+   "episodes": 0,
+   "episodesAired": 5,
+   "nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+   "airedOn": {
+    "date": "2026-10-08",
+    "year": 2026
+   },
+   "franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+   }
+  },
+  {
+   "id": "43457",
+   "malId": "43457",
+   "name": "Magic",
+   "russian": "Магия",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2020-10-14",
+    "year": 2020
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/43457/7114add24eb8bbf8f8576947a34c7256.jpeg"
+   }
+  },
+  {
+   "id": "63365",
+   "malId": "63365",
+   "name": "Magic (2026)",
+   "russian": "Магия",
+   "english": "Magic",
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2026-01-24",
+    "year": 2026
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/63365/1c220d60ce2e2dc028844c48bc94d798.jpeg"
+   }
+  },
+  {
+   "id": "55858",
+   "malId": "55858",
+   "name": "To Be Me",
+   "russian": "Быть собой",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2019-06-26",
+    "year": 2019
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/55858/dffb6849cc23ba157b03d90b3b393775.jpeg"
+   }
+  },
+  {
+   "id": "39037",
+   "malId": "39037",
+   "name": "Be Rockin'",
+   "russian": "Быть рокером",
+   "english": "Be Rockin'",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 5,
+   "episodesAired": 5,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2006-05-30",
+    "year": 2006
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/39037/ad9c681276f6afd87b696772446f3bef.jpeg"
+   }
+  },
+  {
+   "id": "9935",
+   "malId": "9935",
+   "name": "Chocolat no Mahou",
+   "russian": "Шоколадная магия",
+   "english": "The Magic of Chocolate",
+   "kind": "ova",
+   "status": "released",
+   "episodes": 13,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2011-03-03",
+    "year": 2011
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/9935/873f8c4bd60fcdd2617bd78c2c23f43f.jpeg"
+   }
+  },
+  {
+   "id": "8503",
+   "malId": "8503",
+   "name": "Fushigi Mahou Fun Fun Pharmacy",
+   "russian": "Таинственная магия",
+   "english": null,
+   "kind": "tv",
+   "status": "released",
+   "episodes": 48,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1998-02-15",
+    "year": 1998
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/8503/dc25bad60ed30b17d407e0444cccc5f1.jpeg"
+   }
+  },
+  {
+   "id": "1139",
+   "malId": "1139",
+   "name": "Monkey Magic",
+   "russian": "Обезьянья магия",
+   "english": null,
+   "kind": "tv",
+   "status": "released",
+   "episodes": 13,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "1998-09-20",
+    "year": 1998
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/1139/409857d872d05aacc4d447069dd2bc90.jpeg"
+   }
+  },
+  {
+   "id": "38456",
+   "malId": "38456",
+   "name": "Megane no Mahou",
+   "russian": "Магия очков",
+   "english": null,
+   "kind": "ona",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 1,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2018-09-24",
+    "year": 2018
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/38456/cf08785e49b0154ac6b35a0528b301af.jpeg"
+   }
+  },
+  {
+   "id": "2369",
+   "malId": "2369",
+   "name": "Rental Magica",
+   "russian": "Магия напрокат",
+   "english": "Rental Magica",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 24,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2007-10-08",
+    "year": 2007
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/2369/82912f5d08bcfa56956b997561fe69e3.jpeg"
+   }
+  },
+  {
+   "id": "32850",
+   "malId": "32850",
+   "name": "Yuu no Mahou",
+   "russian": "Вечерняя магия",
+   "english": null,
+   "kind": "music",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 0,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2010-07-23",
+    "year": 2010
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/32850/59e532b016f933780d3f6a5ac8165e57.jpeg"
+   }
+  },
+  {
+   "id": "32555",
+   "malId": "32555",
+   "name": "Stella no Mahou",
+   "russian": "Магия Стеллы",
+   "english": "Magic of Stella",
+   "kind": "tv",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2016-10-03",
+    "year": 2016
+   },
+   "franchise": "stella_no_mahou",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/32555/b0f2a5146539aaa1d894ed38075dac3e.jpeg"
+   }
+  },
+  {
+   "id": "30213",
+   "malId": "30213",
+   "name": "Yume Utsutsu",
+   "russian": "Мечты реальны",
+   "english": "Be Vague",
+   "kind": "movie",
+   "status": "released",
+   "episodes": 1,
+   "episodesAired": 1,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2002-01-01",
+    "year": 2002
+   },
+   "franchise": null,
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/30213/bb1303e7fe9f720ea1341f46649fc0b1.jpeg"
+   }
+  },
+  {
+   "id": "34009",
+   "malId": "34009",
+   "name": "Tu Bian Yingxiong Baba",
+   "russian": "Быть героем",
+   "english": "To Be Hero",
+   "kind": "ona",
+   "status": "released",
+   "episodes": 12,
+   "episodesAired": 12,
+   "nextEpisodeAt": null,
+   "airedOn": {
+    "date": "2016-10-05",
+    "year": 2016
+   },
+   "franchise": "to_be_hero",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/34009/d94bd61861ff8b13a5cbb6e3d251afef.jpeg"
+   }
+  }
+ ],
+ "series:Dead-End Jb": [],
+ "series:Игра в кальмра": [],
+ "series:Severance": [
+  {
+   "adult": false,
+   "backdrop_path": "/ixgFmf1X59PUZam2qbAfskx2gQr.jpg",
+   "genre_ids": [
+    18,
+    9648,
+    10765
+   ],
+   "id": 95396,
+   "origin_country": [
+    "US"
+   ],
+   "original_language": "en",
+   "original_name": "Severance",
+   "overview": "Руководство компании Lumon Industries придумало новый способ контролировать повседневную деятельность своих сотрудников — «процедуру разделения», отделяющую рабочие воспоминания от обычных. Марк соглашается на процедуру, но вскоре начинает сомневаться в правильности своего выбора.",
+   "popularity": 41.9436,
+   "poster_path": "/Ag7gBPnh8Cpn5xvCdPPA4RJRN1L.jpg",
+   "first_air_date": "2022-02-17",
+   "softcore": false,
+   "name": "Разделение",
+   "vote_average": 8.4,
+   "vote_count": 3095
+  }
+ ],
+ "series:Работа с призрачными перспективами": [
+  {
+   "adult": false,
+   "backdrop_path": "/gWedDgBsZkuOho2qe3q2sTQmbpO.jpg",
+   "genre_ids": [
+    9648
+   ],
+   "id": 289517,
+   "origin_country": [
+    "KR"
+   ],
+   "original_language": "ko",
+   "original_name": "꿀알바",
+   "overview": "Погрязший в долгах молодой человек соглашается на предложение таинственного агентства, сулящего хороший заработок, но погоня за деньгами превращается в кошмар.",
+   "popularity": 146.56,
+   "poster_path": "/e2iHBbwJ0EItI57e45TJse6MWdS.jpg",
+   "first_air_date": "2026-10-30",
+   "softcore": false,
+   "name": "Работа с призрачными перспективами",
+   "vote_average": 7.66,
+   "vote_count": 47
+  }
+ ],
+ "movie:Eldn Ring": [],
+ "movie:Дюна": [
+  {
+   "adult": false,
+   "backdrop_path": "/jYEW5xZkZk2WTrdbMGAPFuBqbDc.jpg",
+   "genre_ids": [
+    878,
+    12
+   ],
+   "id": 438631,
+   "title": "Дюна",
+   "original_language": "en",
+   "original_title": "Dune",
+   "overview": "Наследник знаменитого дома Атрейдесов Пол отправляется вместе с семьей на одну из самых опасных планет во Вселенной — Арракис. Здесь нет ничего, кроме песка, палящего солнца, гигантских чудовищ и основной причины межгалактических конфликтов — невероятно ценного ресурса, который называется меланж. В результате захвата власти Пол вынужден бежать и скрываться, и это становится началом его эпического путешествия. Враждебный мир Арракиса приготовил для него множество тяжелых испытаний, но только тот, кто готов взглянуть в глаза своему страху, достоин стать избранным.",
+   "popularity": 44.2426,
+   "poster_path": "/3hbXNclcHaj5KiF6kK41GBMjyFr.jpg",
+   "release_date": "2021-09-15",
+   "softcore": false,
+   "video": false,
+   "vote_average": 7.786,
+   "vote_count": 15893
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/eZ239CUp1d6OryZEBPnO2n87gMG.jpg",
+   "genre_ids": [
+    878,
+    12
+   ],
+   "id": 693134,
+   "title": "Дюна: Часть вторая",
+   "original_language": "en",
+   "original_title": "Dune: Part Two",
+   "overview": "Герцог Пол Атрейдес присоединяется к фременам, чтобы стать Муад Дибом, одновременно пытаясь остановить наступление войны.",
+   "popularity": 52.7339,
+   "poster_path": "/3aLghRkuJc9cs770fxo4a6YWht3.jpg",
+   "release_date": "2024-02-27",
+   "softcore": false,
+   "video": false,
+   "vote_average": 8.144,
+   "vote_count": 8909
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/5wJ2tckpvwcxGCAgZiccodwEJpf.jpg",
+   "genre_ids": [
+    28,
+    878,
+    12
+   ],
+   "id": 841,
+   "title": "Дюна",
+   "original_language": "en",
+   "original_title": "Dune",
+   "overview": "Планета Арракис, также известная под названием Дюна, год 10191. Арена борьбы между злом и благородством, мир тончайших и опаснейших интриг. Гигантские песчаные черви длиной в целую милю сторожат бесценное сокровище — меланжевую пряность, позволяющую путешествовать сквозь пространство и время. Тот, кто контролирует пряность, контролирует Вселенную.\r Народ Дюны ожидает пришествия Мессии, который поведет их на священную войну против династии злобных Харконненов. И Мессия является. Им становится юный Пол Атрейдес, сын герцога Лито, предательски убитого Харконненами с одобрения Императора. Полу предстоит великая миссия, которая навсегда изменит судьбу всей галактической империи.",
+   "popularity": 15.0276,
+   "poster_path": "/ushxXCt5RAXtBFGrpMxiz5n6d3L.jpg",
+   "release_date": "1984-12-14",
+   "softcore": false,
+   "video": false,
+   "vote_average": 6.195,
+   "vote_count": 3603
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/i5E9H7Ik0u61ylDDTbmUpTL3Yw.jpg",
+   "genre_ids": [
+    878,
+    12
+   ],
+   "id": 1170608,
+   "title": "Дюна: Часть третья",
+   "original_language": "en",
+   "original_title": "Dune: Part Three",
+   "overview": "Пол Атрейдес, ставший императором, сталкивается с последствиями своего восхождения к власти: политические заговоры и священная война, охватившая всю галактику, ставят под угрозу будущее, видения которого являются только ему.",
+   "popularity": 33.4033,
+   "poster_path": "/A1ZXWB0lx2bsQw1cv9BpLsBx8mK.jpg",
+   "release_date": "2026-12-15",
+   "softcore": false,
+   "video": false,
+   "vote_average": 0.0,
+   "vote_count": 0
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    12
+   ],
+   "id": 633787,
+   "title": "Золотая дюна",
+   "original_language": "ru",
+   "original_title": "Золотая дюна",
+   "overview": "Захватывающая история о трех подростках, нашедших в подвалах бывшего немецкого госпиталя в Калининграде (бывшем Кенигсберге) старинный медальон Тевтонского ордена. История, которая постепенно перерастает в опасное и мистическое приключение, с погонями, борьбой, постоянным риском. Ребятам предстоит разгадать тайну янтарного медальона, найти клад, спасти девушку и сделать свой выбор. И, конечно, это фильм о первой юношеской любви.",
+   "popularity": 0.785,
+   "poster_path": "/piX74vNjTslY2aUdJXvocZSlVjv.jpg",
+   "release_date": "2021-08-28",
+   "softcore": false,
+   "video": false,
+   "vote_average": 4.8,
+   "vote_count": 4
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/3BBwgGaZmM8KqEdCqovoTwLQHBY.jpg",
+   "genre_ids": [
+    878,
+    27,
+    12
+   ],
+   "id": 881460,
+   "title": "Планета Дюна",
+   "original_language": "en",
+   "original_title": "Planet Dune",
+   "overview": "Экипаж эвакуационного корабля получает задание по спасению команды космического погрузчика, застрявшего на далёкой пустынной планете. Однако эта миссия становится практически безнадёжной, когда объявляются местные хищники - гигантские песчаные черви.",
+   "popularity": 2.4529,
+   "poster_path": "/cPSPghn6tr6fGY6hTi78SrxBcqY.jpg",
+   "release_date": "2021-10-29",
+   "softcore": false,
+   "video": false,
+   "vote_average": 5.0,
+   "vote_count": 73
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/xfC6hsmcsnf2MY1iXDs56gJNfQZ.jpg",
+   "genre_ids": [
+    99
+   ],
+   "id": 191720,
+   "title": "«Дюна» Ходоровского",
+   "original_language": "en",
+   "original_title": "Jodorowsky's Dune",
+   "overview": "В 1974 году чилийско-французский режиссер Алехандро Ходоровски приступил к реализации донкихотского проекта по экранизации влиятельного романа Фрэнка Герберта «Дюна» (1969). После двух лет работы и миллионных вложений этот гигантский проект закончился провалом, но художники, которых Ходоровски собрал для его реализации, продолжили совместную работу и в итоге заложили основы современного научно-фантастического кино.",
+   "popularity": 2.465,
+   "poster_path": "/maxjevZcGbfrp55XRk4gcZGeJVd.jpg",
+   "release_date": "2013-08-30",
+   "softcore": false,
+   "video": false,
+   "vote_average": 7.821,
+   "vote_count": 789
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/3HpMbtAvtxn2CWlKHWi5lM8jVGC.jpg",
+   "genre_ids": [
+    18
+   ],
+   "id": 271683,
+   "title": "Дюна",
+   "original_language": "fr",
+   "original_title": "La dune",
+   "overview": "В результате нескольких несчастных случаев и случайных встреч Ханох и Рубен встретятся, и каждому из них придется открыть страницу своей личной истории, страницу, которую они оба должны перевернуть навсегда.",
+   "popularity": 0.9205,
+   "poster_path": "/qNnFzvRyXk0FkHOGuxS4jWqj1vO.jpg",
+   "release_date": "2014-08-13",
+   "softcore": false,
+   "video": false,
+   "vote_average": 5.5,
+   "vote_count": 21
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18,
+    10751
+   ],
+   "id": 1531389,
+   "title": "Домик в дюнах",
+   "original_language": "lv",
+   "original_title": "Mājiņa kāpās",
+   "overview": "Бывший мастер судовых двигателей, уйдя на пенсию, решил приобрести домик у моря и поселиться там с женой и внуком Володей. Он мечтает о тихой, счастливой жизни в уютном домике. Но все мечты дедушки и Володи рушатся, когда они узнают, что хозяин домика, так же как и сам дедушка, — пенсионер, бывший рыбак, и продает свой домик только потому, что его семья попала в тяжелое положение. И дедушка с Володей решают деньги, собранные ими на покупку дома, отдать взаймы старому рыбаку.",
+   "popularity": 2.2867,
+   "poster_path": "/90D5XQtw7TbS18D9lOxsqkXB8Kj.jpg",
+   "release_date": "1963-03-01",
+   "softcore": false,
+   "video": false,
+   "vote_average": 0.0,
+   "vote_count": 0
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/vFU53Ue7s2RflLl7wBjTZmRpivb.jpg",
+   "genre_ids": [
+    878
+   ],
+   "id": 744738,
+   "title": "Ходящий по дюнам",
+   "original_language": "en",
+   "original_title": "Dune Drifter",
+   "overview": "После поражения в космической битве, космолёт Адлер терпит крушение на близлежащей планете. Девушке придётся искать на пустынной планете средства для починки корабля и возвращения домой перед тем, как исчерпается ресурс систем жизнеобеспечения.",
+   "popularity": 1.2779,
+   "poster_path": "/hBLJzYriF9zZAHc2Gjb3KTQGTGT.jpg",
+   "release_date": "2020-10-24",
+   "softcore": false,
+   "video": false,
+   "vote_average": 4.6,
+   "vote_count": 57
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    10749,
+    10751,
+    10770
+   ],
+   "id": 285411,
+   "title": "Долгая дорога в дюнах",
+   "original_language": "lv",
+   "original_title": "Ilgais ceļš kāpās",
+   "overview": "Действие фильма происходит в Латвии и охватывает период с 1939 года до начала 1970-х годов. События, происходившие в стране, по-разному повлияли на судьбы героев. Но всех их вела по жизни любовь - разбрасывала и собирала, заставляла жестоко страдать и делала самыми счастливыми в мире...",
+   "popularity": 1.3501,
+   "poster_path": "/aI91wr6RWkcWJeHOgiCvsOtl0ig.jpg",
+   "release_date": "1982-06-02",
+   "softcore": false,
+   "video": false,
+   "vote_average": 5.9,
+   "vote_count": 11
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/5Mh054CU9hTBuAwpnz6nfBQsRwR.jpg",
+   "genre_ids": [
+    12,
+    10751
+   ],
+   "id": 547368,
+   "title": "Дом на дюнах",
+   "original_language": "ru",
+   "original_title": "Дом на дюнах",
+   "overview": "Телефильм по одноименной повести Роберта Стивенсона.  Уединенный дом на дюнах, стоящий на краю болотистой пустоши, привлекает внимание каких-то странных людей, похожих на разбойников. Обитатели дома и гости живут как в осаде. Какая же тайна связана с хозяином дома?",
+   "popularity": 0.4702,
+   "poster_path": "/8cItZo53lxXN4kgTOEnDFvOhzhJ.jpg",
+   "release_date": "1984-09-01",
+   "softcore": false,
+   "video": false,
+   "vote_average": 7.0,
+   "vote_count": 2
+  },
+  {
+   "adult": false,
+   "backdrop_path": "/oADGaCHvodaLiOnmkuJrxEE7QWA.jpg",
+   "genre_ids": [],
+   "id": 1589709,
+   "title": "Путешествие к песчаным дюнам",
+   "original_language": "ru",
+   "original_title": "Путешествие к песчаным дюнам",
+   "overview": "Солнце раз за разом делает кикфлип и размывается в керамических волнах —\r свидетельствах существования песочниц слипшихся в огромные дюны.\r Маленькие лучи эхом бьются в алюминиевые поверхности оставляя\r соленеющие слезные следы.\r Одинаково ли стесываются коленки-двойники о плывущую асфальтовую жижу?\r Взросление — трюк с невозможностью ошибки,\r поставлен даже если невидим.",
+   "popularity": 0.2967,
+   "poster_path": "/8iu2E40HvL3JRadCcJ3u2i4zmVL.jpg",
+   "release_date": "2025-11-24",
+   "softcore": false,
+   "video": false,
+   "vote_average": 0.0,
+   "vote_count": 0
+  }
+ ],
+ "igdb-external:1245620": [
+  {
+   "id": 2084186,
+   "game": {
+    "id": 119133,
+    "name": "Elden Ring",
+    "game_type": 0
+   },
+   "uid": "1245620",
+   "external_game_source": 1
+  }
+ ],
+ "igdb-external:3185240": [],
+ "tmdb-find:tt1160419": {
+  "movie_results": [
+   {
+    "adult": false,
+    "backdrop_path": "/jYEW5xZkZk2WTrdbMGAPFuBqbDc.jpg",
+    "id": 438631,
+    "title": "Дюна",
+    "original_title": "Dune",
+    "overview": "Наследник знаменитого дома Атрейдесов Пол отправляется вместе с семьей на одну из самых опасных планет во Вселенной — Арракис. Здесь нет ничего, кроме песка, палящего солнца, гигантских чудовищ и основной причины межгалактических конфликтов — невероятно ценного ресурса, который называется меланж. В результате захвата власти Пол вынужден бежать и скрываться, и это становится началом его эпического путешествия. Враждебный мир Арракиса приготовил для него множество тяжелых испытаний, но только тот, кто готов взглянуть в глаза своему страху, достоин стать избранным.",
+    "poster_path": "/3hbXNclcHaj5KiF6kK41GBMjyFr.jpg",
+    "media_type": "movie",
+    "original_language": "en",
+    "genre_ids": [
+     878,
+     12
+    ],
+    "popularity": 44.2426,
+    "release_date": "2021-09-15",
+    "softcore": false,
+    "video": false,
+    "vote_average": 7.787,
+    "vote_count": 15890
+   }
+  ],
+  "person_results": [],
+  "tv_results": [],
+  "tv_episode_results": [],
+  "tv_season_results": []
+ },
+ "tmdb-find:tt11280740": {
+  "movie_results": [],
+  "person_results": [],
+  "tv_results": [
+   {
+    "adult": false,
+    "backdrop_path": "/ixgFmf1X59PUZam2qbAfskx2gQr.jpg",
+    "id": 95396,
+    "name": "Разделение",
+    "original_name": "Severance",
+    "overview": "Руководство компании Lumon Industries придумало новый способ контролировать повседневную деятельность своих сотрудников — «процедуру разделения», отделяющую рабочие воспоминания от обычных. Марк соглашается на процедуру, но вскоре начинает сомневаться в правильности своего выбора.",
+    "poster_path": "/Ag7gBPnh8Cpn5xvCdPPA4RJRN1L.jpg",
+    "media_type": "tv",
+    "original_language": "en",
+    "genre_ids": [
+     18,
+     9648,
+     10765
+    ],
+    "popularity": 41.9436,
+    "first_air_date": "2022-02-17",
+    "softcore": false,
+    "vote_average": 8.4,
+    "vote_count": 3095,
+    "origin_country": [
+     "US"
+    ]
+   }
+  ],
+  "tv_episode_results": [],
+  "tv_season_results": []
+ }
+}

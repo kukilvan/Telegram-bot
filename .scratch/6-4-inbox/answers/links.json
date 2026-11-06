@@ -1,0 +1,151 @@
+{
+ "igdb-games-by-steam:1245620": [
+  {
+   "id": 119133,
+   "alternative_names": [
+    {
+     "id": 24917,
+     "comment": "Other",
+     "name": "Great Rune"
+    },
+    {
+     "id": 79656,
+     "comment": "Stylized title",
+     "name": "ELDEN RING"
+    },
+    {
+     "id": 83944,
+     "comment": "Japanese title - translated",
+     "name": "エルデンリング"
+    },
+    {
+     "id": 123543,
+     "comment": "Chinese title - traditional",
+     "name": "艾爾登法環"
+    },
+    {
+     "id": 130570,
+     "comment": "Chinese title - simplified",
+     "name": "艾尔登法环"
+    }
+   ],
+   "cover": {
+    "id": 212094,
+    "image_id": "co4jni"
+   },
+   "first_release_date": 1645747200,
+   "name": "Elden Ring",
+   "platforms": [
+    169,
+    48,
+    508,
+    6,
+    167,
+    49
+   ],
+   "game_type": 0
+  }
+ ],
+ "igdb-games-by-steam:2622380": [
+  {
+   "id": 325591,
+   "alternative_names": [
+    {
+     "id": 167117,
+     "comment": "Stylized title",
+     "name": "ELDEN RING NIGHTREIGN"
+    },
+    {
+     "id": 249159,
+     "comment": "Alternative spelling",
+     "name": "Elden Ring: Nightreign"
+    },
+    {
+     "id": 280281,
+     "comment": "Korean title - translated",
+     "name": "엘든 링 밤의 통치자"
+    }
+   ],
+   "cover": {
+    "id": 426980,
+    "image_id": "co95gk"
+   },
+   "first_release_date": 1748563200,
+   "name": "Elden Ring Nightreign",
+   "platforms": [
+    169,
+    48,
+    6,
+    167,
+    49
+   ],
+   "game_type": 0
+  }
+ ],
+ "igdb-games-by-steam:4000000": [],
+ "steam-appdetails:2622380": {
+  "name": "ELDEN RING NIGHTREIGN",
+  "type": "game",
+  "release_date": null
+ },
+ "steam-appdetails:4000000": null,
+ "shikimori-entries:57612": [
+  {
+   "id": "57612",
+   "malId": "57612",
+   "name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+   "russian": "Магия вернувшегося должна быть особенной 2",
+   "english": "A Returner's Magic Should Be Special Season 2",
+   "kind": "tv",
+   "status": "ongoing",
+   "episodes": 0,
+   "episodesAired": 5,
+   "nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+   "duration": 23,
+   "airedOn": {
+    "date": "2026-10-08",
+    "year": 2026
+   },
+   "releasedOn": {
+    "date": null
+   },
+   "franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+   "poster": {
+    "originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+   },
+   "genres": [
+    {
+     "russian": "Экшен",
+     "kind": "genre"
+    },
+    {
+     "russian": "Фэнтези",
+     "kind": "genre"
+    },
+    {
+     "russian": "Школа",
+     "kind": "theme"
+    },
+    {
+     "russian": "Путешествие во времени",
+     "kind": "theme"
+    }
+   ],
+   "related": [
+    {
+     "relationKind": "prequel",
+     "relationText": "Предыстория",
+     "anime": {
+      "id": "54852",
+      "kind": "tv"
+     }
+    },
+    {
+     "relationKind": "adaptation",
+     "relationText": "Адаптация",
+     "anime": null
+    }
+   ]
+  }
+ ]
+}
