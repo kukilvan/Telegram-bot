@@ -18,7 +18,7 @@ from app.tracker.pollers.base import Poller
 TRACKER = Path(core.__file__).parent
 MODULES = (
     "context", "settings_store", "storage", "queue", "titles", "statuses", "listing", "feed", "polling", "delivery_service",
-    "test_samples", "core", "prices", "price_rows", "sources/steam_prices", "follow_ups", "sources/igdb_follow_ups",
+    "test_samples", "core", "prices", "price_rows", "sources/steam_prices", "follow_ups", "sources/igdb_follow_ups", "inbox",
 )
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
@@ -109,7 +109,8 @@ def test_the_public_names_of_the_core_stay_importable_from_the_facade():
         "TitleSummary", "WatchableSeason", "AddResult", "DeleteResult", "ChangeResult", "SummaryResult",
         "TestEventResult", "DeliveryReport", "PollReport", "CannotScore", "ScoreView", "Feed", "FeedDay", "FeedTitle", "SettingsField",
         "UpcomingRow", "RecentRow", "FollowOffer", "Followable", "SettingsView", "SettingsChange", "SettingsRefused", "ZoneOption",
-        "UnknownPlatform", "SourceNotConfigured",
+        "UnknownPlatform", "SourceNotConfigured", "IncomingMessage", "TakeIn", "PauseOutcome", "InboxEntry",
+        "UnknownInboxItem", "InboxState", "InboxReason", "INBOX_REASONS", "MEDIA_WORDS",
     ):
         assert hasattr(core, name), name
 

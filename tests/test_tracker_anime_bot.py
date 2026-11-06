@@ -1,4 +1,4 @@
-"""Adding an anime in the bot and marking its watched seasons: owner only, through a real aiogram Dispatcher.
+"""The card of an anime in the bot and marking its watched seasons: owner only, through a real aiogram Dispatcher.
 
 Telegram itself is replaced by capturing what the bot would say; the tracker core and the Shikimori adapter are
 real, on the saved real answers (tests/fixtures/shikimori).
@@ -13,9 +13,10 @@ from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 from anime_fakes import FakeAniList, FakeShikimori
 from app.bot.access import AccessMiddleware
-from app.bot.tracker_handlers import ADD_BUTTON, register_tracker_handlers
+from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.models import TitleKind
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 
 OWNER = 42
@@ -112,42 +113,19 @@ def last_message(replies):
     return next(r for r in reversed(replies) if r[0] == "message")
 
 
-def add_anime(chat, replies, pick="Магическая битва"):
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(last_message(replies)[2], "Аниме"))
-    chat.say("магическая битва")
-    chat.press(callback_of(last_message(replies)[2], pick))
+JUJUTSU = "40748"  # «Магическая битва», the first season of the franchise
 
 
-def test_add_button_offers_the_anime_type(tracker, replies):
-    Chat_(tracker).say(ADD_BUTTON)
-
-    assert labels(replies[-1][2]) == ["Аниме"]
-
-
-def test_choosing_anime_asks_for_an_anime_name(tracker, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Аниме"))
-
-    assert "аниме" in replies[-1][1].lower()
+def add_anime(tracker, external_id=JUJUTSU):
+    """Into the list as the core adds it (the bot adds by «Да» on an offer, ticket 04 of stage 6.4)."""
+    return run(tracker.add_title(TitleKind.ANIME, external_id))
 
 
-def test_search_offers_one_button_per_franchise(tracker, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Аниме"))
-    chat.say("магическая битва")
+def test_the_card_of_an_added_anime_shows_the_seasons_and_the_films(tracker, replies):
+    add_anime(tracker)
+    Chat_(tracker).press("tcard:1")
 
-    names = labels(last_message(replies)[2])
-    assert "Магическая битва (2020)" in names
-    assert sum(1 for n in names if n.startswith("Магическая битва")) == 1
-
-
-def test_picked_anime_is_added_and_its_card_shows_the_seasons_and_the_films(tracker, replies):
-    add_anime(Chat_(tracker), replies)
-
-    card = next(r[1] for r in replies if r[0] == "message" and r[1] and "Добавлено" in r[1])
+    card = last_message(replies)[1]
     assert "🎌 Аниме · Хочу" in card
     assert "Магическая битва · Jujutsu Kaisen" in card
     assert "Сезон 3: вышло 12 из 12" in card
@@ -157,8 +135,9 @@ def test_picked_anime_is_added_and_its_card_shows_the_seasons_and_the_films(trac
     assert (entry.kind, entry.status) == ("anime", "want")
 
 
-def test_after_adding_the_bot_asks_which_seasons_are_watched(tracker, replies):
-    add_anime(Chat_(tracker), replies)
+def test_the_seasons_button_asks_which_seasons_are_watched(tracker, replies):
+    add_anime(tracker)
+    Chat_(tracker).press("tact:seasons:1")
 
     _, text, buttons = last_message(replies)
     assert "сезоны" in text.lower() and "посмотрел" in text.lower()
@@ -166,8 +145,9 @@ def test_after_adding_the_bot_asks_which_seasons_are_watched(tracker, replies):
 
 
 def test_marking_all_released_seasons_makes_the_anime_wait(tracker, replies):
+    add_anime(tracker)
     chat = Chat_(tracker)
-    add_anime(chat, replies)
+    chat.press("tact:seasons:1")
     buttons = last_message(replies)[2]
     for season in ("Сезон 1", "Сезон 2", "Сезон 3"):
         chat.press(callback_of(buttons, season))
@@ -179,41 +159,16 @@ def test_marking_all_released_seasons_makes_the_anime_wait(tracker, replies):
 
 
 def test_the_card_of_a_listed_anime_has_the_seasons_button(tracker, replies):
-    chat = Chat_(tracker)
-    add_anime(chat, replies)
-    replies.clear()
-    chat.press("tcard:1")
+    add_anime(tracker)
+    Chat_(tracker).press("tcard:1")
 
     assert labels(last_message(replies)[2]) == ["📺 Просмотренные сезоны", "🗑 Удалить"]
 
 
-def test_adding_the_franchise_through_another_entry_opens_the_same_title(tracker, replies):
-    chat = Chat_(tracker)
-    add_anime(chat, replies)
-    replies.clear()
-    chat.press("tpick:anime:48561")  # the prequel film of the same franchise
+def test_adding_the_franchise_through_another_entry_opens_the_same_title(tracker):
+    add_anime(tracker)
 
-    assert "Уже в списке" in last_message(replies)[1]
+    result = add_anime(tracker, "48561")  # the prequel film of the same franchise
+
+    assert not result.created
     assert len(run(tracker.list_titles())) == 1
-
-
-def test_shikimori_failure_is_answered_with_its_name_and_nothing_is_stored(tracker, shikimori, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Аниме"))
-    chat.say("магическая битва")
-    shikimori.broken = True
-    chat.press(callback_of(replies[-1][2], "Магическая битва"))
-
-    assert replies[-1][0] == "message" and "Shikimori" in replies[-1][1]  # the press itself was answered early
-    assert run(tracker.list_titles()) == []
-
-
-def test_search_failure_is_answered_with_the_name_of_the_source(tracker, shikimori, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Аниме"))
-    shikimori.broken = True
-    chat.say("магическая битва")
-
-    assert "Shikimori" in last_message(replies)[1]

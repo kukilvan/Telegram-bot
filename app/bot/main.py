@@ -13,7 +13,7 @@ from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker
 from app.utils.backup import backup_database
 
-TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles and, separately, sends the queue (retrying failed sends)
+TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles, sends the queue (retrying failed sends) and moves the inbox items that waited 12 hours
 BACKUP_EVERY_HOURS = 1  # how often the bot checks whether a database copy is due (the copy itself: over a day since the last)
 
 
@@ -29,7 +29,7 @@ def build_dispatcher(tracker: Tracker, allowed_ids: list[int]) -> Dispatcher:
 
 
 def add_jobs(scheduler: AsyncIOScheduler, tracker: Tracker) -> None:
-    """The scheduler's jobs: polling, delivery and the database backup."""
+    """The scheduler's jobs: polling, delivery, the 12 hours of the inbox items and the database backup."""
     # Two independent jobs: a slow source must never hold back delivery of events already in the queue.
     # The queue send also retries events whose earlier send failed.
     scheduler.add_job(
@@ -39,6 +39,12 @@ def add_jobs(scheduler: AsyncIOScheduler, tracker: Tracker) -> None:
     )
     scheduler.add_job(
         tracker.deliver_pending, "interval",
+        seconds=TRACKER_BEAT_SECONDS,
+        misfire_grace_time=30, coalesce=True, max_instances=1,
+    )
+    # A job of its own: a bug in it must not stop polling or delivery
+    scheduler.add_job(
+        tracker.expire_inbox, "interval",
         seconds=TRACKER_BEAT_SECONDS,
         misfire_grace_time=30, coalesce=True, max_instances=1,
     )

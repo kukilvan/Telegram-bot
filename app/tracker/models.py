@@ -1,5 +1,5 @@
 """Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings,
-game platforms and the price history. Timestamps are naive UTC and are always set by the core at insert time."""
+game platforms, the price history and the inbox items. Timestamps are naive UTC and are always set by the core at insert time."""
 
 from datetime import date, datetime
 from enum import StrEnum
@@ -38,12 +38,12 @@ class DeliveryStatus(StrEnum):
     DELIVERED = "delivered"
 
 
-def _stored_as_text(enum: type[StrEnum]) -> Enum:
+def _stored_as_text(enum: type[StrEnum], length: int = 16) -> Enum:
     """A column that holds the enum's values as plain text (so the database stays as it was) and hands back members."""
     return Enum(
         enum,
         native_enum=False,
-        length=16,
+        length=length,
         values_callable=lambda members: [member.value for member in members],
         validate_strings=True,
     )
@@ -193,6 +193,48 @@ class PriceRecord(TrackerBase):
     final: Mapped[int] = mapped_column(Integer)  # the price now, in hundredths
     original: Mapped[int | None] = mapped_column(Integer)  # the price before the discount; None: no discount
     pct: Mapped[int] = mapped_column(Integer)  # the percent of the discount; 0: none
+
+
+class InboxState(StrEnum):
+    """Where an inbox item is (spec 7.1 of stage 6.4)."""
+
+    WAITING = "waiting"  # «ждёт ответа»: the question «Что это?» or an offer waits in the chat
+    INBOX = "inbox"  # in «Входящие», with a reason
+
+
+class InboxReason(StrEnum):
+    """Why an item is in «Входящие»; the words the owner reads are `INBOX_REASONS` of `results`."""
+
+    NOT_FOUND = "not_found"  # «не нашёл»
+    NO_ANSWER = "no_answer"  # «без ответа»
+    NO_TEXT = "no_text"  # «нет текста»
+    SOURCE_FAILED = "source_failed"  # «источник не ответил»
+    NOT_CONNECTED = "not_connected"  # «игры не подключены»
+
+
+class InboxRecord(TrackerBase):
+    """An inbox item: what the owner sent to the bot (a post, a name, an album, a forward with its comment), kept until
+    it is resolved or removed — then the row is deleted. The number is never reused (`AUTOINCREMENT`)."""
+
+    __tablename__ = "inbox_items"
+    __table_args__ = {"sqlite_autoincrement": True}
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    state: Mapped[InboxState] = mapped_column(_stored_as_text(InboxState), index=True)
+    reason: Mapped[InboxReason | None] = mapped_column(_stored_as_text(InboxReason, length=24))
+    kind: Mapped[TitleKind | None] = mapped_column(_stored_as_text(TitleKind))  # chosen by the owner or given by a link
+    text: Mapped[str] = mapped_column(Text, default="")  # the joined text, at most `inbox.MAX_TEXT` characters
+    media: Mapped[str | None] = mapped_column(String(16))  # what came without text (`results.MEDIA_WORDS`)
+    bold: Mapped[list] = mapped_column(JSON, default=list)  # the bold pieces of 1–8 words
+    links: Mapped[list] = mapped_column(JSON, default=list)  # the addresses of the links of the text
+    post_url: Mapped[str | None] = mapped_column(Text)  # the post of a public channel it was forwarded from
+    forwarded: Mapped[bool] = mapped_column(Boolean)
+    media_group_id: Mapped[str | None] = mapped_column(String(64))  # the album its messages came in
+    query: Mapped[str] = mapped_column(Text, default="")  # what «Найти» of the web searches
+    offers: Mapped[list] = mapped_column(JSON, default=list)  # the offers of the analysis (ticket 04)
+    received_at: Mapped[datetime] = mapped_column(DateTime)  # the 12 hours of waiting count from it
+    last_message_at: Mapped[datetime] = mapped_column(DateTime)  # a message joins within 2 seconds of it
+    moved_at: Mapped[datetime | None] = mapped_column(DateTime)  # when it went to «Входящие»
 
 
 class SettingRecord(TrackerBase):

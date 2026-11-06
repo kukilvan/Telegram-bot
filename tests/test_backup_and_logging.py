@@ -18,7 +18,7 @@ from alembic.script import ScriptDirectory
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from app.bot.main import BACKUP_EVERY_HOURS, add_jobs
+from app.bot.main import BACKUP_EVERY_HOURS, TRACKER_BEAT_SECONDS, add_jobs
 from app.tracker.db import (
     MIGRATIONS_DIR,
     TRACKER_DATABASE_URL,
@@ -568,6 +568,8 @@ class StubTracker:
 
     async def deliver_pending(self): ...
 
+    async def expire_inbox(self): ...
+
 
 async def not_a_real_backup():
     """Stands for `backup_database` in these tests: the job fires at the start and must not copy the real database."""
@@ -620,7 +622,15 @@ def test_there_is_no_job_at_three_in_the_morning():
     jobs = scheduled_jobs()
 
     assert not any(isinstance(job.trigger, CronTrigger) for job in jobs.values())
-    assert len(jobs) == 3  # polling, delivery and the backup
+    assert len(jobs) == 4  # polling, delivery, the inbox items and the backup
+
+
+def test_the_inbox_items_have_a_job_of_their_own_every_beat():
+    jobs = {getattr(func, "__name__", ""): job for func, job in scheduled_jobs().items()}
+
+    job = jobs["expire_inbox"]
+    assert job.trigger.interval == timedelta(seconds=TRACKER_BEAT_SECONDS)
+    assert job.coalesce is True and job.max_instances == 1
 
 
 def test_setup_logging_creates_the_log_file(tmp_path):

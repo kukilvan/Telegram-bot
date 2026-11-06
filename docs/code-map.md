@@ -29,6 +29,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 <!-- code-map:start (built by tools/code_map.py from the docstrings; do not edit by hand) -->
 - `app/bot/access.py` — Owner allowlist: one gate in front of every incoming Telegram update.
 - `app/bot/error_handler.py` — Error reporting to bot owner via Telegram Bot API.
+- `app/bot/inbox_handlers.py` — Bot side of «Входящие»: taking in every other message of the owner, the pause after it, «Что это?» and its buttons.
+- `app/bot/inbox_message.py` — Reading a Telegram message of the owner into an `IncomingMessage` (spec 1.1 of stage 6.4), pure: no bot, no database.
 - `app/bot/main.py` — The bot's assembly: the access gate and the tracker handlers (`build_dispatcher`), the scheduler's jobs (`add_jobs`).
 - `app/bot/tracker_handlers.py` — Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
 - `app/config.py` — Application configuration loaded from environment variables.
@@ -61,6 +63,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/game_scope.py` — What the owner sees of the games: the country of the stores, «Мои платформы» and the marks «играю здесь».
 - `app/tracker/games.py` — The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
 - `app/tracker/genres.py` — Genres as the owner picks them: the same genre written in two cases or with «е» for «ё» is one genre.
+- `app/tracker/inbox.py` — «Входящие»: taking in what the owner sends to the bot, the states of an item and its moves, the 12 hours, the list, the count and deleting.
 - `app/tracker/kinds.py` — What each kind of title is for the owner: one table, so a new kind cannot be added half-way.
 - `app/tracker/listing.py` — What the owner reads of the list: its rows, the numbers of the whole list and the card of a title.
 - `app/tracker/migrations/env.py` — Alembic environment of the tracker database.
@@ -77,7 +80,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0011_scores.py` — The owner's scores: of a title (a film's only one; a series' own one over the average of its seasons) and of a season.
 - `app/tracker/migrations/versions/0012_game_platforms.py` — The platforms of a game and the owner's mark «играю здесь» on each (spec 6.2 of part 6.1).
 - `app/tracker/migrations/versions/0013_price_history.py` — The price history of the games (spec 4.5 of part 6.2): a record of a Steam price each time a price check saw it change.
-- `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings, game platforms and the price history.
+- `app/tracker/migrations/versions/0014_inbox.py` — «Входящие» (spec 10 of stage 6.4): the table `inbox_items`, one row per inbox item — what the owner sent to the bot.
+- `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings, game platforms, the price history and the inbox items.
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
 - `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out and whose region its dates are.
 - `app/tracker/pollers/anime.py` — An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the source entries behind the seasons and the franchise films are kept beside them.

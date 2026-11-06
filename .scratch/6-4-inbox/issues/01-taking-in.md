@@ -1,6 +1,6 @@
 # 01: «Входящие» in the database and taking in a message — migration 0014, the bot handler, «Что это?», «Не сохранять»
 
-Status: open
+Status: in review
 Complexity: complex (migration, a new core module with write sessions, a bot handler with a timer and joining, the old «➕ Добавить» flow removed)
 Blocked by: —
 

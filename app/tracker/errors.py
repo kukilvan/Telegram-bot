@@ -69,3 +69,7 @@ class SettingsRefused(Exception):
         super().__init__(text)
         self.field = field
         self.text = text
+
+
+class UnknownInboxItem(Exception):
+    """There is no inbox item with this number: it was resolved, not saved, or removed in the web."""

@@ -15,7 +15,7 @@ from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 from app.bot.access import AccessMiddleware
 from app.bot.tracker_handlers import register_tracker_handlers
-from app.tracker.core import Tracker
+from app.tracker.core import IncomingMessage, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, Season
@@ -193,63 +193,54 @@ def texts(journal):
     return [entry[1] for entry in journal.of("message")]
 
 
-# --- adding from the suggestions --------------------------------------------------------------------
+# --- the kind of an inbox item («Что это?») --------------------------------------------------------------
 
 
-def test_adding_answers_the_press_before_the_source_is_asked(tracker, telegram):
-    press(tracker, f"tpick:series:{SILO}")
+@pytest.fixture
+def watched_answers(tracker, journal, monkeypatch):
+    """`answer_kind` is where the analysis goes to the sources (ticket 04 of stage 6.4): it counts as a source here."""
+    real = tracker.answer_kind
+
+    async def answer_kind(item_id, kind):
+        journal.append(("source", f"inbox:{item_id}"))
+        return await real(item_id, kind)
+
+    monkeypatch.setattr(tracker, "answer_kind", answer_kind)
+    return tracker
+
+
+def test_a_kind_answers_the_press_before_the_work(watched_answers, telegram):
+    item = run(watched_answers.take_in(IncomingMessage(text="Дюна"))).item_id
+
+    press(watched_answers, f"inb:{item}:k:movie")
 
     assert [entry[0] for entry in telegram][:2] == ["answer", "source"]
-    assert telegram.of("answer") == [("answer", ADDING)]
+    assert telegram.of("answer") == [("answer", "Ищу…")]
+    assert texts(telegram) == ["Тип запомнил — сохранил во «Входящие»."]
 
 
-def test_a_slow_source_does_not_lose_the_card_or_the_question_about_seasons(tracker, telegram):
-    press(tracker, f"tpick:series:{SILO}")
+def test_a_kind_of_an_item_removed_meanwhile_comes_as_a_message(watched_answers, telegram, monkeypatch):
+    item = run(watched_answers.take_in(IncomingMessage(text="Дюна"))).item_id
+    real = watched_answers.answer_kind
 
-    card, question = texts(telegram)
-    assert card.startswith("✅ Добавлено в список") and "Укрытие" in card
-    assert "Какие сезоны" in question
-    assert [t.name for t in run(tracker.list_titles())] == ["Укрытие"]
+    async def removed_first(item_id, kind):
+        await watched_answers.forget_inbox_item(item_id)  # «Убрать» on the web between the check and the work
+        return await real(item_id, kind)
 
+    monkeypatch.setattr(watched_answers, "answer_kind", removed_first)
 
-def test_a_source_failure_while_adding_comes_as_a_message_and_not_a_second_answer(tracker, series, telegram):
-    series.failing = True
+    press(watched_answers, f"inb:{item}:k:movie")
 
-    press(tracker, f"tpick:series:{SILO}")
-
-    assert telegram.of("answer") == [("answer", ADDING)]
-    assert texts(telegram) == ["Не удалось получить данные из TMDb. Попробуйте чуть позже."]
-    assert run(tracker.list_titles()) == []
+    assert telegram.of("answer") == [("answer", "Ищу…")]
+    assert texts(telegram) == ["Эта запись уже разобрана."]
 
 
-def test_a_title_the_source_does_not_know_comes_as_a_message(tracker, telegram):
-    press(tracker, "tpick:series:1")
+@pytest.mark.parametrize("data", ["inb:1:k:movie", "inb:1:k:book", "inb:x:k:movie", "inb:1:q"])
+def test_a_dead_inbox_button_is_a_popup_and_never_reaches_the_work(watched_answers, telegram, data):
+    press(watched_answers, data)
 
-    assert telegram.of("answer") == [("answer", ADDING)]
-    assert texts(telegram) == ["Не нашёл такой тайтл в TMDb, попробуйте поискать заново."]
-
-
-def test_a_kind_the_core_lost_comes_as_a_message(tracker, telegram):
-    press(tracker, "tpick:anime:1")  # a kind of the bot's, but no source is plugged in for it
-
-    assert telegram.of("answer") == [("answer", ADDING)]
-    assert texts(telegram) == ["Такого типа больше нет, нажмите «➕ Добавить» заново."]
-
-
-def test_a_kind_that_is_no_kind_is_a_popup_and_never_reaches_a_source(tracker, telegram):
-    press(tracker, "tpick:book:1")
-
-    assert list(telegram) == [("answer", "Такого типа больше нет, нажмите «➕ Добавить» заново.")]
-
-
-def test_without_a_message_a_failure_goes_to_the_log_only(tracker, series, telegram, caplog):
-    series.failing = True
-
-    press(tracker, f"tpick:series:{SILO}", with_message=False)
-
-    assert telegram.of("answer") == [("answer", ADDING)]
-    assert texts(telegram) == []
-    assert any("adding a title failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)
+    [(what, text)] = list(telegram)
+    assert what == "answer" and text in ("Эта запись уже разобрана.", "Эта кнопка больше не работает.")
 
 
 # --- «Следить» -----------------------------------------------------------------------------------------

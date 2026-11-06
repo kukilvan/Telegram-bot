@@ -42,7 +42,7 @@
 
 ## 6. Тип, статус тайтла и статус очереди — перечисления; свойство типа — в таблице
 
-**Правило.** Тип тайтла, статус тайтла и статус записи очереди доставки — только через `TitleKind`, `TitleStatus` и `DeliveryStatus` (`app/tracker/models.py`); строк `"movie"`, `"series"`, `"anime"`, `"pending"`, `"delivered"` в коде нет. Всё, что зависит от типа (подпись, значок, просьба ввести название, имя источника, «сезонный»), лежит в таблице `KINDS` (`app/tracker/kinds.py`) и читается оттуда, а не решается через `if` по типу. Подписи статусов — одна таблица `STATUS_LABELS` (`app/tracker/cards.py`). Новый тип или статус — это новое значение перечисления и строка в таблице (при опросе и добавлении тип выбирает объект в `pollers/`, правило 7). Значения перечислений совпадают с тем, что уже лежит в базе, и в `callback_data` кнопок; их менять нельзя.
+**Правило.** Тип тайтла, статус тайтла и статус записи очереди доставки — только через `TitleKind`, `TitleStatus` и `DeliveryStatus` (`app/tracker/models.py`); строк `"movie"`, `"series"`, `"anime"`, `"pending"`, `"delivered"` в коде нет. Всё, что зависит от типа (подпись, значок, имя источника, «сезонный»), лежит в таблице `KINDS` (`app/tracker/kinds.py`) и читается оттуда, а не решается через `if` по типу. Подписи статусов — одна таблица `STATUS_LABELS` (`app/tracker/cards.py`). Новый тип или статус — это новое значение перечисления и строка в таблице (при опросе и добавлении тип выбирает объект в `pollers/`, правило 7). Значения перечислений совпадают с тем, что уже лежит в базе, и в `callback_data` кнопок; их менять нельзя.
 
 **Почему.** Голая строка не проверяется ничем: опечатка `"sries"` молча даёт «не тот тип», а свойство, разбросанное по пяти файлам, при добавлении нового типа (игры) теряется в одном из них, и этого не заметит ни один тест. Перечисление ловит опечатку, таблица — пропущенное свойство.
 
@@ -75,6 +75,7 @@
 | `follow_ups` | the follow-up check of a game (pure): its stored state (`FollowUps`, `Candidate`) and strict read, which expansions and games of the series are shown on «Мои платформы» («came out before» included), the date of a follow-up and the order, what is new (the reference point, `known`), the texts, the key `game:follow_up:<igdb id>` and the samples; `TYPES` — the one list of its event types |
 | `sources/igdb_follow_ups` | IGDB adapter of the follow-up check: one request a game (expansions, standalone expansions, remakes, remasters, `collections.games`), parsed softly into a `FollowUpsSnapshot`; reuses the helpers of `sources/igdb_games` (`russian_name`, `is_game`, `known_platforms`, `read_releases`) |
 | `sources/steam_prices` | Steam adapter for prices: the records of `GetItems` → a price look per game, the purchase options read strictly (a field missing or garbage — the game is unreadable, not priceless) |
+| `inbox` | «Входящие»: taking in a message (joining an album and a forward with its comment), the states and the moves of an item, the 12 hours of waiting, the list and the count for the web, deleting; one write session per change |
 | `queue` | постановка событий и сообщений о сбое в очередь |
 | `delivery_service` | `deliver_pending`, `summary_now`, отправка, учёт попыток, кнопки сводки и сложенных скидок, уборка устаревших сообщений |
 | `test_samples` | образцы «Тестового события» и проверка правил доставки (`DeliveryCheck`) |

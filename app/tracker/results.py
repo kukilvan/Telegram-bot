@@ -1,11 +1,11 @@
 """What the tracker core hands back to its callers. Plain data, no database. Re-exported by `core`."""
 
-from collections.abc import Collection
+from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
-from app.tracker.models import TitleKind, TitleStatus
+from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
 
 
 @dataclass(frozen=True)
@@ -148,3 +148,73 @@ class SettingsView:
     platforms: tuple[Choice, ...]  # «Мои платформы»: the boxes, in the order of the table
     countries: tuple[Choice, ...]  # «Страна магазинов»: the list, by label
     now_line: str  # what the stored rules would do with an event at this minute
+
+
+# --- «Входящие» -------------------------------------------------------------------------------------
+
+MEDIA_WORDS: Mapping[str, str] = {  # what came without text, as the owner reads it: «(картинка без подписи)»
+    "photo": "картинка",
+    "video": "видео",
+    "animation": "гифка",
+    "document": "файл",
+    "sticker": "стикер",
+    "voice": "голосовое",  # a voice message and a round video
+    "message": "сообщение",  # anything else
+}
+
+INBOX_REASONS: Mapping[InboxReason, str] = {
+    InboxReason.NOT_FOUND: "не нашёл",
+    InboxReason.NO_ANSWER: "без ответа",
+    InboxReason.NO_TEXT: "нет текста",
+    InboxReason.SOURCE_FAILED: "источник не ответил",
+    InboxReason.NOT_CONNECTED: "игры не подключены",
+}
+
+
+@dataclass(frozen=True)
+class IncomingMessage:
+    """One message of the owner as the bot read it (spec 1.1 of stage 6.4): the input of `Tracker.take_in`."""
+
+    text: str = ""  # `text` or `caption`
+    bold: tuple[str, ...] = ()  # the bold pieces of 1–8 words
+    links: tuple[str, ...] = ()  # the addresses of the entities `url` and `text_link`
+    media: str | None = None  # a key of `MEDIA_WORDS` when the message has no text
+    post_url: str | None = None  # `https://t.me/<channel>/<number>`: a forward from a public channel only
+    forwarded: bool = False
+    media_group_id: str | None = None  # the album the message belongs to
+
+
+@dataclass(frozen=True)
+class TakeIn:
+    """What taking in a message did."""
+
+    item_id: int
+    joined: bool  # the message joined the newest item (an album, a forward after its comment): the pause starts again
+    moved: int  # how many items that waited for an answer went to «Входящие» «без ответа» (0 when it joined)
+
+
+class PauseOutcome(StrEnum):
+    """What comes when the pause after the last message of an item is over (spec 1.3 of stage 6.4)."""
+
+    ASK = "ask"  # «Что это?»
+    NO_TEXT = "no_text"  # the item went to «Входящие» «нет текста»
+    NOTHING = "nothing"  # the item is gone or no longer waits: nothing to say
+
+
+@dataclass(frozen=True)
+class InboxEntry:
+    """An inbox item as the bot and the web read it."""
+
+    id: int
+    state: InboxState
+    reason: InboxReason | None
+    kind: TitleKind | None
+    text: str
+    media: str | None
+    bold: tuple[str, ...]
+    links: tuple[str, ...]
+    post_url: str | None
+    forwarded: bool
+    query: str
+    received_at: datetime  # naive UTC
+    moved_at: datetime | None  # naive UTC; None: it still waits

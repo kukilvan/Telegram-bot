@@ -1,15 +1,12 @@
-"""The score in the card of the bot (a line after the genres, shown only when it is visible) and the cause of a failed
-source in the log of the bot (KI-26). The bot only shows a score, it does not set one."""
+"""The score in the card of the bot (a line after the genres, shown only when it is visible). The bot only shows a
+score, it does not set one. (The cause of a failed source in the log of the bot, KI-26, is checked with «Следить» in
+`test_tracker_early_answer.py`: the search and the adding of the bot went with «➕ Добавить».)"""
 
 import asyncio
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from aiogram import Bot, Dispatcher
-from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
-from app.bot.access import AccessMiddleware
-from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.cards import format_card
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
@@ -130,60 +127,3 @@ def test_the_bot_has_no_way_to_set_a_score():
     source = inspect.getsource(tracker_handlers)
 
     assert "set_title_score" not in source and "set_season_score" not in source
-
-
-# ---- KI-26: the cause of a failed source is in the log of the bot --------------------------------------------
-
-def dispatcher(tracker):
-    dp = Dispatcher()
-    dp.update.outer_middleware(AccessMiddleware([OWNER]))
-    register_tracker_handlers(dp, tracker, [OWNER])
-    return dp
-
-
-def user():
-    return User(id=OWNER, is_bot=False, first_name="x")
-
-
-def message(text):
-    return Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user(), text=text)
-
-
-def feed(dp, **update):
-    run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=1, **update)))
-
-
-@pytest.fixture
-def telegram(monkeypatch):
-    sent = []
-
-    async def answer(self, text=None, **kwargs):
-        sent.append(text)
-
-    async def callback_answer(self, text=None, **kwargs):
-        pass
-
-    monkeypatch.setattr(Message, "answer", answer)
-    monkeypatch.setattr(CallbackQuery, "answer", callback_answer)
-    return sent
-
-
-def test_a_failed_search_logs_the_cause_and_tells_the_owner_the_source(tracker, movies, telegram, caplog):
-    movies.failing = True
-    dp = dispatcher(tracker)
-    callback = CallbackQuery(id="1", from_user=user(), chat_instance="c", data="tadd:movie", message=message("m"))
-    feed(dp, callback_query=callback)
-
-    feed(dp, message=message("Дюна"))
-
-    assert telegram[-1] == "Не удалось связаться с TMDb. Попробуйте чуть позже."
-    assert any("title search failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)
-
-
-def test_a_failed_add_logs_the_cause(tracker, movies, telegram, caplog):
-    movies.failing = True
-    callback = CallbackQuery(id="1", from_user=user(), chat_instance="c", data="tpick:movie:1", message=message("m"))
-
-    feed(dispatcher(tracker), callback_query=callback)
-
-    assert any("adding a title failed" in r.getMessage() and "tmdb is down" in r.getMessage() for r in caplog.records)

@@ -78,7 +78,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
     migrate(engine)
     migrate(engine)
 
-    assert "price_history" in tables(engine) and version(engine) == "0013"
+    assert "price_history" in tables(engine) and version(engine) == "0014"
 
 
 def test_a_database_with_a_game_gets_the_table_and_keeps_the_game(engine):
@@ -133,5 +133,5 @@ def test_after_downgrading_the_database_migrates_up_again(engine):
 
     migrate(engine)
 
-    assert "price_history" in tables(engine) and version(engine) == "0013"
+    assert "price_history" in tables(engine) and version(engine) == "0014"
     assert snapshot_sources(engine) == ["igdb"]

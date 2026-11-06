@@ -70,6 +70,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | open | — |
 | KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | open | — |
 | KI-56 | The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | open | — |
+| KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | open | — |
 
 ## Entries
 
@@ -592,3 +593,12 @@ Format of a new entry:
 - Likelihood / impact: no effect on the owner; long modules cost more to read in every session. A fix: the test takes every `app/tracker/*.py`; `series_events.py` and `games.py` split (e.g. `GameDate` into a module of its own).
 - Status: open.
 - Found: 2026-11-05, review of stage 6.3.
+
+## KI-57. «Входящие»: a restart within the 2-second pause leaves the item without «Что это?»
+
+- Where: `app/bot/inbox_handlers.py` (the pause after the last message of an item lives in the bot's memory).
+- What's wrong: the item is written at once, but the question comes 2 seconds after its last message. When the bot stops in those 2 seconds, nothing asks after the start: the item waits silently.
+- How to reproduce: send a message to the bot and run `.\stop-bot.ps1` within 2 seconds, then `.\start-bot.ps1`.
+- Likelihood / impact: rare (a stop exactly then); nothing is lost — the item goes to «Входящие» «без ответа» with the next post or after 12 hours, and the web tab shows it (ticket 05). Spec 13 of stage 6.4 accepts it.
+- Status: open.
+- Found: 2026-11-06, spec of stage 6.4.

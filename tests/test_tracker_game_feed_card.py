@@ -20,7 +20,7 @@ from sqlalchemy import event as sa_event
 from sqlalchemy import select
 
 from app.bot.access import AccessMiddleware
-from app.bot.tracker_handlers import ADD_BUTTON, MY_TITLES_BUTTON, register_tracker_handlers
+from app.bot.tracker_handlers import MY_TITLES_BUTTON, register_tracker_handlers
 from app.tracker import game_rows
 from app.tracker.actions import DELETE, card_actions
 from app.tracker.cards import format_card
@@ -547,9 +547,3 @@ def test_a_wanted_game_has_no_watched_button(tracker, games):
     card = run(tracker.title_card(add(tracker, games, made_up((PC, "full", day(3).isoformat())))))
 
     assert card.status == TitleStatus.WANT and [action.name for action in card_actions(card)] == [DELETE]
-
-
-def test_add_offers_no_game_even_with_its_source(tracker, replies):
-    say(tracker, ADD_BUTTON)
-
-    assert [b.text for b in replies[-1][1]] == []

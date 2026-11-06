@@ -1,12 +1,13 @@
 """Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
 
-The menu is «Добавить», «Мои тайтлы», «Сводка сейчас», «Тестовое событие» (the delivery-rules check is the last item of
-the test-event list); the buttons under messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить» and the link «🛒 Открыть в Steam»
-(a button with an address opens the page itself, the bot never hears of it).
+The menu is «Мои тайтлы», «Сводка сейчас», «Тестовое событие» (the delivery-rules check is the last item of the
+test-event list); the buttons under messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить» and the link
+«🛒 Открыть в Steam» (a button with an address opens the page itself, the bot never hears of it).
 
 Handlers talk to the core only through the `Tracker` facade. They live on one router with the owner filter on it;
-a handler never checks the owner itself. «Добавить» is a temporary way to fill the
-list until the web app (it goes away when the web app arrives).
+a handler never checks the owner itself. A title is added by sending the bot a post or a name: every message no
+handler here takes goes to «Входящие» (`inbox_handlers`, registered last). «➕ Добавить» is gone; its text from an old
+keyboard on the phone gets a sentence about that and the new keyboard, its old buttons are dead.
 """
 
 import logging
@@ -26,6 +27,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
+from app.bot.inbox_handlers import register_inbox_handlers
 from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import TitleCard, format_card, format_when
 from app.tracker.core import (
@@ -44,15 +46,14 @@ from app.tracker.series_events import SAMPLE_EPISODES_ID
 from app.tracker.test_samples import DELIVERY_CHECKS, delivery_check_by_id
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
-ADD_BUTTON = "➕ Добавить"
+ADD_BUTTON = "➕ Добавить"  # gone from the keyboard; the old keyboard on the phone still sends it
 MY_TITLES_BUTTON = "📚 Мои тайтлы"
 SUMMARY_BUTTON = "📋 Сводка сейчас"
 RULES_CHECK_BUTTON = "🕒 Проверить правила доставки"  # the last item of the test-event list
 RULES_CHECK_CALLBACK = "tchk:open"
 _SAMPLE_PREFIX = "tev:"
 _CHECK_PREFIX = "twin:"  # twin:<delivery check id>: a test event as if it were queued at that moment of the week (sent buttons keep it)
-_ADD_KIND_PREFIX = "tadd:"
-_PICK_PREFIX = "tpick:"
+_OLD_ADD_PREFIXES = ("tadd:", "tpick:")  # the kind menu and the suggestions of «Добавить»: dead buttons now
 _CARD_PREFIX = "tcard:"
 _ACTION_PREFIX = "tact:"  # tact:<action name>:<number>, see app.tracker.actions
 _SEASON_PREFIX = "tsid:"  # tsid:<title id>:<season record id> flips a mark, tsid:<title id>:done closes the choice
@@ -66,18 +67,20 @@ _BULK_PREFIX = "tdm:"  # tdm:open starts a selection; tdm:<selection id>:t:<titl
 _YES, _NO = "y", "n"
 _BULK_OPEN, _BULK_TOGGLE, _BULK_GO, _BULK_YES, _BULK_NO = "open", "t", "go", "yes", "no"
 
-MAX_SUGGESTIONS = 10
 MAX_LIST_BUTTONS = 50
-_NO_SUCH_KIND = f"Такого типа больше нет, нажмите «{ADD_BUTTON}» заново."
 SUMMARY_COMMAND = "summary"
 BOT_COMMANDS = [BotCommand(command=SUMMARY_COMMAND, description="Сводка сейчас")]  # shown in Telegram's «/» menu
 # aiogram refuses to make a bot of such a token; the process starts without one (`app.main`), and the start script
 # looks for these words in the log
 MALFORMED_TOKEN = "токен бота неверного вида — проверьте TELEGRAM_BOT_TOKEN в .env"
 START_TEXT = (
-    "👋 Бот работает. Кнопки меню внизу: «Добавить» и «Мои тайтлы» ведут список, «Сводка сейчас» присылает "
-    "накопленные события, «Тестовое событие» показывает, как выглядят сообщения, и проверяет правила доставки."
+    "👋 Бот работает. Чтобы добавить фильм, сериал, аниме или игру, перешлите мне пост о нём или напишите название: "
+    "я найду и предложу добавить, а что не найду — сохраню во «Входящие» веб-приложения.\n\n"
+    "Кнопки меню внизу: «Мои тайтлы» — ваш список, «Сводка сейчас» присылает накопленные события, «Тестовое событие» "
+    "показывает, как выглядят сообщения, и проверяет правила доставки."
 )
+NO_ADD_BUTTON = "Кнопки «Добавить» больше нет: просто перешлите мне пост или напишите название."
+EMPTY_LIST = "Список пуст. Перешлите мне пост о фильме, сериале, аниме или игре или напишите название."
 DELETE_BULK_BUTTON = "🗑 Удалить несколько"
 _NOT_IN_LIST = "Этого тайтла больше нет в списке."
 _DEAD_BUTTON = "Эта кнопка больше не работает."
@@ -120,7 +123,7 @@ class TelegramSender:
 def main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text=ADD_BUTTON), KeyboardButton(text=MY_TITLES_BUTTON)],
+            [KeyboardButton(text=MY_TITLES_BUTTON)],
             [KeyboardButton(text=SUMMARY_BUTTON)],
             [KeyboardButton(text=TEST_EVENT_BUTTON)],
         ],
@@ -195,18 +198,12 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     owner = F.from_user.id.in_(frozenset(allowed_user_ids))
     router.message.filter(owner)
     router.callback_query.filter(owner)
-    awaiting_name: dict[int, TitleKind] = {}  # owner id -> kind whose name the next text message is
     selections: dict[int, tuple[str, set[int]]] = {}  # owner id -> (id of the open selection, chosen ids); lost on restart
 
-    def forget_pending(user) -> None:
-        awaiting_name.pop(getattr(user, "id", None), None)
-
     async def start(message: Message) -> None:
-        forget_pending(message.from_user)
         await message.answer(START_TEXT, reply_markup=main_keyboard())
 
     async def show_menu(message: Message) -> None:
-        forget_pending(message.from_user)
         rows = [
             [InlineKeyboardButton(text=sample.label, callback_data=f"{_SAMPLE_PREFIX}{sample.id}")]
             for sample in tracker.test_samples()
@@ -232,7 +229,6 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     # --- «Сводка сейчас» и проверка правил доставки ---------------------------------------------
 
     async def send_summary_now(message: Message) -> None:
-        forget_pending(message.from_user)
         try:
             result = await tracker.summary_now()
         except Exception as exc:  # the queue is read from the database: tell the owner, keep the bot alive
@@ -288,80 +284,13 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         if callback.message is not None:
             await callback.message.answer(text)
 
-    # --- «Добавить» -----------------------------------------------------------------------------
+    # --- «Добавить» is gone ----------------------------------------------------------------------
 
-    async def show_add_menu(message: Message) -> None:
-        forget_pending(message.from_user)
-        rows = [  # a kind added only on the web (a game) is not offered here
-            [InlineKeyboardButton(text=KINDS[kind].label, callback_data=f"{_ADD_KIND_PREFIX}{kind.value}")]
-            for kind in tracker.sources
-            if not KINDS[kind].web_only
-        ]
-        await message.answer("Что добавить?", reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
+    async def no_add_button(message: Message) -> None:
+        await message.answer(NO_ADD_BUTTON, reply_markup=main_keyboard())
 
-    async def ask_name(callback: CallbackQuery) -> None:
-        kind = _kind_of(callback.data.removeprefix(_ADD_KIND_PREFIX))
-        if kind is None or kind not in tracker.sources or KINDS[kind].web_only:
-            await callback.answer(_NO_SUCH_KIND)
-            return
-        awaiting_name[callback.from_user.id] = kind
-        await callback.answer()
-        if callback.message is not None:
-            await callback.message.answer(KINDS[kind].ask_name)
-
-    def is_name_for_search(message: Message) -> bool:
-        text = message.text or ""
-        return bool(text) and not text.startswith("/") and getattr(message.from_user, "id", None) in awaiting_name
-
-    async def search_by_name(message: Message) -> None:
-        kind = awaiting_name.pop(message.from_user.id)  # one press of «Добавить» = one search
-        query = (message.text or "").strip()
-        try:
-            suggestions = await tracker.search(kind, query)
-        except Exception as exc:  # the source is a network client: tell the owner, keep the bot alive
-            logging.warning("title search failed: %r, cause: %r", exc, exc.__cause__)
-            await message.answer(f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже.")
-            return
-        if not suggestions:
-            await message.answer(
-                f"Ничего не нашлось по запросу «{query}». Нажмите «{ADD_BUTTON}» и попробуйте другое название."
-            )
-            return
-        rows = [
-            [
-                InlineKeyboardButton(
-                    text=_title_button_text(s.name, s.year), callback_data=f"{_PICK_PREFIX}{kind.value}:{s.external_id}"
-                )
-            ]
-            for s in suggestions[:MAX_SUGGESTIONS]
-        ]
-        await message.answer(
-            f"Нашлось по запросу «{query}». Выберите:", reply_markup=InlineKeyboardMarkup(inline_keyboard=rows)
-        )
-
-    async def add_picked(callback: CallbackQuery) -> None:
-        raw_kind, _, external_id = callback.data.removeprefix(_PICK_PREFIX).partition(":")
-        kind = _kind_of(raw_kind)
-        if kind is None:
-            await callback.answer(_NO_SUCH_KIND)
-            return
-        await callback.answer(_ADDING)  # the source may take longer than Telegram waits for the answer
-        try:
-            result = await tracker.add_title(kind, external_id)
-        except KeyError:
-            await tell_failure(callback, _NO_SUCH_KIND)
-            return
-        except TitleNotFound:
-            await tell_failure(callback, f"Не нашёл такой тайтл в {KINDS[kind].source_name}, попробуйте поискать заново.")
-            return
-        except Exception as exc:
-            logging.warning("adding a title failed: %r, cause: %r", exc, exc.__cause__)
-            await tell_failure(callback, f"Не удалось получить данные из {KINDS[kind].source_name}. Попробуйте чуть позже.")
-            return
-        heading = "✅ Добавлено в список" if result.created else "Уже в списке"
-        await send_card(callback, await tracker.title_card(result.title_id), heading)
-        if result.created:
-            await ask_watched_seasons(callback, result.title_id)
+    async def refuse_old_add_button(callback: CallbackQuery) -> None:
+        await callback.answer(_DEAD_BUTTON)
 
     async def tell_failure(callback: CallbackQuery, text: str) -> None:
         """After the early answer the press has no popup left: a failure goes to the chat as a message."""
@@ -387,10 +316,9 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     # --- «Мои тайтлы» ---------------------------------------------------------------------------
 
     async def show_my_titles(message: Message) -> None:
-        forget_pending(message.from_user)
         titles = await tracker.list_titles()
         if not titles:
-            await message.answer(f"Список пуст. Нажмите «{ADD_BUTTON}», чтобы добавить первый фильм.")
+            await message.answer(EMPTY_LIST)
             return
         rows = [
             [
@@ -699,11 +627,9 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     router.callback_query.register(show_rules_check, F.data == RULES_CHECK_CALLBACK)
     router.callback_query.register(run_rules_check, F.data.startswith(_CHECK_PREFIX))
 
-    router.message.register(show_add_menu, F.text == ADD_BUTTON)
+    router.message.register(no_add_button, F.text == ADD_BUTTON)
     router.message.register(show_my_titles, F.text == MY_TITLES_BUTTON)
-    router.message.register(search_by_name, is_name_for_search)  # after the menu buttons: a button is never a title name
-    router.callback_query.register(ask_name, F.data.startswith(_ADD_KIND_PREFIX))
-    router.callback_query.register(add_picked, F.data.startswith(_PICK_PREFIX))
+    router.callback_query.register(refuse_old_add_button, F.data.startswith(_OLD_ADD_PREFIXES))
     router.callback_query.register(show_card, F.data.startswith(_CARD_PREFIX))
     router.callback_query.register(press_action, F.data.startswith(_ACTION_PREFIX))
     router.callback_query.register(answer_delete, F.data.startswith(_DELETE_PREFIX))
@@ -711,5 +637,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     router.callback_query.register(flip_season, F.data.startswith(_SEASON_PREFIX))
     router.callback_query.register(refuse_old_season_button, F.data.startswith(_OLD_SEASON_PREFIX))
 
+    # last: every message the handlers above did not take is an inbox item
+    register_inbox_handlers(router, tracker, {TEST_EVENT_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, ADD_BUTTON})
     dp.include_router(router)
     return router

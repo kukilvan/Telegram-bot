@@ -21,6 +21,7 @@ from app.tracker.db import create_session_factory
 OWNER, STRANGER = 42, 7
 
 MESSAGES = ["/start", "/summary", ADD_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, TEST_EVENT_BUTTON]
+TAKEN_IN = ["Дюна", "https://store.steampowered.com/app/1145350/"]  # an owner's text like this becomes an inbox item
 CALLBACKS = [
     "tev:ping",
     "twin:friday",
@@ -40,6 +41,8 @@ CALLBACKS = [
     "tsid:1:1",
     "tsid:1:done",
     "tsea:1:1",
+    "inb:1:k:movie",
+    "inb:1:x",
 ]
 
 
@@ -103,11 +106,12 @@ def callback_update(uid, data):
     return Update(update_id=2, callback_query=CallbackQuery(id="1", from_user=user, chat_instance="c", data=data, message=message))
 
 
-@pytest.mark.parametrize("text", MESSAGES)
-def test_a_stranger_message_gets_no_answer(tracker, sender, replies, text):
+@pytest.mark.parametrize("text", MESSAGES + TAKEN_IN)
+def test_a_stranger_message_gets_no_answer_and_is_not_taken_in(tracker, sender, replies, text):
     feed(bare_dispatcher(tracker), message_update(STRANGER, text))
 
     assert replies == [] and sender.sent == []
+    assert asyncio.run(tracker.inbox_item(1)) is None
 
 
 @pytest.mark.parametrize("data", CALLBACKS)
@@ -117,10 +121,12 @@ def test_a_stranger_button_press_gets_no_answer(tracker, sender, replies, data):
     assert replies == [] and sender.sent == []
 
 
-def test_a_message_without_a_sender_gets_no_answer(tracker, replies):
-    feed(bare_dispatcher(tracker), message_update(STRANGER, "/start", user=False))
+@pytest.mark.parametrize("text", ["/start", "Дюна"])
+def test_a_message_without_a_sender_gets_no_answer(tracker, replies, text):
+    feed(bare_dispatcher(tracker), message_update(STRANGER, text, user=False))
 
     assert replies == []
+    assert asyncio.run(tracker.inbox_item(1)) is None
 
 
 @pytest.mark.parametrize("text", MESSAGES)
@@ -130,7 +136,7 @@ def test_the_owner_message_is_answered(tracker, replies, text):
     assert len(replies) == 1
 
 
-@pytest.mark.parametrize("data", ["tev:ping", "tchk:open", "tadd:movie", "tcard:1", "tdm:open"])
+@pytest.mark.parametrize("data", ["tev:ping", "tchk:open", "tadd:movie", "tcard:1", "tdm:open", "inb:1:x"])
 def test_the_owner_button_press_is_answered(tracker, replies, data):
     feed(bare_dispatcher(tracker), callback_update(OWNER, data))
 

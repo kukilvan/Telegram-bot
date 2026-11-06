@@ -67,7 +67,7 @@ def test_main_hands_the_runtime_the_web_server_the_scheduler_and_the_bot(assembl
 
     parts = assembled["parts"]
     assert parts["web"] == "server" and isinstance(parts["bot"], app_main.TelegramPart)
-    assert len(parts["scheduler"].get_jobs()) == 3  # polling, delivery and the backup (`add_jobs`)
+    assert len(parts["scheduler"].get_jobs()) == 4  # polling, delivery, the inbox items and the backup (`add_jobs`)
     assert (assembled["port"], assembled["stop_grace"]) == (8080, 5)
 
 

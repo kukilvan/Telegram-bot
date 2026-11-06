@@ -3,8 +3,8 @@
 `Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it:
 settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards, `feed`
 for what comes out and what happened),
-polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`)
-and test events (`test_samples`). It holds no rules of its own.
+polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`),
+test events (`test_samples`) and «Входящие» (`inbox`). It holds no rules of its own.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -22,26 +22,33 @@ from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import (
-    CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent, UnknownKind,
-    UnknownPlatform, UnknownSeason, UnknownTitle,
+    CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent,
+    UnknownInboxItem, UnknownKind, UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, FollowOffer, Followable, RecentRow, UpcomingRow
+from app.tracker.inbox import Inbox
 from app.tracker.listing import Listing
-from app.tracker.models import TitleKind, TitleStatus
+from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
+    INBOX_REASONS,
+    MEDIA_WORDS,
     AddResult,
     ChangeResult,
     DeleteResult,
     DeliveryReport,
+    InboxEntry,
+    IncomingMessage,
     ListOrder,
     Overview,
+    PauseOutcome,
     PollReport,
     SettingsChange,
     SettingsView,
     SummaryResult,
+    TakeIn,
     TestEventResult,
     TitleSummary,
     WatchableSeason,
@@ -55,10 +62,12 @@ from app.tracker.titles import Titles
 
 __all__ = [
     "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
-    "FeedTitle", "FollowOffer", "Followable", "ListOrder", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
+    "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxReason", "InboxState", "IncomingMessage",
+    "ListOrder", "MEDIA_WORDS", "Overview", "PauseOutcome", "PollReport", "RecentRow", "ScoreView", "Sender",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
-    "SummaryResult", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
-    "UnknownEvent", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason", "ZoneOption",
+    "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
+    "UnknownEvent", "UnknownInboxItem", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow",
+    "WatchableSeason", "ZoneOption",
 ]
 
 
@@ -81,6 +90,7 @@ class Tracker:
     _feed: FeedReader = field(init=False, repr=False)
     _deliveries: DeliveryService = field(init=False, repr=False)
     _samples: TestSamples = field(init=False, repr=False)
+    _inbox: Inbox = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
@@ -99,6 +109,7 @@ class Tracker:
         self._feed = FeedReader(ctx, self._settings, pollers)
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
+        self._inbox = Inbox(ctx)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -288,3 +299,45 @@ class Tracker:
     async def delivery_check_moment(self, check: DeliveryCheck) -> datetime:
         """The next moment of the delivery check on the owner's clock, as an aware moment."""
         return await self._samples.delivery_check_moment(check)
+
+    # --- «Входящие» -----------------------------------------------------------------------------
+
+    async def take_in(self, message: IncomingMessage) -> TakeIn:
+        """Write a message of the owner as an inbox item before anything is answered: a new item that waits (every
+        other waiting one goes to «Входящие» «без ответа» in the same write), or the newest item it joins (an album,
+        a forward after its comment, within 2 seconds)."""
+        return await self._inbox.take_in(message)
+
+    async def inbox_pause_over(self, item_id: int) -> PauseOutcome:
+        """The pause after the last message of an item is over: «Что это?» for an item with text; an item without text
+        goes to «Входящие» «нет текста»; nothing for an item that is gone or no longer waits."""
+        return await self._inbox.pause_over(item_id)
+
+    async def answer_kind(self, item_id: int, kind: TitleKind) -> None:
+        """The kind the owner chose for an item. For now it is stored and the item goes to «Входящие» «не нашёл» (the
+        analysis comes in ticket 04 of stage 6.4). UnknownInboxItem when the item is gone."""
+        await self._inbox.answer_kind(item_id, kind)
+
+    async def forget_inbox_item(self, item_id: int) -> bool:
+        """«🗑 Не сохранять» and «Убрать»: the item is deleted. False when there was none any more."""
+        return await self._inbox.forget(item_id)
+
+    async def resolve_inbox(self, item_id: int) -> None:
+        """The title of an item is in the list: the item is deleted; an item gone already is no error."""
+        await self._inbox.forget(item_id)
+
+    async def inbox_item(self, item_id: int) -> InboxEntry | None:
+        """One item, whatever its state; None when it is gone (its buttons answer «Эта запись уже разобрана.»)."""
+        return await self._inbox.item(item_id)
+
+    async def inbox_items(self) -> list[InboxEntry]:
+        """The items in «Входящие», the newest arrival first; the waiting one is in the chat, not here."""
+        return await self._inbox.items()
+
+    async def inbox_count(self) -> int:
+        """How many items are in «Входящие»."""
+        return await self._inbox.count()
+
+    async def expire_inbox(self) -> int:
+        """Items that waited 12 hours from their arrival go to «Входящие» «без ответа», silently. Returns how many."""
+        return await self._inbox.expire()

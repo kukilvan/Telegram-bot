@@ -1,4 +1,4 @@
-"""«Добавить» and «Мои тайтлы» in the bot: owner only, through a real aiogram Dispatcher.
+"""«Мои тайтлы», the card and what is left of «➕ Добавить» in the bot: owner only, through a real aiogram Dispatcher.
 
 Telegram itself is replaced by capturing what the bot would say; the tracker core is real.
 """
@@ -104,6 +104,7 @@ class Chat_:
 
     def __init__(self, tracker, uid=OWNER, with_middleware=True):
         self.uid = uid
+        self.tracker = tracker
         self.dp = Dispatcher()
         if with_middleware:
             self.dp.update.outer_middleware(AccessMiddleware([OWNER]))
@@ -141,58 +142,20 @@ def callback_of(buttons, label_part):
     return next(b.callback_data for b in buttons if label_part in b.text)
 
 
-def add_movie(chat, replies, query="дюна", pick="Часть вторая"):
-    """«Добавить» → «Фильм» → name → pick; returns the replies of the whole walk."""
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Фильм"))
-    chat.say(query)
-    chat.press(callback_of(replies[-1][2], pick))
+def add_movie(chat, replies, pick="Часть вторая"):
+    """Into the list as the core adds it (the bot adds by «Да» on an offer, ticket 04 of stage 6.4)."""
+    external_id = {"Часть вторая": DUNE_2.external_id, "Часть третья": DUNE_3.external_id}[pick]
+    return run(chat.tracker.add_title("movie", external_id)).title_id
 
 
-# --- walking the add flow ---------------------------------------------------------------------
+# --- the card ---------------------------------------------------------------------------------
 
 
-def test_add_button_offers_the_movie_type(tracker, replies):
-    Chat_(tracker).say(ADD_BUTTON)
-
-    [(_, text, buttons)] = replies
-    assert labels(buttons) == ["Фильм"]
-
-
-def test_choosing_the_type_asks_for_the_name(tracker, replies):
+def test_the_card_of_an_added_movie_shows_its_dates_and_status(tracker, replies):
     chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Фильм"))
-
-    assert "название" in replies[-1][1].lower()
-
-
-def test_typed_name_is_searched_and_results_are_buttons(tracker, movies, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Фильм"))
-    chat.say("дюна")
-
-    assert movies.queries == ["дюна"]
-    assert labels(replies[-1][2]) == ["Дюна: Часть вторая (2024)", "Дюна: Часть третья (2026)"]
-
-
-def test_nothing_found_says_so_and_how_to_retry(tracker, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Фильм"))
-    chat.say("ничего")
-
-    _, text, buttons = replies[-1]
-    assert "Ничего не нашлось" in text
-    assert buttons == []
-
-
-def test_picked_result_is_added_and_its_card_is_shown(tracker, replies):
-    add_movie(Chat_(tracker), replies)
+    chat.press(f"tcard:{add_movie(chat, replies)}")
 
     _, text, _ = replies[-1]
-    assert "Добавлено" in text
     assert "Дюна: Часть вторая" in text and "Dune: Part Two" in text
     assert "27 февраля 2024" in text and "15 апреля 2024" in text
     assert "Хочу" in text
@@ -200,57 +163,37 @@ def test_picked_result_is_added_and_its_card_is_shown(tracker, replies):
     assert entry.name == "Дюна: Часть вторая" and entry.status == "want"
 
 
-def test_adding_the_same_movie_again_opens_the_card_without_a_duplicate(tracker, replies):
-    chat = Chat_(tracker)
-    add_movie(chat, replies)
-    add_movie(chat, replies)
-
-    _, text, _ = replies[-1]
-    assert "Уже в списке" in text
-    assert "Дюна: Часть вторая" in text
-    assert len(run(tracker.list_titles())) == 1
-
-
 def test_unannounced_dates_read_not_announced(tracker, replies):
-    add_movie(Chat_(tracker), replies, pick="Часть третья")
+    chat = Chat_(tracker)
+    chat.press(f"tcard:{add_movie(chat, replies, pick='Часть третья')}")
 
     assert "Цифровой релиз: не объявлена" in replies[-1][1]
 
 
-def test_source_failure_gives_a_friendly_answer_and_stores_nothing(tracker, movies, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Фильм"))
-    chat.say("дюна")
-    movies.failing = True
-    chat.press(callback_of(replies[-1][2], "Часть вторая"))
-
-    assert replies[-1][0] == "message" and "TMDb" in replies[-1][1]  # the press itself was answered early
-    assert run(tracker.list_titles()) == []
+# --- «➕ Добавить» is gone ---------------------------------------------------------------------
 
 
-def test_id_without_a_movie_is_answered_not_crashed(tracker, replies):
-    Chat_(tracker).press("tpick:movie:1396")
+def test_the_add_text_of_an_old_keyboard_says_the_button_is_gone_and_sends_the_new_keyboard(tracker, movies, replies):
+    Chat_(tracker).say(ADD_BUTTON)
 
-    assert replies[-1][0] == "message" and "не нашёл" in replies[-1][1].lower()
-    assert run(tracker.list_titles()) == []
+    [(_, text, _)] = replies
+    assert text == "Кнопки «Добавить» больше нет: просто перешлите мне пост или напишите название."
+    assert movies.queries == []
 
 
-def test_text_without_pressing_add_is_not_taken_as_a_search(tracker, movies, replies):
+@pytest.mark.parametrize("data", ["tadd:movie", "tpick:movie:693134", "tadd:", "tpick:"])
+def test_an_old_add_button_no_longer_works(tracker, movies, replies, data):
+    Chat_(tracker).press(data)
+
+    assert replies == [("callback", "Эта кнопка больше не работает.", None)]
+    assert movies.queries == [] and run(tracker.list_titles()) == []
+
+
+def test_a_text_is_taken_in_not_searched(tracker, movies, replies):
     Chat_(tracker).say("дюна")
 
     assert movies.queries == []
-    assert replies == []
-
-
-def test_only_one_search_per_press_of_add(tracker, movies, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Фильм"))
-    chat.say("дюна")
-    chat.say("ещё раз")
-
-    assert movies.queries == ["дюна"]
+    assert run(tracker.inbox_item(1)).text == "дюна"  # the question comes after the pause (test_bot_inbox.py)
 
 
 # --- the list ---------------------------------------------------------------------------------
@@ -260,14 +203,14 @@ def test_empty_list_says_how_to_add(tracker, replies):
     Chat_(tracker).say(MY_TITLES_BUTTON)
 
     _, text, buttons = replies[-1]
-    assert "пуст" in text.lower() and "Добавить" in text
+    assert text == "Список пуст. Перешлите мне пост о фильме, сериале, аниме или игре или напишите название."
     assert buttons == []
 
 
 def test_list_shows_every_title_and_a_tap_opens_the_card(tracker, replies):
     chat = Chat_(tracker)
     add_movie(chat, replies)
-    add_movie(chat, replies, query="дюна", pick="Часть третья")
+    add_movie(chat, replies, pick="Часть третья")
 
     chat.say(MY_TITLES_BUTTON)
     _, _, buttons = replies[-1]
@@ -311,4 +254,4 @@ def test_stranger_gets_nothing_anywhere(tracker, movies, replies, with_middlewar
 
     assert replies == []
     assert movies.queries == []
-    assert run(tracker.list_titles()) == []
+    assert run(tracker.list_titles()) == [] and run(tracker.inbox_item(1)) is None

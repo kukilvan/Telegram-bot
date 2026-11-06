@@ -214,7 +214,8 @@ def test_the_card_and_the_feed_say_the_same_sentence_for_each_error(client, sess
 # ---- the names ---------------------------------------------------------------------------------------------------
 
 def test_the_helpers_of_pages_say_what_they_do():
-    old_names = [r"\bsource_failed\b", r"\b_net\b"]
+    # the old names of helpers; "source_failed", the stored reason of an inbox item (spec 7.1 of stage 6.4), is a value
+    old_names = [r"(?<![\"'])\bsource_failed\b", r"\b_net\b"]
     for path in [*sorted((ROOT / "app").rglob("*.py")), *sorted((ROOT / "tests").glob("*.py"))]:
         if path.name == Path(__file__).name:
             continue

@@ -1,4 +1,4 @@
-"""Adding a series in the bot and marking its watched seasons: owner only, through a real aiogram Dispatcher.
+"""The card of a series in the bot and marking its watched seasons: owner only, through a real aiogram Dispatcher.
 
 Telegram itself is replaced by capturing what the bot would say; the tracker core is real.
 """
@@ -11,9 +11,10 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
 from app.bot.access import AccessMiddleware
-from app.bot.tracker_handlers import ADD_BUTTON, register_tracker_handlers
+from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_series import SeriesSnapshot, Suggestion
 from season_helpers import season_id
@@ -110,6 +111,7 @@ def replies(monkeypatch):
 class Chat_:
     def __init__(self, tracker, uid=OWNER, with_middleware=True):
         self.uid = uid
+        self.tracker = tracker
         self.dp = Dispatcher()
         if with_middleware:
             self.dp.update.outer_middleware(AccessMiddleware([OWNER]))
@@ -151,34 +153,25 @@ def last_message(replies):
     return next(r for r in reversed(replies) if r[0] == "message")
 
 
+IDS = {"Укрытие": SILO.external_id, "Новичок": NEWCOMER.external_id}
+
+
 def add_series(chat, replies, pick="Укрытие"):
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(last_message(replies)[2], "Сериал"))
-    chat.say("укрытие")
-    chat.press(callback_of(last_message(replies)[2], pick))
+    """Into the list as the core adds it (the bot adds by «Да» on an offer, ticket 04 of stage 6.4), then the question
+    about the watched seasons by the button of the card."""
+    title_id = run(chat.tracker.add_title(TitleKind.SERIES, IDS[pick])).title_id
+    chat.press(f"tact:seasons:{title_id}")
 
 
-# --- adding ---------------------------------------------------------------------------------------
+# --- the card -------------------------------------------------------------------------------------
 
 
-def test_add_button_offers_the_series_type(tracker, replies):
-    Chat_(tracker).say(ADD_BUTTON)
-
-    assert labels(replies[-1][2]) == ["Сериал"]
-
-
-def test_choosing_series_asks_for_a_series_name(tracker, replies):
+def test_the_card_of_an_added_series_shows_the_current_season_and_the_announcement(tracker, replies):
     chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Сериал"))
+    add_series(chat, replies)
+    chat.press("tcard:1")
 
-    assert "сериала" in replies[-1][1].lower()
-
-
-def test_picked_series_is_added_and_its_card_shows_the_current_season_and_the_announcement(tracker, replies):
-    add_series(Chat_(tracker), replies)
-
-    card = next(r[1] for r in replies if r[0] == "message" and r[1] and "Добавлено" in r[1])
+    card = last_message(replies)[1]
     assert "Укрытие · Silo" in card
     assert "Сезон 3: вышло 10 из 10" in card
     assert "Сезон 4 анонсирован" in card
@@ -186,7 +179,7 @@ def test_picked_series_is_added_and_its_card_shows_the_current_season_and_the_an
     assert (entry.kind, entry.status) == ("series", "want")
 
 
-def test_after_adding_the_bot_asks_which_seasons_are_watched(tracker, replies):
+def test_the_seasons_button_asks_which_seasons_are_watched(tracker, replies):
     add_series(Chat_(tracker), replies)
 
     _, text, buttons = last_message(replies)
@@ -195,43 +188,14 @@ def test_after_adding_the_bot_asks_which_seasons_are_watched(tracker, replies):
 
 
 def test_a_series_with_nothing_released_asks_nothing(tracker, replies):
-    add_series(Chat_(tracker), replies, pick="Новичок")
+    chat = Chat_(tracker)
+    add_series(chat, replies, pick="Новичок")
 
+    assert replies[-1] == ("callback", "Пока нет вышедших сезонов, отмечать нечего.", None)
+    chat.press("tcard:1")
     _, text, buttons = last_message(replies)
-    assert "Добавлено" in text
     assert "Сезон 1 анонсирован" in text
     assert "Готово" not in labels(buttons)
-
-
-def test_adding_a_known_series_again_opens_its_card_without_the_question(tracker, replies):
-    chat = Chat_(tracker)
-    add_series(chat, replies)
-    replies.clear()
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(last_message(replies)[2], "Сериал"))
-    chat.say("укрытие")
-    chat.press(callback_of(last_message(replies)[2], "Укрытие"))
-
-    assert "Уже в списке" in last_message(replies)[1]
-    assert not any(r[1] and "какие сезоны" in r[1].lower() for r in replies)
-
-
-def test_source_failure_gives_a_friendly_answer_and_stores_nothing(tracker, series, replies):
-    chat = Chat_(tracker)
-    chat.say(ADD_BUTTON)
-    chat.press(callback_of(replies[-1][2], "Сериал"))
-    chat.say("укрытие")
-    series.failing = True
-    chat.press(callback_of(replies[-1][2], "Укрытие"))
-
-    assert replies[-1][0] == "message" and "TMDb" in replies[-1][1]  # the press itself was answered early
-    assert run(tracker.list_titles()) == []
-
-
-def test_id_without_a_series_is_answered_not_crashed(tracker, replies):
-    Chat_(tracker).press("tpick:series:1396")
-
-    assert replies[-1][0] == "message" and "не нашёл" in replies[-1][1].lower()
 
 
 # --- marking seasons ------------------------------------------------------------------------------
@@ -302,7 +266,7 @@ def test_done_closes_the_choice_and_shows_the_card_with_the_marks(tracker, repli
 def test_the_card_button_opens_the_same_choice_later(tracker, replies):
     chat = Chat_(tracker)
     add_series(chat, replies)
-    chat.press(callback_of(last_message(replies)[2], "Готово"))  # skip it at adding
+    chat.press(callback_of(last_message(replies)[2], "Готово"))  # close the choice without marks
     card_buttons = last_message(replies)[2]
     assert labels(card_buttons) == ["📺 Просмотренные сезоны", "🗑 Удалить"]
 
@@ -312,9 +276,11 @@ def test_the_card_button_opens_the_same_choice_later(tracker, replies):
 
 
 def test_the_series_card_has_no_watched_button(tracker, replies):
-    add_series(Chat_(tracker), replies)
+    chat = Chat_(tracker)
+    add_series(chat, replies)
+    chat.press("tcard:1")
 
-    card_message = next(r for r in replies if r[0] == "message" and r[1] and "Добавлено" in r[1])
+    card_message = last_message(replies)
     assert not any("Посмотрел" == b.text.split(" ", 1)[-1] for b in card_message[2])
 
 

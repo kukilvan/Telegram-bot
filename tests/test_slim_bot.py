@@ -1,4 +1,5 @@
-"""The slimmed-down bot as `app.bot.main` assembles it: the menu and the buttons, nothing of the old commands."""
+"""The slimmed-down bot as `app.bot.main` assembles it: the menu and the buttons, nothing of the old commands; any other
+text is an inbox item."""
 
 import asyncio
 from datetime import datetime, timezone
@@ -57,15 +58,33 @@ def say(tracker, text, uid=OWNER):
     asyncio.run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=1, message=message)))
 
 
-def test_start_shows_the_menu_with_exactly_the_four_buttons(tracker, replies):
+START = (
+    "👋 Бот работает. Чтобы добавить фильм, сериал, аниме или игру, перешлите мне пост о нём или напишите название: я "
+    "найду и предложу добавить, а что не найду — сохраню во «Входящие» веб-приложения.\n\n"
+    "Кнопки меню внизу: «Мои тайтлы» — ваш список, «Сводка сейчас» присылает накопленные события, «Тестовое событие» "
+    "показывает, как выглядят сообщения, и проверяет правила доставки."
+)
+
+
+def rows_of(keyboard):
+    return [[button.text for button in row] for row in keyboard.keyboard]
+
+
+def test_start_shows_the_menu_with_exactly_the_three_buttons(tracker, replies):
     say(tracker, "/start")
 
     [(text, keyboard)] = replies
-    assert "Бот работает" in text
-    assert "окна" not in text.lower()
+    assert text == START
     assert isinstance(keyboard, ReplyKeyboardMarkup)
-    labels = [button.text for row in keyboard.keyboard for button in row]
-    assert labels == [ADD_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, TEST_EVENT_BUTTON]
+    assert rows_of(keyboard) == [[MY_TITLES_BUTTON], [SUMMARY_BUTTON], [TEST_EVENT_BUTTON]]
+
+
+def test_the_add_text_of_an_old_keyboard_brings_the_new_keyboard(tracker, replies):
+    say(tracker, ADD_BUTTON)
+
+    [(text, keyboard)] = replies
+    assert text == "Кнопки «Добавить» больше нет: просто перешлите мне пост или напишите название."
+    assert rows_of(keyboard) == [[MY_TITLES_BUTTON], [SUMMARY_BUTTON], [TEST_EVENT_BUTTON]]
 
 
 @pytest.mark.parametrize(
@@ -81,14 +100,20 @@ def test_start_shows_the_menu_with_exactly_the_four_buttons(tracker, replies):
         "/searchgame Witcher",
         "/digest",
         "/test_event",
-        "🕒 Окна доставки",
-        "Дюна",
     ],
 )
-def test_old_commands_and_free_text_search_get_no_answer(tracker, replies, text):
+def test_old_commands_get_no_answer_and_are_not_taken_in(tracker, replies, text):
     say(tracker, text)
 
     assert replies == []
+    assert asyncio.run(tracker.inbox_item(1)) is None
+
+
+@pytest.mark.parametrize("text", ["Дюна", "🕒 Окна доставки"])  # a free text and the button of an old version
+def test_a_free_text_is_taken_in(tracker, replies, text):
+    say(tracker, text)
+
+    assert asyncio.run(tracker.inbox_item(1)).text == text
 
 
 def test_inline_search_gets_no_answer(tracker, replies):
