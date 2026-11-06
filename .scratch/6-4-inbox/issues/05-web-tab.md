@@ -1,6 +1,6 @@
 # 05: The web tab «Входящие» — the page, «Найти», «Убрать»
 
-Status: in review
+Status: accepted
 Complexity: medium (a page, a menu number, one parameter threaded through Search; the data and the facade methods already exist)
 Blocked by: 01, 02
 
