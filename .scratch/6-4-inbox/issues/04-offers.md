@@ -1,6 +1,6 @@
 # 04: Offers — search by candidates and links, «Это оно?», «Да» / «Нет», typos, games through the bot
 
-Status: open
+Status: in review
 Complexity: complex (four sources, a new lookup per source, ordering and typo rules, failures, and a bot flow that adds titles)
 Blocked by: 01, 02, 03
 
