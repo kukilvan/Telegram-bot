@@ -1,6 +1,6 @@
 # 02: Candidates — the pure module that picks names from a post and reads links of sources
 
-Status: open
+Status: in review
 Complexity: medium (one pure module with many small rules, checked on 18 real samples; no database, no network)
 Blocked by: —
 

@@ -46,6 +46,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
 - `app/tracker/actions.py` — Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons.
 - `app/tracker/anime_events.py` — Anime events: the episodes the two sources agree on, and the films of a franchise.
+- `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
 - `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot.
 - `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks.
 - `app/tracker/core.py` — Tracker core facade: the only door the bot (and later the web app) uses.

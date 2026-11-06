@@ -8,7 +8,8 @@ import pytest
 
 from app.tracker.core import IncomingMessage, InboxReason, InboxState, PauseOutcome, Tracker, UnknownInboxItem
 from app.tracker.db import create_session_factory
-from app.tracker.inbox import MAX_TEXT, query_of
+from app.tracker.candidates import text_query as query_of
+from app.tracker.inbox import MAX_TEXT
 from app.tracker.models import InboxRecord, TitleKind
 
 T0 = datetime(2026, 11, 6, 12, 0, tzinfo=timezone.utc)
