@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-06 — Stage 6.4, slicing accepted
+
+- `.scratch/6-4-inbox/issues/`: 01 taking in and the store (complex), 02 candidates (medium), 03 posters (simple), 04 offers and cards (complex), 05 the web tab (medium); each names the spec sections it needs.
+- Order 01 → 02 → 03 → 04 → 05. Ticket 05 is blocked by 02 as well as 01 (the query of an item is its first candidate), one more than the table of spec 16 says.
+- Until ticket 04 a kind press only stores the kind and moves the item to «Входящие» with the interim text «Тип запомнил — сохранил во «Входящие».»; 04 replaces it with the analysis.
+
 ## 2026-11-06 — Stage 6.4, spec accepted
 
 - `.scratch/6-4-inbox/spec.md`; live answers of TMDb, Shikimori, IGDB and Steam, the poster check and the throwaway prototype of the rules in `answers/`.
