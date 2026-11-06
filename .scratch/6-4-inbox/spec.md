@@ -1,6 +1,6 @@
 # Spec 6.4: «Входящие» — add a title from Telegram by a post or a name
 
-Status: in review
+Status: accepted
 
 Built from `description.md` (accepted 2026-11-05) and idea 001; where they differ, this file wins. Terms: `CONTEXT.md` (new ones in section 12). ADRs: 0002 (the web is the main interface), 0007 (one process), 0010 (the bot takes posts and names; what is not resolved goes to «Входящие»). Section 3 narrows ADR 0010's «бот спрашивает тип» to posts without a link of a source — decided with the owner in the description, no new ADR.
 

@@ -2,6 +2,16 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-06 — Stage 6.4, spec accepted
+
+- `.scratch/6-4-inbox/spec.md`; live answers of TMDb, Shikimori, IGDB and Steam, the poster check and the throwaway prototype of the rules in `answers/`.
+- Rules of candidates without AI: Latin runs outside quotes (first line, after a kind word, repeats) over quotes, comparison markers, studios, stores and platforms; press-score lines and channel signatures dropped; all 18 samples give the expected first name. Offers: up to 3 candidates (at least half the first one's weight), up to 2 records each, 3 in all; exact or prefix name match, a weak first record only for the first candidate; order — a year named in the post, new with a date (two years), no date, the rest. Fabula Rasa is not in IGDB → «Входящие».
+- Typos: no source corrects them; a name message is searched again without one word at a time and checked by similarity 0.85, the corrected name searched — heading «Возможно, вы имели в виду:» (6 typo names checked live).
+- Links: Steam → IGDB in one request (`external_games`), IMDb → TMDb `/find`, TMDb and Shikimori by id; jut.su slug is a name.
+- Album and comment + forward join within 2 s; resolved, «Не сохранять» and «Убрать» delete the item; 12 hours in a job of its own; migration 0014 `inbox_items`.
+- Poster as a link preview above the text: checked with three messages (TMDb, IGDB, Shikimori, one longer than 1024 characters, with a button) — the owner saw the posters and the buttons.
+- Tickets: 01 taking in and the store, 02 candidates, 03 posters, 04 offers and cards, 05 the web tab.
+
 ## 2026-11-05 — Stage 6.4, description accepted
 
 - `.scratch/6-4-inbox/description.md` with mockups `mockups/bot-messages.html`, `mockups/inbox-tab.html`; takes in idea 001 (its `Status:` points here); `docs/project-spec.md` stage 6.4 points to it, estimate about 8 sessions.
