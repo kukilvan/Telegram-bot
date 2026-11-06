@@ -321,9 +321,19 @@ def test_the_query_is_the_text_cut_at_a_word():
 def test_the_item_keeps_its_query_and_a_joined_text_renews_it(tracker, clock):
     take(tracker, "Посмотри")
     assert item(tracker, 1).query == "Посмотри"
-    take(tracker, "Пост про игру", forwarded=True)
+    take(tracker, "Новая игра «Hades II» вышла", forwarded=True)
 
-    assert item(tracker, 1).query == "Посмотри Пост про игру"
+    assert item(tracker, 1).query == "Hades II"  # the first candidate of the joined text
+
+
+def test_the_query_of_an_item_is_its_first_candidate_or_the_beginning_of_the_text(tracker, clock):
+    take(tracker, "Новая игра «Hades II» вышла в стиме", forwarded=True)
+    clock.after(seconds=10)
+    take(tracker, "!!!")
+    clock.after(seconds=10)
+    take(tracker, "", media="sticker")
+
+    assert [item(tracker, n).query for n in (1, 2, 3)] == ["Hades II", "!!!", ""]
 
 
 def test_the_item_survives_a_new_core_on_the_same_file(tmp_path, clock):

@@ -22,11 +22,7 @@
   <header class="top">
     <span class="site-name">Трекер релизов</span>
     {% if signed_in %}
-    <nav class="menu" aria-label="Разделы">
-      {% for section in sections %}
-      <a href="{{ section.address }}"{% if section.address == current %} aria-current="page"{% endif %}>{{ section.label }}</a>
-      {% endfor %}
-    </nav>
+    {% include "menu.html" %}
     <form method="post" action="/logout">
       <button type="submit" class="link-button">Выйти</button>
     </form>

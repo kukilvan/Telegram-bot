@@ -1,0 +1,4 @@
+{# The answer to «Убрать» for HTMX: nothing in the place of the row, and out of band the menu with the new number and, when
+   the last item is gone, the sentence of the empty page. #}
+{% include "menu.html" %}
+{% if empty %}<div id="inbox-empty" hx-swap-oob="true"><p class="hint">{{ empty }}</p></div>{% endif %}

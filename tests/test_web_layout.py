@@ -102,7 +102,7 @@ def test_every_address_of_every_method_but_the_open_ones_is_closed_without_a_sig
 def test_every_section_of_the_menu_is_a_route_by_its_code_and_none_has_a_phrase(tmp_path):
     app = make_app(tmp_path)
 
-    assert [section.code for section in menu.SECTIONS] == ["feed", "list", "archive", "search", "settings"]
+    assert [section.code for section in menu.SECTIONS] == ["feed", "list", "archive", "search", "inbox", "settings"]
     for section in menu.SECTIONS:
         assert app.url_path_for(section.code) == section.address
     assert menu.Section._fields == ("address", "code", "label")

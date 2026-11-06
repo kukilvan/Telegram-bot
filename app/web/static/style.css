@@ -431,3 +431,26 @@ select, input[type="time"], input[type="number"] {
 .days.invalid { padding: 0.25rem 0.5rem; border-radius: 6px; }
 
 .now-line, .telegram-state { margin: 0 0 0.5rem; }
+
+/* «Входящие»: the items one under another, the head line small, the text as it was written (line breaks kept) */
+.inbox-list { margin: 0; padding: 0; list-style: none; }
+
+.inbox-item { padding: 0.75rem 0; border-top: 1px solid var(--border); }
+
+.inbox-head { margin: 0 0 0.25rem; color: var(--muted); font-size: 0.9rem; }
+
+.inbox-text { margin: 0 0 0.5rem; white-space: pre-line; overflow-wrap: anywhere; }
+
+.inbox-empty-text { color: var(--muted); }
+
+.inbox-more { margin: 0 0 0.5rem; }
+
+.inbox-more summary { cursor: pointer; color: var(--muted); }
+
+.inbox-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+
+.inbox-actions form { margin: 0; }
+
+@media (max-width: 40rem) {
+  .inbox-actions > .button-link, .inbox-actions > form, .inbox-actions button { width: 100%; }
+}

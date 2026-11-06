@@ -188,7 +188,7 @@ A title's page in the app (in the bot — a message) with details, seasons and b
 In code: `card`.
 
 **Поиск** (search):
-The app screen where the owner looks for a movie, series, anime or game in the sources and adds it to the list.
+The app screen where the owner looks for a movie, series, anime or game in the sources and adds it to the list. Opened by «Найти» of an inbox item, it says «Из «Входящих»: добавленный тайтл уберёт эту запись.»: adding a title deletes that item (the `inbox` parameter of the address).
 _Avoid_: добавление (as a section)
 In code: `search`.
 

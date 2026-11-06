@@ -116,7 +116,7 @@ class Tracker:
         self._feed = FeedReader(ctx, self._settings, pollers)
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
-        self._inbox = Inbox(ctx)
+        self._inbox = Inbox(ctx, self._settings)
         self._answers = InboxAnswers(ctx, self._settings, pollers, self._titles, self.imdb_source)
 
     # --- events ---------------------------------------------------------------------------------

@@ -1,6 +1,10 @@
 """The search: the page with the switch of the kind, the suggestions as the owner types (a fragment for HTMX, or the
 whole page without it), and adding a suggestion to the list, which leads to its card. The source is asked only from
-the second letter on; HTMX waits for a pause in typing and drops a request that a newer one made stale."""
+the second letter on; HTMX waits for a pause in typing and drops a request that a newer one made stale.
+
+The search can come from «Входящие» (`inbox=<item id>`, ticket 05 of stage 6.4): the page then says that adding a title
+removes the item, the suggestions and the add form carry the number, and a title added (new or already in the list)
+deletes the item. A number that is not an item of ours is ignored."""
 
 import logging
 from typing import NamedTuple
@@ -26,6 +30,7 @@ TYPE_MORE = "Наберите хотя бы две буквы"
 ADDED = "Добавлено в список"
 MARK_SEASONS = "Отметьте сезоны, которые уже посмотрели"
 ALREADY = "Этот тайтл уже в списке"
+FROM_INBOX = "Из «Входящих»: добавленный тайтл уберёт эту запись."
 
 router = APIRouter()
 
@@ -67,8 +72,38 @@ def _nothing(query: str) -> str:
     return f"Ничего не нашлось по запросу «{query}». Попробуйте другое название или другой тип"
 
 
-def _search_address(request: Request, kind: TitleKind, query: str = "") -> str:
-    params = {"kind": kind.value, **({"q": query} if query else {})}
+def _inbox_id(raw: str | None) -> int | None:
+    """The number of an item from `inbox=`; anything that cannot be one is none."""
+    if not raw or not raw.isascii() or not raw.isdigit():
+        return None
+    number = int(raw)
+    return number if pages.is_id(number) else None
+
+
+async def _from_inbox(request: Request, raw: str) -> int | None:
+    """The item the search was opened for: its number when the item is there, none otherwise (garbage, or an item that
+    is gone). A core that cannot say is the same as none, and the search stays usable."""
+    number = _inbox_id(raw)
+    if number is None:
+        return None
+    try:
+        return number if await pages.tracker_of(request).inbox_item(number) is not None else None
+    except Exception as exc:
+        logging.warning("web search: could not look at the item %s of «Входящие»: %r", number, exc)
+        return None
+
+
+async def _resolve(tracker: Tracker, number: int) -> None:
+    """The title is in the list: the item of «Входящие» it was searched for goes. A failure here must not hide the title
+    that was added, so it only goes to the log."""
+    try:
+        await tracker.resolve_inbox(number)
+    except Exception as exc:
+        logging.warning("web add: could not delete the item %s of «Входящие»: %r", number, exc)
+
+
+def _search_address(request: Request, kind: TitleKind, query: str = "", inbox: int | None = None) -> str:
+    params = {"kind": kind.value, **({"q": query} if query else {}), **({"inbox": inbox} if inbox is not None else {})}
     return f"{request.app.url_path_for('search')}?{urlencode(params)}"
 
 
@@ -122,40 +157,46 @@ def _shared(request: Request) -> dict[str, object]:
 
 @router.get("/search", name="search")
 @pages.guarded
-async def search_page(request: Request, kind: str = "", q: str = "") -> Response:
+async def search_page(request: Request, kind: str = "", q: str = "", inbox: str = "") -> Response:
     """The page; with `q` it comes with the suggestions already (Enter without HTMX sends the form here). `?kind=` wins
-    over the remembered kind, an unknown one counts as none."""
+    over the remembered kind, an unknown one counts as none. `inbox=` of an item that is there adds the line about it."""
     chosen = _kind_of(kind) or _remembered(request)
     if q.strip():
         request.session[KIND_KEY] = chosen.value
     return await pages.page(
         request, "search.html", current=str(request.app.url_path_for("search")), choices=_switch(chosen),
-        note=_note(chosen), oob=False, **_shared(request), **await _found(request, chosen, q),
+        note=_note(chosen), oob=False, inbox=await _from_inbox(request, inbox), from_inbox=FROM_INBOX,
+        **_shared(request), **await _found(request, chosen, q),
     )
 
 
 @router.get("/search/suggestions", name="search_suggestions")
 @pages.guarded
-async def suggestions(request: Request, kind: str = "", q: str = "") -> Response:
+async def suggestions(request: Request, kind: str = "", q: str = "", inbox: str = "") -> Response:
     """The place of the suggestions, for HTMX; the line under the switch comes with it (out of band), since the kind may
-    have changed."""
+    have changed. The number of the item (the page checked it) goes on to the add forms."""
     chosen = _kind_of(kind)
     if chosen is not None:
         request.session[KIND_KEY] = chosen.value
     return pages.fragment(
-        request, "suggestions.html", note=_note(chosen), oob=True, **_shared(request), **await _found(request, chosen, q)
+        request, "suggestions.html", note=_note(chosen), oob=True, inbox=_inbox_id(inbox), **_shared(request),
+        **await _found(request, chosen, q),
     )
 
 
 @router.post("/titles", name="add_title")
 @pages.guarded
-async def add(request: Request, kind: str = Form(""), external_id: str = Form(""), q: str = Form("")) -> Response:
+async def add(
+    request: Request, kind: str = Form(""), external_id: str = Form(""), q: str = Form(""), inbox: str = Form("")
+) -> Response:
     """«Добавить»: on to the card of the title with a line about it. What went wrong is said in the place of the button
-    (without HTMX: on the search page it came from)."""
+    (without HTMX: on the search page it came from). With the number of an item of «Входящие» the item is deleted
+    once the title is in the list, new or not."""
     chosen = _kind_of(kind)
+    item = _inbox_id(inbox)
     if chosen is None:
-        return await _refused(request, _search_address(request, _remembered(request), q), pages.NO_SUCH_KIND)
-    back = _search_address(request, chosen, q)
+        return await _refused(request, _search_address(request, _remembered(request), q, item), pages.NO_SUCH_KIND)
+    back = _search_address(request, chosen, q, item)
     tracker = pages.tracker_of(request)
     try:
         result = await tracker.add_title(chosen, external_id)
@@ -167,6 +208,8 @@ async def add(request: Request, kind: str = Form(""), external_id: str = Form(""
         return await _refused(request, back, NOT_CONNECTED)
     except SourceFailed as exc:
         return await _refused(request, back, pages.report_source_failure(chosen, exc, "add"))
+    if item is not None:
+        await _resolve(tracker, item)
     pages.notify(request, await _added(tracker, result.title_id) if result.created else ALREADY)
     return pages.go(request, str(request.app.url_path_for("card", title_id=result.title_id)))
 

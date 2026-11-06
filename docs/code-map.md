@@ -137,8 +137,9 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms, the line of an expansion and the follow lists.
 - `app/web/feed.py` — The feed, the main page after the sign-in: «Скоро» (the next two weeks, by days), «Позже» (the nearest date of the titles with nothing in those days) and «Недавно» (the events of the last week).
 - `app/web/filters.py` — What the list and the archive share about their filters: a value read from the address, the row of links for the kind, the sentence of an empty page and the answer under the search field.
+- `app/web/inbox.py` — The tab «Входящие»: the items the bot could not resolve, newest first, with «Найти» and «Убрать».
 - `app/web/menu.py` — The menu of the app and the one list of the addresses that need no sign-in.
-- `app/web/pages.py` — What every page shares: the page with the menu and the status line, a fragment, the answer to a press, the notice for the next page, «the title is gone» and the net under an unexpected error.
+- `app/web/pages.py` — What every page shares: the page, a fragment, the answer to a press, the notice for the next page, «the title is gone» and the net under an unexpected error.
 - `app/web/posters.py` — Posters for the browser: the sites the page may load pictures from (`img-src`).
 - `app/web/search.py` — The search: the page with the switch of the kind, the suggestions as the owner types (a fragment for HTMX, or the whole page without it), and adding a suggestion to the list, which leads to its card.
 - `app/web/server.py` — uvicorn for the runtime (`app/runtime.py`): no signal handling and no logging setup of its own.

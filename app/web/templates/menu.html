@@ -1,0 +1,6 @@
+{# The menu; as an answer to a press it replaces the one on the page (out of band), so the number of «Входящие» follows. #}
+<nav class="menu" id="menu" aria-label="Разделы"{% if oob %} hx-swap-oob="true"{% endif %}>
+  {% for section in sections %}
+  <a href="{{ section.address }}"{% if section.address == current %} aria-current="page"{% endif %}>{{ section.label }}</a>
+  {% endfor %}
+</nav>

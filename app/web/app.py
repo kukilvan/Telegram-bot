@@ -18,7 +18,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.tracker.core import Tracker, poster_url
-from app.web import archive, auth, card, feed, pages, search, settings, title_list
+from app.web import archive, auth, card, feed, inbox, pages, search, settings, title_list
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
 
@@ -203,6 +203,7 @@ def create_web_app(
     app.include_router(feed.router)
     app.include_router(archive.router)
     app.include_router(search.router)
+    app.include_router(inbox.router)
     app.include_router(title_list.router)
     app.include_router(settings.router)
 

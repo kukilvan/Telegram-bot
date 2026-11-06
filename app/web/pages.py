@@ -1,6 +1,8 @@
-"""What every page shares: the page with the menu and the status line, a fragment, the answer to a press, the notice
-for the next page, «the title is gone» and the net under an unexpected error. The pages reach all of it
-through `request.app.state.web` (`WebContext`), so a page module has a router of its own and needs nothing built for it."""
+"""What every page shares: the page, a fragment, the answer to a press, the notice for the next page, «the title is gone»
+and the net under an unexpected error.
+
+The page carries the menu (with the number of «Входящие») and the status line. The pages reach all of it through
+`request.app.state.web` (`WebContext`), so a page module has a router of its own and needs nothing built for it."""
 
 import functools
 import logging
@@ -17,6 +19,7 @@ from starlette.exceptions import HTTPException
 from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownKind
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
+from app.web.menu import with_inbox_count
 from app.web.status_line import NO_DATA, TELEGRAM_DOWN, status_text
 
 if TYPE_CHECKING:
@@ -115,6 +118,25 @@ def telegram_note(request: Request) -> str:
     return TELEGRAM_DOWN if context_of(request).telegram_down() else ""
 
 
+async def inbox_count(request: Request) -> int | None:
+    """How many items wait in «Входящие», for the number of the menu. None: no core, or it could not be read (the log
+    says so): the menu must not take the page down."""
+    tracker = context_of(request).tracker
+    if tracker is None:
+        return None
+    try:
+        return await tracker.inbox_count()
+    except Exception as exc:
+        logging.warning("web: no number of «Входящие» for the menu: %r", exc)
+        return None
+
+
+def menu_of(request: Request, count: int | None) -> "Sequence[Section]":
+    """The menu with the number of «Входящие» when `count` is above zero; no count — the bare label."""
+    sections = context_of(request).sections
+    return sections if count is None else with_inbox_count(sections, count)
+
+
 async def page(request: Request, name: str, *, status_code: int = 200, **context: object) -> Response:
     """A whole page. The menu, the status line and the notice belong to the pages behind the sign-in."""
     web = context_of(request)
@@ -122,7 +144,7 @@ async def page(request: Request, name: str, *, status_code: int = 200, **context
     if context["signed_in"]:
         context.setdefault("current", "")
         context.update(await status_parts(request))
-        context["sections"] = web.sections
+        context["sections"] = menu_of(request, await inbox_count(request))
         context["notice"] = _take_notice(request)
     return web.templates.TemplateResponse(request, name, context, status_code=status_code)
 

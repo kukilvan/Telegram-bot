@@ -1,6 +1,9 @@
 """«Входящие»: taking in what the owner sends to the bot, the states of an item and its moves, the 12 hours, the list,
 the count and deleting.
 
+The query of an item (what «Найти» of the web searches by) is its first candidate, taken in with the item; none —
+the beginning of its text.
+
 A message joins the newest item when it is the same album or a forward that follows its comment, within 2 seconds.
 
 An inbox item is written before the bot answers anything (KI-9: a restart in the middle loses no post). Every change is
@@ -11,16 +14,18 @@ The answers to an item — the pause, the analysis, «Да» and «Нет» — 
 """
 
 import asyncio
+from dataclasses import replace
 from datetime import datetime, timedelta
 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app.tracker.candidates import text_query
+from app.tracker.candidates import query_of
 from app.tracker.context import CoreContext
 from app.tracker.errors import UnknownInboxItem
 from app.tracker.models import InboxReason, InboxRecord, InboxState
 from app.tracker.results import IncomingMessage, InboxEntry, TakeIn
+from app.tracker.settings_store import SettingsStore
 
 JOIN_WITHIN = timedelta(seconds=2)  # a message joins the newest item at most this long after its last message (1.2)
 WAIT_FOR = timedelta(hours=12)  # an item that waits longer than this from its arrival goes to «Входящие» (7.2)
@@ -52,7 +57,7 @@ def _join(item: InboxRecord, message: IncomingMessage, now: datetime) -> None:
     item.post_url = item.post_url or message.post_url
     item.forwarded = item.forwarded or message.forwarded
     item.media_group_id = item.media_group_id or message.media_group_id
-    item.query = text_query(item.text)
+    item.query = query_of(item.text, bold=tuple(item.bold), links=tuple(item.links), forwarded=item.forwarded)
     item.last_message_at = now
 
 
@@ -67,7 +72,9 @@ def _new_item(message: IncomingMessage, now: datetime) -> InboxRecord:
         post_url=message.post_url,
         forwarded=message.forwarded,
         media_group_id=message.media_group_id,
-        query=text_query(text[:MAX_TEXT]),
+        query=query_of(
+            text[:MAX_TEXT], bold=tuple(message.bold), links=tuple(message.links), forwarded=message.forwarded
+        ),
         offers=[],
         received_at=now,
         last_message_at=now,
@@ -109,8 +116,9 @@ def existing(session: Session, item_id: int) -> InboxRecord:
 
 
 class Inbox:
-    def __init__(self, ctx: CoreContext) -> None:
+    def __init__(self, ctx: CoreContext, settings: SettingsStore) -> None:
         self.ctx = ctx
+        self.settings = settings
 
     # --- taking in ------------------------------------------------------------------------------
 
@@ -175,7 +183,8 @@ class Inbox:
             return None if item is None else _entry(item)
 
     async def items(self) -> list[InboxEntry]:
-        """The items in «Входящие» (not the waiting one: it is in the chat), the newest arrival first."""
+        """The items in «Входящие» (not the waiting one: it is in the chat), the newest arrival first, with the owner's
+        time zone for their dates."""
         return await asyncio.to_thread(self._items)
 
     def _items(self) -> list[InboxEntry]:
@@ -185,7 +194,8 @@ class Inbox:
                 .where(InboxRecord.state == InboxState.INBOX)
                 .order_by(InboxRecord.received_at.desc(), InboxRecord.id.desc())
             )
-            return [_entry(item) for item in rows]
+            tz = self.settings.time_zone(session)  # read here, where it is needed (coding standard 2)
+            return [replace(_entry(item), tz=tz) for item in rows]
 
     async def count(self) -> int:
         """How many items are in «Входящие»: the number of the menu of the web."""

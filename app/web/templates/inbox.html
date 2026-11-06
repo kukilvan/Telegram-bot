@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Входящие · Трекер релизов{% endblock %}
+{% block content %}
+{# The items newest first. «Убрать» deletes the row (HTMX takes it out of the page and renews the menu out of band);
+   without HTMX the form goes back to this page. «показать всё» is a plain <details>: no script. #}
+<section class="card inbox">
+  <h1>Входящие</h1>
+  <ul class="inbox-list">
+    {% for row in rows %}
+    <li class="inbox-item" id="inbox-{{ row.id }}">
+      <p class="inbox-head"><span class="inbox-when">{{ row.when }}</span> · <span>{{ row.kind }}</span>{% if row.reason %} · <span>{{ row.reason }}</span>{% endif %}</p>
+      <p class="inbox-text{% if not row.has_text %} inbox-empty-text{% endif %}">{{ row.shown }}</p>
+      {% if row.full %}
+      <details class="inbox-more">
+        <summary>показать всё</summary>
+        <p class="inbox-text">{{ row.full }}</p>
+      </details>
+      {% endif %}
+      <div class="inbox-actions">
+        {% if row.find %}<a class="button-link" href="{{ row.find }}">Найти</a>{% endif %}
+        <form method="post" action="{{ row.remove }}" hx-post="{{ row.remove }}" hx-target="#inbox-{{ row.id }}" hx-swap="outerHTML" hx-disabled-elt="find button">
+          <button type="submit">Убрать</button>
+        </form>
+        {% if row.post_url %}<a href="{{ row.post_url }}" target="_blank" rel="noopener">Открыть пост ↗</a>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  <div id="inbox-empty">{% if not rows %}<p class="hint">{{ empty }}</p>{% endif %}</div>
+</section>
+{% endblock %}

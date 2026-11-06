@@ -2,7 +2,7 @@
 
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, tzinfo
 from enum import StrEnum
 
 from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
@@ -249,3 +249,4 @@ class InboxEntry:
     received_at: datetime  # naive UTC
     moved_at: datetime | None  # naive UTC; None: it still waits
     offer_count: int = 0  # the offers the analysis found: «Да» / «Нет» of another number is a dead button
+    tz: tzinfo | None = None  # the owner's zone, set in the list of the web (dates on the owner's clock)
