@@ -14,7 +14,8 @@ from fastapi.testclient import TestClient
 from app.runtime import Health
 from app.tracker.core import Overview
 from app.web import create_web_app, menu, pages
-from app.web.posters import CARD_SIZE, LIST_SIZE, image_sources, poster_url
+from app.tracker.core import CARD_SIZE, LIST_SIZE, poster_url
+from app.web.posters import image_sources
 from web_helpers import all_routes
 
 WEB = Path(__file__).resolve().parent.parent / "app" / "web"

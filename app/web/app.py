@@ -17,8 +17,8 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from app.tracker.core import Tracker
-from app.web import archive, auth, card, feed, pages, posters, search, settings, title_list
+from app.tracker.core import Tracker, poster_url
+from app.web import archive, auth, card, feed, pages, search, settings, title_list
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
 
@@ -99,7 +99,7 @@ def create_web_app(
         # Outside the session middleware (the foreign-origin answer) nobody is signed in
         return configured and "session" in request.scope and auth.same(request.session.get("pw"), expected)
 
-    templates.env.globals["poster_url"] = posters.poster_url
+    templates.env.globals["poster_url"] = poster_url
     app.state.web = WebContext(
         templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS, telegram_down=telegram_down
     )

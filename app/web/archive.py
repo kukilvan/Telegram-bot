@@ -14,7 +14,7 @@ from app.web import pages
 from app.web.filters import (
     NOTHING_FOUND, archive_has_titles, empty_phrase, kind_links, linker, order_choices, parse_choice, results_answer,
 )
-from app.web.posters import LIST_SIZE
+from app.tracker.core import LIST_SIZE
 from app.web.title_rows import Link, clean_query, rows
 
 ARCHIVE_EMPTY = "В архиве пока ничего нет. Сюда попадает просмотренное, пройденное и брошенное"

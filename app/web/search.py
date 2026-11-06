@@ -12,7 +12,7 @@ from app.tracker.core import SourceFailed, SourceNotConfigured, TitleNotFound, T
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web import pages
-from app.web.posters import LIST_SIZE
+from app.tracker.core import LIST_SIZE
 
 MIN_QUERY = 2  # a shorter query does not reach the source
 MAX_QUERY = 100  # a longer one is cut

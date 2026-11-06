@@ -18,7 +18,7 @@ from app.web import pages
 from app.web.filters import (
     NOTHING_FOUND, empty_phrase, kind_links, linker, list_has_titles, order_choices, parse_choice, results_answer,
 )
-from app.web.posters import LIST_SIZE
+from app.tracker.core import LIST_SIZE
 from app.web.title_rows import Link, clean_query, rows
 
 ALL_STATUSES = "all"  # the value of `status` for the whole list, the archive included

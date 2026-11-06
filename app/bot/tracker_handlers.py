@@ -27,10 +27,12 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 
+from app.bot.card_message import send_card_message
 from app.bot.inbox_handlers import register_inbox_handlers
 from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import TitleCard, format_card, format_when
 from app.tracker.core import (
+    CARD_SIZE,
     TitleNotFound,
     TitleSummary,
     Tracker,
@@ -39,6 +41,7 @@ from app.tracker.core import (
     UnknownSeason,
     UnknownTitle,
     WatchableSeason,
+    poster_url,
 )
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
@@ -311,7 +314,9 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         if card is None or callback.message is None:
             return
         text = format_card(card) if heading is None else f"{heading}\n\n{format_card(card)}"
-        await callback.message.answer(text, reply_markup=actions_markup(card_actions(card)))
+        await send_card_message(
+            callback.message, text, poster_url(card.poster_path, CARD_SIZE), actions_markup(card_actions(card))
+        )
 
     # --- «Мои тайтлы» ---------------------------------------------------------------------------
 

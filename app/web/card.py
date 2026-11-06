@@ -15,7 +15,7 @@ from fastapi import APIRouter, Form, Request, Response
 from app.tracker.cards import STATUS_LABELS, TitleCard, movie_date_lines, movie_line, season_row_text
 from app.tracker import scores
 from app.tracker.core import (
-    CannotScore, ScoreView, Tracker, UnknownPlatform, UnknownSeason, UnknownTitle,
+    CARD_SIZE, CannotScore, ScoreView, Tracker, UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ARCHIVE_STATUSES, TitleStatus
@@ -23,7 +23,6 @@ from app.web import card_blocks, pages
 from app.web.card_blocks import FollowError
 from app.web.card_blocks import address as _address
 from app.web.menu import SECTIONS
-from app.web.posters import CARD_SIZE
 
 NOT_IN_LIST = "Этого тайтла нет в списке"
 ALREADY_GONE = "Этого тайтла уже нет в списке"

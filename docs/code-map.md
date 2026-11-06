@@ -28,6 +28,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 
 <!-- code-map:start (built by tools/code_map.py from the docstrings; do not edit by hand) -->
 - `app/bot/access.py` — Owner allowlist: one gate in front of every incoming Telegram update.
+- `app/bot/card_message.py` — The one function that sends a card to the chat: the text and the buttons with the poster above the text.
 - `app/bot/error_handler.py` — Error reporting to bot owner via Telegram Bot API.
 - `app/bot/inbox_handlers.py` — Bot side of «Входящие»: taking in every other message of the owner, the pause after it, «Что это?» and its buttons.
 - `app/bot/inbox_message.py` — Reading a Telegram message of the owner into an `IncomingMessage` (spec 1.1 of stage 6.4), pure: no bot, no database.
@@ -96,6 +97,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.
 - `app/tracker/pollers/series.py` — A series: the fresh seasons are compared with the stored ones, and the owner's season marks keep the status.
 - `app/tracker/polling.py` — Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.
+- `app/tracker/posters.py` — Poster addresses (pure): the address of a picture from the value a title stores, and the sizes of the places a poster is shown (the web page and the bot card).
 - `app/tracker/price_events.py` — The events of Steam (pure): a discount and a bundle from two price looks, the page in Steam, texts, keys, folding.
 - `app/tracker/price_rows.py` — What the owner reads of the Steam prices of a game: the block of the card, the line of the bot and the mark of the list.
 - `app/tracker/prices.py` — Steam prices of a game: what one price check saw (`PriceLook`), an amount of money (`Money`) and «самая низкая с добавления».
@@ -134,7 +136,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/filters.py` — What the list and the archive share about their filters: a value read from the address, the row of links for the kind, the sentence of an empty page and the answer under the search field.
 - `app/web/menu.py` — The menu of the app and the one list of the addresses that need no sign-in.
 - `app/web/pages.py` — What every page shares: the page with the menu and the status line, a fragment, the answer to a press, the notice for the next page, «the title is gone» and the net under an unexpected error.
-- `app/web/posters.py` — Posters for the browser: the address of a picture from the value the title stores, and the sites the page may load pictures from.
+- `app/web/posters.py` — Posters for the browser: the sites the page may load pictures from (`img-src`).
 - `app/web/search.py` — The search: the page with the switch of the kind, the suggestions as the owner types (a fragment for HTMX, or the whole page without it), and adding a suggestion to the list, which leads to its card.
 - `app/web/server.py` — uvicorn for the runtime (`app/runtime.py`): no signal handling and no logging setup of its own.
 - `app/web/settings.py` — The settings page: one form for the time zone, the working days, the hour of the summary, the quiet hours, the break between parts of a season, the platforms and the country of the stores.

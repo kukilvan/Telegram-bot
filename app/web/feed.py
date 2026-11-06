@@ -15,7 +15,7 @@ from app.tracker.cards import format_date, format_weekday_date
 from app.tracker.core import Feed, FeedDay, RecentRow, UnknownTitle, UpcomingRow
 from app.tracker.kinds import KINDS
 from app.web import pages
-from app.web.posters import LIST_SIZE
+from app.tracker.core import LIST_SIZE
 
 NOTHING_SOON = "В ближайшие 14 дней ничего не выходит"
 NOTHING_RECENT = "За неделю ничего не случилось"
