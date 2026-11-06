@@ -1,4 +1,4 @@
-Status: in review
+Status: accepted
 
 # Review of stage 6.4: «Входящие» — add a title from Telegram by a post or a name
 

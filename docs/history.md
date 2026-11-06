@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-06 — Stage 6.4, review: stage closed
+
+- `.scratch/6-4-inbox/review.md`: the stage against the spec and the coding standards, two sub-agent passes; checked by running on the live sources (the 18 samples give table 5.6, the typos of 5.4, every kind of link), on the live web (HTTP with the login) and the live bot. No fix-round finding: the stage is closed; the next one is the description of stage 7.
+- Fixed now: `OfferSearch.by_links` takes the item's kind from the first link that gave an offer, a Steam name only when none did (F7); the bot starts no second pause for a message joined after its item's pause began answering — no second «Что это?» (F8); `follow_ups.Candidate` renamed `FollowUp` (`FOLLOW_UP_FIELDS`, `_follow_up` in `sources/igdb_follow_ups`; the tests' helper `follow_up`), so «Кандидат» is only the inbox candidate (F2); `inbox_answers._show` and `titles._known_suggestions` ask `Pollers.reader_of` (F5); `posters` in `PURE` of the split test and in the pure list of rule 7 (F4); the code map's templates line (F6).
+- Decisions: rule 8 gets an exception — a read of the database without the network may come before the early answer when the spec wants a popup for a dead button (the inbox buttons, F1); `CONTEXT.md` «Предложение» says `FollowOffer` keeps «offer» only inside a longer name (F3); a reason of an item in «Входящие» stays when a kind press finds an offer (F11); the stop list wins over table 4.6 for «Meta Horizon» (F12).
+- Deferred: KI-64 (an announced date known to the year or the quarter shows a made-up day in the offer card: «выйдет 31 декабря 2028»; first in line for stage 9), KI-65 («Найти» cannot remove an item whose title is in the list).
+- Tests: two new (`test_tracker_offers`, `test_bot_inbox`), 3458 pass, the three known Windows failures; bot rebuilt, health ok, `poll_due` executed without errors.
+
 ## 2026-11-06 — Stage 6.4, ticket 05: the web tab «Входящие»
 
 - Menu: `SECTIONS` gets «Входящие» (`/inbox`) between «Поиск» and «Настройки»; `menu.with_inbox_count` puts «(N)» on the label; `pages.inbox_count` reads `Tracker.inbox_count()` on every page (a failure — a log line, a bare label) and `pages.menu_of` builds the menu; the nav is its own template `menu.html` (`id="menu"`), so an answer can renew it out of band.
