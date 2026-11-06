@@ -2,6 +2,15 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-06 — Stage 6.4, ticket 01: «Входящие» in the database and taking in a message
+
+- Migration 0014: table `inbox_items` (`sqlite_autoincrement`, index on `state`), model `InboxRecord` with `InboxState` (`waiting` / `inbox`) and `InboxReason` (`not_found`, `no_answer`, `no_text`, `source_failed`, `not_connected`); `_stored_as_text` takes a length.
+- `app/tracker/inbox.py` (`Inbox`): take in (one write session: join the newest item within 2 s — the same album, or a forward after one message that was no forward — or write a new one and move every waiting item to `no_answer`), the end of the pause (`ASK` / `NO_TEXT` / `NOTHING`), `answer_kind` (interim: kind stored, `not_found`; an item already in «Входящие» keeps its first `moved_at`), delete, `expire` (12 h from `received_at`), list newest first, count; `query_of` — first 60 characters cut at a word (ticket 05 puts the first candidate first).
+- Facade: `take_in`, `inbox_pause_over`, `answer_kind`, `forget_inbox_item`, `resolve_inbox`, `inbox_item`, `inbox_items`, `inbox_count`, `expire_inbox` (two more than spec 11 lists: the end of the pause and one item for the dead-button check of rule 8). Results: `IncomingMessage`, `TakeIn`, `PauseOutcome`, `InboxEntry`, `MEDIA_WORDS`, `INBOX_REASONS`; error `UnknownInboxItem`.
+- Bot: `app/bot/inbox_message.py` (pure: Telegram message → `IncomingMessage`; media stored as codes `photo`, `video`, `animation`, `document`, `sticker`, `voice`, `message`, words in `MEDIA_WORDS`); `app/bot/inbox_handlers.py` registered last on the owner router by `register_tracker_handlers`; the pause in memory per item (a joined message restarts it unless it is already answering; a new item cancels the others), «Предыдущий…» kept across a join; presses `inb:<id>:k:<kind>` / `inb:<id>:x`.
+- «➕ Добавить» removed (kind menu, name request, suggestions, `awaiting_name`, `KindInfo.ask_name`); its text answers with the new keyboard of three rows; `tadd:` / `tpick:` are dead buttons; new `/start` and empty-list texts. `add_jobs` adds `expire_inbox` as a job of its own.
+- Tests: new `test_tracker_inbox` (28), `test_bot_inbox_message` (25), `test_bot_inbox` (26), `test_tracker_migration_0014` (4); the old add flow rewritten (cards through `tcard:` / `tact:seasons:` after `add_title`) or removed; `test_web_filters` bans the old helper name `source_failed` but not the stored value. Full run: 3117 passed, the three known Windows failures only. KI-57 (restart within the pause).
+
 ## 2026-11-06 — Stage 6.4, slicing accepted
 
 - `.scratch/6-4-inbox/issues/`: 01 taking in and the store (complex), 02 candidates (medium), 03 posters (simple), 04 offers and cards (complex), 05 the web tab (medium); each names the spec sections it needs.
