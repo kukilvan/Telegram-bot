@@ -7,6 +7,7 @@ An inbox item is written before the bot answers anything (KI-9: a restart in the
 one write session (rule 9): «move the waiting ones and write the new one» together, «read the state, change it»
 together. A resolved, not saved or removed item is deleted; its number never comes back (`AUTOINCREMENT`). How the bot
 reads a Telegram message into an `IncomingMessage` is the bot's (`app/bot/inbox_message.py`); this module gets it ready.
+The answers to an item — the pause, the analysis, «Да» and «Нет» — are `inbox_answers`, which calls `offers`.
 """
 
 import asyncio
@@ -18,8 +19,8 @@ from sqlalchemy.orm import Session
 from app.tracker.candidates import text_query
 from app.tracker.context import CoreContext
 from app.tracker.errors import UnknownInboxItem
-from app.tracker.models import InboxReason, InboxRecord, InboxState, TitleKind
-from app.tracker.results import IncomingMessage, InboxEntry, PauseOutcome, TakeIn
+from app.tracker.models import InboxReason, InboxRecord, InboxState
+from app.tracker.results import IncomingMessage, InboxEntry, TakeIn
 
 JOIN_WITHIN = timedelta(seconds=2)  # a message joins the newest item at most this long after its last message (1.2)
 WAIT_FOR = timedelta(hours=12)  # an item that waits longer than this from its arrival goes to «Входящие» (7.2)
@@ -73,7 +74,7 @@ def _new_item(message: IncomingMessage, now: datetime) -> InboxRecord:
     )
 
 
-def _move(item: InboxRecord, reason: InboxReason, now: datetime) -> None:
+def move(item: InboxRecord, reason: InboxReason, now: datetime) -> None:
     """To «Входящие» with this reason; an item that is there already only gets the new reason."""
     item.state = InboxState.INBOX
     item.reason = reason
@@ -95,7 +96,16 @@ def _entry(item: InboxRecord) -> InboxEntry:
         query=item.query,
         received_at=item.received_at,
         moved_at=item.moved_at,
+        offer_count=len(item.offers),
     )
+
+
+def existing(session: Session, item_id: int) -> InboxRecord:
+    """The item, in the session given; UnknownInboxItem when it is gone (resolved, not saved or removed)."""
+    item = session.get(InboxRecord, item_id)
+    if item is None:
+        raise UnknownInboxItem(item_id)
+    return item
 
 
 class Inbox:
@@ -117,7 +127,7 @@ class Inbox:
                 return TakeIn(newest.id, joined=True, moved=0)
             waiting = list(session.scalars(select(InboxRecord).where(InboxRecord.state == InboxState.WAITING)))
             for item in waiting:
-                _move(item, InboxReason.NO_ANSWER, now)
+                move(item, InboxReason.NO_ANSWER, now)
             item = _new_item(message, now)
             session.add(item)
             session.flush()
@@ -125,32 +135,7 @@ class Inbox:
             session.commit()
         return TakeIn(item_id, joined=False, moved=len(waiting))
 
-    async def pause_over(self, item_id: int) -> PauseOutcome:
-        return await asyncio.to_thread(self._pause_over, item_id)
-
-    def _pause_over(self, item_id: int) -> PauseOutcome:
-        with self.ctx.write_session() as session:
-            item = session.get(InboxRecord, item_id)
-            if item is None or item.state != InboxState.WAITING:
-                return PauseOutcome.NOTHING
-            if item.text:
-                return PauseOutcome.ASK
-            _move(item, InboxReason.NO_TEXT, self.ctx.now())
-            session.commit()
-        return PauseOutcome.NO_TEXT
-
-    # --- answers --------------------------------------------------------------------------------
-
-    async def answer_kind(self, item_id: int, kind: TitleKind) -> None:
-        await asyncio.to_thread(self._answer_kind, item_id, kind)
-
-    def _answer_kind(self, item_id: int, kind: TitleKind) -> None:
-        # until the analysis comes (ticket 04 of stage 6.4) the kind is stored and the item goes to «Входящие»
-        with self.ctx.write_session() as session:
-            item = self._existing(session, item_id)
-            item.kind = kind
-            _move(item, InboxReason.NOT_FOUND, self.ctx.now())
-            session.commit()
+    # --- deleting and expiry --------------------------------------------------------------------
 
     async def forget(self, item_id: int) -> bool:
         """Delete the item. False: there was none (resolved, not saved or removed already)."""
@@ -175,7 +160,7 @@ class Inbox:
                 )
             ))
             for item in overdue:
-                _move(item, InboxReason.NO_ANSWER, now)
+                move(item, InboxReason.NO_ANSWER, now)
             session.commit()
         return len(overdue)
 
@@ -211,10 +196,3 @@ class Inbox:
             return session.scalar(
                 select(func.count()).select_from(InboxRecord).where(InboxRecord.state == InboxState.INBOX)
             ) or 0
-
-    @staticmethod
-    def _existing(session: Session, item_id: int) -> InboxRecord:
-        item = session.get(InboxRecord, item_id)
-        if item is None:
-            raise UnknownInboxItem(item_id)
-        return item

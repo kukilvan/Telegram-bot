@@ -30,7 +30,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/bot/access.py` — Owner allowlist: one gate in front of every incoming Telegram update.
 - `app/bot/card_message.py` — The one function that sends a card to the chat: the text and the buttons with the poster above the text.
 - `app/bot/error_handler.py` — Error reporting to bot owner via Telegram Bot API.
-- `app/bot/inbox_handlers.py` — Bot side of «Входящие»: taking in every other message of the owner, the pause after it, «Что это?» and its buttons.
+- `app/bot/inbox_handlers.py` — Bot side of «Входящие»: taking in every other message of the owner, the pause after it, «Что это?», the offer cards and their buttons.
 - `app/bot/inbox_message.py` — Reading a Telegram message of the owner into an `IncomingMessage` (spec 1.1 of stage 6.4), pure: no bot, no database.
 - `app/bot/main.py` — The bot's assembly: the access gate and the tracker handlers (`build_dispatcher`), the scheduler's jobs (`add_jobs`).
 - `app/bot/tracker_handlers.py` — Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
@@ -66,6 +66,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/games.py` — The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
 - `app/tracker/genres.py` — Genres as the owner picks them: the same genre written in two cases or with «е» for «ё» is one genre.
 - `app/tracker/inbox.py` — «Входящие»: taking in what the owner sends to the bot, the states of an item and its moves, the 12 hours, the list, the count and deleting.
+- `app/tracker/inbox_answers.py` — The answers to an inbox item: the end of its pause, the analysis by its links or by the kind the owner chose, the offer cards, «Да» and «Нет» (spec 1.3, 2.3, 6 and 7 of stage 6.4).
 - `app/tracker/kinds.py` — What each kind of title is for the owner: one table, so a new kind cannot be added half-way.
 - `app/tracker/listing.py` — What the owner reads of the list: its rows, the numbers of the whole list and the card of a title.
 - `app/tracker/migrations/env.py` — Alembic environment of the tracker database.
@@ -85,6 +86,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0014_inbox.py` — «Входящие» (spec 10 of stage 6.4): the table `inbox_items`, one row per inbox item — what the owner sent to the bot.
 - `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings, game platforms, the price history and the inbox items.
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
+- `app/tracker/offers.py` — Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner sees them, and the text of an offer card (spec 3, 5 and 6.1 of stage 6.4).
 - `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out and whose region its dates are.
 - `app/tracker/pollers/anime.py` — An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the source entries behind the seasons and the franchise films are kept beside them.
 - `app/tracker/pollers/base.py` — What every kind of title does when it is added and when it is polled: one object per kind, one set of actions.
@@ -115,6 +117,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/sources/igdb_games.py` — IGDB adapter for games: search suggestions and the game snapshot, with the Russian texts of Steam when a game is added.
 - `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the franchise built from the chain of sequels.
 - `app/tracker/sources/steam_prices.py` — Steam adapter for prices: what Steam answered about each game becomes its price look (`PriceLook`), source `steam`.
+- `app/tracker/sources/tmdb_find.py` — TMDb adapter for the IMDb links of «Входящие»: `/find` by an IMDb id gives the movie or the series it names.
 - `app/tracker/sources/tmdb_movies.py` — TMDb adapter for movies: search suggestions and the movie snapshot.
 - `app/tracker/sources/tmdb_sequels.py` — TMDb adapter for sequels of an archived movie: the franchise collection the movie belongs to.
 - `app/tracker/sources/tmdb_series.py` — TMDb adapter for series: search suggestions and the series snapshot with its seasons.

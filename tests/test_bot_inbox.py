@@ -14,19 +14,14 @@ from aiogram.types import CallbackQuery, Chat, Message, MessageOriginChannel, Ph
 from app.bot import inbox_handlers
 from app.bot.access import AccessMiddleware
 from app.bot.tracker_handlers import ADD_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, TEST_EVENT_BUTTON, register_tracker_handlers
-from app.tracker.core import InboxReason, InboxState, Tracker
-from app.tracker.db import create_session_factory
+from app.tracker.core import InboxReason, InboxState
 from app.tracker.models import TitleKind
+from inbox_fakes import Clients, tracker_on
 
 OWNER = 42
 NOW = datetime(2026, 11, 6, 12, 0, tzinfo=timezone.utc)
 PAUSE = 0.15  # long enough that a write of the core between two messages never outlasts it
 QUESTION_ROWS = [["Фильм", "Сериал"], ["Аниме", "Игра"], ["🗑 Не сохранять"]]
-
-
-class FakeSender:
-    async def send(self, message, actions=()):
-        pass
 
 
 @pytest.fixture(autouse=True)
@@ -35,8 +30,14 @@ def short_pause(monkeypatch):
 
 
 @pytest.fixture
-def tracker():
-    return Tracker(create_session_factory("sqlite://"), clock=lambda: NOW, sender=FakeSender())
+def clients():
+    return Clients()
+
+
+@pytest.fixture
+def tracker(clients):
+    """The real core on the fakes of the sources (the saved answers of stage 6.4): «Тест один» is found nowhere."""
+    return tracker_on(clients, clock=lambda: NOW)
 
 
 @pytest.fixture
@@ -270,7 +271,7 @@ def test_a_kind_is_answered_early_takes_the_buttons_off_and_keeps_the_kind(track
 
     talk(tracker, lambda chat: chat.press("inb:1:k:game"))
 
-    assert telegram == [("popup", "Ищу…"), ("edit", []), ("message", "Тип запомнил — сохранил во «Входящие».", [])]
+    assert telegram == [("popup", "Ищу…"), ("edit", []), ("message", "Не нашёл — сохранил во «Входящие». Разберите в веб-приложении.", [])]
     item = asyncio.run(tracker.inbox_item(1))
     assert (item.state, item.reason, item.kind) == (InboxState.INBOX, InboxReason.NOT_FOUND, TitleKind.GAME)
 
@@ -285,7 +286,7 @@ def test_a_kind_of_an_item_already_in_the_inbox_still_works(tracker, telegram):
 
     talk(tracker, scenario)
 
-    assert ("message", "Тип запомнил — сохранил во «Входящие».", []) in telegram
+    assert ("message", "Не нашёл — сохранил во «Входящие». Разберите в веб-приложении.", []) in telegram
     assert asyncio.run(tracker.inbox_item(1)).kind == TitleKind.MOVIE
     assert asyncio.run(tracker.inbox_item(2)).state == InboxState.WAITING
 
@@ -326,4 +327,4 @@ def test_after_a_restart_the_buttons_of_an_item_still_work(tracker, telegram):
 
     talk(tracker, lambda chat: chat.press("inb:1:k:anime"))  # a new dispatcher: the memory of the bot is empty
 
-    assert telegram[-1] == ("message", "Тип запомнил — сохранил во «Входящие».", [])
+    assert telegram[-1] == ("message", "Не нашёл — сохранил во «Входящие». Разберите в веб-приложении.", [])

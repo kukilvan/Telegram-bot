@@ -1,0 +1,8060 @@
+{
+"anime:Bleach": [
+{
+"airedOn": {
+"date": "2004-10-05",
+"year": 2004
+},
+"english": "Bleach",
+"episodes": 366,
+"episodesAired": 366,
+"franchise": "bleach",
+"id": "269",
+"kind": "tv",
+"malId": "269",
+"name": "Bleach",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/269/9cfa24e177619cf3c0f39a6098cf47de.jpeg"
+},
+"russian": "Блич",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-08",
+"year": 2023
+},
+"english": "Bleach: Thousand-Year Blood War - The Separation",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "bleach",
+"id": "53998",
+"kind": "tv",
+"malId": "53998",
+"name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/53998/c401c0c012981dfd01ee1ab1f6c6bc61.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Прощание",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-01-10",
+"year": 2006
+},
+"english": "Bleach: Gathering! Rukia's Rescue! Shining! The Ultimate Shinigami Showdown! Special Showing of the Shinigami Teams!",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "54171",
+"kind": "special",
+"malId": "54171",
+"name": "Bleach: Shuku! Rukia Dakkan! Kagayaku! Shinigami Juuban Shoubu! Mitai Shinigami Doon to Misemasu Special",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54171/e27ce4209199810ef31841b3d2ff6f73.jpeg"
+},
+"russian": "Блич: Ура, Рукия спасена! Избранное! Десятка лучших битв синигами! Мы покажем ваших самых любимых синигами!",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-10-05",
+"year": 2024
+},
+"english": "Bleach: Thousand-Year Blood War - The Conflict",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "bleach",
+"id": "56784",
+"kind": "tv",
+"malId": "56784",
+"name": "Bleach: Sennen Kessen-hen - Soukoku-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56784/648cc266689c756f5f72095b7bd86cf0.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Конфликт",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-09-02",
+"year": 2023
+},
+"english": "Bleach: Thousand-Year Blood War - The Separation Recap",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "56442",
+"kind": "tv_special",
+"malId": "56442",
+"name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan Recap",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56442/2bf46eb4567db9011ead8f1958e3d8bc.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Прощание. Рекап",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-10-05",
+"year": 2024
+},
+"english": "Bleach 20th Anime Anniversary",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "60048",
+"kind": "pv",
+"malId": "60048",
+"name": "Bleach 20th PV",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/60048/8e1706f3353b44530b0e44a20ca2541b.jpeg"
+},
+"russian": "Блич: Двадцатилетний юбилей",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-10-11",
+"year": 2022
+},
+"english": "Bleach: Thousand-Year Blood War",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "bleach",
+"id": "41467",
+"kind": "tv",
+"malId": "41467",
+"name": "Bleach: Sennen Kessen-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/41467/1623d51618ebb272e4f0c1d6d9a33078.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2005-06-12",
+"year": 2005
+},
+"english": "Bleach: 13 Court Guard Squads Omake",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "bleach",
+"id": "38810",
+"kind": "special",
+"malId": "38810",
+"name": "Bleach: Gotei 13 Omake",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38810/64e0be3ac8de1e3da26d9352059fda7f.jpeg"
+},
+"russian": "Блич: Джамп Феста 2004",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-12-16",
+"year": 2006
+},
+"english": "Bleach the Movie: Memories of Nobody",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "1686",
+"kind": "movie",
+"malId": "1686",
+"name": "Bleach Movie 1: Memories of Nobody",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1686/048c28232eb4a6182a85c05c4ec48049.jpeg"
+},
+"russian": "Блич: Воспоминания ни о ком",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2008-12-13",
+"year": 2008
+},
+"english": "Bleach the Movie: Fade to Black",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "4835",
+"kind": "movie",
+"malId": "4835",
+"name": "Bleach Movie 3: Fade to Black - Kimi no Na wo Yobu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/4835/512f9a849b93d13b0274c8c0f1f0fe84.jpeg"
+},
+"russian": "Блич: Уходя в пустоту — я зову тебя по имени",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2010-12-04",
+"year": 2010
+},
+"english": "Bleach the Movie: Hell Verse",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "8247",
+"kind": "movie",
+"malId": "8247",
+"name": "Bleach Movie 4: Jigoku-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/8247/41d195d3e75a99c30f51eed1dfadf080.jpeg"
+},
+"russian": "Блич: Глава из Ада",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-03-23",
+"year": 2006
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "834",
+"kind": "special",
+"malId": "834",
+"name": "Bleach: The Sealed Sword Frenzy",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/834/6444117f8bca0410bbb1e8fbc30cfb07.jpeg"
+},
+"russian": "Блич: Неистовство заточённого меча",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-09-23",
+"year": 2004
+},
+"english": "Bleach: Memories in the Rain",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "762",
+"kind": "special",
+"malId": "762",
+"name": "Bleach: Memories in the Rain",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/762/bc0226aade7103e3627daeff6f13867e.jpeg"
+},
+"russian": "Блич: Воспоминания под дождём",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-12-22",
+"year": 2007
+},
+"english": "Bleach the Movie: The DiamondDust Rebellion",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "2889",
+"kind": "movie",
+"malId": "2889",
+"name": "Bleach Movie 2: The DiamondDust Rebellion - Mou Hitotsu no Hyourinmaru",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2889/0f623204044937abf092e4b17e1a2b59.jpeg"
+},
+"russian": "Блич: Восстание алмазной пыли",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2008-09-21",
+"year": 2008
+},
+"english": "Bleach: Karaburi! - Gotei 13, Food Stall Devotion!",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "bleach",
+"id": "35118",
+"kind": "ova",
+"malId": "35118",
+"name": "Bleach KaraBuri!: Gotei Juusan Yatai Daisakusen!",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35118/57b08137f62529d5233f94b751758a69.jpeg"
+},
+"russian": "Блич: Джамп Феста 2008",
+"status": "released"
+}
+],
+"anime:Death Stranding: Isolations": [
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": null,
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "62931",
+"kind": "ona",
+"malId": "62931",
+"name": "Death Stranding: Isolations",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/62931/d0262d3f1945ff88011c3fe876728088.jpeg"
+},
+"russian": "Выход смерти: Изоляция",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "1997-03-15",
+"year": 1997
+},
+"english": "Neon Genesis Evangelion: Death & Rebirth",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "evangelion",
+"id": "31",
+"kind": "movie",
+"malId": "31",
+"name": "Shinseiki Evangelion Movie: Shi to Shinsei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/31/2565d6e23687ce0b4da0d522b571bb82.jpeg"
+},
+"russian": "Евангелион нового поколения: Смерть и перерождение",
+"status": "released"
+},
+{
+"airedOn": {
+"date": null,
+"year": null
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "62549",
+"kind": "movie",
+"malId": "62549",
+"name": "Death Stranding: Mosquito",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/62549/68e3f09dfa128c96ffe1a0473112deb7.jpeg"
+},
+"russian": "Выход смерти: Москит",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2022-02-09",
+"year": 2022
+},
+"english": "Death Hall",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "50993",
+"kind": "ona",
+"malId": "50993",
+"name": "Shiyakusho",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50993/24f157308034cdafabf87fb4509ab643.jpeg"
+},
+"russian": "Ведомство по делам мёртвых",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-01-01",
+"year": 2004
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "42989",
+"kind": "music",
+"malId": "42989",
+"name": "Magical Death",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/42989/420cf3a92a8d064fe419c7285d56817e.jpeg"
+},
+"russian": "Волшебная смерть",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-10-04",
+"year": 2006
+},
+"english": "Death Note",
+"episodes": 37,
+"episodesAired": 0,
+"franchise": "death_note",
+"id": "1535",
+"kind": "tv",
+"malId": "1535",
+"name": "Death Note",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1535/a938fe8507a89332b35d71f6883b8e88.jpeg"
+},
+"russian": "Тетрадь смерти",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-07-07",
+"year": 2007
+},
+"english": null,
+"episodes": 7,
+"episodesAired": 0,
+"franchise": "genius_party",
+"id": "3508",
+"kind": "movie",
+"malId": "3508",
+"name": "Genius Party",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/3508/a52638a2df18a9d7c8f3f62c182be120.jpeg"
+},
+"russian": "Гениальная вечеринка",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2015-01-10",
+"year": 2015
+},
+"english": "Death Parade",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "death_parade",
+"id": "28223",
+"kind": "tv",
+"malId": "28223",
+"name": "Death Parade",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/28223/022759737a1a76df5900283060a19634.jpeg"
+},
+"russian": "Смертельный парад",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2013-03-02",
+"year": 2013
+},
+"english": "Death Billiards",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "death_parade",
+"id": "14353",
+"kind": "movie",
+"malId": "14353",
+"name": "Death Billiards",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/14353/0edaf67e94712e875b2d0ac5119b8edd.jpeg"
+},
+"russian": "Смертельный бильярд",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-07",
+"year": 2023
+},
+"english": "Resident Evil: Death Island",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "biohazard",
+"id": "54398",
+"kind": "movie",
+"malId": "54398",
+"name": "Biohazard: Death Island",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54398/ca7f435039051fa12d966c84338d5a09.jpeg"
+},
+"russian": "Обитель зла: Остров смерти",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2019-05-30",
+"year": 2019
+},
+"english": "The Death Vendor",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "52856",
+"kind": "movie",
+"malId": "52856",
+"name": "Shi no Shounin",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/52856/22c82a2dbd3b0e72d28b3a6fd46bf910.jpeg"
+},
+"russian": "Торговец смертью",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-07-06",
+"year": 2018
+},
+"english": "Angels of Death",
+"episodes": 16,
+"episodesAired": 16,
+"franchise": null,
+"id": "35994",
+"kind": "tv",
+"malId": "35994",
+"name": "Satsuriku no Tenshi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35994/0e35dc79c95e03711f198c7ae3a0e93c.jpeg"
+},
+"russian": "Ангел кровопролития",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1985-01-25",
+"year": 1985
+},
+"english": "The Death Lullaby",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "7273",
+"kind": "movie",
+"malId": "7273",
+"name": "Nido to Mezamenu Komoriuta",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/7273/62509346a8a563f8a4e3fc44f0282d85.jpeg"
+},
+"russian": "Предсмертная колыбельная",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-07-19",
+"year": 2007
+},
+"english": "Shigurui: Death Frenzy",
+"episodes": 12,
+"episodesAired": 0,
+"franchise": null,
+"id": "2216",
+"kind": "tv",
+"malId": "2216",
+"name": "Shigurui",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2216/10049e2c950bd8b667f390b29f746ea3.jpeg"
+},
+"russian": "Одержимые смертью",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-08-31",
+"year": 2007
+},
+"english": "Death Note: Relight",
+"episodes": 2,
+"episodesAired": 0,
+"franchise": "death_note",
+"id": "2994",
+"kind": "tv_special",
+"malId": "2994",
+"name": "Death Note: Rewrite",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2994/f8338be45af179c2f577b6c56d28515e.jpeg"
+},
+"russian": "Тетрадь смерти: Перезапись",
+"status": "released"
+}
+],
+"anime:E&H production": [
+{
+"airedOn": {
+"date": "2006-02-10",
+"year": 2006
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "hi_no_tori",
+"id": "64338",
+"kind": "ona",
+"malId": "64338",
+"name": "Hi no Tori: Earthkeepers-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/64338/a77c3fce0d89c6be3e094f303736f33c.jpeg"
+},
+"russian": "Жар-птица: Хранители Земли",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2017-05-22",
+"year": 2017
+},
+"english": null,
+"episodes": 11,
+"episodesAired": 0,
+"franchise": "chou_futsuu_toshi_kashiwa_densetsu",
+"id": "42875",
+"kind": "ona",
+"malId": "42875",
+"name": "Chou Futsuu Toshi Kashiwa Densetsu: Ekimae Housou UDC2-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/42875/967804dfa4d6f032eb7a3e9798512854.jpeg"
+},
+"russian": "Легенда о Касиве: Радиостанция УДК2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-04-10",
+"year": 2018
+},
+"english": "High School DxD Hero Episode 0: Holiness Behind the Gym",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "high_school_dxd",
+"id": "37719",
+"kind": "tv_special",
+"malId": "37719",
+"name": "High School DxD Hero: Taiikukan-ura no Holy",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/37719/e5f28caff92e6e507a11b6d521870a57.jpeg"
+},
+"russian": "Старшая школа DxD: Герой — Эпизод 0",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-06-26",
+"year": 2024
+},
+"english": "Sound! Euphonium 3: Extra Episodes",
+"episodes": 6,
+"episodesAired": 5,
+"franchise": "hibike_euphonium",
+"id": "58856",
+"kind": "special",
+"malId": "58856",
+"name": "Hibike! Euphonium 3: Extra Episodes",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/58856/6b5f06ab62ad3ce4b2cdb1880a98cd79.jpeg"
+},
+"russian": "Звучи, эуфониум! 3: Спецвыпуски",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-08-04",
+"year": 2023
+},
+"english": "Sound! Euphonium: Ensemble Contest",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "hibike_euphonium",
+"id": "51995",
+"kind": "movie",
+"malId": "51995",
+"name": "Hibike! Euphonium: Ensemble Contest-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51995/1791fcc33daf3f9903ba449042a63563.jpeg"
+},
+"russian": "Звучи, эуфониум! Соревнование ансамблей",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-11-26",
+"year": 2021
+},
+"english": "Eureka Seven Hi-Evolution 3",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "eureka_seven",
+"id": "35136",
+"kind": "movie",
+"malId": "35136",
+"name": "Koukyoushihen Eureka Seven Hi-Evolution 3: Eureka",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35136/890ffd4f0c217137ec0c3174af63f9ca.jpeg"
+},
+"russian": "Эврика 7: Высокая эволюция 3",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2010-01-29",
+"year": 2010
+},
+"english": "Pleasant Goat and Big Big Wolf: The Tiger Prowess",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "meet_the_pegasus",
+"id": "9973",
+"kind": "movie",
+"malId": "9973",
+"name": "Xi Yangyang Yu Hui Tailang: Hu Hu Sheng Wei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/9973/c20b30890be1fd62bd6c8dadbddcb345.jpeg"
+},
+"russian": "Милый козлик и серый волк: Тигриное могущество",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2009-09-26",
+"year": 2009
+},
+"english": "Eden of The East Compilation: Air Communication; Higashi no Eden Recap",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "higashi_no_eden",
+"id": "6927",
+"kind": "movie",
+"malId": "6927",
+"name": "Higashi no Eden: Air Communication",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/6927/9bc5756eaa117a3850cb81a61a965446.jpeg"
+},
+"russian": "Восточный Эдем: Воздушная связь",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-07-11",
+"year": 2016
+},
+"english": "Danganronpa 3: The End of Hope's Peak High School - Future Arc",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "danganronpa",
+"id": "32189",
+"kind": "tv",
+"malId": "32189",
+"name": "Danganronpa 3: The End of Kibougamine Gakuen - Mirai-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32189/0d96b00b8589d1c783e1c7a4645cccf4.jpeg"
+},
+"russian": "Данганронпа 3: Конец школы надежды — Будущее",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-09-29",
+"year": 2016
+},
+"english": "Danganronpa 3: The End of Hope's Peak High School - Hope Arc",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "danganronpa",
+"id": "34103",
+"kind": "tv_special",
+"malId": "34103",
+"name": "Danganronpa 3: The End of Kibougamine Gakuen - Kibou-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/34103/6955d9b390343f2c020a49b1f870c60f.jpeg"
+},
+"russian": "Данганронпа 3: Конец школы надежды — Надежда",
+"status": "released"
+},
+{
+"airedOn": {
+"date": null,
+"year": null
+},
+"english": "I Can't Exploit it Because of the Expectations and Evaluation from Slaves",
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "65104",
+"kind": null,
+"malId": "65104",
+"name": "Dorei kara no Kitai to Hyouka no Sei de Sakushu Dekinai no da ga",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/65104/4b9f07413efabd53f5309832e6733277.jpeg"
+},
+"russian": "Я не могу эксплуатировать своих рабов из-за их высоких ожиданий и оценок",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2017-11-24",
+"year": 2017
+},
+"english": null,
+"episodes": 4,
+"episodesAired": 4,
+"franchise": null,
+"id": "36256",
+"kind": "ova",
+"malId": "36256",
+"name": "Katainaka ni Totsuidekita ○-ssia Musume to H Shimakuru Ohanashi",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Замужняя русская девушка хочет заняться «этим»",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-01-13",
+"year": 2021
+},
+"english": "Log Horizon: Destruction of the Round Table",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "log_horizon",
+"id": "41109",
+"kind": "tv",
+"malId": "41109",
+"name": "Log Horizon: Entaku Houkai",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/41109/31792d13b5d03127cc4a50d7bdb44582.jpeg"
+},
+"russian": "Покорение горизонта: Падение круглого стола",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-09-21",
+"year": 2004
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "monster",
+"id": "1109",
+"kind": "tv_special",
+"malId": "1109",
+"name": "Monster Extra: Hottan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1109/50ecf57831b658aa41f8b15d667da36a.jpeg"
+},
+"russian": "Монстр: Экстра-эпизод",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2017-06-07",
+"year": 2017
+},
+"english": "Hungry Days: Are You Hungry?",
+"episodes": 11,
+"episodesAired": 10,
+"franchise": "one_piece",
+"id": "35770",
+"kind": "cm",
+"malId": "35770",
+"name": "Hungry Days: Aoharu ka yo.",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35770/2ce97ac62503140e228c8a87e36c5167.jpeg"
+},
+"russian": "Голодные дни",
+"status": "released"
+}
+],
+"anime:MAPPA": [
+{
+"airedOn": {
+"date": "2019-07-04",
+"year": 2019
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "61342",
+"kind": "pv",
+"malId": "61342",
+"name": "Mappa Show Case Logo Movie",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/61342/b4183b41d18305c3202cf059b3363f2c.jpeg"
+},
+"russian": null,
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-06-19",
+"year": 2026
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "64429",
+"kind": "music",
+"malId": "64429",
+"name": "MAPPA 15th Anniversary Movie: Seikatsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/64429/096722b85550a02b02b5b6cc055b08f2.jpeg"
+},
+"russian": "Пятнадцатая годовщина MAPPA: Жизнь",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-04-10",
+"year": 2026
+},
+"english": "Honkai: Star Rail x MAPPA Animation Concept Trailer - \"Death in the Afternoon\"",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "63935",
+"kind": "pv",
+"malId": "63935",
+"name": "Benghuai: Xing Qiong Tiedao x MAPPA Yuanchuang Donghua Gainian PV - Si Yu Wuhou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63935/2c230b7902fcf0a7ccb3c1e0418614fb.jpeg"
+},
+"russian": "Путешествия тысячи звёзд х MAPPA: Смерть после полудня",
+"status": "released"
+}
+],
+"anime:Mushoku Tensi": [
+{
+"airedOn": {
+"date": "2004-01-22",
+"year": 2004
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "tenshi_no_shippo_chu",
+"id": "22231",
+"kind": "ova",
+"malId": "22231",
+"name": "Tenshi no Shippo Chu!: Tenshi no Utagoe",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/22231/928e4d16b5dc862e7164a790be8649c4.jpeg"
+},
+"russian": "Ангельский хвостик 2: Поющий ангел",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-04-07",
+"year": 2004
+},
+"english": "Burst Angel",
+"episodes": 24,
+"episodesAired": 0,
+"franchise": "bakuretsu_tenshi",
+"id": "109",
+"kind": "tv",
+"malId": "109",
+"name": "Bakuretsu Tenshi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/109/47e0fb54ac7d6138062a56baf366a1d8.jpeg"
+},
+"russian": "Ангелы смерти",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2000-05-25",
+"year": 2000
+},
+"english": "Angel Sanctuary",
+"episodes": 3,
+"episodesAired": 0,
+"franchise": null,
+"id": "51",
+"kind": "ova",
+"malId": "51",
+"name": "Tenshi Kinryouku",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51/a3dc4ced91521db76677042447748f38.jpeg"
+},
+"russian": "Обитель ангелов",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1977-06-01",
+"year": 1977
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "53841",
+"kind": "music",
+"malId": "53841",
+"name": "Tenshi no Pants",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/53841/045808bfb2dc35df11a7ceac329ed712.jpeg"
+},
+"russian": "Штанишки ангела",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-12-27",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "umisea",
+"id": "51564",
+"kind": "music",
+"malId": "51564",
+"name": "Tenshi no Agape",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51564/2692e6b02fedda3fe31e013b762f1ae9.jpeg"
+},
+"russian": "Любовь ангела",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2019-12-21",
+"year": 2019
+},
+"english": "My Angel",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "41174",
+"kind": "music",
+"malId": "41174",
+"name": "Watashi no Tenshi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/41174/2a18a82554abe6b6953ea4309f3b3181.jpeg"
+},
+"russian": "Мой ангел",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-07-06",
+"year": 2018
+},
+"english": "Angels of Death",
+"episodes": 16,
+"episodesAired": 16,
+"franchise": null,
+"id": "35994",
+"kind": "tv",
+"malId": "35994",
+"name": "Satsuriku no Tenshi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35994/0e35dc79c95e03711f198c7ae3a0e93c.jpeg"
+},
+"russian": "Ангел кровопролития",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-11-26",
+"year": 2004
+},
+"english": "Jiburiru: The Devil Angel",
+"episodes": 4,
+"episodesAired": 0,
+"franchise": "makai_tenshi_djibril",
+"id": "1360",
+"kind": "ova",
+"malId": "1360",
+"name": "Makai Tenshi Djibril",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Дьявольский ангелочек Джибрил",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2002-09-27",
+"year": 2002
+},
+"english": "Beat Angel Escalayer",
+"episodes": 3,
+"episodesAired": 0,
+"franchise": null,
+"id": "1780",
+"kind": "ova",
+"malId": "1780",
+"name": "Choukou Tenshi Escalayer",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Боевой ангел Эскалейер",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-02-24",
+"year": 2006
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "5108",
+"kind": "ova",
+"malId": "5108",
+"name": "Ryuusei Tenshi Primaveil",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Прима-ангел",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2012-04-20",
+"year": 2012
+},
+"english": null,
+"episodes": 2,
+"episodesAired": 1,
+"franchise": null,
+"id": "13379",
+"kind": "ova",
+"malId": "13379",
+"name": "Okusama wa Michael",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Моя жена — архангел Михаил",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1985-12-22",
+"year": 1985
+},
+"english": "Angel's Egg",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "885",
+"kind": "ova",
+"malId": "885",
+"name": "Tenshi no Tamago",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/885/786d635eec916681e69bb266de9d2b92.jpeg"
+},
+"russian": "Яйцо ангела",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1999-10-05",
+"year": 1999
+},
+"english": "Steel Angel Kurumi",
+"episodes": 24,
+"episodesAired": 0,
+"franchise": "koutetsu_tenshi_kurumi",
+"id": "554",
+"kind": "tv",
+"malId": "554",
+"name": "Koutetsu Tenshi Kurumi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/554/2ad8a98d9b30e8f8783e6b56ef13a5e9.jpeg"
+},
+"russian": "Стальной ангел Куруми",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1999-04-07",
+"year": 1999
+},
+"english": "I'm Gonna Be an Angel!",
+"episodes": 26,
+"episodesAired": 0,
+"franchise": null,
+"id": "605",
+"kind": "tv",
+"malId": "605",
+"name": "Tenshi ni Narumon!",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/605/651b25c9ede1142446d5e87619945a35.jpeg"
+},
+"russian": "Я стану ангелом!",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2002-04-07",
+"year": 2002
+},
+"english": "Cheeky Angel",
+"episodes": 50,
+"episodesAired": 0,
+"franchise": "tenshi_na_konamaiki",
+"id": "200",
+"kind": "tv",
+"malId": "200",
+"name": "Tenshi na Konamaiki",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/200/41cabcbec5f71b5e72390b1fac039577.jpeg"
+},
+"russian": "Нахальный ангел",
+"status": "released"
+}
+],
+"anime:kikansha no mahou": [
+{
+"airedOn": {
+"date": "2023-10-08",
+"year": 2023
+},
+"english": "A Returner's Magic Should Be Special",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "54852",
+"kind": "tv",
+"malId": "54852",
+"name": "Kikansha no Mahou wa Tokubetsu desu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54852/f705c6fccd5dc0b32b88bbff5a065e07.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-10-08",
+"year": 2026
+},
+"english": "A Returner's Magic Should Be Special Season 2",
+"episodes": 0,
+"episodesAired": 5,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "57612",
+"kind": "tv",
+"malId": "57612",
+"name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+"nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной 2",
+"status": "ongoing"
+},
+{
+"airedOn": {
+"date": "1990-01-01",
+"year": 1990
+},
+"english": null,
+"episodes": 2,
+"episodesAired": 0,
+"franchise": "mahoutsukai_sally",
+"id": "32794",
+"kind": "special",
+"malId": "32794",
+"name": "Mahoutsukai Sally Specials",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32794/7c536b7f498906c5777c4e3f2dbe9c1a.jpeg"
+},
+"russian": "Ведьма Салли: Дополнительные эпизоды",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1985-08-03",
+"year": 1985
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "mahou_no_yousei_persia",
+"id": "8972",
+"kind": "movie",
+"malId": "8972",
+"name": "Mahou no Princess Minky Momo vs. Mahou no Tenshi Creamy Mami",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/8972/4d247b8586144b57aee5c075d02e845e.jpeg"
+},
+"russian": "Минки Момо против Крими Мами",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-01-01",
+"year": 2007
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "30932",
+"kind": "ova",
+"malId": "30932",
+"name": "Oz no Mahoutsukai no Koutsuu Anzen no Tabi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/30932/25b5f0a75794476931e85f9a3ba87649.jpeg"
+},
+"russian": "«Волшебник страны Оз» и безопасность дорожного движения",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1993-09-21",
+"year": 1993
+},
+"english": "Pekkle in Aladdin and His Magic Lamp",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": null,
+"id": "22611",
+"kind": "ova",
+"malId": "22611",
+"name": "Ahiru no Pekkle no Aladdin to Mahou no Lamp",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/22611/9d592f6a27f3ce90296e8d406639c064.jpeg"
+},
+"russian": "Утка Пеккл: Аладдин и его волшебная лампа",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1991-07-20",
+"year": 1991
+},
+"english": "Hello Kitty in The Sleeping Princess",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "hello_kitty",
+"id": "18827",
+"kind": "movie",
+"malId": "18827",
+"name": "Hello Kitty: Mahou no Mori no Ohimesama",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/18827/6526ede6498b5426c01977661c475df4.jpeg"
+},
+"russian": "Привет, Китти: Спящая принцесса",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-03-09",
+"year": 2018
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "shimajirou_no_wow",
+"id": "36727",
+"kind": "movie",
+"malId": "36727",
+"name": "Shimajirou no Wow! Movie 6: Mahou no Shima no Daibouken",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/36727/8424b03cffdccf914af952c89032625e.jpeg"
+},
+"russian": "Симадзиро: Большое приключение на волшебном острове",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-09-10",
+"year": 2021
+},
+"english": "The Ancient Magus' Bride: The Boy from the West and the Knight of the Blue Storm",
+"episodes": 3,
+"episodesAired": 3,
+"franchise": "mahoyome",
+"id": "48438",
+"kind": "ova",
+"malId": "48438",
+"name": "Mahoutsukai no Yome: Nishi no Shounen to Seiran no Kishi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/48438/bbe72013bded8c988b2cb14c5f8ecfd4.jpeg"
+},
+"russian": "Невеста чародея: Мальчик с Запада и рыцарь горной дымки",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1985-07-28",
+"year": 1985
+},
+"english": "Magical Princess Minky Momo: La Ronde in my Dream",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "mahou_no_princess_minky_momo",
+"id": "2272",
+"kind": "ova",
+"malId": "2272",
+"name": "Mahou no Princess Minky Momo: Yume no Naka no Rondo",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2272/c089be5d2b4b896a9496d982b59cb4b4.jpeg"
+},
+"russian": "Принцесса-волшебница Минки Момо: Рондо во сне",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-11-13",
+"year": 2026
+},
+"english": "Fairy Princess Minky Momo (OVA)",
+"episodes": 0,
+"episodesAired": 0,
+"franchise": "mahou_no_princess_minky_momo",
+"id": "63167",
+"kind": "ova",
+"malId": "63167",
+"name": "Mahou no Princess Minky Momo: Akogare no Yume e - Magokoro no Duo",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63167/5e3f656c61e95bf65e2f0434ac0e43a3.jpeg"
+},
+"russian": "Принцесса-волшебница Минки Момо: К заветной мечте — Дуэт искренних сердец",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2007-03-10",
+"year": 2007
+},
+"english": "Doraemon the Movie: Nobita's New Great Adventure into the Underworld",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "doraemon",
+"id": "2673",
+"kind": "movie",
+"malId": "2673",
+"name": "Doraemon Movie 27: Nobita no Shin Makai Daibouken - 7-nin no Mahoutsukai",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2673/2a84cd108394ef711b70f4ca2dc91b09.jpeg"
+},
+"russian": "Дораэмон: Приключение в магическом мире (2007)",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-12-01",
+"year": 2022
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "49851",
+"kind": "ona",
+"malId": "49851",
+"name": "Joshikousei to Mahou no Note",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/49851/9ec780f8671af1e8ce7261d8f8831b67.jpeg"
+},
+"russian": "Старшеклассница и волшебная тетрадь",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-10-11",
+"year": 2023
+},
+"english": "Frieren: Beyond Journey's End Mini Anime",
+"episodes": 24,
+"episodesAired": 23,
+"franchise": "frieren",
+"id": "56885",
+"kind": "ona",
+"malId": "56885",
+"name": "Sousou no Frieren: ●● no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56885/e91ea1cc0a97d131a60efe2243d45281.jpeg"
+},
+"russian": "Провожающая в последний путь Фрирен: Магия ●●",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1991-08-02",
+"year": 1991
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "38323",
+"kind": "music",
+"malId": "38323",
+"name": "Te no Naka no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38323/cb4989375d8504d489048d7dd70768de.jpeg"
+},
+"russian": "Магия в руке",
+"status": "released"
+}
+],
+"anime:mushoku tensei": [
+{
+"airedOn": {
+"date": "2022-03-16",
+"year": 2022
+},
+"english": "Mushoku Tensei: Jobless Reincarnation - Eris the Goblin Slayer",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "50360",
+"kind": "special",
+"malId": "50360",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50360/408a5fbdc393de3e94cbdddd03364ea6.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-10",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "51179",
+"kind": "tv",
+"malId": "51179",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-04-08",
+"year": 2024
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "55888",
+"kind": "tv",
+"malId": "55888",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-03",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 - Episode 0 \"Guardian Fitz\"",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "mushoku_tensei",
+"id": "55818",
+"kind": "tv_special",
+"malId": "55818",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55818/b433b012e6d3b6d12c041bb4cd1ac56b.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-01-11",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation",
+"episodes": 11,
+"episodesAired": 11,
+"franchise": "mushoku_tensei",
+"id": "39535",
+"kind": "tv",
+"malId": "39535",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-10-04",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "45576",
+"kind": "tv",
+"malId": "45576",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/45576/0a98f6e5dbcc1d4c643c1b7b9874902e.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3 Part 2",
+"episodes": 0,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "65077",
+"kind": "tv",
+"malId": "65077",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/65077/5ba597d4ea11ab92303f123d4e83440d.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3. Часть 2",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2026-07-06",
+"year": 2026
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "mushoku_tensei",
+"id": "59193",
+"kind": "tv",
+"malId": "59193",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/59193/22f02167e562e703fef2cbed82b93d06.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-06-03",
+"year": 2022
+},
+"english": "Reincarnation Apple",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "52304",
+"kind": "music",
+"malId": "52304",
+"name": "Tensei Ringo",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/52304/ee400bf46829993e8b42a3a8b9d43110.jpeg"
+},
+"russian": "Яблоко перерождения",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2000-03-25",
+"year": 2000
+},
+"english": null,
+"episodes": 4,
+"episodesAired": 0,
+"franchise": null,
+"id": "3427",
+"kind": "ova",
+"malId": "3427",
+"name": "Oni-Tensei",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Они-Тэнсэй — Дьявольская коллекция",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-12-24",
+"year": 2016
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "34889",
+"kind": "music",
+"malId": "34889",
+"name": "Cerberus",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/34889/92230c59d131acd52452766b68027295.jpeg"
+},
+"russian": "Цербер",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-04",
+"year": 2023
+},
+"english": "Sweet Reincarnation",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "okashi_na_tensei",
+"id": "52611",
+"kind": "tv",
+"malId": "52611",
+"name": "Okashi na Tensei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/52611/d49950215dfe58a5d0411fe7e8f3a925.jpeg"
+},
+"russian": "Сладкое перевоплощение",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": null,
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "63730",
+"kind": "tv",
+"malId": "63730",
+"name": "Isekai Tensei Soudouki",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63730/196b5937742a4154e508a2599e5001ae.jpeg"
+},
+"russian": "Реинкарнация и растроение личности",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2016-04-26",
+"year": 2016
+},
+"english": null,
+"episodes": 2,
+"episodesAired": 0,
+"franchise": null,
+"id": "33103",
+"kind": "special",
+"malId": "33103",
+"name": "Zekkyou Gakkyuu: Tensei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/33103/446e5c9e7349b678f14e2b19296bc966.jpeg"
+},
+"russian": "Уроки крика: Прятки с демоном",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2014-10-21",
+"year": 2014
+},
+"english": "Kujakuou Sengokutensei",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "kujakuou",
+"id": "28151",
+"kind": "ona",
+"malId": "28151",
+"name": "Kujakuou: Sengoku Tensei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/28151/bf2bdc85318be42c9aba9d3eefe02607.jpeg"
+},
+"russian": "Заклинатель Кудзяку: Дух-боец",
+"status": "released"
+}
+],
+"anime:Блич": [
+{
+"airedOn": {
+"date": "2004-10-05",
+"year": 2004
+},
+"english": "Bleach",
+"episodes": 366,
+"episodesAired": 366,
+"franchise": "bleach",
+"id": "269",
+"kind": "tv",
+"malId": "269",
+"name": "Bleach",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/269/9cfa24e177619cf3c0f39a6098cf47de.jpeg"
+},
+"russian": "Блич",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-08",
+"year": 2023
+},
+"english": "Bleach: Thousand-Year Blood War - The Separation",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "bleach",
+"id": "53998",
+"kind": "tv",
+"malId": "53998",
+"name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/53998/c401c0c012981dfd01ee1ab1f6c6bc61.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Прощание",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-01-10",
+"year": 2006
+},
+"english": "Bleach: Gathering! Rukia's Rescue! Shining! The Ultimate Shinigami Showdown! Special Showing of the Shinigami Teams!",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "54171",
+"kind": "special",
+"malId": "54171",
+"name": "Bleach: Shuku! Rukia Dakkan! Kagayaku! Shinigami Juuban Shoubu! Mitai Shinigami Doon to Misemasu Special",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54171/e27ce4209199810ef31841b3d2ff6f73.jpeg"
+},
+"russian": "Блич: Ура, Рукия спасена! Избранное! Десятка лучших битв синигами! Мы покажем ваших самых любимых синигами!",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-10-05",
+"year": 2024
+},
+"english": "Bleach: Thousand-Year Blood War - The Conflict",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "bleach",
+"id": "56784",
+"kind": "tv",
+"malId": "56784",
+"name": "Bleach: Sennen Kessen-hen - Soukoku-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56784/648cc266689c756f5f72095b7bd86cf0.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Конфликт",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-09-02",
+"year": 2023
+},
+"english": "Bleach: Thousand-Year Blood War - The Separation Recap",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "56442",
+"kind": "tv_special",
+"malId": "56442",
+"name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan Recap",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56442/2bf46eb4567db9011ead8f1958e3d8bc.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Прощание. Рекап",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-10-05",
+"year": 2024
+},
+"english": "Bleach 20th Anime Anniversary",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "60048",
+"kind": "pv",
+"malId": "60048",
+"name": "Bleach 20th PV",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/60048/8e1706f3353b44530b0e44a20ca2541b.jpeg"
+},
+"russian": "Блич: Двадцатилетний юбилей",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-10-11",
+"year": 2022
+},
+"english": "Bleach: Thousand-Year Blood War",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "bleach",
+"id": "41467",
+"kind": "tv",
+"malId": "41467",
+"name": "Bleach: Sennen Kessen-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/41467/1623d51618ebb272e4f0c1d6d9a33078.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2005-06-12",
+"year": 2005
+},
+"english": "Bleach: 13 Court Guard Squads Omake",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "bleach",
+"id": "38810",
+"kind": "special",
+"malId": "38810",
+"name": "Bleach: Gotei 13 Omake",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38810/64e0be3ac8de1e3da26d9352059fda7f.jpeg"
+},
+"russian": "Блич: Джамп Феста 2004",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-12-16",
+"year": 2006
+},
+"english": "Bleach the Movie: Memories of Nobody",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "1686",
+"kind": "movie",
+"malId": "1686",
+"name": "Bleach Movie 1: Memories of Nobody",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1686/048c28232eb4a6182a85c05c4ec48049.jpeg"
+},
+"russian": "Блич: Воспоминания ни о ком",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2008-12-13",
+"year": 2008
+},
+"english": "Bleach the Movie: Fade to Black",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "4835",
+"kind": "movie",
+"malId": "4835",
+"name": "Bleach Movie 3: Fade to Black - Kimi no Na wo Yobu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/4835/512f9a849b93d13b0274c8c0f1f0fe84.jpeg"
+},
+"russian": "Блич: Уходя в пустоту — я зову тебя по имени",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2010-12-04",
+"year": 2010
+},
+"english": "Bleach the Movie: Hell Verse",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "8247",
+"kind": "movie",
+"malId": "8247",
+"name": "Bleach Movie 4: Jigoku-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/8247/41d195d3e75a99c30f51eed1dfadf080.jpeg"
+},
+"russian": "Блич: Глава из Ада",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-03-23",
+"year": 2006
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "834",
+"kind": "special",
+"malId": "834",
+"name": "Bleach: The Sealed Sword Frenzy",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/834/6444117f8bca0410bbb1e8fbc30cfb07.jpeg"
+},
+"russian": "Блич: Неистовство заточённого меча",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-09-23",
+"year": 2004
+},
+"english": "Bleach: Memories in the Rain",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "762",
+"kind": "special",
+"malId": "762",
+"name": "Bleach: Memories in the Rain",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/762/bc0226aade7103e3627daeff6f13867e.jpeg"
+},
+"russian": "Блич: Воспоминания под дождём",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-12-22",
+"year": 2007
+},
+"english": "Bleach the Movie: The DiamondDust Rebellion",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "2889",
+"kind": "movie",
+"malId": "2889",
+"name": "Bleach Movie 2: The DiamondDust Rebellion - Mou Hitotsu no Hyourinmaru",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2889/0f623204044937abf092e4b17e1a2b59.jpeg"
+},
+"russian": "Блич: Восстание алмазной пыли",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2008-09-21",
+"year": 2008
+},
+"english": "Bleach: Karaburi! - Gotei 13, Food Stall Devotion!",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "bleach",
+"id": "35118",
+"kind": "ova",
+"malId": "35118",
+"name": "Bleach KaraBuri!: Gotei Juusan Yatai Daisakusen!",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35118/57b08137f62529d5233f94b751758a69.jpeg"
+},
+"russian": "Блич: Джамп Феста 2008",
+"status": "released"
+}
+],
+"anime:Блич Тысячелетняя кровавая война": [
+{
+"airedOn": {
+"date": "2022-10-11",
+"year": 2022
+},
+"english": "Bleach: Thousand-Year Blood War",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "bleach",
+"id": "41467",
+"kind": "tv",
+"malId": "41467",
+"name": "Bleach: Sennen Kessen-hen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/41467/1623d51618ebb272e4f0c1d6d9a33078.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-08",
+"year": 2023
+},
+"english": "Bleach: Thousand-Year Blood War - The Separation",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "bleach",
+"id": "53998",
+"kind": "tv",
+"malId": "53998",
+"name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/53998/c401c0c012981dfd01ee1ab1f6c6bc61.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Прощание",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-10-05",
+"year": 2024
+},
+"english": "Bleach: Thousand-Year Blood War - The Conflict",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "bleach",
+"id": "56784",
+"kind": "tv",
+"malId": "56784",
+"name": "Bleach: Sennen Kessen-hen - Soukoku-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56784/648cc266689c756f5f72095b7bd86cf0.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Конфликт",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-07-25",
+"year": 2026
+},
+"english": "Bleach: Thousand-Year Blood War - The Calamity",
+"episodes": 10,
+"episodesAired": 10,
+"franchise": "bleach",
+"id": "60636",
+"kind": "tv",
+"malId": "60636",
+"name": "Bleach: Sennen Kessen-hen - Kashin-tan",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/60636/d155567a5040597064e73fa18394dc37.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Бедствие",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-09-02",
+"year": 2023
+},
+"english": "Bleach: Thousand-Year Blood War - The Separation Recap",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "bleach",
+"id": "56442",
+"kind": "tv_special",
+"malId": "56442",
+"name": "Bleach: Sennen Kessen-hen - Ketsubetsu-tan Recap",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56442/2bf46eb4567db9011ead8f1958e3d8bc.jpeg"
+},
+"russian": "Блич: Тысячелетняя кровавая война — Прощание. Рекап",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-07-23",
+"year": 2022
+},
+"english": "Millenniums Of Warring States",
+"episodes": 16,
+"episodesAired": 16,
+"franchise": null,
+"id": "51517",
+"kind": "ona",
+"malId": "51517",
+"name": "Zhan Qiannian",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51517/9298eb562da4727b21c7d59307870b15.jpeg"
+},
+"russian": "Война королевств",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-10-05",
+"year": 2004
+},
+"english": "Bleach",
+"episodes": 366,
+"episodesAired": 366,
+"franchise": "bleach",
+"id": "269",
+"kind": "tv",
+"malId": "269",
+"name": "Bleach",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/269/9cfa24e177619cf3c0f39a6098cf47de.jpeg"
+},
+"russian": "Блич",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-06-15",
+"year": 2022
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "53298",
+"kind": "music",
+"malId": "53298",
+"name": "Akui Sensou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/53298/9583574bbd2be0c41f1db6535f85c4cc.jpeg"
+},
+"russian": "Злая война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-12-25",
+"year": 2023
+},
+"english": "Since The Red Moon Appeared",
+"episodes": 16,
+"episodesAired": 8,
+"franchise": null,
+"id": "57422",
+"kind": "ona",
+"malId": "57422",
+"name": "Cong Hong Yue Kaishi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57422/f5d69131362b446746c0c77f5459f8d3.jpeg"
+},
+"russian": "С тех пор как появилась красная луна",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-02-19",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55673",
+"kind": "music",
+"malId": "55673",
+"name": "Bloody Mary",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55673/0a313896898e8fa25518fc40432ae416.jpeg"
+},
+"russian": "Кровавая Мэри",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-04-03",
+"year": 2022
+},
+"english": "My War",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "shingeki_no_kyojin",
+"id": "51618",
+"kind": "music",
+"malId": "51618",
+"name": "Boku no Sensou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51618/a969ae03b211dcb4c697240dd4ee80b8.jpeg"
+},
+"russian": "Моя война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-07-27",
+"year": 2021
+},
+"english": null,
+"episodes": 20,
+"episodesAired": 20,
+"franchise": null,
+"id": "49433",
+"kind": "ona",
+"malId": "49433",
+"name": "Youxia Zhanji",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/49433/a6f476dbac140cea740830f009d8f146.jpeg"
+},
+"russian": "Война рейнджеров",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2008-04-11",
+"year": 2008
+},
+"english": "Library Wars",
+"episodes": 12,
+"episodesAired": 0,
+"franchise": "toshokan_sensou",
+"id": "3613",
+"kind": "tv",
+"malId": "3613",
+"name": "Toshokan Sensou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/3613/6b8ad1ad1d46709ab978ea5d179c24d3.jpeg"
+},
+"russian": "Библиотечная война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-11-28",
+"year": 1998
+},
+"english": null,
+"episodes": 2,
+"episodesAired": 0,
+"franchise": null,
+"id": "9500",
+"kind": "ova",
+"malId": "9500",
+"name": "Starlight Scramble Renai Kouhosei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/9500/39bbe9f17bec92bddf829111bfdba41a.jpeg"
+},
+"russian": "Звёздная война",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-04-05",
+"year": 2006
+},
+"english": "Bloody Night",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "11869",
+"kind": "ona",
+"malId": "11869",
+"name": "Bloody Night",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/11869/821f87da5911ecc12f545f69ecb04007.jpeg"
+},
+"russian": "Кровавая ночь",
+"status": "released"
+}
+],
+"anime:Магическая битва": [
+{
+"airedOn": {
+"date": "2020-10-03",
+"year": 2020
+},
+"english": "Jujutsu Kaisen",
+"episodes": 24,
+"episodesAired": 24,
+"franchise": "jujutsu_kaisen",
+"id": "40748",
+"kind": "tv",
+"malId": "40748",
+"name": "Jujutsu Kaisen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/40748/af4f2db18f17de4d7c6491f6f92cd9d9.jpeg"
+},
+"russian": "Магическая битва",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-06",
+"year": 2023
+},
+"english": "Jujutsu Kaisen Season 2",
+"episodes": 23,
+"episodesAired": 23,
+"franchise": "jujutsu_kaisen",
+"id": "51009",
+"kind": "tv",
+"malId": "51009",
+"name": "Jujutsu Kaisen 2nd Season",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51009/11ae4aeb0046c9587150e3982c8da446.jpeg"
+},
+"russian": "Магическая битва 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-01-09",
+"year": 2026
+},
+"english": "Jujutsu Kaisen: The Culling Game Part 1",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "jujutsu_kaisen",
+"id": "57658",
+"kind": "tv",
+"malId": "57658",
+"name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57658/7fd0d0760734513d62189ff53015546d.jpeg"
+},
+"russian": "Магическая битва: Смертельная миграция",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-08-11",
+"year": 2023
+},
+"english": "Jujutsu Kaisen Season 2 Recaps",
+"episodes": 2,
+"episodesAired": 0,
+"franchise": "jujutsu_kaisen",
+"id": "56243",
+"kind": "tv_special",
+"malId": "56243",
+"name": "Jujutsu Kaisen 2nd Season Recaps",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/56243/260c49a96df8a3b47d21d8f21fdc032c.jpeg"
+},
+"russian": "Магическая битва 2: Рекапы",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-12-24",
+"year": 2021
+},
+"english": "Jujutsu Kaisen 0",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "jujutsu_kaisen",
+"id": "48561",
+"kind": "movie",
+"malId": "48561",
+"name": "Jujutsu Kaisen 0 Movie",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/48561/fd8b173374561dae24fb57d27eba9ae6.jpeg"
+},
+"russian": "Магическая битва 0. Фильм",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-12-03",
+"year": 2018
+},
+"english": "Jujutsu Kaisen Official PVs",
+"episodes": 3,
+"episodesAired": 1,
+"franchise": "jujutsu_kaisen",
+"id": "38777",
+"kind": "pv",
+"malId": "38777",
+"name": "Jujutsu Kaisen Official PVs",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38777/de89cc3ec9f99d8d41c94d3e60ce0546.jpeg"
+},
+"russian": "Магическая битва PV",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2025-11-07",
+"year": 2025
+},
+"english": "Jujutsu Kaisen: Execution",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "jujutsu_kaisen",
+"id": "62392",
+"kind": "movie",
+"malId": "62392",
+"name": "Jujutsu Kaisen Movie: Shibuya Jihen Tokubetsu Henshuu-ban x Shimetsu Kaiyuu Senkou Jouei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/62392/c974b3504449297a85e2dbc1a298edc5.jpeg"
+},
+"russian": "Магическая битва: Инцидент в Сибуе — Смертельная миграция",
+"status": "released"
+},
+{
+"airedOn": {
+"date": null,
+"year": null
+},
+"english": "Jujutsu Kaisen: The Culling Game Part 2",
+"episodes": 0,
+"episodesAired": 0,
+"franchise": "jujutsu_kaisen",
+"id": "63824",
+"kind": "tv",
+"malId": "63824",
+"name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Kouhen",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63824/c841de6fbc9534b7057911e02bc11cb6.jpeg"
+},
+"russian": "Магическая битва: Смертельная миграция. Часть 2",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2026-04-30",
+"year": 2026
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "jujutsu_kaisen",
+"id": "64080",
+"kind": "pv",
+"malId": "64080",
+"name": "Jujutsu Kaisen Modulo Saishuu Sankan Hatsubai Kinen Special PV",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/64080/1c465bcbb623e05a745cf3ec4cabee56.jpeg"
+},
+"russian": "Магическая битва: Модуль PV",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2025-05-30",
+"year": 2025
+},
+"english": "Jujutsu Kaisen: Hidden Inventory/Premature Death",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "jujutsu_kaisen",
+"id": "59654",
+"kind": "movie",
+"malId": "59654",
+"name": "Jujutsu Kaisen Movie: Kaigyoku/Gyokusetsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/59654/01975809c67b99dc54cac17db6e0dfa7.jpeg"
+},
+"russian": "Магическая битва: Пагубный талант/Таланты умирают молодыми",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-11-26",
+"year": 2023
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "hataraku_saibou",
+"id": "57426",
+"kind": "music",
+"malId": "57426",
+"name": "Fight!! (Music)",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57426/fe4e5521b94f73e18e29a18eb8652398.jpeg"
+},
+"russian": "Битва!",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-10-10",
+"year": 2018
+},
+"english": null,
+"episodes": 12,
+"episodesAired": 0,
+"franchise": "zhandouban_geji",
+"id": "42513",
+"kind": "ona",
+"malId": "42513",
+"name": "Zhandouban Geji!",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/42513/2af495d0f40beb07d5427de0b9d8620d.jpeg"
+},
+"russian": "Битва певиц!",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-04-04",
+"year": 2021
+},
+"english": null,
+"episodes": 51,
+"episodesAired": 29,
+"franchise": "mazica_party",
+"id": "48391",
+"kind": "tv",
+"malId": "48391",
+"name": "Mazica Party",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/48391/e5bea0fc2d9f6793baa08ac14660d820.jpeg"
+},
+"russian": "Магическая вечеринка",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2004-01-28",
+"year": 2004
+},
+"english": "Battle of Clay",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "nendo_no_tatakai",
+"id": "11897",
+"kind": "ona",
+"malId": "11897",
+"name": "Nendo no Tatakai",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/11897/39cf9d4d2ed371851a037237487b7c79.jpeg"
+},
+"russian": "Глиняная битва",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2009-10-23",
+"year": 2009
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "7092",
+"kind": "ova",
+"malId": "7092",
+"name": "Shoujo Fight: Norainu-tachi no Odekake",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/7092/16d06c643beff030132f5e0e10cea063.jpeg"
+},
+"russian": "Девчачья битва",
+"status": "released"
+}
+],
+"anime:Магия вернувшегося": [
+{
+"airedOn": {
+"date": "2023-10-08",
+"year": 2023
+},
+"english": "A Returner's Magic Should Be Special",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "54852",
+"kind": "tv",
+"malId": "54852",
+"name": "Kikansha no Mahou wa Tokubetsu desu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54852/f705c6fccd5dc0b32b88bbff5a065e07.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-10-08",
+"year": 2026
+},
+"english": "A Returner's Magic Should Be Special Season 2",
+"episodes": 0,
+"episodesAired": 5,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "57612",
+"kind": "tv",
+"malId": "57612",
+"name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+"nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной 2",
+"status": "ongoing"
+},
+{
+"airedOn": {
+"date": "2020-10-14",
+"year": 2020
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "43457",
+"kind": "music",
+"malId": "43457",
+"name": "Magic",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/43457/7114add24eb8bbf8f8576947a34c7256.jpeg"
+},
+"russian": "Магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-01-24",
+"year": 2026
+},
+"english": "Magic",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "63365",
+"kind": "music",
+"malId": "63365",
+"name": "Magic (2026)",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63365/1c220d60ce2e2dc028844c48bc94d798.jpeg"
+},
+"russian": "Магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2011-03-03",
+"year": 2011
+},
+"english": "The Magic of Chocolate",
+"episodes": 13,
+"episodesAired": 0,
+"franchise": null,
+"id": "9935",
+"kind": "ova",
+"malId": "9935",
+"name": "Chocolat no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/9935/873f8c4bd60fcdd2617bd78c2c23f43f.jpeg"
+},
+"russian": "Шоколадная магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-02-15",
+"year": 1998
+},
+"english": null,
+"episodes": 48,
+"episodesAired": 0,
+"franchise": null,
+"id": "8503",
+"kind": "tv",
+"malId": "8503",
+"name": "Fushigi Mahou Fun Fun Pharmacy",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/8503/dc25bad60ed30b17d407e0444cccc5f1.jpeg"
+},
+"russian": "Таинственная магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-09-20",
+"year": 1998
+},
+"english": null,
+"episodes": 13,
+"episodesAired": 0,
+"franchise": null,
+"id": "1139",
+"kind": "tv",
+"malId": "1139",
+"name": "Monkey Magic",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1139/409857d872d05aacc4d447069dd2bc90.jpeg"
+},
+"russian": "Обезьянья магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-09-24",
+"year": 2018
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 1,
+"franchise": null,
+"id": "38456",
+"kind": "ona",
+"malId": "38456",
+"name": "Megane no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38456/cf08785e49b0154ac6b35a0528b301af.jpeg"
+},
+"russian": "Магия очков",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-10-08",
+"year": 2007
+},
+"english": "Rental Magica",
+"episodes": 24,
+"episodesAired": 0,
+"franchise": null,
+"id": "2369",
+"kind": "tv",
+"malId": "2369",
+"name": "Rental Magica",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2369/82912f5d08bcfa56956b997561fe69e3.jpeg"
+},
+"russian": "Магия напрокат",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2010-07-23",
+"year": 2010
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "32850",
+"kind": "music",
+"malId": "32850",
+"name": "Yuu no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32850/59e532b016f933780d3f6a5ac8165e57.jpeg"
+},
+"russian": "Вечерняя магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-10-03",
+"year": 2016
+},
+"english": "Magic of Stella",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "stella_no_mahou",
+"id": "32555",
+"kind": "tv",
+"malId": "32555",
+"name": "Stella no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32555/b0f2a5146539aaa1d894ed38075dac3e.jpeg"
+},
+"russian": "Магия Стеллы",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-04-08",
+"year": 2023
+},
+"english": "Mashle: Magic and Muscles",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mashle",
+"id": "52211",
+"kind": "tv",
+"malId": "52211",
+"name": "Mashle",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/52211/3656ad1fb3786e5c5eba5806335c8599.jpeg"
+},
+"russian": "Магия и мускулы",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2017-02-24",
+"year": 2017
+},
+"english": null,
+"episodes": 2,
+"episodesAired": 0,
+"franchise": "stella_no_mahou",
+"id": "35522",
+"kind": "special",
+"malId": "35522",
+"name": "Stella no Mahou Specials",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/35522/c66cdab8d7f4b4640c311bae8d3e5459.jpeg"
+},
+"russian": "Магия Стеллы: Спецвыпуски",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-04-06",
+"year": 2021
+},
+"english": "The Saint's Magic Power is Omnipotent",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "seijo_no_maryoku_wa_bannou_desu",
+"id": "42826",
+"kind": "tv",
+"malId": "42826",
+"name": "Seijo no Maryoku wa Bannou desu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/42826/67198eaf9fe6ae85dbf91294c2c3581c.jpeg"
+},
+"russian": "Всемогущая магия святой",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1991-08-02",
+"year": 1991
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "38323",
+"kind": "music",
+"malId": "38323",
+"name": "Te no Naka no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38323/cb4989375d8504d489048d7dd70768de.jpeg"
+},
+"russian": "Магия в руке",
+"status": "released"
+}
+],
+"anime:Магия вернувшегося должна быть особенной": [
+{
+"airedOn": {
+"date": "2023-10-08",
+"year": 2023
+},
+"english": "A Returner's Magic Should Be Special",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "54852",
+"kind": "tv",
+"malId": "54852",
+"name": "Kikansha no Mahou wa Tokubetsu desu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54852/f705c6fccd5dc0b32b88bbff5a065e07.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-10-08",
+"year": 2026
+},
+"english": "A Returner's Magic Should Be Special Season 2",
+"episodes": 0,
+"episodesAired": 5,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "57612",
+"kind": "tv",
+"malId": "57612",
+"name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+"nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной 2",
+"status": "ongoing"
+},
+{
+"airedOn": {
+"date": "2020-10-14",
+"year": 2020
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "43457",
+"kind": "music",
+"malId": "43457",
+"name": "Magic",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/43457/7114add24eb8bbf8f8576947a34c7256.jpeg"
+},
+"russian": "Магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-01-24",
+"year": 2026
+},
+"english": "Magic",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "63365",
+"kind": "music",
+"malId": "63365",
+"name": "Magic (2026)",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63365/1c220d60ce2e2dc028844c48bc94d798.jpeg"
+},
+"russian": "Магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2019-06-26",
+"year": 2019
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55858",
+"kind": "music",
+"malId": "55858",
+"name": "To Be Me",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55858/dffb6849cc23ba157b03d90b3b393775.jpeg"
+},
+"russian": "Быть собой",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-05-30",
+"year": 2006
+},
+"english": "Be Rockin'",
+"episodes": 5,
+"episodesAired": 5,
+"franchise": null,
+"id": "39037",
+"kind": "ona",
+"malId": "39037",
+"name": "Be Rockin'",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39037/ad9c681276f6afd87b696772446f3bef.jpeg"
+},
+"russian": "Быть рокером",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2011-03-03",
+"year": 2011
+},
+"english": "The Magic of Chocolate",
+"episodes": 13,
+"episodesAired": 0,
+"franchise": null,
+"id": "9935",
+"kind": "ova",
+"malId": "9935",
+"name": "Chocolat no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/9935/873f8c4bd60fcdd2617bd78c2c23f43f.jpeg"
+},
+"russian": "Шоколадная магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-02-15",
+"year": 1998
+},
+"english": null,
+"episodes": 48,
+"episodesAired": 0,
+"franchise": null,
+"id": "8503",
+"kind": "tv",
+"malId": "8503",
+"name": "Fushigi Mahou Fun Fun Pharmacy",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/8503/dc25bad60ed30b17d407e0444cccc5f1.jpeg"
+},
+"russian": "Таинственная магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-09-20",
+"year": 1998
+},
+"english": null,
+"episodes": 13,
+"episodesAired": 0,
+"franchise": null,
+"id": "1139",
+"kind": "tv",
+"malId": "1139",
+"name": "Monkey Magic",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1139/409857d872d05aacc4d447069dd2bc90.jpeg"
+},
+"russian": "Обезьянья магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-09-24",
+"year": 2018
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 1,
+"franchise": null,
+"id": "38456",
+"kind": "ona",
+"malId": "38456",
+"name": "Megane no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38456/cf08785e49b0154ac6b35a0528b301af.jpeg"
+},
+"russian": "Магия очков",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-10-08",
+"year": 2007
+},
+"english": "Rental Magica",
+"episodes": 24,
+"episodesAired": 0,
+"franchise": null,
+"id": "2369",
+"kind": "tv",
+"malId": "2369",
+"name": "Rental Magica",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2369/82912f5d08bcfa56956b997561fe69e3.jpeg"
+},
+"russian": "Магия напрокат",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2010-07-23",
+"year": 2010
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "32850",
+"kind": "music",
+"malId": "32850",
+"name": "Yuu no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32850/59e532b016f933780d3f6a5ac8165e57.jpeg"
+},
+"russian": "Вечерняя магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-10-03",
+"year": 2016
+},
+"english": "Magic of Stella",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "stella_no_mahou",
+"id": "32555",
+"kind": "tv",
+"malId": "32555",
+"name": "Stella no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32555/b0f2a5146539aaa1d894ed38075dac3e.jpeg"
+},
+"russian": "Магия Стеллы",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2002-01-01",
+"year": 2002
+},
+"english": "Be Vague",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": null,
+"id": "30213",
+"kind": "movie",
+"malId": "30213",
+"name": "Yume Utsutsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/30213/bb1303e7fe9f720ea1341f46649fc0b1.jpeg"
+},
+"russian": "Мечты реальны",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-10-05",
+"year": 2016
+},
+"english": "To Be Hero",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "to_be_hero",
+"id": "34009",
+"kind": "ona",
+"malId": "34009",
+"name": "Tu Bian Yingxiong Baba",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/34009/d94bd61861ff8b13a5cbb6e3d251afef.jpeg"
+},
+"russian": "Быть героем",
+"status": "released"
+}
+],
+"anime:Магия вернувшегося должна быть особеной": [
+{
+"airedOn": {
+"date": "2023-10-08",
+"year": 2023
+},
+"english": "A Returner's Magic Should Be Special",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "54852",
+"kind": "tv",
+"malId": "54852",
+"name": "Kikansha no Mahou wa Tokubetsu desu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54852/f705c6fccd5dc0b32b88bbff5a065e07.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-10-08",
+"year": 2026
+},
+"english": "A Returner's Magic Should Be Special Season 2",
+"episodes": 0,
+"episodesAired": 5,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"id": "57612",
+"kind": "tv",
+"malId": "57612",
+"name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+"nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+},
+"russian": "Магия вернувшегося должна быть особенной 2",
+"status": "ongoing"
+},
+{
+"airedOn": {
+"date": "2020-10-14",
+"year": 2020
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "43457",
+"kind": "music",
+"malId": "43457",
+"name": "Magic",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/43457/7114add24eb8bbf8f8576947a34c7256.jpeg"
+},
+"russian": "Магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-01-24",
+"year": 2026
+},
+"english": "Magic",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "63365",
+"kind": "music",
+"malId": "63365",
+"name": "Magic (2026)",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63365/1c220d60ce2e2dc028844c48bc94d798.jpeg"
+},
+"russian": "Магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2019-06-26",
+"year": 2019
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55858",
+"kind": "music",
+"malId": "55858",
+"name": "To Be Me",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55858/dffb6849cc23ba157b03d90b3b393775.jpeg"
+},
+"russian": "Быть собой",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2006-05-30",
+"year": 2006
+},
+"english": "Be Rockin'",
+"episodes": 5,
+"episodesAired": 5,
+"franchise": null,
+"id": "39037",
+"kind": "ona",
+"malId": "39037",
+"name": "Be Rockin'",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39037/ad9c681276f6afd87b696772446f3bef.jpeg"
+},
+"russian": "Быть рокером",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2011-03-03",
+"year": 2011
+},
+"english": "The Magic of Chocolate",
+"episodes": 13,
+"episodesAired": 0,
+"franchise": null,
+"id": "9935",
+"kind": "ova",
+"malId": "9935",
+"name": "Chocolat no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/9935/873f8c4bd60fcdd2617bd78c2c23f43f.jpeg"
+},
+"russian": "Шоколадная магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-02-15",
+"year": 1998
+},
+"english": null,
+"episodes": 48,
+"episodesAired": 0,
+"franchise": null,
+"id": "8503",
+"kind": "tv",
+"malId": "8503",
+"name": "Fushigi Mahou Fun Fun Pharmacy",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/8503/dc25bad60ed30b17d407e0444cccc5f1.jpeg"
+},
+"russian": "Таинственная магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1998-09-20",
+"year": 1998
+},
+"english": null,
+"episodes": 13,
+"episodesAired": 0,
+"franchise": null,
+"id": "1139",
+"kind": "tv",
+"malId": "1139",
+"name": "Monkey Magic",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/1139/409857d872d05aacc4d447069dd2bc90.jpeg"
+},
+"russian": "Обезьянья магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2018-09-24",
+"year": 2018
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 1,
+"franchise": null,
+"id": "38456",
+"kind": "ona",
+"malId": "38456",
+"name": "Megane no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38456/cf08785e49b0154ac6b35a0528b301af.jpeg"
+},
+"russian": "Магия очков",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-10-08",
+"year": 2007
+},
+"english": "Rental Magica",
+"episodes": 24,
+"episodesAired": 0,
+"franchise": null,
+"id": "2369",
+"kind": "tv",
+"malId": "2369",
+"name": "Rental Magica",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/2369/82912f5d08bcfa56956b997561fe69e3.jpeg"
+},
+"russian": "Магия напрокат",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2010-07-23",
+"year": 2010
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "32850",
+"kind": "music",
+"malId": "32850",
+"name": "Yuu no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32850/59e532b016f933780d3f6a5ac8165e57.jpeg"
+},
+"russian": "Вечерняя магия",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-10-03",
+"year": 2016
+},
+"english": "Magic of Stella",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "stella_no_mahou",
+"id": "32555",
+"kind": "tv",
+"malId": "32555",
+"name": "Stella no Mahou",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/32555/b0f2a5146539aaa1d894ed38075dac3e.jpeg"
+},
+"russian": "Магия Стеллы",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2002-01-01",
+"year": 2002
+},
+"english": "Be Vague",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": null,
+"id": "30213",
+"kind": "movie",
+"malId": "30213",
+"name": "Yume Utsutsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/30213/bb1303e7fe9f720ea1341f46649fc0b1.jpeg"
+},
+"russian": "Мечты реальны",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2016-10-05",
+"year": 2016
+},
+"english": "To Be Hero",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "to_be_hero",
+"id": "34009",
+"kind": "ona",
+"malId": "34009",
+"name": "Tu Bian Yingxiong Baba",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/34009/d94bd61861ff8b13a5cbb6e3d251afef.jpeg"
+},
+"russian": "Быть героем",
+"status": "released"
+}
+],
+"anime:Реинкарнация": [
+{
+"airedOn": {
+"date": "2021-11-03",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "schwarzesmarken",
+"id": "54748",
+"kind": "music",
+"malId": "54748",
+"name": "Rinne",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54748/935adb79f42ae96abf11cabe6eca9a9d.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-05-12",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55605",
+"kind": "music",
+"malId": "55605",
+"name": "Reincarnation",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55605/01b7324263d8f4129dc458f3c4f4782b.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-03-16",
+"year": 2022
+},
+"english": "Mushoku Tensei: Jobless Reincarnation - Eris the Goblin Slayer",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "50360",
+"kind": "special",
+"malId": "50360",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50360/408a5fbdc393de3e94cbdddd03364ea6.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-01-07",
+"year": 2023
+},
+"english": "The Reincarnation of the Strongest Exorcist in Another World",
+"episodes": 13,
+"episodesAired": 13,
+"franchise": "saikyou_onmyouji_mini",
+"id": "50932",
+"kind": "tv",
+"malId": "50932",
+"name": "Saikyou Onmyouji no Isekai Tenseiki",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50932/e33199e4fe4cb2e895d7d658b8a2cb15.jpeg"
+},
+"russian": "Реинкарнация сильнейшего оммёдзи: Эти монстры слишком слабы по сравнению с моим ёкаем",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-01-10",
+"year": 2023
+},
+"english": "Reborn to Master the Blade: From Hero-King to Extraordinary Squire ♀",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "eiyuuou_bu_wo_kiwameru_tame_tenseisu",
+"id": "50481",
+"kind": "tv",
+"malId": "50481",
+"name": "Eiyuuou, Bu wo Kiwameru Tame Tenseisu: Soshite, Sekai Saikyou no Minarai Kishi♀",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50481/d5716fc7d37f32d3201bdee4fe864c2c.jpeg"
+},
+"russian": "Перевоплотившийся король-герой, ставший самой сильной ученицей рыцаря",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-01-08",
+"year": 2026
+},
+"english": "Noble Reincarnation: Born Blessed, So I'll Obtain Ultimate Power",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": null,
+"id": "60692",
+"kind": "tv",
+"malId": "60692",
+"name": "Kizoku Tensei: Megumareta Umare kara Saikyou no Chikara wo Eru",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/60692/9eaa9cb4f6001cb05690e628d1b3941f.jpeg"
+},
+"russian": "Реинкарнация аристократа: Благословенный с рождения величайшей силой",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-10",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "51179",
+"kind": "tv",
+"malId": "51179",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-04-08",
+"year": 2024
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "55888",
+"kind": "tv",
+"malId": "55888",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-03",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 - Episode 0 \"Guardian Fitz\"",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "mushoku_tensei",
+"id": "55818",
+"kind": "tv_special",
+"malId": "55818",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55818/b433b012e6d3b6d12c041bb4cd1ac56b.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-01-11",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation",
+"episodes": 11,
+"episodesAired": 11,
+"franchise": "mushoku_tensei",
+"id": "39535",
+"kind": "tv",
+"malId": "39535",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-10-02",
+"year": 2021
+},
+"english": "Everything for Demon King Evelogia",
+"episodes": 9,
+"episodesAired": 0,
+"franchise": null,
+"id": "47792",
+"kind": "ona",
+"malId": "47792",
+"name": "Maou Evelogia ni Mi wo Sasage yo",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Реинкарнация в мире короля демонов Евалогии",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-10-04",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "45576",
+"kind": "tv",
+"malId": "45576",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/45576/0a98f6e5dbcc1d4c643c1b7b9874902e.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-07-04",
+"year": 2022
+},
+"english": "My Isekai Life: I Gained a Second Character Class and Became the Strongest Sage in the World",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": null,
+"id": "47163",
+"kind": "tv",
+"malId": "47163",
+"name": "Tensei Kenja no Isekai Life: Dai-2 no Shokugyou wo Ete, Sekai Saikyou ni Narimashita",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/47163/5efc53155044ed487684851495513f24.jpeg"
+},
+"russian": "Жизнь перерождённого мудреца в другом мире. Получение второй профессии и становление сильнейшим",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": null,
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "63706",
+"kind": "tv",
+"malId": "63706",
+"name": "Game Sekai Tensei \"Dankatsu\": Gamer wa \"Dungeon Shuukatsu no Susume\" wo \"Hajime kara\" Play suru",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63706/e3145b430f6d91ff64016236d0eaa8b1.jpeg"
+},
+"russian": "Реинкарнация в игровом мире «Жизнь в подземелье»: Геймер проходит «Руководство по трудоустройству в подземельях» с самого начала",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": null,
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "63730",
+"kind": "tv",
+"malId": "63730",
+"name": "Isekai Tensei Soudouki",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63730/196b5937742a4154e508a2599e5001ae.jpeg"
+},
+"russian": "Реинкарнация и растроение личности",
+"status": "anons"
+}
+],
+"anime:Реинкарнация безработнго": [
+{
+"airedOn": {
+"date": "2021-11-03",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "schwarzesmarken",
+"id": "54748",
+"kind": "music",
+"malId": "54748",
+"name": "Rinne",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54748/935adb79f42ae96abf11cabe6eca9a9d.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-05-12",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55605",
+"kind": "music",
+"malId": "55605",
+"name": "Reincarnation",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55605/01b7324263d8f4129dc458f3c4f4782b.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-04",
+"year": 2023
+},
+"english": "Sweet Reincarnation",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "okashi_na_tensei",
+"id": "52611",
+"kind": "tv",
+"malId": "52611",
+"name": "Okashi na Tensei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/52611/d49950215dfe58a5d0411fe7e8f3a925.jpeg"
+},
+"russian": "Сладкое перевоплощение",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": null,
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "63730",
+"kind": "tv",
+"malId": "63730",
+"name": "Isekai Tensei Soudouki",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63730/196b5937742a4154e508a2599e5001ae.jpeg"
+},
+"russian": "Реинкарнация и растроение личности",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2021-10-02",
+"year": 2021
+},
+"english": "Everything for Demon King Evelogia",
+"episodes": 9,
+"episodesAired": 0,
+"franchise": null,
+"id": "47792",
+"kind": "ona",
+"malId": "47792",
+"name": "Maou Evelogia ni Mi wo Sasage yo",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Реинкарнация в мире короля демонов Евалогии",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-04-02",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "45654",
+"kind": "movie",
+"malId": "45654",
+"name": "Xiyou Ji: Zai Shi Yao Wang",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/45654/48a0703194397d89b60863a5b4f5f8f3.jpeg"
+},
+"russian": "Путешествие на Запад: Реинкарнация Царя демонов",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-01-08",
+"year": 2026
+},
+"english": "Noble Reincarnation: Born Blessed, So I'll Obtain Ultimate Power",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": null,
+"id": "60692",
+"kind": "tv",
+"malId": "60692",
+"name": "Kizoku Tensei: Megumareta Umare kara Saikyou no Chikara wo Eru",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/60692/9eaa9cb4f6001cb05690e628d1b3941f.jpeg"
+},
+"russian": "Реинкарнация аристократа: Благословенный с рождения величайшей силой",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2013-09-14",
+"year": 2013
+},
+"english": "Love, Chunibyo & Other Delusions!: Rikka Version",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "chuunibyou_demo_koi_ga_shitai",
+"id": "19021",
+"kind": "movie",
+"malId": "19021",
+"name": "Takanashi Rikka Kai: Chuunibyou demo Koi ga Shitai! Movie",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/19021/3d3229b1036c3bc33468ea9fbb7e3b63.jpeg"
+},
+"russian": "Чудачества любви не помеха! Реинкарнация Рикки Таканаси",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-01-11",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation",
+"episodes": 11,
+"episodesAired": 11,
+"franchise": "mushoku_tensei",
+"id": "39535",
+"kind": "tv",
+"malId": "39535",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-10",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "51179",
+"kind": "tv",
+"malId": "51179",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-04-08",
+"year": 2024
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "55888",
+"kind": "tv",
+"malId": "55888",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2020-04-05",
+"year": 2020
+},
+"english": "My Next Life as a Villainess: All Routes Lead to Doom!",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "katarina_nounai_kaigi",
+"id": "38555",
+"kind": "tv",
+"malId": "38555",
+"name": "Otome Game no Hametsu Flag shika Nai Akuyaku Reijou ni Tensei shiteshimatta...",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/38555/391a0c004bb18b601f393128ce0fdbd3.jpeg"
+},
+"russian": "Моя реинкарнация в отомэ-игре в качестве главной злодейки",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-07-06",
+"year": 2026
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "mushoku_tensei",
+"id": "59193",
+"kind": "tv",
+"malId": "59193",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/59193/22f02167e562e703fef2cbed82b93d06.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2020-04-05",
+"year": 2020
+},
+"english": null,
+"episodes": 7,
+"episodesAired": 0,
+"franchise": "katarina_nounai_kaigi",
+"id": "51036",
+"kind": "ona",
+"malId": "51036",
+"name": "Otome Game no Hametsu Flag shika Nai Akuyaku Reijou ni Tensei shiteshimatta... Voice Drama",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51036/1262944f3e2e5cc625120107bcc8b0e6.jpeg"
+},
+"russian": "Моя реинкарнация в отомэ-игре в качестве главной злодейки: Спецвыпуски",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-01-10",
+"year": 2023
+},
+"english": "Reborn to Master the Blade: From Hero-King to Extraordinary Squire ♀",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "eiyuuou_bu_wo_kiwameru_tame_tenseisu",
+"id": "50481",
+"kind": "tv",
+"malId": "50481",
+"name": "Eiyuuou, Bu wo Kiwameru Tame Tenseisu: Soshite, Sekai Saikyou no Minarai Kishi♀",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50481/d5716fc7d37f32d3201bdee4fe864c2c.jpeg"
+},
+"russian": "Перевоплотившийся король-герой, ставший самой сильной ученицей рыцаря",
+"status": "released"
+}
+],
+"anime:Реинкарнация безработного": [
+{
+"airedOn": {
+"date": "2021-01-11",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation",
+"episodes": 11,
+"episodesAired": 11,
+"franchise": "mushoku_tensei",
+"id": "39535",
+"kind": "tv",
+"malId": "39535",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-10",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "51179",
+"kind": "tv",
+"malId": "51179",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-04-08",
+"year": 2024
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "55888",
+"kind": "tv",
+"malId": "55888",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-07-06",
+"year": 2026
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "mushoku_tensei",
+"id": "59193",
+"kind": "tv",
+"malId": "59193",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/59193/22f02167e562e703fef2cbed82b93d06.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-10-04",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "45576",
+"kind": "tv",
+"malId": "45576",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/45576/0a98f6e5dbcc1d4c643c1b7b9874902e.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-03-16",
+"year": 2022
+},
+"english": "Mushoku Tensei: Jobless Reincarnation - Eris the Goblin Slayer",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "50360",
+"kind": "special",
+"malId": "50360",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50360/408a5fbdc393de3e94cbdddd03364ea6.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-03",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 - Episode 0 \"Guardian Fitz\"",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "mushoku_tensei",
+"id": "55818",
+"kind": "tv_special",
+"malId": "55818",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55818/b433b012e6d3b6d12c041bb4cd1ac56b.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3 Part 2",
+"episodes": 0,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "65077",
+"kind": "tv",
+"malId": "65077",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/65077/5ba597d4ea11ab92303f123d4e83440d.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3. Часть 2",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2021-11-03",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "schwarzesmarken",
+"id": "54748",
+"kind": "music",
+"malId": "54748",
+"name": "Rinne",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54748/935adb79f42ae96abf11cabe6eca9a9d.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-05-12",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55605",
+"kind": "music",
+"malId": "55605",
+"name": "Reincarnation",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55605/01b7324263d8f4129dc458f3c4f4782b.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-04",
+"year": 2023
+},
+"english": "Sweet Reincarnation",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "okashi_na_tensei",
+"id": "52611",
+"kind": "tv",
+"malId": "52611",
+"name": "Okashi na Tensei",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/52611/d49950215dfe58a5d0411fe7e8f3a925.jpeg"
+},
+"russian": "Сладкое перевоплощение",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": null,
+"episodes": 0,
+"episodesAired": 0,
+"franchise": null,
+"id": "63730",
+"kind": "tv",
+"malId": "63730",
+"name": "Isekai Tensei Soudouki",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/63730/196b5937742a4154e508a2599e5001ae.jpeg"
+},
+"russian": "Реинкарнация и растроение личности",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "1995-04-07",
+"year": 1995
+},
+"english": null,
+"episodes": 2,
+"episodesAired": 0,
+"franchise": null,
+"id": "17649",
+"kind": "ova",
+"malId": "17649",
+"name": "Udauda Yatteru Hima wa Nee!",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/17649/e99ba0221ec0186bb486c0d8696e95ea.jpeg"
+},
+"russian": "Нет времени играть в безработного!",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-10-02",
+"year": 2021
+},
+"english": "Everything for Demon King Evelogia",
+"episodes": 9,
+"episodesAired": 0,
+"franchise": null,
+"id": "47792",
+"kind": "ona",
+"malId": "47792",
+"name": "Maou Evelogia ni Mi wo Sasage yo",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Реинкарнация в мире короля демонов Евалогии",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-04-02",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "45654",
+"kind": "movie",
+"malId": "45654",
+"name": "Xiyou Ji: Zai Shi Yao Wang",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/45654/48a0703194397d89b60863a5b4f5f8f3.jpeg"
+},
+"russian": "Путешествие на Запад: Реинкарнация Царя демонов",
+"status": "released"
+}
+],
+"anime:Реинкарнация безработного история": [
+{
+"airedOn": {
+"date": "2021-01-11",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation",
+"episodes": 11,
+"episodesAired": 11,
+"franchise": "mushoku_tensei",
+"id": "39535",
+"kind": "tv",
+"malId": "39535",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/39535/f66d91c3fdc65449f4bb3568e4d36fec.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-10",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "51179",
+"kind": "tv",
+"malId": "51179",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/51179/24b1ce4b8f5014661be21572572dd857.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2024-04-08",
+"year": 2024
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "55888",
+"kind": "tv",
+"malId": "55888",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55888/ebd6671dee632ec6567f6f8d5c814884.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2026-07-06",
+"year": 2026
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3",
+"episodes": 14,
+"episodesAired": 14,
+"franchise": "mushoku_tensei",
+"id": "59193",
+"kind": "tv",
+"malId": "59193",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/59193/22f02167e562e703fef2cbed82b93d06.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-10-04",
+"year": 2021
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Part 2",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": "mushoku_tensei",
+"id": "45576",
+"kind": "tv",
+"malId": "45576",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/45576/0a98f6e5dbcc1d4c643c1b7b9874902e.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-03-16",
+"year": 2022
+},
+"english": "Mushoku Tensei: Jobless Reincarnation - Eris the Goblin Slayer",
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "50360",
+"kind": "special",
+"malId": "50360",
+"name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50360/408a5fbdc393de3e94cbdddd03364ea6.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2023-07-03",
+"year": 2023
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 2 - Episode 0 \"Guardian Fitz\"",
+"episodes": 1,
+"episodesAired": 1,
+"franchise": "mushoku_tensei",
+"id": "55818",
+"kind": "tv_special",
+"malId": "55818",
+"name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55818/b433b012e6d3b6d12c041bb4cd1ac56b.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2027-01-01",
+"year": 2027
+},
+"english": "Mushoku Tensei: Jobless Reincarnation Season 3 Part 2",
+"episodes": 0,
+"episodesAired": 0,
+"franchise": "mushoku_tensei",
+"id": "65077",
+"kind": "tv",
+"malId": "65077",
+"name": "Mushoku Tensei III: Isekai Ittara Honki Dasu Part 2",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/65077/5ba597d4ea11ab92303f123d4e83440d.jpeg"
+},
+"russian": "Реинкарнация безработного: История о приключениях в другом мире 3. Часть 2",
+"status": "anons"
+},
+{
+"airedOn": {
+"date": "2024-01-12",
+"year": 2024
+},
+"english": "Isekai Onsen Paradise",
+"episodes": 12,
+"episodesAired": 12,
+"franchise": null,
+"id": "57315",
+"kind": "tv",
+"malId": "57315",
+"name": "Meitou \"Isekai no Yu\" Kaitakuki: Around 40 Onsen Mania no Tensei Saki wa, Nonbiri Onsen Tengoku deshita",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57315/31f24bd9b7d408a209be5e89aab6925f.jpeg"
+},
+"russian": "История покорения знаменитого горячего источника в другом мире: Реинкарнация сорокалетнего любителя горячих источников в умиротворяющем курортном раю",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "1962-04-22",
+"year": 1962
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "23003",
+"kind": "movie",
+"malId": "23003",
+"name": "Tanoshii Bunmeishi: Tetsu Monogatari",
+"nextEpisodeAt": null,
+"poster": null,
+"russian": "Увлекательная история цивилизации: Железная история",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-11-03",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "schwarzesmarken",
+"id": "54748",
+"kind": "music",
+"malId": "54748",
+"name": "Rinne",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/54748/935adb79f42ae96abf11cabe6eca9a9d.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2021-05-12",
+"year": 2021
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": null,
+"id": "55605",
+"kind": "music",
+"malId": "55605",
+"name": "Reincarnation",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/55605/01b7324263d8f4129dc458f3c4f4782b.jpeg"
+},
+"russian": "Реинкарнация",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2007-12-05",
+"year": 2007
+},
+"english": null,
+"episodes": 1,
+"episodesAired": 0,
+"franchise": "doraemon",
+"id": "50158",
+"kind": "special",
+"malId": "50158",
+"name": "Ugoku Ehon: Miyoko-san no Monogatari",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/50158/f12697509b128d352bde0ecc83caa5fc.jpeg"
+},
+"russian": "История Миёко",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-01-13",
+"year": 2022
+},
+"english": "The Heike Story",
+"episodes": 11,
+"episodesAired": 11,
+"franchise": null,
+"id": "49738",
+"kind": "tv",
+"malId": "49738",
+"name": "Heike Monogatari",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/49738/e237e031a55b439316fd6d7afee56c33.jpeg"
+},
+"russian": "Повесть о доме Тайра",
+"status": "released"
+},
+{
+"airedOn": {
+"date": "2022-07-10",
+"year": 2022
+},
+"english": "Shanghai Melody",
+"episodes": 8,
+"episodesAired": 8,
+"franchise": null,
+"id": "49796",
+"kind": "ona",
+"malId": "49796",
+"name": "Shanghai Gushi",
+"nextEpisodeAt": null,
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/49796/59c4456994182ee4f798c2b2cc8ad2a3.jpeg"
+},
+"russian": "Шанхайская история",
+"status": "released"
+}
+],
+"game:2077": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Cyber Quest 2077"
+},
+{
+"comment": "Windows Executable",
+"name": "Cyber Quest 2077 FULL GAME NO ADS.exe"
+}
+],
+"cover": {
+"image_id": "coas3v"
+},
+"first_release_date": 1600300800,
+"game_type": 0,
+"id": 367600,
+"name": "Covid Quest 2077",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Chinese title - simplified",
+"name": "赛博朋克2077"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "電馭叛客2077"
+},
+{
+"comment": "Russian unofficial title",
+"name": "Киберпанк 2077"
+},
+{
+"comment": "Korean Acroynm",
+"name": "사펑"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "サイバーパンク2077"
+}
+],
+"cover": {
+"image_id": "coaih8"
+},
+"first_release_date": 1607558400,
+"game_type": 0,
+"id": 1877,
+"name": "Cyberpunk 2077",
+"platforms": [
+170,
+169,
+48,
+508,
+6,
+167,
+14,
+49
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "Underground 2077: ZOMBIE SHOOTER"
+}
+],
+"game_type": 0,
+"id": 174858,
+"name": "Underground 2077"
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Rome 2077 Tactics.exe"
+}
+],
+"cover": {
+"image_id": "co5o0o"
+},
+"game_type": 0,
+"id": 187526,
+"name": "Rome 2077: Tactics"
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Rome 2077 Space Wars.exe"
+}
+],
+"cover": {
+"image_id": "co3yoh"
+},
+"first_release_date": 1614211200,
+"game_type": 0,
+"id": 157317,
+"name": "Rome 2077: Space Wars",
+"platforms": [
+6
+]
+},
+{
+"game_type": 0,
+"id": 84000,
+"name": "Bogdan 2077"
+},
+{
+"game_type": 0,
+"id": 182773,
+"name": "Randompunk 2077"
+},
+{
+"cover": {
+"image_id": "cobtl8"
+},
+"first_release_date": 1543363200,
+"game_type": 0,
+"id": 395806,
+"name": "CyberDrive 2077",
+"platforms": [
+34,
+39
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Roboapocalypse.exe"
+}
+],
+"cover": {
+"image_id": "cobg6n"
+},
+"first_release_date": 1550793600,
+"game_type": 0,
+"id": 115156,
+"name": "Robohazard 2077",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "JCU2.exe"
+}
+],
+"cover": {
+"image_id": "co42yr"
+},
+"first_release_date": 1571356800,
+"game_type": 0,
+"id": 123957,
+"name": "Tech Support 2077",
+"platforms": [
+6
+]
+}
+],
+"game:Alien: Isolation": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Alien: Isolation Mobile"
+},
+{
+"comment": "Alternative title",
+"name": "Alien Isolation iOS and Android"
+}
+],
+"cover": {
+"image_id": "co84mu"
+},
+"first_release_date": 1639612800,
+"game_type": 11,
+"id": 197779,
+"name": "Alien: Isolation",
+"platforms": [
+34,
+39
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Working title",
+"name": "Untitled Alien: Isolation Sequel"
+}
+],
+"cover": {
+"image_id": "coc6n1"
+},
+"game_type": 0,
+"id": 319082,
+"name": "Alien: Isolation 2",
+"platforms": [
+169,
+508,
+6,
+167
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Chinese title - simplified",
+"name": "异形：隔离"
+},
+{
+"comment": "Windows Executable",
+"name": "AI.exe"
+}
+],
+"cover": {
+"image_id": "co1vzu"
+},
+"first_release_date": 1412553600,
+"game_type": 0,
+"id": 4754,
+"name": "Alien: Isolation",
+"platforms": [
+9,
+48,
+3,
+6,
+14,
+12,
+49,
+130
+]
+}
+],
+"game:Alien: Isolation 2": [
+{
+"alternative_names": [
+{
+"comment": "Working title",
+"name": "Untitled Alien: Isolation Sequel"
+}
+],
+"cover": {
+"image_id": "coc6n1"
+},
+"game_type": 0,
+"id": 319082,
+"name": "Alien: Isolation 2",
+"platforms": [
+169,
+508,
+6,
+167
+]
+}
+],
+"game:Animal Crossing от HoYoverse": [],
+"game:Best of Tech": [],
+"game:Black Myth: Wukong": [
+{
+"alternative_names": [
+{
+"comment": "Alternative spelling",
+"name": "Black Myth: Wu Kong"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "黑神话：悟空"
+},
+{
+"comment": "windows executable",
+"name": "b1.exe"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "黒神話：悟空"
+}
+],
+"cover": {
+"image_id": "co8h3y"
+},
+"first_release_date": 1724112000,
+"game_type": 0,
+"id": 136879,
+"name": "Black Myth: Wukong",
+"platforms": [
+169,
+6,
+167
+]
+}
+],
+"game:Control": [
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "CONTROL Resonant"
+},
+{
+"comment": "Working title",
+"name": "Control 2"
+},
+{
+"comment": "Stylized title",
+"name": "CONTROL RESONANT"
+}
+],
+"cover": {
+"image_id": "coc64f"
+},
+"first_release_date": 1790208000,
+"game_type": 0,
+"id": 225582,
+"name": "Control Resonant",
+"platforms": [
+169,
+6,
+167,
+14
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "Control : Override"
+},
+{
+"comment": "Stylized title",
+"name": "Control:Override"
+},
+{
+"comment": "Windows Executable",
+"name": "Control Override.exe"
+}
+],
+"cover": {
+"image_id": "co2j0h"
+},
+"first_release_date": 1618876800,
+"game_type": 0,
+"id": 139615,
+"name": "Control: Override",
+"platforms": [
+6,
+49
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Arena: Galaxy Control"
+},
+{
+"comment": "Alternative title",
+"name": "Arena"
+},
+{
+"comment": "Alternative title",
+"name": "Galaxy Control: Arena"
+},
+{
+"comment": "Alternative title",
+"name": "Arena: Galaxy Control online P"
+}
+],
+"cover": {
+"image_id": "co96kg"
+},
+"first_release_date": 1518307200,
+"game_type": 0,
+"id": 89823,
+"name": "Galaxy Control: Arena Station",
+"platforms": [
+34,
+6,
+39,
+14,
+49
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Galaxy Control: 3D Strategy"
+},
+{
+"comment": "Alternative title",
+"name": "Galaxy Control 3D"
+}
+],
+"cover": {
+"image_id": "co96ki"
+},
+"first_release_date": 1399852800,
+"game_type": 0,
+"id": 33685,
+"name": "Galaxy Control",
+"platforms": [
+82,
+34,
+6,
+39,
+14
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Roll Control Dungeon Update.exe"
+}
+],
+"cover": {
+"image_id": "co47a6"
+},
+"first_release_date": 1589760000,
+"game_type": 0,
+"id": 158258,
+"name": "Roll Control",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Russian title",
+"name": "Ground Control 2: Операция \"Исход\""
+},
+{
+"comment": "Alternative spelling",
+"name": "Ground Control 2"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "地面控制2：大撤退"
+}
+],
+"cover": {
+"image_id": "co28md"
+},
+"first_release_date": 1087516800,
+"game_type": 0,
+"id": 735,
+"name": "Ground Control II: Operation Exodus",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Japanese title - original",
+"name": "Chaos Control Remix"
+}
+],
+"cover": {
+"image_id": "co4062"
+},
+"first_release_date": 820195200,
+"game_type": 11,
+"id": 176140,
+"name": "Chaos Control",
+"platforms": [
+32
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Control Over.exe"
+}
+],
+"cover": {
+"image_id": "co3nj2"
+},
+"first_release_date": 1606953600,
+"game_type": 0,
+"id": 150437,
+"name": "Control Over",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Star Control: Famous Battles of the Ur-Quan Conflict, Volume IV"
+}
+],
+"cover": {
+"image_id": "co2rei"
+},
+"first_release_date": 662601600,
+"game_type": 0,
+"id": 4497,
+"name": "Star Control",
+"platforms": [
+15,
+29,
+13,
+16
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Working title",
+"name": "Project 7"
+},
+{
+"comment": "Windows Executable",
+"name": "Control.exe"
+}
+],
+"cover": {
+"image_id": "co2evj"
+},
+"first_release_date": 1566864000,
+"game_type": 0,
+"id": 103329,
+"name": "Control",
+"platforms": [
+170,
+169,
+48,
+6,
+167,
+49
+]
+}
+],
+"game:Control: Resonant": [
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "CONTROL Resonant"
+},
+{
+"comment": "Working title",
+"name": "Control 2"
+},
+{
+"comment": "Stylized title",
+"name": "CONTROL RESONANT"
+}
+],
+"cover": {
+"image_id": "coc64f"
+},
+"first_release_date": 1790208000,
+"game_type": 0,
+"id": 225582,
+"name": "Control Resonant",
+"platforms": [
+169,
+6,
+167,
+14
+]
+}
+],
+"game:Cyberpnk": [],
+"game:Cyberpnk 2077": [],
+"game:Cyberpunk 2077": [
+{
+"alternative_names": [
+{
+"comment": "Chinese title - simplified",
+"name": "赛博朋克2077"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "電馭叛客2077"
+},
+{
+"comment": "Russian unofficial title",
+"name": "Киберпанк 2077"
+},
+{
+"comment": "Korean Acroynm",
+"name": "사펑"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "サイバーパンク2077"
+}
+],
+"cover": {
+"image_id": "coaih8"
+},
+"first_release_date": 1607558400,
+"game_type": 0,
+"id": 1877,
+"name": "Cyberpunk 2077",
+"platforms": [
+170,
+169,
+48,
+508,
+6,
+167,
+14,
+49
+]
+},
+{
+"game_type": 0,
+"id": 397607,
+"name": "Cyberpunk 2077: Turf Wars",
+"platforms": [
+52
+]
+},
+{
+"first_release_date": 1605744000,
+"game_type": 0,
+"id": 228992,
+"name": "A Cyberpunk's Dream of 2077",
+"platforms": [
+3,
+6
+]
+}
+],
+"game:EXODUS": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Exodus: The Colonization of Space"
+}
+],
+"cover": {
+"image_id": "coawyi"
+},
+"first_release_date": 1764547200,
+"game_type": 0,
+"id": 379592,
+"name": "Exodus",
+"platforms": [
+3,
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "EXODUS"
+}
+],
+"cover": {
+"image_id": "coaott"
+},
+"first_release_date": 1807056000,
+"game_type": 0,
+"id": 279621,
+"name": "Exodus",
+"platforms": [
+169,
+6,
+167
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Exodus H.exe"
+}
+],
+"cover": {
+"image_id": "co2yqe"
+},
+"first_release_date": 1638316800,
+"game_type": 0,
+"id": 146372,
+"name": "Exodus H",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Omikron 2: Exodus"
+},
+{
+"comment": "Alternative spelling",
+"name": "Omikron 2"
+},
+{
+"comment": "Alternative title",
+"name": "Nomad Soul: Exodus"
+}
+],
+"cover": {
+"image_id": "co2xpg"
+},
+"game_type": 0,
+"id": 67717,
+"name": "Omikron 2: Nomad Soul Exodus",
+"platforms": [
+23,
+8
+]
+},
+{
+"cover": {
+"image_id": "co5i47"
+},
+"game_type": 0,
+"id": 212237,
+"name": "Exodus",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "co7gvx"
+},
+"first_release_date": 1713398400,
+"game_type": 0,
+"id": 244831,
+"name": "Exodus",
+"platforms": [
+3,
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Exodus.exe"
+}
+],
+"cover": {
+"image_id": "co7t7g"
+},
+"first_release_date": 1706659200,
+"game_type": 0,
+"id": 265369,
+"name": "Exodus",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "cobh0b"
+},
+"first_release_date": 1772150400,
+"game_type": 0,
+"id": 388931,
+"name": "Exodus",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "cocyqn"
+},
+"game_type": 0,
+"id": 419471,
+"name": "Exodus",
+"platforms": [
+15
+]
+},
+{
+"cover": {
+"image_id": "coax28"
+},
+"first_release_date": 1738800000,
+"game_type": 0,
+"id": 330604,
+"name": "Exodus",
+"platforms": [
+130
+]
+}
+],
+"game:Elden Ring": [
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "ELDEN RING NIGHTREIGN"
+},
+{
+"comment": "Alternative spelling",
+"name": "Elden Ring: Nightreign"
+},
+{
+"comment": "Korean title - translated",
+"name": "엘든 링 밤의 통치자"
+}
+],
+"cover": {
+"image_id": "co95gk"
+},
+"first_release_date": 1748563200,
+"game_type": 0,
+"id": 325591,
+"name": "Elden Ring Nightreign",
+"platforms": [
+169,
+48,
+6,
+167,
+49
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Other",
+"name": "Great Rune"
+},
+{
+"comment": "Stylized title",
+"name": "ELDEN RING"
+},
+{
+"comment": "Japanese title - translated",
+"name": "エルデンリング"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "艾爾登法環"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "艾尔登法环"
+}
+],
+"cover": {
+"image_id": "co4jni"
+},
+"first_release_date": 1645747200,
+"game_type": 0,
+"id": 119133,
+"name": "Elden Ring",
+"platforms": [
+169,
+48,
+508,
+6,
+167,
+49
+]
+},
+{
+"cover": {
+"image_id": "co5wuj"
+},
+"first_release_date": 1654214400,
+"game_type": 0,
+"id": 206519,
+"name": "Elden Ring GB",
+"platforms": [
+6,
+33
+]
+},
+{
+"cover": {
+"image_id": "cocbsz"
+},
+"game_type": 0,
+"id": 408334,
+"name": "Elden Ring Demake",
+"platforms": [
+6
+]
+},
+{
+"game_type": 0,
+"id": 194075,
+"name": "Elden Shell: Mortal Ring"
+}
+],
+"game:Exodus": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Exodus: The Colonization of Space"
+}
+],
+"cover": {
+"image_id": "coawyi"
+},
+"first_release_date": 1764547200,
+"game_type": 0,
+"id": 379592,
+"name": "Exodus",
+"platforms": [
+3,
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "EXODUS"
+}
+],
+"cover": {
+"image_id": "coaott"
+},
+"first_release_date": 1807056000,
+"game_type": 0,
+"id": 279621,
+"name": "Exodus",
+"platforms": [
+169,
+6,
+167
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Exodus H.exe"
+}
+],
+"cover": {
+"image_id": "co2yqe"
+},
+"first_release_date": 1638316800,
+"game_type": 0,
+"id": 146372,
+"name": "Exodus H",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Omikron 2: Exodus"
+},
+{
+"comment": "Alternative spelling",
+"name": "Omikron 2"
+},
+{
+"comment": "Alternative title",
+"name": "Nomad Soul: Exodus"
+}
+],
+"cover": {
+"image_id": "co2xpg"
+},
+"game_type": 0,
+"id": 67717,
+"name": "Omikron 2: Nomad Soul Exodus",
+"platforms": [
+23,
+8
+]
+},
+{
+"cover": {
+"image_id": "co5i47"
+},
+"game_type": 0,
+"id": 212237,
+"name": "Exodus",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "co7gvx"
+},
+"first_release_date": 1713398400,
+"game_type": 0,
+"id": 244831,
+"name": "Exodus",
+"platforms": [
+3,
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Exodus.exe"
+}
+],
+"cover": {
+"image_id": "co7t7g"
+},
+"first_release_date": 1706659200,
+"game_type": 0,
+"id": 265369,
+"name": "Exodus",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "cobh0b"
+},
+"first_release_date": 1772150400,
+"game_type": 0,
+"id": 388931,
+"name": "Exodus",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "cocyqn"
+},
+"game_type": 0,
+"id": 419471,
+"name": "Exodus",
+"platforms": [
+15
+]
+},
+{
+"cover": {
+"image_id": "coax28"
+},
+"first_release_date": 1738800000,
+"game_type": 0,
+"id": 330604,
+"name": "Exodus",
+"platforms": [
+130
+]
+}
+],
+"game:Fabula Rasa": [],
+"game:Fishy": [
+{
+"cover": {
+"image_id": "kxrjiumggly9ro31xzma"
+},
+"first_release_date": 1270425600,
+"game_type": 0,
+"id": 79878,
+"name": "Fishie Fishie",
+"platforms": [
+5
+]
+},
+{
+"cover": {
+"image_id": "co1tmv"
+},
+"first_release_date": 1096848000,
+"game_type": 0,
+"id": 102522,
+"name": "Fishy",
+"platforms": [
+82,
+34,
+39
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "fishy"
+},
+{
+"comment": "Windows Executable",
+"name": "fishy.exe"
+}
+],
+"cover": {
+"image_id": "co21xy"
+},
+"first_release_date": 1570665600,
+"game_type": 0,
+"id": 129494,
+"name": "Fishy",
+"platforms": [
+6,
+14
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Fishy"
+}
+],
+"cover": {
+"image_id": "co2mta"
+},
+"first_release_date": 1568937600,
+"game_type": 0,
+"id": 104572,
+"name": "Fishy",
+"platforms": [
+6
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "FISHY"
+}
+],
+"cover": {
+"image_id": "cod2uu"
+},
+"first_release_date": 1792022400,
+"game_type": 0,
+"id": 422039,
+"name": "Fishy",
+"platforms": [
+386
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "fishy"
+},
+{
+"comment": "Windows Executable",
+"name": "Fishy.exe"
+}
+],
+"cover": {
+"image_id": "co5o43"
+},
+"first_release_date": 1629417600,
+"game_type": 0,
+"id": 165791,
+"name": "Fishy",
+"platforms": [
+3,
+6,
+14
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative spelling",
+"name": "fishy 3D"
+},
+{
+"comment": "Windows Executable",
+"name": "fishy3D.exe"
+}
+],
+"cover": {
+"image_id": "co2je8"
+},
+"first_release_date": 1602028800,
+"game_type": 0,
+"id": 139409,
+"name": "Fishy 3D",
+"platforms": [
+6,
+14
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Fishy Bar: Hook, Cook & Serve"
+}
+],
+"cover": {
+"image_id": "cod4km"
+},
+"first_release_date": 1814313600,
+"game_type": 0,
+"id": 423095,
+"name": "Fishy Bar",
+"platforms": [
+6
+]
+},
+{
+"cover": {
+"image_id": "cob6pi"
+},
+"game_type": 0,
+"id": 383960,
+"name": "Fishy Dish"
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "afishyrpgv12.exe"
+}
+],
+"cover": {
+"image_id": "co7753"
+},
+"first_release_date": 1749945600,
+"game_type": 0,
+"id": 181101,
+"name": "A Fishy RPG",
+"platforms": [
+3,
+6,
+14
+]
+}
+],
+"game:Ghost in the SQL": [
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Ghost in the SQL Data.exe"
+}
+],
+"cover": {
+"image_id": "cocrfi"
+},
+"first_release_date": 1793232000,
+"game_type": 0,
+"id": 414822,
+"name": "Ghost in the SQL Data",
+"platforms": [
+6,
+14
+]
+}
+],
+"game:Ghost in the SQL Dat": [],
+"game:Ghost in the SQL Data": [
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "Ghost in the SQL Data.exe"
+}
+],
+"cover": {
+"image_id": "cocrfi"
+},
+"first_release_date": 1793232000,
+"game_type": 0,
+"id": 414822,
+"name": "Ghost in the SQL Data",
+"platforms": [
+6,
+14
+]
+}
+],
+"game:Hades 2": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Hades 2"
+},
+{
+"comment": "Windows Executable",
+"name": "Hades2.exe"
+}
+],
+"cover": {
+"image_id": "coaknx"
+},
+"first_release_date": 1758758400,
+"game_type": 0,
+"id": 228525,
+"name": "Hades II",
+"platforms": [
+169,
+508,
+6,
+167,
+14,
+130
+]
+},
+{
+"cover": {
+"image_id": "cobwrj"
+},
+"first_release_date": 1009756800,
+"game_type": 0,
+"id": 134619,
+"name": "Hades 2",
+"platforms": [
+6
+]
+}
+],
+"game:Mass Effect": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Mass Effect 1"
+},
+{
+"comment": "Acronym",
+"name": "ME"
+}
+],
+"cover": {
+"image_id": "co1x7o"
+},
+"first_release_date": 1195516800,
+"game_type": 0,
+"id": 73,
+"name": "Mass Effect",
+"platforms": [
+9,
+6,
+12
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Working title",
+"name": "Mass Effect: Will Continue"
+},
+{
+"comment": "Alternative title",
+"name": "Mass Effect 5"
+}
+],
+"cover": {
+"image_id": "co7c1f"
+},
+"game_type": 0,
+"id": 131436,
+"name": "Mass Effect: Universe"
+},
+{
+"alternative_names": [
+{
+"comment": "Other",
+"name": "Mass Effect: Jacob's Story"
+}
+],
+"cover": {
+"image_id": "co5rx6"
+},
+"first_release_date": 1245628800,
+"game_type": 0,
+"id": 213,
+"name": "Mass Effect Galaxy",
+"platforms": [
+39
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Working title",
+"name": "Mass Effect 4"
+}
+],
+"cover": {
+"image_id": "co39vk"
+},
+"first_release_date": 1490054400,
+"game_type": 0,
+"id": 7349,
+"name": "Mass Effect: Andromeda",
+"platforms": [
+48,
+6,
+49
+]
+},
+{
+"cover": {
+"image_id": "co6dq9"
+},
+"first_release_date": 1620950400,
+"game_type": 9,
+"id": 243928,
+"name": "Mass Effect",
+"platforms": [
+48,
+6,
+49
+]
+},
+{
+"cover": {
+"image_id": "co6dqa"
+},
+"first_release_date": 1620950400,
+"game_type": 9,
+"id": 245113,
+"name": "Mass Effect 2",
+"platforms": [
+48,
+6,
+49
+]
+},
+{
+"cover": {
+"image_id": "co6dqb"
+},
+"first_release_date": 1620950400,
+"game_type": 9,
+"id": 245478,
+"name": "Mass Effect 3",
+"platforms": [
+48,
+6,
+49
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Acronym",
+"name": "ME2"
+}
+],
+"cover": {
+"image_id": "co20ac"
+},
+"first_release_date": 1264464000,
+"game_type": 0,
+"id": 74,
+"name": "Mass Effect 2",
+"platforms": [
+9,
+6,
+12
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Acronym",
+"name": "ME3"
+}
+],
+"cover": {
+"image_id": "co1x7q"
+},
+"first_release_date": 1330992000,
+"game_type": 0,
+"id": 75,
+"name": "Mass Effect 3",
+"platforms": [
+9,
+6,
+12
+]
+},
+{
+"cover": {
+"image_id": "co6bxo"
+},
+"first_release_date": 1331510400,
+"game_type": 0,
+"id": 77200,
+"name": "Mass Effect Datapad",
+"platforms": [
+39
+]
+}
+],
+"game:Petit Planet": [
+{
+"cover": {
+"image_id": "coak1r"
+},
+"first_release_date": 1796342400,
+"game_type": 0,
+"id": 370095,
+"name": "Petit Planet",
+"platforms": [
+508,
+34,
+6,
+39
+]
+}
+],
+"game:Phantom Blad": [],
+"game:Phantom Blad Zero": [],
+"game:Phantom Blade Zer0": [],
+"game:Phantom Blade Zero": [
+{
+"alternative_names": [
+{
+"comment": "Chinese title - simplified",
+"name": "影之刃零"
+},
+{
+"comment": "Windows Executable",
+"name": "PBZ.exe"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "影之刃零"
+}
+],
+"cover": {
+"image_id": "cococe"
+},
+"first_release_date": 1793232000,
+"game_type": 0,
+"id": 250618,
+"name": "Phantom Blade Zero",
+"platforms": [
+6,
+167
+]
+}
+],
+"game:Phantom Zero": [
+{
+"alternative_names": [
+{
+"comment": "Chinese title - simplified",
+"name": "影之刃零"
+},
+{
+"comment": "Windows Executable",
+"name": "PBZ.exe"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "影之刃零"
+}
+],
+"cover": {
+"image_id": "cococe"
+},
+"first_release_date": 1793232000,
+"game_type": 0,
+"id": 250618,
+"name": "Phantom Blade Zero",
+"platforms": [
+6,
+167
+]
+}
+],
+"game:Pixel Ripped": [
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "PixelRipped1978.exe"
+}
+],
+"cover": {
+"image_id": "co6mdr"
+},
+"first_release_date": 1686787200,
+"game_type": 0,
+"id": 242384,
+"name": "Pixel Ripped 1978",
+"platforms": [
+386,
+390,
+163
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Windows Executable",
+"name": "PixelRipped1995.exe"
+}
+],
+"cover": {
+"image_id": "co8f8z"
+},
+"first_release_date": 1587600000,
+"game_type": 0,
+"id": 119336,
+"name": "Pixel Ripped 1995",
+"platforms": [
+162,
+386,
+390,
+165,
+163,
+384
+]
+},
+{
+"cover": {
+"image_id": "co27nz"
+},
+"first_release_date": 1532995200,
+"game_type": 0,
+"id": 29839,
+"name": "Pixel Ripped 1989",
+"platforms": [
+165,
+163,
+385
+]
+}
+],
+"game:Scary Baboon": [
+{
+"cover": {
+"image_id": "co9nr9"
+},
+"first_release_date": 1689206400,
+"game_type": 0,
+"id": 338667,
+"name": "Scary Baboon",
+"platforms": [
+386
+]
+}
+],
+"game:Silent Hil Townfall": [],
+"game:Silent Hill: Townfall": [
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "SILENT HILL: townfall"
+},
+{
+"comment": "Working title",
+"name": "Cannula"
+}
+],
+"cover": {
+"image_id": "coc5sw"
+},
+"first_release_date": 1790208000,
+"game_type": 0,
+"id": 222342,
+"name": "Silent Hill: Townfall",
+"platforms": [
+6,
+167
+]
+}
+],
+"game:The Wolf Among Us Remastered": [
+{
+"cover": {
+"image_id": "coc6r3"
+},
+"first_release_date": 1793232000,
+"game_type": 9,
+"id": 404716,
+"name": "The Wolf Among Us Remastered",
+"platforms": [
+6,
+167,
+49,
+130
+]
+}
+],
+"game:Tomb Raider: Legacy of Atlantis": [
+{
+"cover": {
+"image_id": "cob1kg"
+},
+"first_release_date": 1802390400,
+"game_type": 8,
+"id": 381235,
+"name": "Tomb Raider: Legacy of Atlantis",
+"platforms": [
+169,
+508,
+6,
+167
+]
+}
+],
+"game:XR Experience": [],
+"game:Ведьмак": [
+{
+"alternative_names": [
+{
+"comment": "Polish title",
+"name": "Wiedźmin 2: Zabójcy Królów - Edycja Rozszerzona"
+},
+{
+"comment": "Russian title",
+"name": "Ведьмак 2: Убийцы королей. Расширенное издание"
+},
+{
+"comment": "Windows Executable",
+"name": "launcher.exe"
+},
+{
+"comment": "Czech title",
+"name": "Zaklínač 2: Vrahové Králů - rozšířená edice"
+}
+],
+"cover": {
+"image_id": "co1ykc"
+},
+"first_release_date": 1334534400,
+"game_type": 10,
+"id": 20740,
+"name": "The Witcher 2: Assassins of Kings - Enhanced Edition",
+"platforms": [
+3,
+6,
+14,
+12
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Russian title",
+"name": "Ведьмак 2: Убийцы королей"
+},
+{
+"comment": "Polish title",
+"name": "Wiedźmin 2: Zabójcy królów"
+},
+{
+"comment": "Czech title",
+"name": "Zaklínač 2: Vrahové králů"
+}
+],
+"cover": {
+"image_id": "co1wy4"
+},
+"first_release_date": 1305590400,
+"game_type": 0,
+"id": 478,
+"name": "The Witcher 2: Assassins of Kings",
+"platforms": [
+3,
+6,
+14,
+12
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Czech title",
+"name": "Zaklínač"
+},
+{
+"comment": "Russian title",
+"name": "Ведьмак"
+},
+{
+"comment": "Polish title",
+"name": "Wiedźmin"
+},
+{
+"comment": "Abbreviation",
+"name": "Witcher"
+}
+],
+"cover": {
+"image_id": "co1xrx"
+},
+"first_release_date": 1193356800,
+"game_type": 0,
+"id": 80,
+"name": "The Witcher",
+"platforms": [
+6,
+14
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Witcher III"
+},
+{
+"comment": "Russian Title",
+"name": "Ведьмак 3: Дикая охота"
+},
+{
+"comment": "Polish title",
+"name": "Wiedźmin 3: Dziki Gon"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "巫师3：狂猎"
+},
+{
+"comment": "Alternative spelling",
+"name": "The Witcher III: Wild Hunt"
+},
+{
+"comment": "Alternative title",
+"name": "Witcher 3"
+},
+{
+"comment": "Acronym",
+"name": "TW3"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "巫師3：狂獵"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+},
+{
+"comment": "Czech title",
+"name": "Zaklínač 3: Divoký hon"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3 - Дивият лов"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "ウィッチャー３　ワイルドハント"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3: Дивият лов"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+}
+],
+"cover": {
+"image_id": "coaarl"
+},
+"first_release_date": 1431993600,
+"game_type": 0,
+"id": 1942,
+"name": "The Witcher 3: Wild Hunt",
+"platforms": [
+169,
+48,
+508,
+6,
+167,
+49,
+130
+]
+},
+{
+"alternative_names": [
+{
+"comment": "Polish title",
+"name": "Wojna Krwi: Wiedźmińskie Opowieści"
+},
+{
+"comment": "Russian title",
+"name": "Кровная вражда: Ведьмак. Истории"
+},
+{
+"comment": "Windows Executable",
+"name": "Thronebreaker.exe"
+},
+{
+"comment": "Working title",
+"name": "GWENT: Thronebreaker"
+}
+],
+"cover": {
+"image_id": "co1qsk"
+},
+"first_release_date": 1540252800,
+"game_type": 4,
+"id": 107300,
+"name": "Thronebreaker: The Witcher Tales",
+"platforms": [
+48,
+34,
+6,
+39,
+49,
+130
+]
+}
+],
+"game:Ведьмак 3": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Witcher III"
+},
+{
+"comment": "Russian Title",
+"name": "Ведьмак 3: Дикая охота"
+},
+{
+"comment": "Polish title",
+"name": "Wiedźmin 3: Dziki Gon"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "巫师3：狂猎"
+},
+{
+"comment": "Alternative spelling",
+"name": "The Witcher III: Wild Hunt"
+},
+{
+"comment": "Alternative title",
+"name": "Witcher 3"
+},
+{
+"comment": "Acronym",
+"name": "TW3"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "巫師3：狂獵"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+},
+{
+"comment": "Czech title",
+"name": "Zaklínač 3: Divoký hon"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3 - Дивият лов"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "ウィッチャー３　ワイルドハント"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3: Дивият лов"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+}
+],
+"cover": {
+"image_id": "coaarl"
+},
+"first_release_date": 1431993600,
+"game_type": 0,
+"id": 1942,
+"name": "The Witcher 3: Wild Hunt",
+"platforms": [
+169,
+48,
+508,
+6,
+167,
+49,
+130
+]
+}
+],
+"game:Ведьмак 3 Дикая": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Witcher III"
+},
+{
+"comment": "Russian Title",
+"name": "Ведьмак 3: Дикая охота"
+},
+{
+"comment": "Polish title",
+"name": "Wiedźmin 3: Dziki Gon"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "巫师3：狂猎"
+},
+{
+"comment": "Alternative spelling",
+"name": "The Witcher III: Wild Hunt"
+},
+{
+"comment": "Alternative title",
+"name": "Witcher 3"
+},
+{
+"comment": "Acronym",
+"name": "TW3"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "巫師3：狂獵"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+},
+{
+"comment": "Czech title",
+"name": "Zaklínač 3: Divoký hon"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3 - Дивият лов"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "ウィッチャー３　ワイルドハント"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3: Дивият лов"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+}
+],
+"cover": {
+"image_id": "coaarl"
+},
+"first_release_date": 1431993600,
+"game_type": 0,
+"id": 1942,
+"name": "The Witcher 3: Wild Hunt",
+"platforms": [
+169,
+48,
+508,
+6,
+167,
+49,
+130
+]
+}
+],
+"game:Ведьмак 3 Дикая охта": [],
+"game:Ведьмак 3: Дикая охота": [
+{
+"alternative_names": [
+{
+"comment": "Alternative title",
+"name": "Witcher III"
+},
+{
+"comment": "Russian Title",
+"name": "Ведьмак 3: Дикая охота"
+},
+{
+"comment": "Polish title",
+"name": "Wiedźmin 3: Dziki Gon"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "巫师3：狂猎"
+},
+{
+"comment": "Alternative spelling",
+"name": "The Witcher III: Wild Hunt"
+},
+{
+"comment": "Alternative title",
+"name": "Witcher 3"
+},
+{
+"comment": "Acronym",
+"name": "TW3"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "巫師3：狂獵"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+},
+{
+"comment": "Czech title",
+"name": "Zaklínač 3: Divoký hon"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3 - Дивият лов"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "ウィッチャー３　ワイルドハント"
+},
+{
+"comment": "Alternative title",
+"name": "Вещерът 3: Дивият лов"
+},
+{
+"comment": "Windows Executable",
+"name": "redprelauncher.exe"
+}
+],
+"cover": {
+"image_id": "coaarl"
+},
+"first_release_date": 1431993600,
+"game_type": 0,
+"id": 1942,
+"name": "The Witcher 3: Wild Hunt",
+"platforms": [
+169,
+48,
+508,
+6,
+167,
+49,
+130
+]
+}
+],
+"game:Відьмак": [],
+"game:Геншине": [],
+"game:Киберпанк 2077": [
+{
+"alternative_names": [
+{
+"comment": "Chinese title - simplified",
+"name": "赛博朋克2077"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "電馭叛客2077"
+},
+{
+"comment": "Russian unofficial title",
+"name": "Киберпанк 2077"
+},
+{
+"comment": "Korean Acroynm",
+"name": "사펑"
+},
+{
+"comment": "Japanese title - stylized",
+"name": "サイバーパンク2077"
+}
+],
+"cover": {
+"image_id": "coaih8"
+},
+"first_release_date": 1607558400,
+"game_type": 0,
+"id": 1877,
+"name": "Cyberpunk 2077",
+"platforms": [
+170,
+169,
+48,
+508,
+6,
+167,
+14,
+49
+]
+}
+],
+"igdb-games-by-steam:1245620": [
+{
+"alternative_names": [
+{
+"comment": "Other",
+"name": "Great Rune"
+},
+{
+"comment": "Stylized title",
+"name": "ELDEN RING"
+},
+{
+"comment": "Japanese title - translated",
+"name": "エルデンリング"
+},
+{
+"comment": "Chinese title - traditional",
+"name": "艾爾登法環"
+},
+{
+"comment": "Chinese title - simplified",
+"name": "艾尔登法环"
+}
+],
+"cover": {
+"image_id": "co4jni"
+},
+"first_release_date": 1645747200,
+"game_type": 0,
+"id": 119133,
+"name": "Elden Ring",
+"platforms": [
+169,
+48,
+508,
+6,
+167,
+49
+]
+}
+],
+"igdb-games-by-steam:2622380": [
+{
+"alternative_names": [
+{
+"comment": "Stylized title",
+"name": "ELDEN RING NIGHTREIGN"
+},
+{
+"comment": "Alternative spelling",
+"name": "Elden Ring: Nightreign"
+},
+{
+"comment": "Korean title - translated",
+"name": "엘든 링 밤의 통치자"
+}
+],
+"cover": {
+"image_id": "co95gk"
+},
+"first_release_date": 1748563200,
+"game_type": 0,
+"id": 325591,
+"name": "Elden Ring Nightreign",
+"platforms": [
+169,
+48,
+6,
+167,
+49
+]
+}
+],
+"igdb-games-by-steam:4000000": [],
+"movie:A24": [
+{
+"id": 1583250,
+"original_title": "Untitled A24 Vampire Film",
+"poster_path": null,
+"release_date": "",
+"title": "Untitled A24 Vampire Film"
+},
+{
+"id": 1122096,
+"original_title": "Untitled Julia Ducournau & A24 Project",
+"poster_path": "/sOmS7EMikR5Vg3S9s0SK0igKiWG.jpg",
+"release_date": "",
+"title": "Untitled Julia Ducournau & A24 Project"
+},
+{
+"id": 438611,
+"original_title": "Abierto de 18 a 24",
+"poster_path": "/e0EO5q9dQlXxpz94hXs7WcP0qu3.jpg",
+"release_date": "1988-06-02",
+"title": "Abierto de 18 a 24"
+},
+{
+"id": 396705,
+"original_title": "Jânio a 24 Quadros",
+"poster_path": null,
+"release_date": "1981-09-04",
+"title": "Jânio a 24 Quadros"
+},
+{
+"id": 475981,
+"original_title": "24 Hours a Day",
+"poster_path": null,
+"release_date": "1993-01-01",
+"title": "24 Hours a Day"
+},
+{
+"id": 970300,
+"original_title": "Leonel Mattos a 24 Quadros por Segundo",
+"poster_path": "/odNTfDAJgPNhqpPjWHgLofA1QDI.jpg",
+"release_date": "2009-01-01",
+"title": "Leonel Mattos a 24 Quadros por Segundo"
+},
+{
+"id": 1330428,
+"original_title": "Blake Edwards: A Love Story in 24 Frames",
+"poster_path": "/ue81QegPsd3h4zjJpY8HGwIsKOD.jpg",
+"release_date": "2024-08-27",
+"title": "Blake Edwards: A Love Story in 24 Frames"
+},
+{
+"id": 663922,
+"original_title": "Cartoon Craze Vol. 24 presents: Sing A-Longs",
+"poster_path": "/sprciSCkvrkg5xLQXiNzGa0efy7.jpg",
+"release_date": "2004-04-04",
+"title": "Cartoon Craze Vol. 24 presents: Sing A-Longs"
+},
+{
+"id": 1745295,
+"original_title": "No Contact",
+"poster_path": null,
+"release_date": "2026-08-05",
+"title": "No Contact"
+},
+{
+"id": 746296,
+"original_title": "24 horas a sola",
+"poster_path": "/4hefwq7MqstH1pvpDKyMNp9UwOP.jpg",
+"release_date": "2020-09-02",
+"title": "24 horas a sola"
+},
+{
+"id": 563748,
+"original_title": "24 Variations on a Theme",
+"poster_path": null,
+"release_date": "1940-01-02",
+"title": "24 Variations on a Theme"
+},
+{
+"id": 1394129,
+"original_title": "Une Vie de 5 à 24",
+"poster_path": "/pzyz9C9KkQgU7WhNyVrng8oBUsF.jpg",
+"release_date": "2024-07-27",
+"title": "Une Vie de 5 à 24"
+},
+{
+"id": 183249,
+"original_title": "Night Ranger: 24 Strings & A Drummer - Live & Acoustic",
+"poster_path": "/aSif9JrxYkwnWbNbQRNr2ah2f83.jpg",
+"release_date": "2012-10-22",
+"title": "Night Ranger: 24 Strings & A Drummer - Live & Acoustic"
+},
+{
+"id": 1804062,
+"original_title": "Octopus: a 24 hour Chamonix Splitboarding Adventure",
+"poster_path": "/oUy085pp5NF259BG6ssnf4x8pzO.jpg",
+"release_date": "",
+"title": "Octopus: a 24 hour Chamonix Splitboarding Adventure"
+},
+{
+"id": 1305379,
+"original_title": "FLUORESCENT ADOLESCENT (A BATCH OF 24 FILM)",
+"poster_path": "/tCpkrqTWVNkGMv9GNxpQdZe55gE.jpg",
+"release_date": "",
+"title": "FLUORESCENT ADOLESCENT (A BATCH OF 24 FILM)"
+},
+{
+"id": 1010864,
+"original_title": "A və 24 digərləri",
+"poster_path": "/jYZzc81fXwkeS1bwQvOGPTLrzbL.jpg",
+"release_date": "2022-05-30",
+"title": "A və 24 digərləri"
+},
+{
+"id": 924675,
+"original_title": "24 de Marzo. Del Horror a la esperanza",
+"poster_path": "/d1LzNRuTSmOnZT124U5jcwAFojJ.jpg",
+"release_date": "2006-01-01",
+"title": "24 de Marzo. Del Horror a la esperanza"
+},
+{
+"id": 226386,
+"original_title": "Life in a Day",
+"poster_path": "/hgNkpJqrACWNEjvDhf2tH6daTE1.jpg",
+"release_date": "1999-05-20",
+"title": "Life in a Day"
+},
+{
+"id": 843470,
+"original_title": "Life in 24 Frames a Second",
+"poster_path": "/uF0TnHIs9LsvCm4WAqtXZRJPxMr.jpg",
+"release_date": "2021-06-26",
+"title": "Life in 24 Frames a Second"
+},
+{
+"id": 1170170,
+"original_title": "驚天24小時",
+"poster_path": "/hkFzahVpYyO0vb4p5mH7IstZMre.jpg",
+"release_date": "1992-01-01",
+"title": "驚天24小時"
+}
+],
+"movie:Dead-End Job": [
+{
+"id": 13667,
+"original_title": "Better Off Dead...",
+"poster_path": "/vwjXNbmHdOCk9Z5N8HnEje3NQ4C.jpg",
+"release_date": "1985-08-23",
+"title": "Уж лучше умереть"
+}
+],
+"movie:ELDEN RING": [
+{
+"id": 1485839,
+"original_title": "Elden Ring",
+"poster_path": "/3ApvUAl0aw6TKKLkJH3IrEzPpIf.jpg",
+"release_date": "2028-03-03",
+"title": "Elden Ring"
+}
+],
+"movie:Elden Ring": [
+{
+"id": 1485839,
+"original_title": "Elden Ring",
+"poster_path": "/3ApvUAl0aw6TKKLkJH3IrEzPpIf.jpg",
+"release_date": "2028-03-03",
+"title": "Elden Ring"
+}
+],
+"movie:Eldn": [],
+"movie:Eldn Ring": [],
+"movie:Ring": [
+{
+"id": 565,
+"original_title": "The Ring",
+"poster_path": "/vwldpALjeYsr0kHR7UWa1PdKpvc.jpg",
+"release_date": "2002-10-18",
+"title": "Звонок"
+},
+{
+"id": 120,
+"original_title": "The Lord of the Rings: The Fellowship of the Ring",
+"poster_path": "/dfoCSXJIamlzlpDCRxXVY5R9GSX.jpg",
+"release_date": "2001-12-18",
+"title": "Властелин колец: Братство кольца"
+},
+{
+"id": 1485839,
+"original_title": "Elden Ring",
+"poster_path": "/3ApvUAl0aw6TKKLkJH3IrEzPpIf.jpg",
+"release_date": "2028-03-03",
+"title": "Elden Ring"
+},
+{
+"id": 1437942,
+"original_title": "Ring Ring",
+"poster_path": "/5uKP3RjBsZbFPLaphO8muQxwym0.jpg",
+"release_date": "",
+"title": "Ring Ring"
+},
+{
+"id": 10320,
+"original_title": "The Ring Two",
+"poster_path": "/bQdFzcK4xpZh2NQjWqa4NfrxaVx.jpg",
+"release_date": "2005-03-10",
+"title": "Звонок 2"
+},
+{
+"id": 1641395,
+"original_title": "Unboxing Ring",
+"poster_path": "/uPArDGWJIg498V26fBZ5TLuTGn7.jpg",
+"release_date": "2010-02-04",
+"title": "Unboxing Ring"
+},
+{
+"id": 449049,
+"original_title": "Ring",
+"poster_path": "/5mmf5fdHriUwvhwLUq1ew5uTp29.jpg",
+"release_date": "2009-05-20",
+"title": "Ring"
+},
+{
+"id": 96936,
+"original_title": "The Bling Ring",
+"poster_path": "/ta2K2203Zc8AgQbjWSZ26kEfv6A.jpg",
+"release_date": "2013-06-12",
+"title": "Элитное общество"
+},
+{
+"id": 847230,
+"original_title": "Ring",
+"poster_path": null,
+"release_date": "1990-01-07",
+"title": "Ring"
+},
+{
+"id": 1627221,
+"original_title": "Ein Ring",
+"poster_path": null,
+"release_date": "1991-01-04",
+"title": "Ein Ring"
+},
+{
+"id": 1638909,
+"original_title": "Ring Around",
+"poster_path": "/CBLTUCnrGcR0jEj3uDEmSADwj.jpg",
+"release_date": "2026-02-22",
+"title": "Ring Around"
+},
+{
+"id": 587427,
+"original_title": "Suletud Ring",
+"poster_path": "/aKMz8NJdu0YrcvSMM3sGg5xhzN3.jpg",
+"release_date": "1983-01-01",
+"title": "Замкнутый круг"
+},
+{
+"id": 1427163,
+"original_title": "Ring Ring",
+"poster_path": "/o8yLMguo0LGo8VM5L0PsjFRxvdB.jpg",
+"release_date": "2025-01-31",
+"title": "Ring Ring"
+},
+{
+"id": 1684969,
+"original_title": "Barber Ring",
+"poster_path": "/d4dS36UZj7zyKl6NnLrYm3eWiRX.jpg",
+"release_date": "2022-09-22",
+"title": "Barber Ring"
+},
+{
+"id": 537592,
+"original_title": "Ring Pop",
+"poster_path": "/8ZX9xuCzpZbd5rQBDgnFopfj90Y.jpg",
+"release_date": "2018-09-08",
+"title": "Ring Pop"
+},
+{
+"id": 617549,
+"original_title": "Ring Ring",
+"poster_path": "/dWa1WgNbAyLeH9VRaQrfQBX97pn.jpg",
+"release_date": "2019-07-19",
+"title": "Дзынь-дзынь"
+},
+{
+"id": 116853,
+"original_title": "The Bling Ring",
+"poster_path": "/x3WmMVULbz2IZ75J3n5wWaatRml.jpg",
+"release_date": "2011-09-26",
+"title": "Шикарное кольцо"
+},
+{
+"id": 1736031,
+"original_title": "Ring Leader",
+"poster_path": null,
+"release_date": "",
+"title": "Ring Leader"
+},
+{
+"id": 171304,
+"original_title": "Ring Girls",
+"poster_path": "/9NJ218r7p3hpa5BWR9a37KNNcuJ.jpg",
+"release_date": "2005-10-03",
+"title": "Ring Girls"
+},
+{
+"id": 1144932,
+"original_title": "Queen of the Ring",
+"poster_path": "/5zMLEsBvKN46FijiSt3K5Ji5EDM.jpg",
+"release_date": "2025-03-07",
+"title": "Королева ринга"
+}
+],
+"movie:Дюна": [
+{
+"id": 438631,
+"original_title": "Dune",
+"poster_path": "/3hbXNclcHaj5KiF6kK41GBMjyFr.jpg",
+"release_date": "2021-09-15",
+"title": "Дюна"
+},
+{
+"id": 693134,
+"original_title": "Dune: Part Two",
+"poster_path": "/3aLghRkuJc9cs770fxo4a6YWht3.jpg",
+"release_date": "2024-02-27",
+"title": "Дюна: Часть вторая"
+},
+{
+"id": 841,
+"original_title": "Dune",
+"poster_path": "/ushxXCt5RAXtBFGrpMxiz5n6d3L.jpg",
+"release_date": "1984-12-14",
+"title": "Дюна"
+},
+{
+"id": 1170608,
+"original_title": "Dune: Part Three",
+"poster_path": "/A1ZXWB0lx2bsQw1cv9BpLsBx8mK.jpg",
+"release_date": "2026-12-15",
+"title": "Дюна: Часть третья"
+},
+{
+"id": 633787,
+"original_title": "Золотая дюна",
+"poster_path": "/piX74vNjTslY2aUdJXvocZSlVjv.jpg",
+"release_date": "2021-08-28",
+"title": "Золотая дюна"
+},
+{
+"id": 881460,
+"original_title": "Planet Dune",
+"poster_path": "/cPSPghn6tr6fGY6hTi78SrxBcqY.jpg",
+"release_date": "2021-10-29",
+"title": "Планета Дюна"
+},
+{
+"id": 191720,
+"original_title": "Jodorowsky's Dune",
+"poster_path": "/maxjevZcGbfrp55XRk4gcZGeJVd.jpg",
+"release_date": "2013-08-30",
+"title": "«Дюна» Ходоровского"
+},
+{
+"id": 271683,
+"original_title": "La dune",
+"poster_path": "/qNnFzvRyXk0FkHOGuxS4jWqj1vO.jpg",
+"release_date": "2014-08-13",
+"title": "Дюна"
+},
+{
+"id": 1531389,
+"original_title": "Mājiņa kāpās",
+"poster_path": "/90D5XQtw7TbS18D9lOxsqkXB8Kj.jpg",
+"release_date": "1963-03-01",
+"title": "Домик в дюнах"
+},
+{
+"id": 744738,
+"original_title": "Dune Drifter",
+"poster_path": "/hBLJzYriF9zZAHc2Gjb3KTQGTGT.jpg",
+"release_date": "2020-10-24",
+"title": "Ходящий по дюнам"
+},
+{
+"id": 285411,
+"original_title": "Ilgais ceļš kāpās",
+"poster_path": "/aI91wr6RWkcWJeHOgiCvsOtl0ig.jpg",
+"release_date": "1982-06-02",
+"title": "Долгая дорога в дюнах"
+},
+{
+"id": 547368,
+"original_title": "Дом на дюнах",
+"poster_path": "/8cItZo53lxXN4kgTOEnDFvOhzhJ.jpg",
+"release_date": "1984-09-01",
+"title": "Дом на дюнах"
+},
+{
+"id": 1589709,
+"original_title": "Путешествие к песчаным дюнам",
+"poster_path": "/8iu2E40HvL3JRadCcJ3u2i4zmVL.jpg",
+"release_date": "2025-11-24",
+"title": "Путешествие к песчаным дюнам"
+}
+],
+"series:Dead End": [
+{
+"first_air_date": "2019-02-26",
+"id": 85054,
+"name": "Dead End",
+"original_name": "Dead End",
+"poster_path": "/m8GypeIQ6rYeqhoQEAZ82gkmwgV.jpg"
+},
+{
+"first_air_date": "2022-06-16",
+"id": 158139,
+"name": "Тупик: парк паранормальных явлений",
+"original_name": "Dead End: Paranormal Park",
+"poster_path": "/5xrrpm8WqZ0WgvYfVQHHoa3ph0j.jpg"
+},
+{
+"first_air_date": "2015-05-07",
+"id": 62530,
+"name": "Dead End Express",
+"original_name": "Dead End Express",
+"poster_path": "/rsADEJwPLLtjt918728LQWZvgxF.jpg"
+},
+{
+"first_air_date": "2025-07-13",
+"id": 293387,
+"name": "Amy's Dead-End Dreamhouse",
+"original_name": "Amy's Dead-End Dreamhouse",
+"poster_path": "/1yG6EVPqYOgiknyNvjPrZlRCDsk.jpg"
+},
+{
+"first_air_date": "2026-05-22",
+"id": 320229,
+"name": "DEAD ENDー羅刹の刻印ー",
+"original_name": "DEAD ENDー羅刹の刻印ー",
+"poster_path": null
+},
+{
+"first_air_date": "2015-05-07",
+"id": 71783,
+"name": "Dead End Express : Livraisons impossibles",
+"original_name": "Dead End Express : Livraisons impossibles",
+"poster_path": null
+},
+{
+"first_air_date": "2026-08-08",
+"id": 323722,
+"name": "Точка взрыва",
+"original_name": "Räjähdyspiste",
+"poster_path": "/buvqlSOkev8m4yhlufmuiy4gL8Z.jpg"
+},
+{
+"first_air_date": "2007-08-16",
+"id": 126524,
+"name": "末路天堂",
+"original_name": "末路天堂",
+"poster_path": "/axw00iFUp1Jh3Yg9JgqbmBSYMAR.jpg"
+},
+{
+"first_air_date": "2026-10-30",
+"id": 289517,
+"name": "Работа с призрачными перспективами",
+"original_name": "꿀알바",
+"poster_path": "/e2iHBbwJ0EItI57e45TJse6MWdS.jpg"
+},
+{
+"first_air_date": "2022-11-14",
+"id": 214656,
+"name": "繩角",
+"original_name": "繩角",
+"poster_path": "/48yZCDVUb6zgNADYCbxY0tZDmm5.jpg"
+},
+{
+"first_air_date": "2025-02-11",
+"id": 254970,
+"name": "Вкус смерти",
+"original_name": "Dood Spoor",
+"poster_path": "/oROjxJsKQB7wtwprQ2lkao7N0Um.jpg"
+},
+{
+"first_air_date": "2017-06-11",
+"id": 71061,
+"name": "В ожидании лета",
+"original_name": "夏至未至",
+"poster_path": "/osK4qQ9FiWYJy9kek7eV4P3WNWM.jpg"
+},
+{
+"first_air_date": "2025-11-01",
+"id": 263151,
+"name": "树影迷宫",
+"original_name": "树影迷宫",
+"poster_path": "/2ilIbodMYijMA0XnyfH852mth10.jpg"
+},
+{
+"first_air_date": "2022-12-01",
+"id": 214258,
+"name": "Pewnego razu na krajowej jedynce",
+"original_name": "Pewnego razu na krajowej jedynce",
+"poster_path": "/egCHOJsUtReKNslDsINbUEFEwbn.jpg"
+}
+],
+"series:Dead End Job": [
+{
+"first_air_date": "2026-10-30",
+"id": 289517,
+"name": "Работа с призрачными перспективами",
+"original_name": "꿀알바",
+"poster_path": "/e2iHBbwJ0EItI57e45TJse6MWdS.jpg"
+}
+],
+"series:Dead-End": [
+{
+"first_air_date": "2019-02-26",
+"id": 85054,
+"name": "Dead End",
+"original_name": "Dead End",
+"poster_path": "/m8GypeIQ6rYeqhoQEAZ82gkmwgV.jpg"
+},
+{
+"first_air_date": "2022-06-16",
+"id": 158139,
+"name": "Тупик: парк паранормальных явлений",
+"original_name": "Dead End: Paranormal Park",
+"poster_path": "/5xrrpm8WqZ0WgvYfVQHHoa3ph0j.jpg"
+},
+{
+"first_air_date": "2015-05-07",
+"id": 62530,
+"name": "Dead End Express",
+"original_name": "Dead End Express",
+"poster_path": "/rsADEJwPLLtjt918728LQWZvgxF.jpg"
+},
+{
+"first_air_date": "2025-07-13",
+"id": 293387,
+"name": "Amy's Dead-End Dreamhouse",
+"original_name": "Amy's Dead-End Dreamhouse",
+"poster_path": "/1yG6EVPqYOgiknyNvjPrZlRCDsk.jpg"
+},
+{
+"first_air_date": "2026-05-22",
+"id": 320229,
+"name": "DEAD ENDー羅刹の刻印ー",
+"original_name": "DEAD ENDー羅刹の刻印ー",
+"poster_path": null
+},
+{
+"first_air_date": "2015-05-07",
+"id": 71783,
+"name": "Dead End Express : Livraisons impossibles",
+"original_name": "Dead End Express : Livraisons impossibles",
+"poster_path": null
+},
+{
+"first_air_date": "2026-08-08",
+"id": 323722,
+"name": "Точка взрыва",
+"original_name": "Räjähdyspiste",
+"poster_path": "/buvqlSOkev8m4yhlufmuiy4gL8Z.jpg"
+},
+{
+"first_air_date": "2007-08-16",
+"id": 126524,
+"name": "末路天堂",
+"original_name": "末路天堂",
+"poster_path": "/axw00iFUp1Jh3Yg9JgqbmBSYMAR.jpg"
+},
+{
+"first_air_date": "2026-10-30",
+"id": 289517,
+"name": "Работа с призрачными перспективами",
+"original_name": "꿀알바",
+"poster_path": "/e2iHBbwJ0EItI57e45TJse6MWdS.jpg"
+},
+{
+"first_air_date": "2022-11-14",
+"id": 214656,
+"name": "繩角",
+"original_name": "繩角",
+"poster_path": "/48yZCDVUb6zgNADYCbxY0tZDmm5.jpg"
+},
+{
+"first_air_date": "2025-02-11",
+"id": 254970,
+"name": "Вкус смерти",
+"original_name": "Dood Spoor",
+"poster_path": "/oROjxJsKQB7wtwprQ2lkao7N0Um.jpg"
+},
+{
+"first_air_date": "2017-06-11",
+"id": 71061,
+"name": "В ожидании лета",
+"original_name": "夏至未至",
+"poster_path": "/osK4qQ9FiWYJy9kek7eV4P3WNWM.jpg"
+},
+{
+"first_air_date": "2025-11-01",
+"id": 263151,
+"name": "树影迷宫",
+"original_name": "树影迷宫",
+"poster_path": "/2ilIbodMYijMA0XnyfH852mth10.jpg"
+},
+{
+"first_air_date": "2022-12-01",
+"id": 214258,
+"name": "Pewnego razu na krajowej jedynce",
+"original_name": "Pewnego razu na krajowej jedynce",
+"poster_path": "/egCHOJsUtReKNslDsINbUEFEwbn.jpg"
+}
+],
+"series:Dead-End Jb": [],
+"series:Dead-End Job": [
+{
+"first_air_date": "2026-10-30",
+"id": 289517,
+"name": "Работа с призрачными перспективами",
+"original_name": "꿀알바",
+"poster_path": "/e2iHBbwJ0EItI57e45TJse6MWdS.jpg"
+}
+],
+"series:Severance": [
+{
+"first_air_date": "2022-02-17",
+"id": 95396,
+"name": "Разделение",
+"original_name": "Severance",
+"poster_path": "/Ag7gBPnh8Cpn5xvCdPPA4RJRN1L.jpg"
+}
+],
+"series:Игра в": [
+{
+"first_air_date": "1973-07-02",
+"id": 9,
+"name": "Игра в совпадения",
+"original_name": "Match Game",
+"poster_path": "/yO1yfYyHemDZAJyLNLz3tCiaNC8.jpg"
+},
+{
+"first_air_date": "2021-09-17",
+"id": 93405,
+"name": "Игра в кальмара",
+"original_name": "오징어 게임",
+"poster_path": "/6zHKgCKht3vwrtSXFvSUntSRsJh.jpg"
+},
+{
+"first_air_date": "2023-02-08",
+"id": 331861,
+"name": "Игра в Правду",
+"original_name": "Игра в Правду",
+"poster_path": "/d8o8BLpYtCRfitGwbZ2tsig8tpH.jpg"
+},
+{
+"first_air_date": "2026-10-06",
+"id": 320513,
+"name": "Игра в похищение",
+"original_name": "kiDnap GAME",
+"poster_path": "/uSifXmD3as8MOqCkcBBxQZntPQr.jpg"
+},
+{
+"first_air_date": "2023-04-14",
+"id": 224616,
+"name": "Игра в убийство",
+"original_name": "Игра в убийство",
+"poster_path": "/L2lkWa3IhYmUGmzP4g4ASFTzrF.jpg"
+},
+{
+"first_air_date": "2011-08-15",
+"id": 38207,
+"name": "Игра в ложь",
+"original_name": "The Lying Game",
+"poster_path": "/nH6qbWjBJf9ZzqVrwyO17gQZMdh.jpg"
+},
+{
+"first_air_date": "2024-02-29",
+"id": 227192,
+"name": "Игра в пирамиду",
+"original_name": "피라미드 게임",
+"poster_path": "/nQEutk5YxTyXcZ01oB8AntYvkRo.jpg"
+},
+{
+"first_air_date": "2020-08-31",
+"id": 107703,
+"name": "Игра на выживание",
+"original_name": "Игра на выживание",
+"poster_path": "/aSbxUTqy0TRRBIXrdgFzsSLvvtU.jpg"
+},
+{
+"first_air_date": "2020-04-30",
+"id": 101146,
+"name": "Игра в жертву",
+"original_name": "誰是被害者",
+"poster_path": "/u6VnTkJWn6T24Gwqg3xvrUdqAjw.jpg"
+},
+{
+"first_air_date": "2016-04-12",
+"id": 64482,
+"name": "Игра в молчанку",
+"original_name": "Game of Silence",
+"poster_path": "/bXFCYa8Kx35aEp68F3Q9RG8mAYX.jpg"
+},
+{
+"first_air_date": "2023-11-22",
+"id": 204082,
+"name": "Игра в кальмара: вызов",
+"original_name": "Squid Game: The Challenge",
+"poster_path": "/7wpUkmsfF219GkbDpGQdFrcqSJz.jpg"
+},
+{
+"first_air_date": "2025-03-21",
+"id": 256542,
+"name": "Игра в настоящую любовь",
+"original_name": "挚爱游戏",
+"poster_path": "/srBhZ1eQi3VtetIxyRN1lEy1pNH.jpg"
+},
+{
+"first_air_date": "2022-02-25",
+"id": 156441,
+"name": "Игра в знаменитость",
+"original_name": "The Fame Game",
+"poster_path": "/rLqX8PWdSJVmKfBqSEg24bERIEg.jpg"
+},
+{
+"first_air_date": "2024-01-10",
+"id": 241168,
+"name": "Игра в доверие",
+"original_name": "The Trust",
+"poster_path": "/j64L8o5FhzadOC14G9jXq7xwQjM.jpg"
+},
+{
+"first_air_date": "2025-08-14",
+"id": 271823,
+"name": "Игра в Грейси Дарлинг",
+"original_name": "Playing Gracie Darling",
+"poster_path": "/7UWdkbSUd1d1GB28IyIKDbftzhM.jpg"
+},
+{
+"first_air_date": "2018-06-25",
+"id": 49845,
+"name": "Игра в любовь",
+"original_name": "เกมเสน่หา",
+"poster_path": "/e2GPOKHyDyN98ju4FSuQSJhT7TV.jpg"
+},
+{
+"first_air_date": "2004-12-14",
+"id": 87688,
+"name": "Игра на выбывание",
+"original_name": "Игра на выбывание",
+"poster_path": "/izOb1jtQ1KM3xiUoG8ZgpXDhF3Z.jpg"
+},
+{
+"first_air_date": "2026-06-27",
+"id": 329924,
+"name": "Игра вслепую",
+"original_name": "Игра вслепую",
+"poster_path": "/l3NOnh0sSkllocEtsj1yYJRFaNH.jpg"
+},
+{
+"first_air_date": "2025-10-02",
+"id": 300741,
+"name": "Игра: Ты никогда не играешь в одиночку",
+"original_name": "The Game: You Never Play Alone",
+"poster_path": "/c7WlnmjQvcKIoaUtOzzb951Hc5E.jpg"
+},
+{
+"first_air_date": "2026-09-21",
+"id": 330800,
+"name": "Военная игра",
+"original_name": "The Wargame",
+"poster_path": "/i3lR5Q9pg14gYGFIPAPcfgpw8Kj.jpg"
+}
+],
+"series:Игра в кальмара": [
+{
+"first_air_date": "2021-09-17",
+"id": 93405,
+"name": "Игра в кальмара",
+"original_name": "오징어 게임",
+"poster_path": "/6zHKgCKht3vwrtSXFvSUntSRsJh.jpg"
+},
+{
+"first_air_date": "2023-11-22",
+"id": 204082,
+"name": "Игра в кальмара: вызов",
+"original_name": "Squid Game: The Challenge",
+"poster_path": "/7wpUkmsfF219GkbDpGQdFrcqSJz.jpg"
+}
+],
+"series:Игра в кальмра": [],
+"series:Игры в кальмара": [],
+"series:Работа с призрачными перспективами": [
+{
+"first_air_date": "2026-10-30",
+"id": 289517,
+"name": "Работа с призрачными перспективами",
+"original_name": "꿀알바",
+"poster_path": "/e2iHBbwJ0EItI57e45TJse6MWdS.jpg"
+}
+],
+"series:Разделение": [
+{
+"first_air_date": "2022-02-17",
+"id": 95396,
+"name": "Разделение",
+"original_name": "Severance",
+"poster_path": "/Ag7gBPnh8Cpn5xvCdPPA4RJRN1L.jpg"
+},
+{
+"first_air_date": "2014-07-16",
+"id": 57277,
+"name": "Разделение",
+"original_name": "The Divide",
+"poster_path": "/yVlzsIJfX0pabYsW1MQEq0Ofjxj.jpg"
+}
+],
+"series:Разделения": [],
+"shikimori-entries:57612": [
+{
+"airedOn": {
+"date": "2026-10-08",
+"year": 2026
+},
+"duration": 23,
+"english": "A Returner's Magic Should Be Special Season 2",
+"episodes": 0,
+"episodesAired": 5,
+"franchise": "kikansha_no_mahou_wa_tokubetsu_desu",
+"genres": [
+{
+"kind": "genre",
+"russian": "Экшен"
+},
+{
+"kind": "genre",
+"russian": "Фэнтези"
+},
+{
+"kind": "theme",
+"russian": "Школа"
+},
+{
+"kind": "theme",
+"russian": "Путешествие во времени"
+}
+],
+"id": "57612",
+"kind": "tv",
+"malId": "57612",
+"name": "Kikansha no Mahou wa Tokubetsu desu 2nd Season",
+"nextEpisodeAt": "2026-11-11T18:45:00+03:00",
+"poster": {
+"originalUrl": "https://shikimori.io/uploads/poster/animes/57612/d02a02c66232f18a1c4f23ded26ba287.jpeg"
+},
+"related": [
+{
+"anime": {
+"id": "54852",
+"kind": "tv"
+},
+"relationKind": "prequel",
+"relationText": "Предыстория"
+},
+{
+"anime": null,
+"relationKind": "adaptation",
+"relationText": "Адаптация"
+}
+],
+"releasedOn": {
+"date": null
+},
+"russian": "Магия вернувшегося должна быть особенной 2",
+"status": "ongoing"
+}
+],
+"steam-appdetails:2622380": {
+"name": "ELDEN RING NIGHTREIGN",
+"type": "game"
+},
+"steam-appdetails:4000000": null,
+"tmdb-find:tt11280740": {
+"movie_results": [],
+"tv_results": [
+{
+"first_air_date": "2022-02-17",
+"id": 95396,
+"name": "Разделение",
+"original_name": "Severance",
+"poster_path": "/Ag7gBPnh8Cpn5xvCdPPA4RJRN1L.jpg"
+}
+]
+},
+"tmdb-find:tt1160419": {
+"movie_results": [
+{
+"id": 438631,
+"original_title": "Dune",
+"poster_path": "/3hbXNclcHaj5KiF6kK41GBMjyFr.jpg",
+"release_date": "2021-09-15",
+"title": "Дюна"
+}
+],
+"tv_results": []
+}
+}

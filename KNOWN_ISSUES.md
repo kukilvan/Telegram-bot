@@ -74,6 +74,9 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | open | — |
 | KI-59 | «Входящие»: the stop list of candidates is a fixed list | `app/tracker/candidates.py` | open | — |
 | KI-60 | «Входящие»: a Latin run keeps a leading «from», and a bare number after a colon is cut off the name | `app/tracker/candidates.py` | open | — |
+| KI-61 | «Входящие»: a typo in a name is not corrected when the source answers in another language | `app/tracker/offers.py` | open | — |
+| KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | open | — |
+| KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | open | — |
 
 ## Entries
 
@@ -632,3 +635,30 @@ Format of a new entry:
 - Likelihood / impact: rare; a name that is searched in the source anyway (the source matches «Fallout» to the series) — a wrong first offer at worst, the owner presses «Нет». A fix: drop a leading «from» of a run; read `: <number>` as part of the name unless an episode word follows.
 - Status: open.
 - Found: 2026-11-06, ticket 02 of stage 6.4.
+
+## KI-61. «Входящие»: a typo in a name is not corrected when the source answers in another language
+
+- Where: `app/tracker/offers.py` (`OfferSearch._corrected`, spec 5.4 and 13 of stage 6.4).
+- What's wrong: the correction looks for a close name among the names a search answers; TMDb answers a series in Russian and in its original language, so an English name with a typo of a series whose original is not English finds no close name: «Dead-End Jb» (the English name of the Korean «꿀알바», «Работа с призрачными перспективами») gives nothing to correct by.
+- How to reproduce: send the bot «Dead-End Jb», press «Сериал»: «Не нашёл — сохранил во «Входящие»…» (the saved answers of `search-typos-links.json`).
+- Likelihood / impact: rare (an English name of a non-English series typed with a typo); the item is in «Входящие», «Найти» on the web finds it with the name fixed by hand. A fix would need the English names of TMDb (`alternative_titles`), one more request a record.
+- Status: open.
+- Found: 2026-11-06, spec of stage 6.4 (section 13); written by ticket 04.
+
+## KI-62. «Входящие»: a kind press does not look the links of the item up again
+
+- Where: `app/tracker/inbox_answers.py` (`InboxAnswers.answer_kind`).
+- What's wrong: the links of sources are looked up once, at the end of the pause. When they gave nothing (the source failed, an unknown number) the bot asks «Что это?», and a kind press then searches only the name candidates of the text: a link whose source failed a moment ago is not tried again.
+- How to reproduce: a Steam link while IGDB does not answer; «Что это?» comes; IGDB is back; «Игра» searches the text only (for a bare link: nothing — «Не нашёл…»).
+- Likelihood / impact: rare (a failure of a source exactly then); the item is in «Входящие», and sending the link again gives its card. A fix: look the links of the chosen kind up again in `answer_kind` (within the budget of 5.5).
+- Status: open.
+- Found: 2026-11-06, ticket 04 of stage 6.4.
+
+## KI-63. The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it
+
+- Where: `app/tracker/sources/shikimori_anime.py` (464 lines; 457 before ticket 04 of stage 6.4 added the lookup of an entry), `tests/test_tracker_core_split.py` (`MODULES` lists only two adapters).
+- What's wrong: rule 7 wants every module of the core within about 400 lines; the adapter holds the parsing, the chain of seasons and the source in one file, and the size test does not list it, so nothing fails.
+- How to reproduce: `wc -l app/tracker/sources/shikimori_anime.py`.
+- Likelihood / impact: no bug; the file is harder to read and to change in parallel. A fix: move the chain (`collect_entries`, `chain_order`, `group_seasons`, `build_*`) into a module of its own and list every adapter in the size test (like KI-56 for the pure modules).
+- Status: open.
+- Found: 2026-11-06, ticket 04 of stage 6.4.

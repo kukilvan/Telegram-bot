@@ -91,6 +91,7 @@ class Entry:
     poster: str | None
     genres: tuple[str, ...]
     chain: tuple[tuple[str, str], ...]  # (relation, other entry id), prequel and sequel only
+    english: str | None = None  # an offer of «Входящие» matches by it too
 
     @property
     def display_name(self) -> str:
@@ -193,6 +194,7 @@ def parse_entry(raw: dict[str, Any]) -> Entry:
         poster=((raw.get("poster") or {}).get("originalUrl")) or None,
         genres=tuple(g["russian"] for g in raw.get("genres") or [] if g.get("kind") == "genre" and g.get("russian")),
         chain=chain,
+        english=raw.get("english") or None,
     )
 
 
@@ -209,21 +211,21 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
     def earliest(entries: list[Entry]) -> Entry:
         return min(entries, key=lambda e: (e.aired_on is None, e.aired_on or date.max))
 
-    suggestions = []
-    for entries in groups.values():
-        seasons = [e for e in entries if e.kind in SEASON_KINDS]
-        shown = earliest(seasons or entries)
-        suggestions.append(
-            Suggestion(
-                kind=KIND,
-                external_id=shown.id,
-                name=shown.display_name,
-                original_name=shown.name,
-                year=shown.aired_on.year if shown.aired_on else None,
-                poster_path=shown.poster,
-            )
-        )
-    return suggestions
+    return [suggestion(earliest([e for e in entries if e.kind in SEASON_KINDS] or entries)) for entries in groups.values()]
+
+
+def suggestion(entry: Entry) -> Suggestion:
+    """The suggestion of an entry: adding it takes its whole chain."""
+    return Suggestion(
+        kind=KIND,
+        external_id=entry.id,
+        name=entry.display_name,
+        original_name=entry.name,
+        year=entry.aired_on.year if entry.aired_on else None,
+        poster_path=entry.poster,
+        released=entry.aired_on,
+        other_names=tuple(name for name in (entry.russian, entry.english) if name),
+    )
 
 
 # --- the chain ----------------------------------------------------------------------------------
@@ -413,6 +415,11 @@ class ShikimoriAnimeSource:
 
     async def suggest(self, query: str) -> list[Suggestion]:
         return parse_search(await self._shikimori.search_anime(query, strict=True))
+
+    async def suggest_by_id(self, external_id: str) -> Suggestion | None:
+        """The entry of a Shikimori link as a suggestion (adding it takes its chain); None when Shikimori has none."""
+        found = [parse_entry(raw) for raw in await self._shikimori.fetch_entries([external_id])]
+        return next((suggestion(entry) for entry in found if entry.id == external_id), None)
 
     async def snapshot(self, external_id: str) -> AnimeSnapshot | None:
         """The franchise around the entry with this Shikimori id; None when Shikimori has no such entry.

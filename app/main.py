@@ -36,6 +36,7 @@ from app.tracker.sources.igdb_follow_ups import IgdbFollowUpSource
 from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from app.tracker.sources.steam_prices import SteamPriceSource
+from app.tracker.sources.tmdb_find import TmdbFindSource
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_sequels import TmdbSequelSource
 from app.tracker.sources.tmdb_series import TmdbSeriesSource
@@ -124,6 +125,7 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
         default_tz=time_zone_of(settings),
         price_source=SteamPriceSource(steam),
         follow_up_source=IgdbFollowUpSource(igdb),
+        imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
     )
 
 

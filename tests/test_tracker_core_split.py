@@ -19,7 +19,7 @@ TRACKER = Path(core.__file__).parent
 MODULES = (
     "context", "settings_store", "storage", "queue", "titles", "statuses", "listing", "feed", "polling", "delivery_service",
     "test_samples", "core", "prices", "price_rows", "sources/steam_prices", "follow_ups", "sources/igdb_follow_ups", "inbox",
-    "candidates",
+    "candidates", "offers", "inbox_answers", "sources/tmdb_find",
 )
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (
@@ -110,7 +110,7 @@ def test_the_public_names_of_the_core_stay_importable_from_the_facade():
         "TitleSummary", "WatchableSeason", "AddResult", "DeleteResult", "ChangeResult", "SummaryResult",
         "TestEventResult", "DeliveryReport", "PollReport", "CannotScore", "ScoreView", "Feed", "FeedDay", "FeedTitle", "SettingsField",
         "UpcomingRow", "RecentRow", "FollowOffer", "Followable", "SettingsView", "SettingsChange", "SettingsRefused", "ZoneOption",
-        "UnknownPlatform", "SourceNotConfigured", "IncomingMessage", "TakeIn", "PauseOutcome", "InboxEntry",
+        "UnknownPlatform", "SourceNotConfigured", "IncomingMessage", "TakeIn", "InboxOutcome", "InboxReply", "OfferCard", "InboxEntry",
         "UnknownInboxItem", "InboxState", "InboxReason", "INBOX_REASONS", "MEDIA_WORDS",
     ):
         assert hasattr(core, name), name

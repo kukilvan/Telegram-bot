@@ -198,13 +198,13 @@ def test_an_anime_is_known_by_the_id_of_a_later_part_too(tracker, shikimori, mon
 def test_the_numbers_are_read_once_after_the_source_answered(tracker, session_factory):
     run(tracker.add_title(TitleKind.MOVIE, "438631"))
     reads = []
-    original = tracker._titles._known_ids
+    original = tracker._titles._known_suggestions
 
-    def counted(poller, ids):
-        reads.append(list(ids))
-        return original(poller, ids)
+    def counted(suggestions):
+        reads.append([s.external_id for s in suggestions])
+        return original(suggestions)
 
-    tracker._titles._known_ids = counted
+    tracker._titles._known_suggestions = counted
     run(tracker.search(TitleKind.MOVIE, "дюна"))
 
     assert len(reads) == 1 and "438631" in reads[0]

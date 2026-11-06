@@ -10,7 +10,10 @@ from app.bot.tracker_handlers import MY_TITLES_BUTTON, TEST_EVENT_BUTTON
 from app.bot.card_message import poster_preview, send_card_message
 from app.tracker.core import CARD_SIZE, LIST_SIZE, poster_url
 from app.tracker import posters
-from test_tracker_titles_bot import DUNE_2, DUNE_3, Chat_, movies, run, tracker  # noqa: F401  (fixtures by name)
+import test_tracker_titles_bot as titles_bot
+from test_tracker_titles_bot import DUNE_2, DUNE_3, Chat_, run
+
+movies, tracker = titles_bot.movies, titles_bot.tracker  # the fixtures, by their names
 
 IGDB = "https://images.igdb.com/igdb/image/upload"
 SHIKI = "https://shikimori.io/uploads/poster/animes/1/x.jpeg"

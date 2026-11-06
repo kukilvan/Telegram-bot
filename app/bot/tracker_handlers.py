@@ -28,7 +28,7 @@ from aiogram.types import (
 )
 
 from app.bot.card_message import send_card_message
-from app.bot.inbox_handlers import register_inbox_handlers
+from app.bot.inbox_handlers import TitleCards, register_inbox_handlers
 from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
 from app.tracker.cards import TitleCard, format_card, format_when
 from app.tracker.core import (
@@ -302,21 +302,31 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             return
         await callback.message.answer(text)
 
-    async def ask_watched_seasons(callback: CallbackQuery, title_id: int) -> bool:
+    async def ask_seasons_in(message: Message, title_id: int) -> bool:
         """Offer the seasons with released episodes for marking. False: a movie or nothing is out yet."""
         seasons = await tracker.watchable_seasons(title_id)
-        if not seasons or callback.message is None:
+        if not seasons:
             return False
-        await callback.message.answer(_ASK_SEASONS, reply_markup=seasons_markup(title_id, seasons))
+        await message.answer(_ASK_SEASONS, reply_markup=seasons_markup(title_id, seasons))
         return True
+
+    async def ask_watched_seasons(callback: CallbackQuery, title_id: int) -> bool:
+        return callback.message is not None and await ask_seasons_in(callback.message, title_id)
+
+    async def send_card_in(message: Message, card: TitleCard, heading: str | None = None) -> None:
+        text = format_card(card) if heading is None else f"{heading}\n\n{format_card(card)}"
+        await send_card_message(message, text, poster_url(card.poster_path, CARD_SIZE), actions_markup(card_actions(card)))
 
     async def send_card(callback: CallbackQuery, card: TitleCard | None, heading: str | None = None) -> None:
         if card is None or callback.message is None:
             return
-        text = format_card(card) if heading is None else f"{heading}\n\n{format_card(card)}"
-        await send_card_message(
-            callback.message, text, poster_url(card.poster_path, CARD_SIZE), actions_markup(card_actions(card))
-        )
+        await send_card_in(callback.message, card, heading)
+
+    async def show_title(message: Message, title_id: int, heading: str) -> None:
+        """The card of a title of the list after a heading; a title deleted on the web meanwhile shows nothing."""
+        card = await tracker.title_card(title_id)
+        if card is not None:
+            await send_card_in(message, card, heading)
 
     # --- «Мои тайтлы» ---------------------------------------------------------------------------
 
@@ -643,6 +653,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     router.callback_query.register(refuse_old_season_button, F.data.startswith(_OLD_SEASON_PREFIX))
 
     # last: every message the handlers above did not take is an inbox item
-    register_inbox_handlers(router, tracker, {TEST_EVENT_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, ADD_BUTTON})
+    menu = {TEST_EVENT_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, ADD_BUTTON}
+    register_inbox_handlers(router, tracker, menu, TitleCards(show_title, ask_seasons_in))
     dp.include_router(router)
     return router

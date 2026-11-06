@@ -5,7 +5,8 @@ Parsing is pure (response in, data out) and is tested on saved real responses. T
 
 Only the games themselves count (spec 4.2 of part 6.1): a main game, a standalone expansion, a remake, a remaster, an
 expanded game and a port, and a record that is no edition of another game (`version_parent`). DLC, bundles, mods,
-updates, episodes and every edition are left out.
+updates, episodes and every edition are left out. A link sent to the bot is looked up by its record itself (its number
+in IGDB or the number of its app in Steam, `external_games`): any type of record counts there.
 """
 
 import html
@@ -26,11 +27,15 @@ SOURCE_KEY = "igdb"
 GAME_TYPES = (0, 4, 8, 9, 10, 11)
 _ONLY_GAMES = f"where game_type = ({','.join(map(str, GAME_TYPES))}) & version_parent = null"
 
-SEARCH_QUERY = (
-    'search "{query}"; '
+_SUGGESTION_FIELDS = (
     "fields name,game_type,version_parent,first_release_date,platforms,cover.image_id,"
     "alternative_names.name,alternative_names.comment; "
-    f"{_ONLY_GAMES}; limit 10;"
+)
+SEARCH_QUERY = 'search "{query}"; ' + _SUGGESTION_FIELDS + f"{_ONLY_GAMES}; limit 10;"
+# a link sent to the bot names the record itself, so any type of record counts (an expansion is followed too, ADR 0011)
+BY_ID_QUERY = _SUGGESTION_FIELDS + "where id = {id};"
+BY_STEAM_QUERY = (
+    _SUGGESTION_FIELDS + 'where external_games.uid = "{uid}" & external_games.external_game_source = 1; limit 10;'
 )
 GAME_QUERY = (
     "fields name,game_type,version_parent,parent_game.name,first_release_date,summary,genres.name,cover.image_id,platforms,"
@@ -136,20 +141,30 @@ def _release_year(item: dict[str, Any]) -> int | None:
     return day.year if day else None
 
 
+def _suggestion(item: dict[str, Any]) -> Suggestion:
+    return Suggestion(
+        kind=TitleKind.GAME,
+        external_id=str(item["id"]),
+        name=russian_name(item) or item.get("name") or "",
+        original_name=item.get("name") or "",
+        year=_release_year(item),
+        poster_path=cover_url(item),
+        details=platform_line(item.get("platforms")),
+        released=response_day_of_timestamp(item.get("first_release_date")),
+        other_names=tuple(
+            alternative["name"] for alternative in item.get("alternative_names") or []
+            if isinstance(alternative, dict) and isinstance(alternative.get("name"), str) and alternative["name"]
+        ),
+    )
+
+
 def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
-    return [
-        Suggestion(
-            kind=TitleKind.GAME,
-            external_id=str(item["id"]),
-            name=russian_name(item) or item.get("name") or "",
-            original_name=item.get("name") or "",
-            year=_release_year(item),
-            poster_path=cover_url(item),
-            details=platform_line(item.get("platforms")),
-        )
-        for item in results
-        if is_game(item)
-    ]
+    return [_suggestion(item) for item in results if is_game(item)]
+
+
+def parse_records(results: list[dict[str, Any]]) -> list[Suggestion]:
+    """The records a link names (by its number in IGDB or in Steam): any type, an expansion included."""
+    return [_suggestion(item) for item in results if isinstance(item, dict) and "id" in item]
 
 
 def known_platforms(numbers: Any) -> tuple[int, ...]:
@@ -270,6 +285,25 @@ class IgdbGameSource:
         if not cleaned:
             return []
         return parse_search(await self._provider.games(SEARCH_QUERY.format(query=cleaned), at_once=True))
+
+    async def suggest_by_id(self, external_id: str) -> Suggestion | None:
+        """The game of this IGDB number as a suggestion; None when IGDB has none. Goes at once."""
+        self._check_keys()
+        found = parse_records(await self._provider.games(BY_ID_QUERY.format(id=int(external_id)), at_once=True))
+        return found[0] if found else None
+
+    async def suggest_by_steam(self, app_id: str) -> list[Suggestion]:
+        """The games IGDB knows by this number of an app in Steam (`external_games`, source 1), in one request; usually
+        one, none for an app IGDB does not know. Goes at once."""
+        self._check_keys()
+        return parse_records(await self._provider.games(BY_STEAM_QUERY.format(uid=int(app_id)), at_once=True))
+
+    async def steam_name(self, app_id: str) -> str | None:
+        """The name Steam gives its app (`appdetails`): what the bot searches by when IGDB does not know the number.
+        None when Steam has no such app or fails (Steam is only a help here)."""
+        details = await self._steam.app_details(app_id) if self._steam else None
+        name = details.get("name") if isinstance(details, dict) else None
+        return name.strip() if isinstance(name, str) and name.strip() else None
 
     async def _raw(self, external_id: str) -> dict[str, Any] | None:
         self._check_keys()

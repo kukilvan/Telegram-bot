@@ -195,7 +195,17 @@ In code: `search`.
 **Входящие** (inbox):
 An app tab with what the owner sent to the bot (a forwarded post, a name, an album, a forward with its comment) and the bot could not resolve: found nothing, got no answer, a post without text, the source did not answer. An entry leaves the tab when the title is added or the owner removes it. One entry is an **inbox item** («запись Входящих»).
 _Avoid_: очередь (that is the delivery queue), черновики
-In code: `inbox`; an entry — `inbox item` (table `inbox_items`, `InboxRecord`; what the core hands out — `InboxEntry`; the message it is made of — `IncomingMessage`). Its states (`InboxState`): `waiting` «ждёт ответа» (the question «Что это?» or an offer waits in the chat; at most one) and `inbox` (in the tab). Its reasons (`InboxReason`): `not_found` «не нашёл», `no_answer` «без ответа», `no_text` «нет текста», `source_failed` «источник не ответил», `not_connected` «игры не подключены». A resolved, not saved or removed item is deleted.
+In code: `inbox`; an entry — `inbox item` (table `inbox_items`, `InboxRecord`; what the core hands out — `InboxEntry`; the message it is made of — `IncomingMessage`; what the bot says next about it — `InboxReply`). Its states (`InboxState`): `waiting` «ждёт ответа» (the question «Что это?» or an offer waits in the chat; at most one) and `inbox` (in the tab). Its reasons (`InboxReason`): `not_found` «не нашёл», `no_answer` «без ответа», `no_text` «нет текста», `source_failed` «источник не ответил», `not_connected` «игры не подключены». A resolved, not saved or removed item is deleted.
+
+**Кандидат** (candidate):
+A name the rules pick from what the owner sent to the bot (a name message, a Latin run, a quote, a bold piece…), with a weight; the most likely ones are searched in the source of the kind.
+_Avoid_: вариант
+In code: `candidate` (`Candidate` of `candidates`).
+
+**Предложение** (offer):
+A record of a source the bot shows for an inbox item as a card «Это оно?» (or «Возможно, вы имели в виду:» after a typo) with «Да» / «Нет»; «Да» adds it to the list. Not a search suggestion of the web or of a source.
+_Avoid_: подсказка, результат поиска
+In code: `offer` (`Offer` of `offers`, the card — `OfferCard`); a search suggestion is `Suggestion`.
 
 **Настройки** (settings):
 The app screen with the owner's rules (time zone, work days, summary hour, quiet hours, season-part threshold — the break in weeks after which a series season is split into parts; my platforms; store country); stored in the database. Not the `.env` file — that is the launch settings (`Settings` in `app/config.py`).

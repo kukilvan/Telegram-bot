@@ -191,6 +191,33 @@ class TMDbProvider:
         data = resp.json()
         return data.get("results", [])
 
+    async def _look_up(self, path: str, extra: dict | None = None) -> dict | None:
+        """One lookup the owner waits for (a link sent to the bot): at once, like the search. None on 404 (no such
+        record); any other failure raises `TmdbHttpError`, so "TMDb is down" is not mistaken for "nothing there"."""
+        params = {"api_key": self._api_key, "language": "ru", **(extra or {})}
+        resp = await self._get(path, params, at_once=True)
+        if resp is None:
+            raise TmdbHttpError("TMDb is rate-limiting requests (HTTP 429)", 429)
+        if resp.status_code == 404:
+            logging.debug("TMDb lookup HTTP 404 (nothing at this id)")
+            return None
+        if resp.status_code != 200:
+            raise TmdbHttpError(f"TMDb lookup failed (HTTP {resp.status_code})", resp.status_code)
+        return resp.json()
+
+    async def lookup_movie(self, movie_id: int) -> dict | None:
+        """The movie of a link: GET /movie/{id}?language=ru, at once; None when there is no movie at this id."""
+        return await self._look_up(f"/movie/{movie_id}")
+
+    async def lookup_tv(self, tv_id: int) -> dict | None:
+        """The series of a link: GET /tv/{id}?language=ru, at once; None when there is no series at this id."""
+        return await self._look_up(f"/tv/{tv_id}")
+
+    async def find_imdb(self, imdb_id: str) -> dict | None:
+        """What TMDb knows by an IMDb id (`tt…`): GET /find/{id}?external_source=imdb_id&language=ru, at once —
+        `movie_results` and `tv_results`; None on 404."""
+        return await self._look_up(f"/find/{imdb_id}", {"external_source": "imdb_id"})
+
     async def get_movie_details(self, movie_id: int) -> dict | None:
         """Get full movie details (poster, backdrop, release dates)."""
         params = {"api_key": self._api_key, "language": "ru"}

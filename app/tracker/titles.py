@@ -1,8 +1,12 @@
 """The owner's list: searching, adding and deleting titles and «Следить». What differs by kind (the first seasons, the
-first check) is asked of the title's poller. The marks and statuses are in `statuses`, the rows and the card in `listing`."""
+first check) is asked of the title's poller. The marks and statuses are in `statuses`, the rows and the card in `listing`.
+
+A search and a lookup by the number of a link (the offers of «Входящие») go the same way (`look_up`): the failure of the
+source is `SourceFailed`, and each record carries the title of the list it already is."""
 
 import asyncio
 import logging
+from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any
 
@@ -30,17 +34,35 @@ class Titles:
         """Suggestions for `query` from the source of this kind, each with the number of its title when the title is in
         the list already (found after the source answered, in one read). Raises KeyError for an unknown kind,
         SourceNotConfigured when the source has no keys and SourceFailed when it fails."""
-        poller = self.pollers.of(kind)
+        source = self.pollers.of(kind).source
+        return await self.look_up(source, lambda: source.suggest(query))
+
+    async def look_up(self, source: Any, ask: Callable[[], Awaitable[list[Any]]]) -> list[Any]:
+        """What `ask` gets from `source` (a search, or a lookup by the number of a link), each suggestion with the
+        number of its title when the title is in the list already, by the poller of the suggestion's own kind (an IMDb
+        id may name a series). SourceNotConfigured passes; any other failure is SourceFailed of the source."""
         try:
-            suggestions = await poller.source.suggest(query)
+            suggestions = await ask()
         except SourceNotConfigured:
             raise
         except Exception as exc:
-            raise SourceFailed(poller.source.source_key) from exc
+            raise SourceFailed(source.source_key) from exc
         if not suggestions:
             return suggestions
-        known = await asyncio.to_thread(self._known_ids, poller, [s.external_id for s in suggestions])
-        return [replace(s, title_id=known.get(s.external_id)) for s in suggestions]
+        known = await asyncio.to_thread(self._known_suggestions, suggestions)
+        return [replace(s, title_id=known.get((s.kind, s.external_id))) for s in suggestions]
+
+    def _known_suggestions(self, suggestions: list[Any]) -> dict[tuple[TitleKind, str], int]:
+        found: dict[tuple[TitleKind, str], int] = {}
+        with self.ctx.session_factory() as session:
+            for kind in dict.fromkeys(s.kind for s in suggestions):
+                try:
+                    poller = self.pollers.of(kind)
+                except KeyError:  # the core has no source of that kind: nothing of it can be in the list
+                    continue
+                ids = [s.external_id for s in suggestions if s.kind is kind]
+                found.update(((kind, i), t) for i, t in poller.known_ids(session, ids).items())
+        return found
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
         """Put a search result into the list with status «Хочу», or open the title that is already there: the one the

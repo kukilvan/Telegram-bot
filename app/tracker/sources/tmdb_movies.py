@@ -33,6 +33,8 @@ class Suggestion:
     poster_path: str | None = None  # as the title stores it: a TMDb file name or a whole Shikimori or IGDB address
     title_id: int | None = None  # the title in the list this suggestion already is; the core fills it in
     details: str | None = None  # a line under the name: the platforms of a game («ПК, PS5»); None for the other kinds
+    released: date | None = None  # the date the search answer gives (read softly): which record is new for an offer
+    other_names: tuple[str, ...] = ()  # the other names the source knows (IGDB alternatives, Shikimori's English one)
 
 
 @dataclass(frozen=True)
@@ -66,6 +68,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             original_name=item.get("original_title") or item.get("title") or "",
             year=response_year(item.get("release_date")),
             poster_path=item.get("poster_path") or None,
+            released=parse_response_date(item.get("release_date")),
         )
         for item in results
     ]
@@ -106,6 +109,12 @@ class TmdbMovieSource:
 
     async def suggest(self, query: str) -> list[Suggestion]:
         return parse_search(await self._provider.search_movie(query, strict=True))
+
+    async def suggest_by_id(self, external_id: str) -> Suggestion | None:
+        """The movie of a TMDb link as a suggestion; None when TMDb has no movie at this id. Goes at once."""
+        raw = await self._provider.lookup_movie(int(external_id))
+        found = parse_search([raw]) if raw else []
+        return found[0] if found else None
 
     async def snapshot(self, external_id: str) -> MovieSnapshot | None:
         """None when TMDb has no movie at this id (the id may belong to a series)."""

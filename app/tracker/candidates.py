@@ -237,12 +237,13 @@ _TMDB_TV = re.compile(rf"{_TMDB_PREFIX}tv/{_NUMBER}", re.I)
 _SHIKIMORI_ANIME = re.compile(r"^/animes/([a-z]?\d+)(?:-[^/]*)?(?:/|$)", re.I)
 _IMDB_TITLE = re.compile(r"^/(?:[a-z]{2}/)?title/(tt\d+)", re.I)
 _GAME, _MOVIE, _SERIES, _ANIME = TitleKind.GAME, TitleKind.MOVIE, TitleKind.SERIES, TitleKind.ANIME
+STEAM, IMDB = "steam", "imdb"  # the sources of links that are looked up in their own way (`offers`)
 _LINK_RULES = (  # host, path, source, kind
-    (_STEAM_HOST, _STEAM_APP, "steam", _GAME),
+    (_STEAM_HOST, _STEAM_APP, STEAM, _GAME),
     (_TMDB_HOST, _TMDB_MOVIE, "tmdb_movie", _MOVIE),
     (_TMDB_HOST, _TMDB_TV, "tmdb_tv", _SERIES),
     (_SHIKIMORI_HOST, _SHIKIMORI_ANIME, "shikimori", _ANIME),
-    (_IMDB_HOST, _IMDB_TITLE, "imdb", None),
+    (_IMDB_HOST, _IMDB_TITLE, IMDB, None),
 )
 
 
@@ -276,13 +277,23 @@ def _slugs(text: str, links: tuple[str, ...]) -> list[str]:
     return list(slugs.values())
 
 
+def _is_name_message(lines: list[str], forwarded: bool) -> bool:
+    return len(lines) == 1 and len(lines[0].split()) <= NAME_MESSAGE_WORDS and not forwarded and _readable(lines[0])
+
+
+def is_name_message(text: str, *, forwarded: bool = False) -> bool:
+    """Whether the whole text is a name (4.2): one line of at most 8 words, not a forward (a joined item has two
+    lines); only a name message has its typo corrected (5.4)."""
+    return _is_name_message(_lines(text), forwarded)
+
+
 def candidates(
     text: str, *, bold: tuple[str, ...] = (), links: tuple[str, ...] = (), forwarded: bool = False
 ) -> list[Candidate]:
     """The name candidates of an item, the most likely first (equal weights: the one that stands first in the text)."""
     lines = _lines(text)
     pool = _Pool()
-    if len(lines) == 1 and len(lines[0].split()) <= NAME_MESSAGE_WORDS and not forwarded and _readable(lines[0]):
+    if _is_name_message(lines, forwarded):
         pool.add(lines[0], WHOLE, 0, again=False)
     at = 0
     for number, line in enumerate(lines):

@@ -4,7 +4,8 @@
 settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards, `feed`
 for what comes out and what happened),
 polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`),
-test events (`test_samples`) and «Входящие» (`inbox`). It holds no rules of its own.
+test events (`test_samples`) and «Входящие» (`inbox`; the answers to an item and its offers — `inbox_answers`,
+`offers`). It holds no rules of its own.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -28,6 +29,7 @@ from app.tracker.errors import (
 from app.tracker.feed import FeedReader
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, FollowOffer, Followable, RecentRow, UpcomingRow
 from app.tracker.inbox import Inbox
+from app.tracker.inbox_answers import InboxAnswers
 from app.tracker.listing import Listing
 from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
@@ -41,10 +43,12 @@ from app.tracker.results import (
     DeleteResult,
     DeliveryReport,
     InboxEntry,
+    InboxOutcome,
+    InboxReply,
     IncomingMessage,
     ListOrder,
+    OfferCard,
     Overview,
-    PauseOutcome,
     PollReport,
     SettingsChange,
     SettingsView,
@@ -63,8 +67,8 @@ from app.tracker.titles import Titles
 
 __all__ = [
     "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
-    "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxReason", "InboxState", "IncomingMessage",
-    "ListOrder", "MEDIA_WORDS", "Overview", "PauseOutcome", "PollReport", "RecentRow", "ScoreView", "Sender",
+    "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason", "InboxReply",
+    "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
     "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
     "UnknownEvent", "UnknownInboxItem", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow",
@@ -82,6 +86,7 @@ class Tracker:
     default_tz: tzinfo = timezone.utc  # the time zone when the owner has set none (BOT_TIMEZONE); the set one is read from the database
     price_source: Any = None  # the Steam prices of the games (`SteamPriceSource`); None — prices are not checked
     follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
+    imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
     _settings: SettingsStore = field(init=False, repr=False)
     _queue: EventQueue = field(init=False, repr=False)
     _polling: Polling = field(init=False, repr=False)
@@ -92,6 +97,7 @@ class Tracker:
     _deliveries: DeliveryService = field(init=False, repr=False)
     _samples: TestSamples = field(init=False, repr=False)
     _inbox: Inbox = field(init=False, repr=False)
+    _answers: InboxAnswers = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
@@ -111,6 +117,7 @@ class Tracker:
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
         self._inbox = Inbox(ctx)
+        self._answers = InboxAnswers(ctx, self._settings, pollers, self._titles, self.imdb_source)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -309,15 +316,22 @@ class Tracker:
         a forward after its comment, within 2 seconds)."""
         return await self._inbox.take_in(message)
 
-    async def inbox_pause_over(self, item_id: int) -> PauseOutcome:
-        """The pause after the last message of an item is over: «Что это?» for an item with text; an item without text
-        goes to «Входящие» «нет текста»; nothing for an item that is gone or no longer waits."""
-        return await self._inbox.pause_over(item_id)
+    async def inbox_pause_over(self, item_id: int) -> InboxReply:
+        """The pause after the last message of an item is over: an item with links of sources gets the offers of its
+        links, no question; else «Что это?» for an item with text, and an item without text goes to «Входящие» «нет
+        текста»; nothing for an item that is gone or no longer waits."""
+        return await self._answers.pause_over(item_id)
 
-    async def answer_kind(self, item_id: int, kind: TitleKind) -> None:
-        """The kind the owner chose for an item. For now it is stored and the item goes to «Входящие» «не нашёл» (the
-        analysis comes in ticket 04 of stage 6.4). UnknownInboxItem when the item is gone."""
-        await self._inbox.answer_kind(item_id, kind)
+    async def answer_kind(self, item_id: int, kind: TitleKind) -> InboxReply:
+        """The kind the owner chose for an item: the analysis of its name candidates in the source of the kind — the
+        first offer, «Уже в списке», or the item goes to «Входящие» (not found, the source failed, games not
+        connected). UnknownInboxItem when the item is gone."""
+        return await self._answers.answer_kind(item_id, kind)
+
+    async def answer_offer(self, item_id: int, number: int, accepted: bool) -> InboxReply:
+        """«Да» (`accepted`): the title of offer `number` is added as on the web and the item resolved; «Нет»: the next
+        offer, or the item goes to «Входящие» «не нашёл» after the last one. UnknownInboxItem when the item is gone."""
+        return await self._answers.answer_offer(item_id, number, accepted)
 
     async def forget_inbox_item(self, item_id: int) -> bool:
         """«🗑 Не сохранять» and «Убрать»: the item is deleted. False when there was none any more."""

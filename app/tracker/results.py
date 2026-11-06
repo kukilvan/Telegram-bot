@@ -193,12 +193,42 @@ class TakeIn:
     moved: int  # how many items that waited for an answer went to «Входящие» «без ответа» (0 when it joined)
 
 
-class PauseOutcome(StrEnum):
-    """What comes when the pause after the last message of an item is over (spec 1.3 of stage 6.4)."""
+class InboxOutcome(StrEnum):
+    """What the bot says next about an inbox item (spec 1.3, 2.3, 6.2, 6.3 of stage 6.4); the texts are the bot's."""
 
+    NOTHING = "nothing"  # the pause is over for an item that is gone or no longer waits: nothing to say
     ASK = "ask"  # «Что это?»
     NO_TEXT = "no_text"  # the item went to «Входящие» «нет текста»
-    NOTHING = "nothing"  # the item is gone or no longer waits: nothing to say
+    OFFER = "offer"  # the card of an offer: «Это оно?» or «Возможно, вы имели в виду:»
+    IN_LIST = "in_list"  # «Уже в списке» and the card of the title; the item is resolved
+    ADDED = "added"  # «✅ Добавлено в список» and the card (a series, an anime: the seasons); the item is resolved
+    NOT_FOUND = "not_found"  # «Не нашёл — сохранил во «Входящие»…»
+    SOURCE_FAILED = "source_failed"  # the source of the kind did not answer: the item went to «Входящие»
+    NOT_CONNECTED = "not_connected"  # a game without the keys of IGDB: the item went to «Входящие»
+    ADD_FAILED = "add_failed"  # «Да»: the source did not answer; the buttons stay, the item stays where it is
+    ADD_NOT_CONNECTED = "add_not_connected"  # «Да» on a game without the keys of IGDB; the item stays
+    DEAD = "dead"  # «Да» / «Нет» on a number of an offer the item does not have
+
+
+@dataclass(frozen=True)
+class OfferCard:
+    """The card of an offer: its text (6.1), the poster as the title would store it, and what its buttons name."""
+
+    item_id: int
+    number: int  # of the offer in the item, 0–2
+    text: str
+    poster: str | None
+
+
+@dataclass(frozen=True)
+class InboxReply:
+    """The answer of the core about an inbox item: what to say, the kind whose source a text names, the offer card or
+    the title of the list."""
+
+    outcome: InboxOutcome
+    kind: TitleKind | None = None
+    offer: OfferCard | None = None
+    title_id: int | None = None  # IN_LIST, ADDED
 
 
 @dataclass(frozen=True)
@@ -218,3 +248,4 @@ class InboxEntry:
     query: str
     received_at: datetime  # naive UTC
     moved_at: datetime | None  # naive UTC; None: it still waits
+    offer_count: int = 0  # the offers the analysis found: «Да» / «Нет» of another number is a dead button

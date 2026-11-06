@@ -19,7 +19,7 @@ from app.tracker.core import IncomingMessage, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
 from app.tracker.seasons import Episode, Season
-from app.tracker.sources.tmdb_movies import MovieSnapshot
+from app.tracker.sources.tmdb_movies import MovieSnapshot, Suggestion
 from app.tracker.sources.tmdb_sequels import CollectionPart, SequelSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot
 from test_tracker_game_follow_ups import FakeFollowUps, MadeUpGames, game
@@ -48,14 +48,17 @@ class Journal(list):
 class SlowSource:
     """A source that takes its time (a series with dozens of seasons) and can fail."""
 
-    def __init__(self, source_key, journal, snapshots):
+    def __init__(self, source_key, journal, snapshots, suggestions=None):
         self.source_key = source_key
         self.journal = journal
         self.by_id = snapshots
+        self.suggestions = suggestions or {}  # query -> suggestions
         self.failing = False
 
     async def suggest(self, query):
-        return []
+        self.journal.append(("source", f"search:{query}"))
+        await asyncio.sleep(0.02)
+        return self.suggestions.get(query, [])
 
     async def snapshot(self, external_id):
         self.journal.append(("source", external_id))
@@ -119,7 +122,10 @@ def series(journal):
 
 @pytest.fixture
 def movies(journal):
-    return SlowSource("tmdb_movie", journal, {DUNE_3: movie(DUNE_3, "Дюна: Часть третья"), DUNE: movie(DUNE, "Дюна")})
+    found = [Suggestion(TitleKind.MOVIE, DUNE, "Дюна", "Dune", 2021, released=date(2021, 9, 15))]
+    return SlowSource(
+        "tmdb_movie", journal, {DUNE_3: movie(DUNE_3, "Дюна: Часть третья"), DUNE: movie(DUNE, "Дюна")}, {"Дюна": found}
+    )
 
 
 @pytest.fixture
@@ -193,54 +199,83 @@ def texts(journal):
     return [entry[1] for entry in journal.of("message")]
 
 
-# --- the kind of an inbox item («Что это?») --------------------------------------------------------------
+# --- «Входящие»: the kind, «Да» --------------------------------------------------------------------------
 
 
-@pytest.fixture
-def watched_answers(tracker, journal, monkeypatch):
-    """`answer_kind` is where the analysis goes to the sources (ticket 04 of stage 6.4): it counts as a source here."""
-    real = tracker.answer_kind
-
-    async def answer_kind(item_id, kind):
-        journal.append(("source", f"inbox:{item_id}"))
-        return await real(item_id, kind)
-
-    monkeypatch.setattr(tracker, "answer_kind", answer_kind)
-    return tracker
+def taken(tracker, text="Дюна"):
+    return run(tracker.take_in(IncomingMessage(text=text))).item_id
 
 
-def test_a_kind_answers_the_press_before_the_work(watched_answers, telegram):
-    item = run(watched_answers.take_in(IncomingMessage(text="Дюна"))).item_id
+def offered(tracker, journal):
+    """An item whose kind was answered: its offer «Дюна» waits; the journal starts afresh."""
+    item = taken(tracker)
+    run(tracker.answer_kind(item, TitleKind.MOVIE))
+    journal.clear()
+    return item
 
-    press(watched_answers, f"inb:{item}:k:movie")
+
+def test_a_kind_answers_the_press_before_the_search(tracker, telegram):
+    item = taken(tracker, "Не найдётся")
+
+    press(tracker, f"inb:{item}:k:movie")
 
     assert [entry[0] for entry in telegram][:2] == ["answer", "source"]
     assert telegram.of("answer") == [("answer", "Ищу…")]
-    assert texts(telegram) == ["Тип запомнил — сохранил во «Входящие»."]
+    assert texts(telegram) == ["Не нашёл — сохранил во «Входящие». Разберите в веб-приложении."]
 
 
-def test_a_kind_of_an_item_removed_meanwhile_comes_as_a_message(watched_answers, telegram, monkeypatch):
-    item = run(watched_answers.take_in(IncomingMessage(text="Дюна"))).item_id
-    real = watched_answers.answer_kind
+def test_a_kind_of_an_item_removed_meanwhile_comes_as_a_message(tracker, telegram, monkeypatch):
+    item = taken(tracker)
+    real = tracker.answer_kind
 
     async def removed_first(item_id, kind):
-        await watched_answers.forget_inbox_item(item_id)  # «Убрать» on the web between the check and the work
+        await tracker.forget_inbox_item(item_id)  # «Убрать» on the web between the check and the work
         return await real(item_id, kind)
 
-    monkeypatch.setattr(watched_answers, "answer_kind", removed_first)
+    monkeypatch.setattr(tracker, "answer_kind", removed_first)
 
-    press(watched_answers, f"inb:{item}:k:movie")
+    press(tracker, f"inb:{item}:k:movie")
 
     assert telegram.of("answer") == [("answer", "Ищу…")]
     assert texts(telegram) == ["Эта запись уже разобрана."]
 
 
-@pytest.mark.parametrize("data", ["inb:1:k:movie", "inb:1:k:book", "inb:x:k:movie", "inb:1:q"])
-def test_a_dead_inbox_button_is_a_popup_and_never_reaches_the_work(watched_answers, telegram, data):
-    press(watched_answers, data)
+@pytest.mark.parametrize("data", ["inb:1:k:movie", "inb:1:k:book", "inb:x:k:movie", "inb:1:q", "inb:1:y:0", "inb:1:n:x"])
+def test_a_dead_inbox_button_is_a_popup_and_never_reaches_the_work(tracker, telegram, data):
+    press(tracker, data)
 
     [(what, text)] = list(telegram)
     assert what == "answer" and text in ("Эта запись уже разобрана.", "Эта кнопка больше не работает.")
+
+
+def test_yes_answers_the_press_before_the_source_and_shows_the_card(tracker, journal, telegram):
+    item = offered(tracker, journal)
+
+    press(tracker, f"inb:{item}:y:0")
+
+    assert [entry[0] for entry in telegram][:2] == ["answer", "source"]
+    assert telegram.of("answer") == [("answer", ADDING)]
+    assert texts(telegram)[0].startswith("✅ Добавлено в список\n\n🎬 Фильм · Хочу\nДюна")
+    assert run(tracker.inbox_item(item)) is None
+
+
+def test_a_failure_of_the_source_on_yes_comes_as_a_message_and_keeps_the_item(tracker, movies, journal, telegram):
+    item = offered(tracker, journal)
+    movies.failing = True
+
+    press(tracker, f"inb:{item}:y:0")
+
+    assert telegram.of("answer") == [("answer", ADDING)]
+    assert texts(telegram) == ["Не удалось получить данные из TMDb. Нажмите «Да» ещё раз чуть позже."]
+    assert run(tracker.inbox_item(item)) is not None
+
+
+def test_a_number_of_an_offer_the_item_does_not_have_is_a_popup(tracker, journal, telegram):
+    item = offered(tracker, journal)
+
+    press(tracker, f"inb:{item}:y:1")
+
+    assert list(telegram) == [("answer", "Эта кнопка больше не работает.")]
 
 
 # --- «Следить» -----------------------------------------------------------------------------------------

@@ -6,11 +6,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from app.tracker.core import IncomingMessage, InboxReason, InboxState, PauseOutcome, Tracker, UnknownInboxItem
-from app.tracker.db import create_session_factory
+from app.tracker.core import IncomingMessage, InboxOutcome, InboxReason, InboxState, UnknownInboxItem
 from app.tracker.candidates import text_query as query_of
 from app.tracker.inbox import MAX_TEXT
 from app.tracker.models import InboxRecord, TitleKind
+from inbox_fakes import Clients, tracker_on
 
 T0 = datetime(2026, 11, 6, 12, 0, tzinfo=timezone.utc)
 
@@ -30,18 +30,14 @@ class Clock:
         self.now += timedelta(**delta)
 
 
-class FakeSender:
-    async def send(self, message, actions=()):
-        pass
-
-
 @pytest.fixture
 def clock():
     return Clock()
 
 
 def make_tracker(clock, url="sqlite://"):
-    return Tracker(create_session_factory(url), clock=clock, sender=FakeSender())
+    """The core on the fakes of the sources: a name they have no answer for is found nowhere."""
+    return tracker_on(Clients(), url, clock)
 
 
 @pytest.fixture
@@ -203,14 +199,14 @@ def test_two_waiting_items_left_from_before_are_both_moved_by_the_next_new_one(t
 def test_the_end_of_the_pause_asks_about_an_item_with_text(tracker):
     take(tracker, "Дюна")
 
-    assert run(tracker.inbox_pause_over(1)) == PauseOutcome.ASK
+    assert run(tracker.inbox_pause_over(1)).outcome == InboxOutcome.ASK
     assert item(tracker, 1).state == InboxState.WAITING
 
 
 def test_the_end_of_the_pause_moves_an_item_without_text(tracker):
     take(tracker, media="voice")
 
-    assert run(tracker.inbox_pause_over(1)) == PauseOutcome.NO_TEXT
+    assert run(tracker.inbox_pause_over(1)).outcome == InboxOutcome.NO_TEXT
     entry = item(tracker, 1)
     assert (entry.state, entry.reason, entry.moved_at) == (InboxState.INBOX, InboxReason.NO_TEXT, datetime(2026, 11, 6, 12, 0))
 
@@ -224,14 +220,14 @@ def test_the_end_of_the_pause_says_nothing_of_an_item_that_no_longer_waits(track
     else:
         run(tracker.forget_inbox_item(1))
 
-    assert run(tracker.inbox_pause_over(1)) == PauseOutcome.NOTHING
+    assert run(tracker.inbox_pause_over(1)).outcome == InboxOutcome.NOTHING
 
 
-def test_a_kind_is_stored_and_the_item_goes_to_the_inbox_not_found(tracker, clock):
+def test_a_kind_found_nowhere_is_stored_and_the_item_goes_to_the_inbox_not_found(tracker, clock):
     take(tracker, "Тест один")
     clock.after(minutes=1)
 
-    run(tracker.answer_kind(1, TitleKind.GAME))
+    assert run(tracker.answer_kind(1, TitleKind.GAME)).outcome == InboxOutcome.NOT_FOUND
 
     entry = item(tracker, 1)
     assert (entry.state, entry.reason, entry.kind) == (InboxState.INBOX, InboxReason.NOT_FOUND, TitleKind.GAME)

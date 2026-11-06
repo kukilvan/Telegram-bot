@@ -53,6 +53,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             original_name=item.get("original_name") or item.get("name") or "",
             year=response_year(item.get("first_air_date")),
             poster_path=item.get("poster_path") or None,
+            released=parse_response_date(item.get("first_air_date")),
         )
         for item in results
     ]
@@ -104,6 +105,12 @@ class TmdbSeriesSource:
 
     async def suggest(self, query: str) -> list[Suggestion]:
         return parse_search(await self._provider.search_tv(query, strict=True))
+
+    async def suggest_by_id(self, external_id: str) -> Suggestion | None:
+        """The series of a TMDb link as a suggestion; None when TMDb has no series at this id. Goes at once."""
+        raw = await self._provider.lookup_tv(int(external_id))
+        found = parse_search([raw]) if raw else []
+        return found[0] if found else None
 
     async def snapshot(self, external_id: str) -> SeriesSnapshot | None:
         """None when TMDb has no series at this id (the id may belong to a movie).
