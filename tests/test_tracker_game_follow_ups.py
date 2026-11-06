@@ -20,7 +20,7 @@ from app.tracker import follow_ups, games
 from app.tracker.core import SourceNotConfigured, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.failures import TitleGone
-from app.tracker.follow_ups import Candidate, FollowUpsSnapshot
+from app.tracker.follow_ups import FollowUp, FollowUpsSnapshot
 from app.tracker.games import GameState, Parent
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, SourceSnapshot, TitleKind, TitleStatus
 from app.tracker.pollers.game_follow_ups import (
@@ -104,8 +104,8 @@ class FakeFollowUps:
         return self.answers.get(external_id, FollowUpsSnapshot())
 
 
-def candidate(id_, name, platforms=(PC,)):
-    return Candidate(id_, name, platforms=tuple(platforms))
+def follow_up(id_, name, platforms=(PC,)):
+    return FollowUp(id_, name, platforms=tuple(platforms))
 
 
 def series(*games_, expansions=()):
@@ -217,7 +217,7 @@ def test_only_the_key_expansion_of_the_own_snapshot_is_read_strictly():
 
 
 def test_an_added_game_gets_a_snapshot_and_its_reference_point_in_the_same_pass(tracker, igdb, follow, session_factory):
-    follow.answers["1"] = series(candidate("2", "The Witcher IV"))
+    follow.answers["1"] = series(follow_up("2", "The Witcher IV"))
     title_id = add(tracker, igdb)
     assert snapshot_of(session_factory, title_id) is None  # adding does not touch the check
 
@@ -255,7 +255,7 @@ def test_dropping_removes_the_snapshot_and_restoring_starts_with_a_new_reference
     run(tracker.poll_due())
     assert snapshot_of(session_factory, title_id) is None
 
-    follow.answers["1"] = series(candidate("2", "The Witcher IV"))  # announced while the game was dropped
+    follow.answers["1"] = series(follow_up("2", "The Witcher IV"))  # announced while the game was dropped
     clock.advance(minutes=1)
     run(tracker.restore_title(title_id))
     run(tracker.poll_due())
@@ -388,7 +388,7 @@ def test_a_later_check_announces_each_new_follow_up_once_with_its_key(tracker, i
     run(tracker.poll_due())
 
     follow.answers["1"] = series(
-        candidate("2", "The Witcher IV"), expansions=[candidate("3", "Баллады прошлого")]
+        follow_up("2", "The Witcher IV"), expansions=[follow_up("3", "Баллады прошлого")]
     )
     clock.advance(days=7)
     run(tracker.poll_due())
@@ -415,7 +415,7 @@ def test_a_follow_up_in_the_list_is_not_announced_but_is_known(tracker, igdb, fo
     run(tracker.poll_due())
     add(tracker, igdb, "2", "The Witcher IV")  # the owner follows it already
 
-    follow.answers["1"] = series(candidate("2", "The Witcher IV"))
+    follow.answers["1"] = series(follow_up("2", "The Witcher IV"))
     set_snapshot(session_factory, title_id, next_check_at=None)
     run(tracker.poll_due())
 
@@ -428,7 +428,7 @@ def test_two_games_of_one_series_give_one_announcement(tracker, igdb, follow, se
     add(tracker, igdb, "5", "Ведьмак 2")
     run(tracker.poll_due())
 
-    witcher_iv = candidate("2", "The Witcher IV")
+    witcher_iv = follow_up("2", "The Witcher IV")
     follow.answers["1"] = series(witcher_iv)
     follow.answers["5"] = series(witcher_iv)
     clock.advance(days=7)
@@ -446,7 +446,7 @@ def test_the_announcements_are_queued_before_the_state_is_stored(tracker, igdb, 
         raise RuntimeError("the store failed")
 
     monkeypatch.setattr(GameFollowUps, "_store", broken)
-    follow.answers["1"] = series(candidate("2", "The Witcher IV"))
+    follow.answers["1"] = series(follow_up("2", "The Witcher IV"))
     clock.advance(days=7)
     report = run(tracker.poll_due())
 
@@ -468,7 +468,7 @@ def test_dropped_or_deleted_during_the_request_queues_and_stores_nothing(
 ):
     title_id = add(tracker, igdb)
     run(tracker.poll_due())
-    follow.answers["1"] = series(candidate("2", "The Witcher IV"))
+    follow.answers["1"] = series(follow_up("2", "The Witcher IV"))
 
     async def press(external_id):
         await (tracker.mark_dropped(title_id) if change == "dropped" else tracker.delete_title(title_id))
@@ -581,7 +581,7 @@ def test_a_spoiled_state_fails_only_its_game_and_deleting_the_row_heals_it(
     with session_factory() as session:
         session.delete(session.get(SourceSnapshot, snapshot_of(session_factory, spoiled).id))
         session.commit()
-    follow.answers["1"] = series(candidate("9", "The Witcher IV"))
+    follow.answers["1"] = series(follow_up("9", "The Witcher IV"))
     run(tracker.poll_due())
     assert snapshot_of(session_factory, spoiled).state["known"] == ["9"]  # a new reference point
     assert announcements(session_factory) == []

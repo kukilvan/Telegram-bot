@@ -14,7 +14,7 @@ from app.tracker import cards, games
 from app.tracker.cards import FollowUpsView, ParentGame
 from app.tracker.core import Tracker, UnknownKind
 from app.tracker.db import create_session_factory
-from app.tracker.follow_ups import Candidate, FollowUpsSnapshot
+from app.tracker.follow_ups import FollowUp, FollowUpsSnapshot
 from app.tracker.games import FULL, GameDate, GameState, Parent, Release
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from test_tracker_follow_ups import TABLE, snapshot
@@ -54,10 +54,10 @@ def tracker_without_follow_ups(session_factory, igdb):
     return Tracker(session_factory, clock=FakeClock(T0), sender=FakeSender(), sources={TitleKind.GAME: igdb})
 
 
-def candidate(id_, name, year=None, month=None, day=None, standalone=False):
+def follow_up(id_, name, year=None, month=None, day=None, standalone=False):
     releases = (Release(PC, WORLD, FULL, GameDate(year, month, day)),) if year else ()
     first = date(year, month or 12, day or 31) if year else None
-    return Candidate(id_, name, first=first, platforms=(PC,), releases=releases, standalone=standalone)
+    return FollowUp(id_, name, first=first, platforms=(PC,), releases=releases, standalone=standalone)
 
 
 def answer_for_witcher(follow):
@@ -65,11 +65,11 @@ def answer_for_witcher(follow):
         own_date=date(2015, 5, 19),
         collections=(COLLECTION,),
         expansions=(
-            candidate("20", "Кровь и Вино", 2016, 5, 30),
-            candidate("21", "Каменные сердца", 2015, 10, 12),
-            candidate("22", "Баллады прошлого"),
+            follow_up("20", "Кровь и Вино", 2016, 5, 30),
+            follow_up("21", "Каменные сердца", 2015, 10, 12),
+            follow_up("22", "Баллады прошлого"),
         ),
-        games=(candidate("30", "The Witcher IV", 2028), candidate("31", "Gwent", 2018, 10, 23)),
+        games=(follow_up("30", "The Witcher IV", 2028), follow_up("31", "Gwent", 2018, 10, 23)),
     )
 
 
@@ -132,7 +132,7 @@ def test_a_game_that_was_not_checked_yet_says_so_before_and_after_it_got_its_sna
     assert run(tracker.title_card(title_id)).follow_ups == FollowUpsView(checked=False)
 
 
-def test_a_candidate_in_the_list_carries_the_number_of_its_title(tracker, igdb, follow):
+def test_a_follow_up_in_the_list_carries_the_number_of_its_title(tracker, igdb, follow):
     answer_for_witcher(follow)
     igdb.put("20", GameState(platforms=(PC,)), "Кровь и Вино")
     followed = run(tracker.follow("game", "20")).title_id
@@ -314,13 +314,13 @@ def test_the_card_reads_as_much_for_a_long_list_as_for_a_short_one(tracker, igdb
         return len([s for s in statements if s.lstrip().upper().startswith("SELECT")])
 
     follow.answers["1"] = FollowUpsSnapshot(
-        collections=(COLLECTION,), expansions=(candidate("20", "Одно", 2016),), games=(candidate("30", "Игра", 2028),)
+        collections=(COLLECTION,), expansions=(follow_up("20", "Одно", 2016),), games=(follow_up("30", "Игра", 2028),)
     )
     short = add(tracker, igdb, "1")
     follow.answers["2"] = FollowUpsSnapshot(
         collections=(COLLECTION,),
-        expansions=tuple(candidate(str(100 + n), f"Дополнение {n}", 2016) for n in range(40)),
-        games=tuple(candidate(str(200 + n), f"Игра {n}", 2028) for n in range(40)),
+        expansions=tuple(follow_up(str(100 + n), f"Дополнение {n}", 2016) for n in range(40)),
+        games=tuple(follow_up(str(200 + n), f"Игра {n}", 2028) for n in range(40)),
     )
     long = add(tracker, igdb, "2", "Длинная серия")
     run(tracker.poll_due())

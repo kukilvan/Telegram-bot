@@ -1,6 +1,6 @@
 """The rules of the follow-up check (`follow_ups`, spec 4, 5.4, 5.5, 6.1–6.3, 6.6 of stage 6.3): what is shown, the
 date of a follow-up, the order, what is new and the events. On the saved IGDB answers of 2026-11-04
-(`tests/fixtures/igdb/follow-ups-<game>.json`) and on made-up candidates; today is fixed, as the owner's clock gives it.
+(`tests/fixtures/igdb/follow-ups-<game>.json`) and on made-up follow-ups; today is fixed, as the owner's clock gives it.
 """
 
 import json
@@ -12,7 +12,7 @@ import pytest
 
 from app.tracker import follow_ups
 from app.tracker.follow_ups import (
-    EXPANSION_ANNOUNCED, NOT_CHECKED, SEQUEL_ANNOUNCED, TYPES, Candidate, FollowUps, FollowUpsSnapshot,
+    EXPANSION_ANNOUNCED, NOT_CHECKED, SEQUEL_ANNOUNCED, TYPES, FollowUp, FollowUps, FollowUpsSnapshot,
     came_out_before, check, expansions_shown, follow_up_date, sequels_shown,
 )
 from app.tracker.games import CANCELLED, EARLY, FULL, GameDate, Release
@@ -43,10 +43,10 @@ def release(platform, text, kind=FULL):
     return Release(platform, WORLD, kind, GameDate.parse(text))
 
 
-def candidate(id_, name="X", first=None, platforms=(PC,), releases=None, standalone=False):
+def follow_up(id_, name="X", first=None, platforms=(PC,), releases=None, standalone=False):
     if releases is None:
         releases = tuple(release(number, first.isoformat() if first else None) for number in platforms)
-    return Candidate(id_, name, first, tuple(platforms), tuple(releases), standalone)
+    return FollowUp(id_, name, first, tuple(platforms), tuple(releases), standalone)
 
 
 # --- table 4.6 ---------------------------------------------------------------------------------------------------------
@@ -135,7 +135,7 @@ def test_the_standalone_expansions_are_marked():
     assert marks["Discovery Tour: Viking Age"] and not marks["Assassin's Creed Valhalla: Wrath of the Druids"]
 
 
-def test_pc_only_removes_the_candidates_of_the_playstation_alone():
+def test_pc_only_removes_the_follow_ups_of_the_playstation_alone():
     pc = (Platform.PC,)
     assert shown("uncharted-4", pc)[0] == []  # The Lost Legacy: PS4 only
     assert "Marvel's Wolverine" not in dict(shown("spider-man", pc)[1])
@@ -146,32 +146,32 @@ def test_pc_only_removes_the_candidates_of_the_playstation_alone():
 # --- on my platforms (4.1, 4.2) ----------------------------------------------------------------------------------------
 
 
-def test_a_candidate_cancelled_on_my_platforms_is_not_shown():
+def test_a_follow_up_cancelled_on_my_platforms_is_not_shown():
     hound = next(c for c in snapshot("baldurs-gate-3").games if c.name == "Baldur's Gate III: The Black Hound")
     assert hound.releases[0].type == CANCELLED
-    cancelled = candidate("1", platforms=(PC,), releases=(release(PC, None, CANCELLED),))
-    elsewhere = candidate("2", platforms=(PC, PS5), releases=(release(PC, None, CANCELLED), release(PS5, "2027")))
+    cancelled = follow_up("1", platforms=(PC,), releases=(release(PC, None, CANCELLED),))
+    elsewhere = follow_up("2", platforms=(PC, PS5), releases=(release(PC, None, CANCELLED), release(PS5, "2027")))
     found = FollowUpsSnapshot(own_date=date(2020, 1, 1), expansions=(cancelled,), games=(cancelled, elsewhere))
     assert expansions_shown(found, MINE, ISRAEL) == []
     assert sequels_shown(found, MINE, ISRAEL, TODAY) == [elsewhere]
     assert sequels_shown(found, (Platform.PC,), ISRAEL, TODAY) == []
 
 
-def test_a_ps4_candidate_is_on_the_ps5():
-    old = candidate("1", platforms=(PS4,), first=date(2027, 3, 1))
+def test_a_ps4_follow_up_is_on_the_ps5():
+    old = follow_up("1", platforms=(PS4,), first=date(2027, 3, 1))
     found = FollowUpsSnapshot(own_date=date(2020, 1, 1), games=(old,))
     assert sequels_shown(found, (Platform.PS5,), ISRAEL, TODAY) == [old]
     assert follow_up_date(old, (Platform.PS5,), ISRAEL).label == "1 марта 2027"
 
 
 def test_an_expansion_announced_without_platforms_is_shown_with_no_date():
-    bare = candidate("1", platforms=(), releases=())
-    on_switch = candidate("2", platforms=(130,))
+    bare = follow_up("1", platforms=(), releases=())
+    on_switch = follow_up("2", platforms=(130,))
     found = FollowUpsSnapshot(own_date=date(2020, 1, 1), expansions=(bare, on_switch), games=(bare,))
     assert expansions_shown(found, MINE, ISRAEL) == [bare]
     assert follow_up_date(bare, MINE, ISRAEL).label == "дата не объявлена"
     assert sequels_shown(found, MINE, ISRAEL, TODAY) == []  # a game of the series needs a platform of mine
-    with_record_only = candidate("3", platforms=(), releases=(release(130, "2027"),))
+    with_record_only = follow_up("3", platforms=(), releases=(release(130, "2027"),))
     assert expansions_shown(FollowUpsSnapshot(expansions=(with_record_only,)), MINE, ISRAEL) == []
 
 
@@ -180,20 +180,20 @@ def test_an_expansion_announced_without_platforms_is_shown_with_no_date():
 
 def test_before_by_the_own_date_the_same_day_counts():
     own = date(2020, 5, 1)
-    assert came_out_before(candidate("1", first=date(2020, 4, 30)), own, TODAY)
-    assert came_out_before(candidate("1", first=own), own, TODAY)
-    assert not came_out_before(candidate("1", first=date(2020, 5, 2)), own, TODAY)
-    assert not came_out_before(candidate("1", first=None), own, TODAY)
+    assert came_out_before(follow_up("1", first=date(2020, 4, 30)), own, TODAY)
+    assert came_out_before(follow_up("1", first=own), own, TODAY)
+    assert not came_out_before(follow_up("1", first=date(2020, 5, 2)), own, TODAY)
+    assert not came_out_before(follow_up("1", first=None), own, TODAY)
 
 
 def test_before_without_the_own_date_is_by_today():
-    assert came_out_before(candidate("1", first=TODAY), None, TODAY)
-    assert not came_out_before(candidate("1", first=date(2026, 11, 5)), None, TODAY)
-    assert not came_out_before(candidate("1", first=None), None, TODAY)
+    assert came_out_before(follow_up("1", first=TODAY), None, TODAY)
+    assert not came_out_before(follow_up("1", first=date(2026, 11, 5)), None, TODAY)
+    assert not came_out_before(follow_up("1", first=None), None, TODAY)
 
 
 def test_a_game_not_out_shows_only_the_games_not_out():
-    out, coming = candidate("1", first=date(2025, 1, 1)), candidate("2", first=date(2027, 1, 1))
+    out, coming = follow_up("1", first=date(2025, 1, 1)), follow_up("2", first=date(2027, 1, 1))
     found = FollowUpsSnapshot(own_date=None, games=(out, coming))
     assert sequels_shown(found, MINE, ISRAEL, TODAY) == [coming]
 
@@ -208,10 +208,10 @@ def test_year_only_dates_compare_as_igdb_stores_them():
 
 
 def test_the_date_is_the_full_release_that_ends_earliest():
-    both = candidate("1", platforms=(PC, PS5), releases=(release(PC, "2027"), release(PS5, "2027-03-12")))
+    both = follow_up("1", platforms=(PC, PS5), releases=(release(PC, "2027"), release(PS5, "2027-03-12")))
     assert follow_up_date(both, MINE, ISRAEL).label == "12 марта 2027"
     assert follow_up_date(both, (Platform.PC,), ISRAEL).label == "2027"
-    quarter = candidate("2", platforms=(PC, PS5), releases=(release(PC, "2026-Q4"), release(PS5, "2027-01")))
+    quarter = follow_up("2", platforms=(PC, PS5), releases=(release(PC, "2026-Q4"), release(PS5, "2027-01")))
     assert follow_up_date(quarter, MINE, ISRAEL).label == "4 квартал 2026"
 
 
@@ -224,17 +224,17 @@ def test_early_access_counts_only_without_a_full_release():
 
 
 def test_a_cancelled_platform_and_an_unannounced_record_give_no_date():
-    odd = candidate("1", platforms=(PC, PS5), releases=(release(PC, None), release(PS5, "2027", CANCELLED)))
+    odd = follow_up("1", platforms=(PC, PS5), releases=(release(PC, None), release(PS5, "2027", CANCELLED)))
     assert follow_up_date(odd, MINE, ISRAEL).label == "дата не объявлена"
 
 
 def test_the_order_is_by_date_then_name_then_id_and_no_date_last():
-    late = candidate("5", "Alpha", first=date(2028, 1, 1))
-    early_b = candidate("4", "Beta", first=date(2027, 1, 1))
-    early_a = candidate("30", "beta", first=date(2027, 1, 1))
-    early_c = candidate("200", "Ёж", first=date(2027, 1, 1))
-    none = candidate("1", "Aaa", platforms=(PC,), releases=(release(PC, None),))
-    year = candidate("7", "Zeta", platforms=(PC,), releases=(release(PC, "2027"),))
+    late = follow_up("5", "Alpha", first=date(2028, 1, 1))
+    early_b = follow_up("4", "Beta", first=date(2027, 1, 1))
+    early_a = follow_up("30", "beta", first=date(2027, 1, 1))
+    early_c = follow_up("200", "Ёж", first=date(2027, 1, 1))
+    none = follow_up("1", "Aaa", platforms=(PC,), releases=(release(PC, None),))
+    year = follow_up("7", "Zeta", platforms=(PC,), releases=(release(PC, "2027"),))
     found = FollowUpsSnapshot(own_date=date(2020, 1, 1), games=(none, late, early_c, early_a, year, early_b))
     assert [c.id for c in sequels_shown(found, MINE, ISRAEL, TODAY)] == ["4", "30", "200", "7", "5", "1"]
 
@@ -322,10 +322,10 @@ def test_cyberpunk_2_getting_a_platform_is_news():
 
 
 def test_a_first_date_after_the_game_is_news():
-    found = FollowUpsSnapshot(own_date=date(2020, 1, 1), games=(candidate("1", first=date(2019, 1, 1)),))
+    found = FollowUpsSnapshot(own_date=date(2020, 1, 1), games=(follow_up("1", first=date(2019, 1, 1)),))
     state = run_check(NOT_CHECKED, found).state
     assert state.known == frozenset()
-    fixed = replace(found, games=(candidate("1", first=date(2027, 1, 1)),))
+    fixed = replace(found, games=(follow_up("1", first=date(2027, 1, 1)),))
     [event] = run_check(state, fixed).events
     assert event.data["sequel_id"] == "1"
 
@@ -339,7 +339,7 @@ def test_a_change_of_my_platforms_or_of_the_country_is_no_news():
     assert run_check(result.state, snapshot("uncharted-4"), mine=MINE, country="us").events == ()
 
 
-def test_a_listed_candidate_gives_nothing_but_goes_into_known():
+def test_a_listed_follow_up_gives_nothing_but_goes_into_known():
     before = replace(snapshot("witcher-3"), games=())
     state = run_check(NOT_CHECKED, before).state
     result = run_check(state, snapshot("witcher-3"), listed={"194662", "1942"})
@@ -348,7 +348,7 @@ def test_a_listed_candidate_gives_nothing_but_goes_into_known():
     assert "194662" in result.state.known
 
 
-def test_a_candidate_gone_and_back_is_no_news():
+def test_a_follow_up_gone_and_back_is_no_news():
     found = snapshot("witcher-3")
     state = run_check(NOT_CHECKED, found).state
     gone = run_check(state, replace(found, games=tuple(c for c in found.games if c.id != "194662")))

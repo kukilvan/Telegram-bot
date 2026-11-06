@@ -133,7 +133,7 @@ In code: `collection` (the word of IGDB; `series` is the kind of a TV series).
 
 **Проверка дополнений и продолжений** (follow-up check):
 Once a week the tracker asks IGDB about the expansions of a game and the games of its series: for a game in «Хочу», «В процессе» and «Пройдено», not in «Бросил» and not for an expansion that needs its game. The first check of a game (after adding, after «Вернуть в список» from «Бросил») only records what exists, without messages; from «Пройдено» back to «Хочу» the check goes on as it was. Each new expansion or new game of the series comes as a message of its own with «Следить»; one announced game comes once, however many games of the series are in the list. A change of «Мои платформы» or of the store country gives no messages.
-In code: `follow-up check` (`follow_ups`; the snapshot of source `igdb_follow_ups`; which games are checked — `for_follow_ups`).
+In code: `follow-up check` (`follow_ups`; the snapshot of source `igdb_follow_ups`; which games are checked — `for_follow_ups`; an expansion or a game of the series the snapshot lists — `FollowUp`, never `Candidate`, which is the «Кандидат» of «Входящие»).
 
 **Платформа** (platform):
 Where a game comes out: PC, PlayStation 5, Xbox Series X|S, Nintendo Switch 2 or Nintendo Switch. PC is one platform wherever the game is sold (Steam is only a link in the card). A game has its own release date and its own checkmark «играю здесь» on each platform.
@@ -205,7 +205,7 @@ In code: `candidate` (`Candidate` of `candidates`).
 **Предложение** (offer):
 A record of a source the bot shows for an inbox item as a card «Это оно?» (or «Возможно, вы имели в виду:» after a typo) with «Да» / «Нет»; «Да» adds it to the list. Not a search suggestion of the web or of a source.
 _Avoid_: подсказка, результат поиска
-In code: `offer` (`Offer` of `offers`, the card — `OfferCard`); a search suggestion is `Suggestion`.
+In code: `offer` (`Offer` of `offers`, the card — `OfferCard`); a search suggestion is `Suggestion`. Not the «Следить» of an announcement (`FollowOffer`, `offers_follow_ups` — «Продолжение»): there `offer` is part of a longer name, never alone.
 
 **Настройки** (settings):
 The app screen with the owner's rules (time zone, work days, summary hour, quiet hours, season-part threshold — the break in weeks after which a series season is split into parts; my platforms; store country); stored in the database. Not the `.env` file — that is the launch settings (`Settings` in `app/config.py`).

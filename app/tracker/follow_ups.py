@@ -2,7 +2,7 @@
 
 Pure: no database, no network, no clock. «Мои платформы», the country of the stores and today on the owner's clock come
 as arguments (spec 4 of stage 6.3), so a change of the settings reads the stored snapshot again without a request and
-gives no messages. The snapshot keeps every candidate whatever its platforms and dates; what is shown is decided here
+gives no messages. The snapshot keeps every follow-up whatever its platforms and dates; what is shown is decided here
 each time it is read. The reference point (the first check: the stored state is `{}`) only records what is shown.
 """
 
@@ -38,7 +38,7 @@ def _text(value: Any, what: str) -> str:
 
 
 @dataclass(frozen=True)
-class Candidate:
+class FollowUp:
     """An expansion or a game of the series as IGDB listed it: its IGDB id, its name (the Russian one when IGDB has
     it), the day of its `first_release_date`, its platforms and release records as `GameState` holds them;
     `standalone` — an expansion played alone (IGDB type 4)."""
@@ -63,7 +63,7 @@ class Candidate:
         }
 
     @classmethod
-    def from_state(cls, data: Mapping[str, Any]) -> "Candidate":
+    def from_state(cls, data: Mapping[str, Any]) -> "FollowUp":
         """Strict (rule 9): what the tracker stored; garbage raises ValueError."""
         standalone = data["standalone"]
         if not isinstance(standalone, bool):
@@ -85,15 +85,15 @@ class FollowUpsSnapshot:
 
     own_date: date | None = None
     collections: tuple[str, ...] = ()
-    expansions: tuple[Candidate, ...] = ()
-    games: tuple[Candidate, ...] = ()
+    expansions: tuple[FollowUp, ...] = ()
+    games: tuple[FollowUp, ...] = ()
 
     def state(self) -> dict[str, Any]:
         return {
             "own_date": self.own_date.isoformat() if self.own_date else None,
             "collections": list(self.collections),
-            "expansions": [candidate.state() for candidate in self.expansions],
-            "games": [candidate.state() for candidate in self.games],
+            "expansions": [follow_up.state() for follow_up in self.expansions],
+            "games": [follow_up.state() for follow_up in self.games],
         }
 
     @classmethod
@@ -101,8 +101,8 @@ class FollowUpsSnapshot:
         return cls(
             own_date=parse_date(data["own_date"]),
             collections=tuple(_text(name, "a collection") for name in data["collections"]),
-            expansions=tuple(Candidate.from_state(candidate) for candidate in data["expansions"]),
-            games=tuple(Candidate.from_state(candidate) for candidate in data["games"]),
+            expansions=tuple(FollowUp.from_state(follow_up) for follow_up in data["expansions"]),
+            games=tuple(FollowUp.from_state(follow_up) for follow_up in data["games"]),
         )
 
 
@@ -151,26 +151,26 @@ def _id_order(id_: str) -> tuple[int, str]:
 # --- what is shown (spec 4) -----------------------------------------------------------------------------------------
 
 
-def _dates_on_mine(candidate: Candidate, mine: Collection[Platform], country: str) -> Iterator[PlatformDates]:
-    """The dates of the candidate on each platform of «Мои платформы» it is on (backward compatibility included) and
+def _dates_on_mine(follow_up: FollowUp, mine: Collection[Platform], country: str) -> Iterator[PlatformDates]:
+    """The dates of the follow-up on each platform of «Мои платформы» it is on (backward compatibility included) and
     not cancelled there."""
     for platform in mine:
-        dates = platform_dates(candidate.game, platform, country)
+        dates = platform_dates(follow_up.game, platform, country)
         if dates is not None and not dates.cancelled:
             yield dates
 
 
-def on_my_platforms(candidate: Candidate, mine: Collection[Platform], country: str) -> bool:
+def on_my_platforms(follow_up: FollowUp, mine: Collection[Platform], country: str) -> bool:
     """On a platform of «Мои платформы» and not cancelled there (spec 4.1)."""
-    return next(_dates_on_mine(candidate, mine, country), None) is not None
+    return next(_dates_on_mine(follow_up, mine, country), None) is not None
 
 
-def came_out_before(candidate: Candidate, own_date: date | None, today: date) -> bool:
-    """Came out before the game (spec 4.3): on its day or earlier; when the game is not out, by today. A candidate
+def came_out_before(follow_up: FollowUp, own_date: date | None, today: date) -> bool:
+    """Came out before the game (spec 4.3): on its day or earlier; when the game is not out, by today. A follow-up
     without `first` never did. A year-only date compares as IGDB stores it, its 31 December."""
-    if candidate.first is None:
+    if follow_up.first is None:
         return False
-    return candidate.first <= (own_date if own_date is not None else today)
+    return follow_up.first <= (own_date if own_date is not None else today)
 
 
 @dataclass(frozen=True)
@@ -191,12 +191,12 @@ def _ends_first(game_date: GameDate) -> tuple[date, bool]:
     return (game_date.end, not game_date.exact)
 
 
-def follow_up_date(candidate: Candidate, mine: Collection[Platform], country: str) -> FollowUpDate:
+def follow_up_date(follow_up: FollowUp, mine: Collection[Platform], country: str) -> FollowUpDate:
     """The announced full release on «Мои платформы» that ends earliest; else such an early access; else «дата не
     объявлена». Cancelled platforms give nothing."""
     full: list[GameDate] = []
     early: list[GameDate] = []
-    for dates in _dates_on_mine(candidate, mine, country):
+    for dates in _dates_on_mine(follow_up, mine, country):
         if dates.full is not None and dates.full.date.announced:
             full.append(dates.full.date)
         if dates.early is not None and dates.early.date.announced:
@@ -208,22 +208,22 @@ def follow_up_date(candidate: Candidate, mine: Collection[Platform], country: st
     return FollowUpDate()
 
 
-def _ordered(candidates: Iterable[Candidate], mine: Collection[Platform], country: str) -> list[Candidate]:
+def _ordered(items: Iterable[FollowUp], mine: Collection[Platform], country: str) -> list[FollowUp]:
     """By the date that ends earlier, «дата не объявлена» last; equal dates by name, then by id (spec 4.5)."""
 
-    def order(candidate: Candidate) -> tuple[Any, ...]:
-        end = follow_up_date(candidate, mine, country).date.end
-        return (end is None, end or date.max, text.key(candidate.name), _id_order(candidate.id))
+    def order(follow_up: FollowUp) -> tuple[Any, ...]:
+        end = follow_up_date(follow_up, mine, country).date.end
+        return (end is None, end or date.max, text.key(follow_up.name), _id_order(follow_up.id))
 
-    return sorted(candidates, key=order)
+    return sorted(items, key=order)
 
 
-def expansions_shown(snapshot: FollowUpsSnapshot, mine: Collection[Platform], country: str) -> list[Candidate]:
+def expansions_shown(snapshot: FollowUpsSnapshot, mine: Collection[Platform], country: str) -> list[FollowUp]:
     """The expansions on my platforms, and the ones announced without any platform or release record (spec 4.2)."""
     return _ordered(
         (
-            candidate for candidate in snapshot.expansions
-            if on_my_platforms(candidate, mine, country) or (not candidate.platforms and not candidate.releases)
+            follow_up for follow_up in snapshot.expansions
+            if on_my_platforms(follow_up, mine, country) or (not follow_up.platforms and not follow_up.releases)
         ),
         mine,
         country,
@@ -232,12 +232,12 @@ def expansions_shown(snapshot: FollowUpsSnapshot, mine: Collection[Platform], co
 
 def sequels_shown(
     snapshot: FollowUpsSnapshot, mine: Collection[Platform], country: str, today: date
-) -> list[Candidate]:
+) -> list[FollowUp]:
     """The games of the series on my platforms that did not come out before the game (spec 4.3)."""
     return _ordered(
         (
-            candidate for candidate in snapshot.games
-            if on_my_platforms(candidate, mine, country) and not came_out_before(candidate, snapshot.own_date, today)
+            follow_up for follow_up in snapshot.games
+            if on_my_platforms(follow_up, mine, country) and not came_out_before(follow_up, snapshot.own_date, today)
         ),
         mine,
         country,
@@ -246,7 +246,7 @@ def sequels_shown(
 
 def _shown_ids(snapshot: FollowUpsSnapshot, mine: Collection[Platform], country: str, today: date) -> set[str]:
     shown = expansions_shown(snapshot, mine, country) + sequels_shown(snapshot, mine, country, today)
-    return {candidate.id for candidate in shown}
+    return {follow_up.id for follow_up in shown}
 
 
 # --- texts (spec 6.2, 6.3) ------------------------------------------------------------------------------------------
@@ -265,13 +265,13 @@ def follow_up_key(igdb_id: str) -> str:
     return f"game:follow_up:{igdb_id}"
 
 
-def _event(event_type: str, candidate: Candidate, game: str, when: FollowUpDate) -> DetectedEvent:
+def _event(event_type: str, follow_up: FollowUp, game: str, when: FollowUpDate) -> DetectedEvent:
     message = expansion_text if event_type == EXPANSION_ANNOUNCED else sequel_text
     # the keys of the movie sequel announcement: the Feed, the summary and «Следить» read them (spec 6.3)
     data = {
-        "kind": TitleKind.GAME.value, "sequel_id": candidate.id, "sequel_title": candidate.name, "date": when.date.text,
+        "kind": TitleKind.GAME.value, "sequel_id": follow_up.id, "sequel_title": follow_up.name, "date": when.date.text,
     }
-    return DetectedEvent(event_type, follow_up_key(candidate.id), message(candidate.name, game, when), data)
+    return DetectedEvent(event_type, follow_up_key(follow_up.id), message(follow_up.name, game, when), data)
 
 
 # --- what is new (spec 5.4) -----------------------------------------------------------------------------------------
@@ -296,21 +296,21 @@ def check(
 ) -> CheckResult:
     """What the new snapshot `now` of the game named `game` (in the list) brings after the stored state `previous`.
 
-    The reference point gives no events and fills `known`. Otherwise a candidate shown now is announced when its id is
+    The reference point gives no events and fills `known`. Otherwise a follow-up shown now is announced when its id is
     not in `known`, the previous snapshot read with today's settings and date did not show it, and it is not in the
     list (`listed`: the IGDB ids of the games of the list). The new `known` adds every id shown now."""
     expansions = expansions_shown(now, mine, country)
     sequels = sequels_shown(now, mine, country, today)
-    shown = {candidate.id for candidate in expansions + sequels}
+    shown = {follow_up.id for follow_up in expansions + sequels}
     state = FollowUps(now, previous.known | shown)
     if previous.snapshot is None:
         return CheckResult(state)
     seen = previous.known | _shown_ids(previous.snapshot, mine, country, today) | set(listed)
     events = [
-        _event(event_type, candidate, game, follow_up_date(candidate, mine, country))
-        for event_type, candidates in ((EXPANSION_ANNOUNCED, expansions), (SEQUEL_ANNOUNCED, sequels))
-        for candidate in candidates
-        if candidate.id not in seen
+        _event(event_type, follow_up, game, follow_up_date(follow_up, mine, country))
+        for event_type, items in ((EXPANSION_ANNOUNCED, expansions), (SEQUEL_ANNOUNCED, sequels))
+        for follow_up in items
+        if follow_up.id not in seen
     ]
     return CheckResult(state, tuple(events))
 

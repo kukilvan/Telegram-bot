@@ -77,6 +77,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-61 | «Входящие»: a typo in a name is not corrected when the source answers in another language | `app/tracker/offers.py` | open | — |
 | KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | open | — |
 | KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | open | — |
+| KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | open | — |
+| KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | open | — |
 
 ## Entries
 
@@ -662,3 +664,21 @@ Format of a new entry:
 - Likelihood / impact: no bug; the file is harder to read and to change in parallel. A fix: move the chain (`collect_entries`, `chain_order`, `group_seasons`, `build_*`) into a module of its own and list every adapter in the size test (like KI-56 for the pure modules).
 - Status: open.
 - Found: 2026-11-06, ticket 04 of stage 6.4.
+
+## KI-64. «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028»)
+
+- Where: `app/tracker/offers.py` (`released_line`), the dates the adapters give (`Suggestion.released`: `sources/igdb_games.py` from `first_release_date`, `sources/shikimori_anime.py` from `airedOn.date`).
+- What's wrong: the card of an offer says «выйдет <day> <month> <year>» for any date in the future (spec 6.1 has this form only «with a day»), but the sources fill a day they do not know: IGDB gives the last day of the year or of the quarter, Shikimori the first of January. Checked live 2026-11-06: The Witcher IV → «выйдет 31 декабря 2028», Intergalactic: The Heretic Prophet and Marvel 1943 → «31 декабря 2027», Fishy Bar → «30 июня 2027» (a quarter), «Выход смерти: Изоляция» → «выйдет 1 января 2027». The web card of the same game, once added, shows the date right (`games.GameDate` by `release_dates`).
+- How to reproduce: send the bot «The Witcher IV», press «Игра».
+- Likelihood / impact: often — posts are mostly about announcements; the owner may take the day for real. Nothing is stored wrong: adding the title reads its dates anew. A fix: the adapters say whether the day is known (IGDB: `release_dates.date_format` of the record of `first_release_date`, as `sources/igdb_follow_ups` reads it; Shikimori: `airedOn { day }`), the stored offer keeps it, and a future date without a day shows the year alone («2028») — or the precision of `games.GameDate` («IV квартал 2027»), a choice for the fix.
+- Status: open.
+- Found: 2026-11-06, review of stage 6.4 (F9).
+
+## KI-65. «Входящие»: «Найти» cannot remove an item whose title is in the list already
+
+- Where: `app/web/templates/suggestions.html` (a row in the list is the link «В списке», no add form), `app/web/search.py` (`add`).
+- What's wrong: spec 9.3 deletes the item when adding succeeds «new or already in the list», but the Search shows a title of the list without «Добавить», so from «Найти» the item of such a title is never removed; the «already in the list» branch of `add` is reached only by a race.
+- How to reproduce: add a game, then send the bot a post about it and let it go to «Входящие» (e.g. «Нет» on its offer); on the web press «Найти» on it — the game shows «В списке», nothing removes the record.
+- Likelihood / impact: rare (the bot itself says «Уже в списке» and resolves such an item when it finds the title); the owner presses «Убрать». A fix: with `inbox`, a row in the list gets a button that removes the item («Это оно — убрать запись»), a choice of text for the fix.
+- Status: open.
+- Found: 2026-11-06, review of stage 6.4 (F10).

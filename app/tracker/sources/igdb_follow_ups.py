@@ -13,15 +13,15 @@ from typing import Any
 
 from app.tracker.errors import SourceNotConfigured
 from app.tracker.failures import TitleGone
-from app.tracker.follow_ups import Candidate, FollowUpsSnapshot
+from app.tracker.follow_ups import FollowUp, FollowUpsSnapshot
 from app.tracker.sources.dates import response_day_of_timestamp
 from app.tracker.games import STANDALONE
 from app.tracker.sources.igdb_games import expansion_type, is_game, known_platforms, read_releases, russian_name
 
 SOURCE_KEY = "igdb_follow_ups"
 
-# `<F>` of spec 3.1: what is read of every candidate
-CANDIDATE_FIELDS = (
+# `<F>` of spec 3.1: what is read of every follow-up
+FOLLOW_UP_FIELDS = (
     "id", "name", "game_type", "version_parent", "first_release_date", "platforms", "alternative_names.name",
     "alternative_names.comment", "release_dates.date", "release_dates.date_format", "release_dates.y", "release_dates.m",
     "release_dates.platform", "release_dates.release_region", "release_dates.status",
@@ -29,7 +29,7 @@ CANDIDATE_FIELDS = (
 
 
 def _fields(prefix: str) -> str:
-    return ",".join(f"{prefix}.{name}" for name in CANDIDATE_FIELDS)
+    return ",".join(f"{prefix}.{name}" for name in FOLLOW_UP_FIELDS)
 
 
 FOLLOW_UPS_QUERY = (
@@ -50,9 +50,9 @@ def _records(value: Any) -> list[dict[str, Any]]:
     ]
 
 
-def _candidate(item: dict[str, Any]) -> Candidate:
+def _follow_up(item: dict[str, Any]) -> FollowUp:
     name = item.get("name")
-    return Candidate(
+    return FollowUp(
         id=str(item["id"]),
         name=russian_name(item) or (name if isinstance(name, str) else "") or str(item["id"]),
         first=response_day_of_timestamp(item.get("first_release_date")),
@@ -96,8 +96,8 @@ def parse_follow_ups(raw: dict[str, Any]) -> FollowUpsSnapshot:
     return FollowUpsSnapshot(
         own_date=response_day_of_timestamp(raw.get("first_release_date")),
         collections=tuple(c["name"] for c in collections if isinstance(c.get("name"), str) and c["name"]),
-        expansions=tuple(_candidate(item) for item in expansions),
-        games=tuple(_candidate(item) for item in games),
+        expansions=tuple(_follow_up(item) for item in expansions),
+        games=tuple(_follow_up(item) for item in games),
     )
 
 

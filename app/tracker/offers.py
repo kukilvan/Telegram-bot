@@ -249,7 +249,8 @@ class OfferSearch:
                 kind = records[0].kind
             if steam_name:
                 named.append((Candidate(steam_name, WHOLE, -1), link.kind))
-                kind = kind or link.kind
+        # the kind of the first link that gave an offer; none did — the kind of a Steam name, searched below
+        kind = kind or next((of_kind for _, of_kind in named), None)
         if kind is None:
             return Found(not_connected=not_connected)
         ours = [candidate for candidate, of_kind in named if of_kind is kind]  # a Steam name is a name of a game

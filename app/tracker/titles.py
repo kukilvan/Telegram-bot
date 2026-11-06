@@ -56,12 +56,9 @@ class Titles:
         found: dict[tuple[TitleKind, str], int] = {}
         with self.ctx.session_factory() as session:
             for kind in dict.fromkeys(s.kind for s in suggestions):
-                try:
-                    poller = self.pollers.of(kind)
-                except KeyError:  # the core has no source of that kind: nothing of it can be in the list
-                    continue
                 ids = [s.external_id for s in suggestions if s.kind is kind]
-                found.update(((kind, i), t) for i, t in poller.known_ids(session, ids).items())
+                # every kind has a reader, with its source or without
+                found.update(((kind, i), t) for i, t in self.pollers.reader_of(kind).known_ids(session, ids).items())
         return found
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:

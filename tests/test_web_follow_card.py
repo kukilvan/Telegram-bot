@@ -20,7 +20,7 @@ from app.tracker.models import TitleKind
 from app.web import create_web_app
 from app.web.card_blocks import series_sentence
 from app.web.posters import image_sources
-from test_tracker_follow_card import COLLECTION, answer_for_witcher, candidate, expansion_state
+from test_tracker_follow_card import COLLECTION, answer_for_witcher, follow_up, expansion_state
 from test_tracker_game_follow_ups import PC, T0, FakeClock, FakeFollowUps, FakeSender, MadeUpGames, add, run
 from test_web_card import PASSWORD
 
@@ -300,7 +300,7 @@ def test_an_expansion_that_needs_its_game_has_no_blocks_and_a_standalone_one_has
     igdb.put("21", expansion_state(STANDALONE), "Miles Morales")
     needs_game = run(tracker.follow("game", "20")).title_id
     standalone = run(tracker.follow("game", "21")).title_id
-    follow.answers["21"] = FollowUpsSnapshot(games=(candidate("30", "Игра", 2028),))
+    follow.answers["21"] = FollowUpsSnapshot(games=(follow_up("30", "Игра", 2028),))
     run(tracker.poll_due())
 
     plain = client.get(f"/titles/{needs_game}").text

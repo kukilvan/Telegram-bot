@@ -201,6 +201,20 @@ def test_a_joined_message_starts_the_pause_again(tracker, telegram, monkeypatch)
     assert item.text == "Посмотри\n\nПост канала" and item.post_url == "https://t.me/ch/5"
 
 
+def test_a_message_joined_after_the_pause_is_over_gets_no_second_question(tracker, telegram):
+    # review 6.4, F8: the core joins by its clock (2 seconds, fixed here), the bot ends the pause by its own; a joined
+    # message whose write ended after the item was answered must not start a second pause
+    async def scenario(chat):
+        await chat.say(caption="Альбом Hades II", photo=photo(), media_group_id="a")
+        await pause(3)  # the pause is over, «Что это?» is said
+        await chat.say(photo=photo(), media_group_id="a")
+
+    talk(tracker, scenario)
+
+    assert [text for _, text, _ in messages(telegram)] == ["Что это?"]
+    assert asyncio.run(tracker.inbox_item(2)) is None  # the photo joined the item
+
+
 def test_a_new_post_moves_the_waiting_one_and_says_so_once(tracker, telegram):
     async def scenario(chat):
         await chat.say("Тест два")

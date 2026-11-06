@@ -12,11 +12,10 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, Request, Response
 
-from app.tracker.core import SourceFailed, SourceNotConfigured, TitleNotFound, Tracker, UnknownTitle
+from app.tracker.core import LIST_SIZE, SourceFailed, SourceNotConfigured, TitleNotFound, Tracker, UnknownTitle
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web import pages
-from app.tracker.core import LIST_SIZE
 
 MIN_QUERY = 2  # a shorter query does not reach the source
 MAX_QUERY = 100  # a longer one is cut

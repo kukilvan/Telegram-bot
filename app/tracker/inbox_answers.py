@@ -157,10 +157,8 @@ class InboxAnswers:
         resolved. Commits."""
         offers = _offers(item)
         offer = offers[number]
-        try:
-            listed = self.pollers.of(offer.kind).known_ids(session, [offer.external_id]).get(offer.external_id)
-        except KeyError:  # the core has no source of that kind: nothing of it can be in the list
-            listed = None
+        # every kind has a reader, with its source or without
+        listed = self.pollers.reader_of(offer.kind).known_ids(session, [offer.external_id]).get(offer.external_id)
         if listed is not None:
             session.delete(item)
             session.commit()

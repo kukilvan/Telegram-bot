@@ -141,15 +141,15 @@ class GameFollowUps:
         today = local_moment(self.ctx.now(), tz).date()
         expansions = follow_ups.expansions_shown(state.snapshot, scope.mine, scope.country)
         sequels = follow_ups.sequels_shown(state.snapshot, scope.mine, scope.country, today)
-        listed = self.known_ids(session, [candidate.id for candidate in expansions + sequels])
+        listed = self.known_ids(session, [follow_up.id for follow_up in expansions + sequels])
 
-        def lines(candidates: list[follow_ups.Candidate]) -> tuple[FollowLine, ...]:
+        def lines(items: list[follow_ups.FollowUp]) -> tuple[FollowLine, ...]:
             return tuple(
                 FollowLine(
-                    candidate.id, candidate.name,
-                    follow_ups.follow_up_date(candidate, scope.mine, scope.country).label, listed.get(candidate.id),
+                    follow_up.id, follow_up.name,
+                    follow_ups.follow_up_date(follow_up, scope.mine, scope.country).label, listed.get(follow_up.id),
                 )
-                for candidate in candidates
+                for follow_up in items
             )
 
         return FollowUpsView(
@@ -278,7 +278,7 @@ class GameFollowUps:
                 return None
             scope = GameScope.read(self.settings, session)
             today = local_moment(self.ctx.now(), self.settings.time_zone(session)).date()
-            listed = self.known_ids(session, [candidate.id for candidate in snapshot.expansions + snapshot.games])
+            listed = self.known_ids(session, [follow_up.id for follow_up in snapshot.expansions + snapshot.games])
             name = title.name
         return follow_ups.check(previous, snapshot, name, scope.mine, scope.country, today, listed.keys())
 

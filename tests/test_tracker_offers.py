@@ -282,6 +282,22 @@ def test_a_steam_number_igdb_does_not_know_is_searched_by_the_name_steam_gives(c
     assert clients.requests == [("igdb", "steam:2622380"), ("steam", "appdetails:2622380"), ("igdb", "game:ELDEN RING NIGHTREIGN")]
 
 
+def test_the_kind_of_an_item_is_that_of_the_first_link_that_gave_an_offer_not_of_a_steam_name(clients):
+    # review 6.4, F7: a Steam number IGDB does not know gives only a name; the TMDb link after it gives the offer
+    nightreign = ANSWERS["igdb-games-by-steam:2622380"]
+    clients = Clients(extra={"igdb-games-by-steam:2622380": [], "game:ELDEN RING NIGHTREIGN": nightreign})
+    tracker = tracker_on(clients)
+
+    item, reply = paused(
+        tracker, "https://store.steampowered.com/app/2622380/ https://www.themoviedb.org/movie/1485839-elden-ring"
+    )
+
+    assert reply.outcome == InboxOutcome.OFFER and reply.kind == MOVIE
+    assert [(o.kind, o.external_id) for o in stored(tracker, item)] == [(MOVIE, "1485839")]
+    assert entry(tracker, item).kind == MOVIE
+    assert ("igdb", "game:ELDEN RING NIGHTREIGN") not in clients.requests  # a game name is not searched as a movie
+
+
 def test_an_unknown_steam_number_without_a_steam_name_goes_on_as_an_item_without_links(tracker):
     _, reply = paused(tracker, "https://store.steampowered.com/app/4000000/")
 

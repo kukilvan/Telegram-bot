@@ -143,9 +143,12 @@ def register_inbox_handlers(
             return
         if result.joined:
             previous = pauses.get(result.item_id)
-            moved = previous is not None and previous.moved
-            if previous is not None and not previous.answering:
-                previous.task.cancel()
+            if previous is None or previous.answering:
+                # its write ended after the pause of the item was over (review 6.4, F8): the text is in the item, and
+                # the item has its one answer already
+                return
+            moved = previous.moved
+            previous.task.cancel()
         else:
             moved = result.moved > 0
             for pause in pauses.values():  # those items went to «Входящие» without their question

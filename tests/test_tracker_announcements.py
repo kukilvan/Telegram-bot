@@ -17,7 +17,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.feed_rows import FollowOffer, Followable
 from app.tracker.models import TitleKind
 from test_tracker_game_follow_ups import (
-    T0, FakeClock, FakeFollowUps, MadeUpGames, add, candidate, game, run, series,
+    T0, FakeClock, FakeFollowUps, MadeUpGames, add, follow_up, game, run, series,
 )
 
 CARD = "card"
@@ -73,7 +73,7 @@ def announce(tracker, igdb, follow, clock, *, hours=0):
     title_id = add(tracker, igdb, name="Elden Ring")
     run(tracker.poll_due())
     follow.answers["1"] = series(
-        candidate("2", "Elden Ring Nightreign"), expansions=[candidate("3", "Elden Ring: Shadow of the Erdtree")]
+        follow_up("2", "Elden Ring Nightreign"), expansions=[follow_up("3", "Elden Ring: Shadow of the Erdtree")]
     )
     clock.advance(days=7, hours=hours)
     run(tracker.poll_due())
@@ -142,7 +142,7 @@ def test_in_a_summary_follow_is_named_by_the_announced_game_and_the_card_by_the_
 def test_a_long_name_is_cut_on_the_card_button_but_never_on_follow(tracker, igdb, follow, clock, sender):
     add(tracker, igdb, name="Очень длинное название игры для кнопки в сводке")
     run(tracker.poll_due())
-    follow.answers["1"] = series(candidate("2", "Очень-очень длинное название следующей игры серии"))
+    follow.answers["1"] = series(follow_up("2", "Очень-очень длинное название следующей игры серии"))
     clock.advance(days=7)
     run(tracker.poll_due())
     clock.advance(hours=3)

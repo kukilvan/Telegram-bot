@@ -17,7 +17,7 @@ from app.tracker.core import SourceNotConfigured
 from app.tracker.failures import TitleGone
 from app.tracker.follow_ups import FollowUps, FollowUpsSnapshot
 from app.tracker.sources.igdb_follow_ups import (
-    CANDIDATE_FIELDS, FOLLOW_UPS_QUERY, SOURCE_KEY, IgdbFollowUpSource, parse_follow_ups,
+    FOLLOW_UP_FIELDS, FOLLOW_UPS_QUERY, SOURCE_KEY, IgdbFollowUpSource, parse_follow_ups,
 )
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "igdb"
@@ -66,15 +66,15 @@ def test_the_query_names_every_field_of_every_list():
     fields = set(body.removeprefix("fields ").split(";")[0].split(","))
     assert {"name", "game_type", "first_release_date", "collections.name"} <= fields
     for prefix in ("expansions", "standalone_expansions", "remakes", "remasters", "collections.games"):
-        for name in CANDIDATE_FIELDS:
+        for name in FOLLOW_UP_FIELDS:
             assert f"{prefix}.{name}" in fields, (prefix, name)
     assert body.endswith("where id = 1942;")
     assert "dlcs" not in body and "franchises" not in body
     assert len(body) < 4000  # about 3,300 characters (spec 3.1)
 
 
-def test_the_fields_of_a_candidate_are_those_of_the_spec():
-    assert CANDIDATE_FIELDS == (
+def test_the_fields_of_a_follow_up_are_those_of_the_spec():
+    assert FOLLOW_UP_FIELDS == (
         "id", "name", "game_type", "version_parent", "first_release_date", "platforms", "alternative_names.name",
         "alternative_names.comment", "release_dates.date", "release_dates.date_format", "release_dates.y",
         "release_dates.m", "release_dates.platform", "release_dates.release_region", "release_dates.status",
@@ -112,7 +112,7 @@ def test_the_witcher_3_gives_its_date_collection_expansions_and_games():
     assert len(found.games) == 17
 
 
-def test_a_candidate_keeps_its_first_day_platforms_and_release_records():
+def test_a_follow_up_keeps_its_first_day_platforms_and_release_records():
     witcher_4 = next(c for c in snapshot("witcher-3").games if c.id == "194662")
     assert witcher_4.first == date(2028, 12, 31)  # a year only: IGDB stores its 31 December
     assert witcher_4.platforms == (6, 167, 169)
