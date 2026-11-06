@@ -1,6 +1,6 @@
 # 03: Posters above the text in every bot card
 
-Status: open
+Status: in review
 Complexity: simple (one pure module moved, one sending function, one option on the message; the texts and buttons do not change)
 Blocked by: —
 
