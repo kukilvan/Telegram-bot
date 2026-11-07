@@ -1,6 +1,6 @@
 # Stage 7.1: backups and export — and the split of stage 7
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. Roadmap item 7 «Backups, NAS and phone» (`docs/project-spec.md`) is split into three stages here; this file is the description of the first one, 7.1, and holds the decisions already taken for 7.2 and 7.3 so their descriptions start from them. Decisions it leans on: ADR 0005 (SQLite; a copy is made by SQLite's online backup, not by copying the file), ADR 0006 (Docker on the owner's PC until a NAS), ADR 0007 (one process: copies are made by the same scheduler). Mockups: `mockups/settings-backups.html`, `mockups/restore.html`; for 7.2 — `../7-2-access-phone/mockups/bot-links.html`, `../7-2-access-phone/mockups/settings-test-event.html`.
 

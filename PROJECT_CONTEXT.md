@@ -1,10 +1,10 @@
 # Project context
 
-Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-06.
+Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-07.
 
 ## Next step
 
-Session «Описание 7»: the description of stage 7 «Backups, NAS and phone» (`docs/project-spec.md`, stage 7: export to JSON/CSV, an encrypted off-site copy, the move to the NAS, access from outside the home, the phone, the temporary bot buttons) — propose how to split it into stages, ask the owner's wishes, pull in the open `KNOWN_ISSUES.md` entries that fit, write `.scratch/7-<slug>/description.md`. Model Opus 5.5, effort high (`docs/models.md`: description).
+Session «Спека 7.1»: the spec of stage 7.1 «Backups and export» from `.scratch/7-1-backups-export/description.md` (approved 2026-11-07; its «Open questions for the spec»: the archive format with a password 7-Zip opens, rclone and the one-time Google Drive sign-in, CSV/JSON shapes, the restore edge cases), written to `.scratch/7-1-backups-export/spec.md` with a proposed ticket split; check rclone and the archive library for real where possible. Model Opus 5.5, effort high (`docs/models.md`: spec).
 
 ## State
 
@@ -12,6 +12,7 @@ Session «Описание 7»: the description of stage 7 «Backups, NAS and ph
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0014. Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The bot menu is «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие»; «➕ Добавить» is gone (6.4.01): any other message is an inbox item.
 - Games: part 6.1 done (IGDB, platforms, release events, «Пройдено»). **Part 6.2 done** (review accepted 2026-11-04, `.scratch/games-2-steam-prices/`; details in `docs/history.md`): Steam prices of games in «Хочу» with PC marked, every 6 hours at the end of a pass (`pollers/game_prices.py`, price history of migration 0013), messages «скидка», «бандл», «страница в Steam» (`price_events.py`, folded discounts, «🛒 Открыть в Steam»), the card block «Steam», the mark «−30 %» in the List, «Цена в Steam» in the bot card; PlayStation has no prices (ADR 0009). **Stage 6.3 done** (review accepted 2026-11-05, `.scratch/6-3-game-dlc-sequels/`; details in `docs/history.md`): a weekly IGDB check (`pollers/game_follow_ups.py`, snapshots `igdb_follow_ups`, 10 a pass at the end of a pass after the prices, first check silent) of «Хочу», «В процессе», «Пройдено» games for big expansions and new games of the series on «Мои платформы»; one message per announcement with «Следить» and «Карточка» (`actions.FOLLOW_TYPES`); web card blocks «Дополнения» / «Продолжения» (`app/web/card_blocks.py`); a followed expansion is a game of its own with the line «Дополнение к игре «…»» and the word «дополнение» in the List (ADR 0011); KI-52…56 deferred. **Stage 6.4 «Входящие» done** (review accepted 2026-11-06, `.scratch/6-4-inbox/`; details in `docs/history.md`): any message to the bot is an inbox item, written at once (`app/tracker/inbox.py`, table `inbox_items`, migration 0014); a link of a source (Steam, TMDb, IMDb, Shikimori) gives its card at once, otherwise «Что это?» with the kinds and «🗑 Не сохранять»; the name candidates of a post (`candidates.py`, pure) are searched in the source of the kind (`offers.py`: half the first weight, exact then prefix, «new first», the typo of a name message), up to three offers «Это оно?» / «Возможно, вы имели в виду:» with «Да» / «Нет» (`inbox_answers.py`); «Да» adds as the web does, games too; the rest goes to the web tab «Входящие» (`app/web/inbox.py`: the number in the menu, «Найти» through Search with `inbox=<id>`, «Убрать»); every bot card carries the poster above the text (`app/bot/card_message.py`, `posters.py`); «➕ Добавить» is gone; KI-57…65 deferred.
+- **Stage 7 split** (description accepted 2026-11-07, `.scratch/7-1-backups-export/description.md`): 7.1 backups and export (Settings block «Копии и выгрузка», CSV/JSON download without import, an encrypted Google Drive copy by rclone daily, 30 kept, off by default, `restore-bot.ps1`), 7.2 outside access by Tailscale and the phone (bot buttons become links to the web card, «Мои тайтлы» goes, «Тестовое событие» to the web; KI-7, 8, 12, 13; a new ADR supersedes «until the NAS» of ADR 0006/0008), 7.3 the NAS move (KI-15). Order 7.1 → 7.2 → 9 → 8 → 7.3; the NAS is not bought yet. Mockups of 7.2 are in `.scratch/7-2-access-phone/mockups/`.
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
 - Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`); cleaned in stage 8. `.env` has variables the code does not read (`PSN_API_KEY`, `SHIKIMORI_CLIENT_ID/SECRET`, lower-case `psn_api_key`); also stage 8.
@@ -28,11 +29,13 @@ Session «Описание 7»: the description of stage 7 «Backups, NAS and ph
 | 6.2 | Steam prices, discounts, bundles | done | — | — |
 | 6.3 | Expansions and sequels of games | done | — | — |
 | 6.4 | «Входящие»: add from Telegram by post or name | done | — | 001 |
-| 7 | Backups, NAS move, access from outside the home, install on phone | not started | 1+ | — |
-| 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
+| 7.1 | Backups and export: CSV/JSON, Google Drive copy, restore | spec | 6 | — |
+| 7.2 | Access from outside the home (Tailscale), phone, bot buttons as links | not started | 6 | — |
 | 9 | Fixes after real use (1–2 weeks) | not started | 2+ | — |
+| 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
+| 7.3 | The move to the NAS (waits for the NAS) | not started | 3+ | — |
 
-Status values: not started · description · spec · tickets k/n · review · fix round k · done. Full plan: `docs/project-spec.md`.
+Rows in the order of work. Status values: not started · description · spec · tickets k/n · review · fix round k · done. Full plan: `docs/project-spec.md`.
 
 ## Environment
 

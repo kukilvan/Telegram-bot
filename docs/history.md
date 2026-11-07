@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-07 — Stage 7, description: split into 7.1, 7.2, 7.3; description of 7.1
+
+- `.scratch/7-1-backups-export/description.md` (accepted): stage 7 split into 7.1 «Копии и выгрузка», 7.2 «Доступ вне дома и телефон», 7.3 «Переезд на NAS»; order 7.1 → 7.2 → 9 → 8 → 7.3 (the NAS is not bought). Mockups: `.scratch/7-1-backups-export/mockups/` (Settings block, `restore-bot.ps1` window), `.scratch/7-2-access-phone/mockups/` (bot with link buttons, test event in Settings).
+- Decisions (owner): Tailscale for outside access (Cloudflare Tunnel rejected; contradicts the «until the NAS» of ADR 0006/0008 — 7.2 writes the superseding ADR); the off-site copy to Google Drive by rclone, daily, 30 kept, off by default, encrypted as an archive 7-Zip opens (rclone crypt rejected), the password kept outside the PC too; export CSV and JSON, no import; restore by `restore-bot.ps1` keeping the current database aside; in 7.2 «Карточка» becomes a link, «Мои тайтлы» goes, «Тестовое событие» moves to the web, «Сводка сейчас» stays, nothing changes without the app address; «Сделать копию сейчас» in Settings (proposed by the session).
+- KI pulled in: 7.2 — KI-7, 8, 12, 13; 7.3 — KI-15. `docs/project-spec.md`: Features, Interface and the stage sections rewritten for 7.1/7.2/7.3 and the new order.
+
 ## 2026-11-06 — Stage 6.4, review: stage closed
 
 - `.scratch/6-4-inbox/review.md`: the stage against the spec and the coding standards, two sub-agent passes; checked by running on the live sources (the 18 samples give table 5.6, the typos of 5.4, every kind of link), on the live web (HTTP with the login) and the live bot. No fix-round finding: the stage is closed; the next one is the description of stage 7.
