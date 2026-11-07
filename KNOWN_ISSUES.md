@@ -79,6 +79,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | open | — |
 | KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | open | — |
 | KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | open | — |
+| KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | open | — |
 
 ## Entries
 
@@ -682,3 +683,12 @@ Format of a new entry:
 - Likelihood / impact: rare (the bot itself says «Уже в списке» and resolves such an item when it finds the title); the owner presses «Убрать». A fix: with `inbox`, a row in the list gets a button that removes the item («Это оно — убрать запись»), a choice of text for the fix.
 - Status: open.
 - Found: 2026-11-06, review of stage 6.4 (F10).
+
+## KI-66. Copies: the time of a copy is the container's clock, not the zone of Settings
+
+- Where: `app/utils/backup.py`, `app/tracker/db.py` (`backup_name` writes `datetime.now()` of the container, whose `TZ` is `BOT_TIMEZONE`); the Settings block and the restore list of stage 7.1 (spec 2.1) show that time as written.
+- What's wrong: when the zone chosen in Settings differs from `BOT_TIMEZONE`, the times of copies are off by the difference of the zones, while the time of the Google Drive copy (stored in UTC) is shown in the Settings zone — the two lines of the block can disagree.
+- How to reproduce: `BOT_TIMEZONE=UTC`, Settings zone Europe/Moscow; «Сделать копию сейчас» at 16:21 Moscow — the notice and the list say «в 13:21».
+- Likelihood / impact: rare (the owner sets one zone in both places); the order and the content of copies are right, only the hour shown. A fix: names in UTC with a marker (old names kept readable), or reading `BOT_TIMEZONE` for the names' clock.
+- Status: open.
+- Found: 2026-11-07, spec of stage 7.1.

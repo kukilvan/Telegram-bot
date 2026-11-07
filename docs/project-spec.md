@@ -73,9 +73,9 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07), which also h
 ### Stage 7.1. Backups and export
 
 - Goal: the data can be got back after a dead disk or a lost PC.
-- The owner sees at the end: Settings block «Копии и выгрузка» (copies on the PC, the Google Drive copy state, «Сделать копию сейчас», «Скачать список (CSV)», «Скачать всё (JSON)», no import); an encrypted copy in Google Drive by rclone once a day, 30 kept, off by default, an archive 7-Zip opens by the password; `.estore-bot.ps1` restores a local copy or a downloaded archive, keeping the current database aside.
-- Contains: `.scratch/7-1-backups-export/description.md` → spec → tickets → review.
-- Sessions (est.): about 6 (spec, slicing, 3–4 tickets, review).
+- The owner sees at the end: Settings block «Копии и выгрузка» (copies on the PC, the Google Drive copy state, «Сделать копию сейчас», «Скачать список (CSV)», «Скачать всё (JSON)», no import); an encrypted copy in Google Drive once a day, through the Google Drive API with the owner's own Google client (ADR 0012; rclone dropped by the spec), 30 kept, off by default, an archive 7-Zip opens by the password; `.\restore-bot.ps1` restores a local copy or a downloaded archive, keeping the current database aside.
+- Contains: `.scratch/7-1-backups-export/description.md` → `spec.md` → tickets → review.
+- Sessions (est.): about 8 (spec, slicing, 5 tickets, review).
 
 ### Stage 7.2. Access from outside the home and the phone
 
