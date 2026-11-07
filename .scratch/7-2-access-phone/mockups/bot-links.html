@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: бот со ссылками на приложение (7.2)</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; background: #d9e6f2; color: #1d1d22; }
+  main { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  .msg { background: #fff; border-radius: 12px 12px 12px 4px; padding: 10px 14px; margin: 0 0 4px; white-space: pre-line; box-shadow: 0 1px 2px #0002; }
+  .mine { background: #e1fec6; border-radius: 12px 12px 4px 12px; margin-left: 48px; }
+  .kb { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 20px; }
+  .kb span { flex: 1 1 40%; text-align: center; background: #ffffffaa; border-radius: 8px; padding: 6px; font-size: 14px; color: #2c6db5; }
+  .kb span.link::after { content: " ↗"; font-size: 12px; }
+  .reply { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 20px; }
+  .reply span { flex: 1 1 40%; text-align: center; background: #f4f4f6; border-radius: 6px; padding: 8px; font-size: 14px; }
+  h2 { font-size: 15px; color: #445; margin: 18px 0 6px; }
+  s { color: #999; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 7.2. Тексты — черновик, точные решает спека. ↗ — кнопка-ссылка: открывает карточку в веб-приложении (через Tailscale). Если адрес приложения в <code>.env</code> не задан, всё остаётся как сейчас: «Карточка» показывает карточку в чате.</p>
+
+  <h2>1. Событие</h2>
+  <div class="msg">📺 «Одни из нас», 2 сезон: вышла 3 серия</div>
+  <div class="kb"><span>✅ Посмотрел</span><span class="link">📄 Карточка</span></div>
+
+  <h2>2. Скидка в Steam</h2>
+  <div class="msg">💸 Hades II — скидка 30 %: 1 049 ₪ → 734 ₪, до 14 ноября</div>
+  <div class="kb"><span class="link">📄 Карточка</span><span class="link">🛒 Открыть в Steam</span></div>
+
+  <h2>3. Карточка в чате после «Да» во «Входящих»</h2>
+  <div class="msg">✅ Добавлено: «Бегущий по лезвию 2049» (фильм, 2017)</div>
+  <div class="kb"><span class="link">📄 Открыть в приложении</span></div>
+
+  <h2>4. Меню внизу чата</h2>
+  <p>Было: <s>📚 Мои тайтлы</s> · 📋 Сводка сейчас · <s>🧪 Тестовое событие</s></p>
+  <div class="reply"><span>📋 Сводка сейчас</span></div>
+
+  <h2>5. /start</h2>
+  <div class="msg mine">/start</div>
+  <div class="msg">👋 Бот работает. Чтобы добавить фильм, сериал, аниме или игру, перешлите мне пост о нём или напишите название: я найду и предложу добавить, а что не найду — сохраню во «Входящие» веб-приложения.
+
+Кнопка «Сводка сейчас» присылает накопленные события. Список, карточки и тестовое событие — в приложении.</div>
+  <div class="kb"><span class="link">🌐 Открыть приложение</span></div>
+
+  <h2>6. Старое сообщение «Мои тайтлы»</h2>
+  <div class="msg mine">📚 Мои тайтлы</div>
+  <div class="msg">Список теперь в приложении.</div>
+  <div class="kb"><span class="link">🌐 Открыть список</span></div>
+</main>
+</body>
+</html>

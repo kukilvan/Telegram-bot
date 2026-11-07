@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: Настройки — копии и выгрузка (7.1)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  nav { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 16px; font-size: 15px; }
+  nav a { color: #3b6fd6; text-decoration: none; }
+  nav a.on { color: #1d1d22; font-weight: 600; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; box-shadow: 0 1px 3px #0002; }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  h2 { font-size: 15px; color: #666; margin: 20px 0 8px; font-weight: 600; }
+  .muted { color: #888; font-size: 14px; }
+  .hint { color: #666; font-size: 14px; margin: 6px 0 0; }
+  .bad { color: #8a2a2a; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+  .btn { font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 6px; border: 1px solid #3b6fd6; background: #3b6fd6; color: #fff; text-decoration: none; white-space: nowrap; min-height: 32px; }
+  .btn.ghost { background: #fff; color: #3b6fd6; }
+  .state { border-left: 3px solid #ddd; padding: 2px 0 2px 10px; margin: 8px 0; }
+  .variant { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: .03em; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 7.1. Тексты — черновик, точные решает спека. Новое — только блок «Копии и выгрузка» внизу Настроек; всё, что выше, не меняется.</p>
+  <nav><a href="#">Лента</a><a href="#">Список</a><a href="#">Архив</a><a href="#">Поиск</a><a href="#">Входящие · 3</a><a class="on" href="#">Настройки</a></nav>
+
+  <section class="card">
+    <h1>Настройки</h1>
+    <p class="muted">… часовой пояс, рабочие дни, тихие часы, части сезона, мои платформы, страна магазинов, «Сохранить» — как сейчас …</p>
+
+    <h2>Сейчас</h2>
+    <p>Суббота, 7 ноября, 16:20 (Europe/Moscow)</p>
+    <h2>Бот в Telegram</h2>
+    <p>Подключён</p>
+
+    <h2>Копии и выгрузка</h2>
+    <p>Копии базы на этом ПК: 14, последняя — сегодня в 07:58.</p>
+    <p class="hint">Новая копия делается раз в сутки и перед каждым обновлением базы; хранятся 14 последних и по одной за 12 месяцев.</p>
+
+    <div class="state"><span class="variant">Google Drive включён</span>
+      <p>Копия в Google Drive: сегодня в 07:59, там хранятся 30 последних. Копии зашифрованы паролем из <code>.env</code>.</p></div>
+    <div class="state"><span class="variant">Google Drive выключен (по умолчанию)</span>
+      <p>Копия в Google Drive выключена.</p></div>
+    <div class="state"><span class="variant">Последняя попытка не удалась</span>
+      <p class="bad">Копия в Google Drive не ушла: сегодня в 07:59 — Google Drive не принял вход. Последняя удачная — 4 ноября в 07:58.</p></div>
+
+    <div class="actions">
+      <button class="btn ghost">Сделать копию сейчас</button>
+    </div>
+
+    <div class="actions">
+      <a class="btn" href="#">Скачать список (CSV)</a>
+      <a class="btn" href="#">Скачать всё (JSON)</a>
+    </div>
+    <p class="hint">CSV открывается в Excel: один тайтл — одна строка (название, тип, статус, оценка, год, когда добавлен и когда завершён). JSON — все данные целиком, на память или для переноса. Загрузить выгрузку обратно нельзя: данные восстанавливают из копии базы.</p>
+  </section>
+</main>
+</body>
+</html>

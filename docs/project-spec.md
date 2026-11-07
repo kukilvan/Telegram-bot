@@ -22,12 +22,12 @@ One owner per instance (ADR 0001). The web is protected by a password (`WEB_PASS
 ## Features
 
 - **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1); prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark (6.2).
-- **Next:** 6.3 expansions and sequels of games; 6.4 «Входящие» (add from Telegram by a forwarded post or a name, `docs/ideas/001-telegram-inbox.md`, ADR 0010); 7 backups and NAS; 8 template for GitHub; 9 fixes after real use.
+- **Next** (in this order): 7.1 backups and export; 7.2 access from outside the home and the phone; 9 fixes after real use; 8 template for GitHub; 7.3 the move to the NAS when it appears. Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010).
 - **Never:** notes and tags, the commands `/add`, `/remove`, `/watchlist`, `/note`, `/notes`, `/events`, `/search`, `/searchgame`, inline search, the events «Русская озвучка» and «KinoPub», RAWG and the unofficial PSN request, PlayStation prices (ADR 0009), anything hard-coded for one owner.
 
 ## Interface
 
-Web (FastAPI + HTMX, no own JavaScript, ADR 0004), Russian UI, installable on phone (PWA manifest). Telegram bot with a few temporary buttons («➕ Добавить», «📚 Мои тайтлы», «Карточка» under events, «Сводка сейчас», «🧪 Тестовое событие») until stage 7.
+Web (FastAPI + HTMX, no own JavaScript, ADR 0004), Russian UI, installable on phone (PWA manifest). Telegram bot: takes posts and names for «Входящие» (ADR 0010); menu «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие», «Карточка» under events. In 7.2, once the address of the app is set: «Карточка» becomes a link to the web card, «Мои тайтлы» goes, «Тестовое событие» moves to the web Settings, «Сводка сейчас» stays; without the address the bot stays as it is.
 
 ## Running and data
 
@@ -66,11 +66,29 @@ Finished (details — `docs/history.md`, `.scratch/`):
 - Contains: `.scratch/6-4-inbox/description.md` (accepted; takes in `docs/ideas/001-telegram-inbox.md` and its examples; ADR 0010) → spec → tickets → review.
 - Sessions (est.): about 8 (spec, slicing, about 5 tickets, review).
 
-### Stage 7. Backups, NAS and phone
+### Stage 7. Backups, NAS and phone — split into 7.1, 7.2, 7.3
 
-- Goal: the data is safe and the app lives on a NAS.
-- The owner sees at the end: export to JSON/CSV; encrypted off-site copy with `rclone` (off by default); the move to the NAS; access from outside (Tailscale free, or Cloudflare Tunnel with an own domain ~$10 a year, ADR 0006); installation on the phone checked; the temporary bot buttons removed.
-- Sessions (est.): 1+ (not re-estimated).
+Split by `.scratch/7-1-backups-export/description.md` (2026-11-07), which also holds the decisions for 7.2 and 7.3. Order: 7.1 → 7.2 → 9 → 8 → 7.3 (the NAS is not bought yet).
+
+### Stage 7.1. Backups and export
+
+- Goal: the data can be got back after a dead disk or a lost PC.
+- The owner sees at the end: Settings block «Копии и выгрузка» (copies on the PC, the Google Drive copy state, «Сделать копию сейчас», «Скачать список (CSV)», «Скачать всё (JSON)», no import); an encrypted copy in Google Drive by rclone once a day, 30 kept, off by default, an archive 7-Zip opens by the password; `.estore-bot.ps1` restores a local copy or a downloaded archive, keeping the current database aside.
+- Contains: `.scratch/7-1-backups-export/description.md` → spec → tickets → review.
+- Sessions (est.): about 6 (spec, slicing, 3–4 tickets, review).
+
+### Stage 7.2. Access from outside the home and the phone
+
+- Goal: open the app from the phone anywhere and from the bot's messages.
+- The owner sees at the end: Tailscale with an `https` address (on the PC; a new ADR supersedes the «until the NAS» part of ADR 0006 and 0008); the address of the app in `.env`; bot buttons as links (see Interface); «Тестовое событие» and the delivery-rules check in the web Settings; the phone installation (PWA) checked; the login hardened for the outside (KI-7, KI-8, KI-12, KI-13).
+- Contains: description (decisions already in 7.1's description; mockups in `.scratch/7-2-access-phone/mockups/`) → spec → tickets → review.
+- Sessions (est.): about 6.
+
+### Stage 9. Fixes after real use
+
+- Goal: fix what 1–2 weeks of real use show; the live check of early tickets happens here.
+- Contains: open `KNOWN_ISSUES.md` entries each get a test before the final polishing.
+- Sessions (est.): 2+.
 
 ### Stage 8. Template for GitHub
 
@@ -78,10 +96,11 @@ Finished (details — `docs/history.md`, `.scratch/`):
 - The owner sees at the end: a cleaned repository (junk files, unused `.env` variables), a new repository with a clean history, MIT licence, Russian README, description of keys and settings. **Replace all API keys before publishing.** A final review on Fable 5.1.
 - Sessions (est.): 1.
 
-### Stage 9. Fixes after real use
+### Stage 7.3. The move to the NAS
 
-- Goal: fix what 1–2 weeks of real use show; the live check of early tickets happens here.
-- Contains: open `KNOWN_ISSUES.md` entries each get a test before the final polishing.
-- Sessions (est.): 2+.
+- Goal: the app lives on the NAS and works while the PC is off.
+- The owner sees at the end: `data` and the container on the NAS (preliminary UGREEN DXP2800), rights on files (`PUID`/`PGID`, KI-15), start, stop and restore without PowerShell, Tailscale on the NAS, the NAS instructions in the template's README.
+- Waits for the NAS; comes after stage 8.
+- Sessions (est.): 3+.
 
 Risks to the estimates: Shikimori has no official «part of a season» link (a heuristic on names can err); realistic events do not come on schedule, so part of the checks runs on faked events; open question — how to tell reliably «closed or cancelled» for anime.

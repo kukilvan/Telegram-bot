@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: Настройки — тестовое событие и адрес (7.2)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; box-shadow: 0 1px 3px #0002; }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  h2 { font-size: 15px; color: #666; margin: 20px 0 8px; font-weight: 600; }
+  .muted { color: #888; font-size: 14px; }
+  .hint { color: #666; font-size: 14px; margin: 6px 0 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 0; }
+  select, .btn { font: inherit; font-size: 14px; padding: 6px 10px; border-radius: 6px; min-height: 32px; }
+  select { border: 1px solid #bbb; background: #fff; }
+  .btn { border: 1px solid #3b6fd6; background: #3b6fd6; color: #fff; }
+  .btn.ghost { background: #fff; color: #3b6fd6; }
+  .ok { color: #2a6a2a; font-size: 14px; }
+  .state { border-left: 3px solid #ddd; padding: 2px 0 2px 10px; margin: 8px 0; }
+  .variant { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: .03em; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 7.2. Тексты — черновик, точные решает спека. «Тестовое событие» переезжает из меню бота в Настройки; строка об адресе — в блок «Бот в Telegram».</p>
+  <section class="card">
+    <h1>Настройки</h1>
+    <p class="muted">… правила доставки, мои платформы, «Сохранить», «Сейчас» — как сейчас …</p>
+
+    <h2>Бот в Telegram</h2>
+    <p>Подключён</p>
+    <div class="state"><span class="variant">Адрес задан</span>
+      <p>Кнопки «Карточка» в сообщениях открывают приложение по адресу https://tracker.tail1a2b3c.ts.net</p></div>
+    <div class="state"><span class="variant">Адрес не задан</span>
+      <p>Адрес приложения не задан: кнопки «Карточка» показывают карточку в чате.</p></div>
+
+    <h2>Тестовое событие</h2>
+    <p class="hint">Пришлёт в Telegram пример сообщения — посмотреть, как оно выглядит.</p>
+    <div class="row">
+      <select><option>Сериал: две серии подряд</option><option>Фильм: дата выхода</option><option>Аниме: новая серия</option><option>Игра: вышла на моей платформе</option><option>Скидка в Steam</option><option>…</option></select>
+      <button class="btn">Прислать</button>
+      <span class="ok">Отправлено</span>
+    </div>
+
+    <h2>Проверка правил доставки</h2>
+    <p class="hint">Отправит «Сериал: две серии подряд» так, будто оно появилось в выбранный момент, и покажет, что сделают правила доставки (рабочие дни, тихие часы, сводка).</p>
+    <div class="row">
+      <select><option>Будний день, 10:00</option><option>Будний день, ночь (тихие часы)</option><option>Выходной, 12:00</option></select>
+      <button class="btn ghost">Проверить</button>
+    </div>
+  </section>
+</main>
+</body>
+</html>

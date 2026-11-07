@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: восстановление из копии (7.1)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  h2 { font-size: 15px; color: #445; margin: 18px 0 6px; }
+  pre { background: #012456; color: #eee; padding: 12px 14px; border-radius: 8px; font: 14px/1.45 Consolas, monospace; white-space: pre-wrap; overflow-x: auto; }
+  .in { color: #ffd75f; }
+  .ok { color: #8be28b; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 7.1: окно PowerShell. Тексты — черновик, точные решает спека. Скрипт сам останавливает бота, откладывает нынешнюю базу и запускает бота снова.</p>
+
+  <h2>1. Из копии на этом ПК</h2>
+<pre>PS E:\LocalAI\Bionic\Telegram-bot&gt; <span class="in">.\restore-bot.ps1</span>
+Копии базы в data\backups (новые сверху):
+  1) сегодня, 7 ноября, 07:58
+  2) 6 ноября, 18:32
+  3) 6 ноября, 07:58 — перед обновлением базы
+  …
+ 14) 25 октября, 09:12
+Номер копии (Enter — отмена): <span class="in">2</span>
+Вернуть базу к копии от 6 ноября, 18:32? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет): <span class="in">да</span>
+Бот остановлен.
+Нынешняя база сохранена: data\backups\tracker_db_20261107_162544_before-restore.db
+База восстановлена из копии от 6 ноября, 18:32.
+Запускаю бота…
+<span class="ok">Готово: бот работает на копии от 6 ноября, 18:32.</span></pre>
+
+  <h2>2. Из скачанной копии Google Drive</h2>
+<pre>PS E:\LocalAI\Bionic\Telegram-bot&gt; <span class="in">.\restore-bot.ps1 "C:\Users\Имя\Downloads\tracker_db_20261107_075800.7z"</span>
+Копия расшифрована паролем из .env (BACKUP_PASSWORD).
+Вернуть базу к копии от 7 ноября, 07:58? … (да/нет): <span class="in">да</span>
+…
+<span class="ok">Готово: бот работает на копии от 7 ноября, 07:58.</span></pre>
+
+  <h2>3. Ошибки</h2>
+<pre>Пароль из .env не подходит к этой копии. Проверьте BACKUP_PASSWORD или откройте архив 7-Zip и введите пароль вручную.
+Этот файл не похож на копию базы трекера. Ничего не изменено.</pre>
+</main>
+</body>
+</html>
