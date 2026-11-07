@@ -1,6 +1,6 @@
 # Spec 7.1: backups and export
 
-Status: in review
+Status: accepted
 
 From `description.md` (accepted 2026-11-07). Terms of `CONTEXT.md`; new terms in section 9. Checks behind the choices: `checks.md` next to this file. ADRs it leans on: 0005 (copies by SQLite's online backup), 0006 (Docker on the PC), 0007 (one process, one scheduler); new: 0012 (section 10).
 

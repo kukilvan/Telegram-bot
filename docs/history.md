@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-07 — Stage 7.1, spec
+
+- `.scratch/7-1-backups-export/spec.md` (accepted), `checks.md` next to it: py7zr 1.1.4 and pyzipper 0.4.0 archives tested with real 7-Zip 25.01 (both open; `.7z` chosen: hidden names, half the size, UTF-16 password; py7zr adds ~25 MB; a wrong password gives garbage exceptions, so restore says «пароль не подходит, или архив повреждён»); rclone's shared Google client retires in 2026 and its sign-in cannot finish in the container.
+- Decisions (owner's «ОК»): the Google Drive copy through the Drive API from Python with the owner's own Google client «Desktop app», scope `drive.file`, PKCE, the sign-in by «Подключить Google Drive» in Settings only on `localhost`/`127.0.0.1`, the token in `data/google_drive_token.json` (ADR 0012, departs from decision 3 of the description); the app must be published in Google Cloud (7-day tokens in «Testing»); manual copies `tracker_db_<time>_manual.db`, 10 kept, sent at once; failure reports `backup_failed` (Google Drive and local), at most once a day; CSV UTF-8 with BOM and `;`, one extra column «Оригинальное название»; JSON version 1 without snapshots, events and the queue; `restore-bot.ps1` with `list`/`check`/`apply` of `app.utils.restore` in a one-off container, a before-restore copy first.
+- Five tickets proposed (01 Settings block, 02 export, 03 Google Drive connection, 04 Google Drive copies, 05 restore). KI-66 (copy times are the container's clock). `docs/project-spec.md` 7.1: rclone replaced, sessions about 8; a stray carriage return in `.estore-bot.ps1` fixed.
+
 ## 2026-11-07 — Stage 7, description: split into 7.1, 7.2, 7.3; description of 7.1
 
 - `.scratch/7-1-backups-export/description.md` (accepted): stage 7 split into 7.1 «Копии и выгрузка», 7.2 «Доступ вне дома и телефон», 7.3 «Переезд на NAS»; order 7.1 → 7.2 → 9 → 8 → 7.3 (the NAS is not bought). Mockups: `.scratch/7-1-backups-export/mockups/` (Settings block, `restore-bot.ps1` window), `.scratch/7-2-access-phone/mockups/` (bot with link buttons, test event in Settings).
