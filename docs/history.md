@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-07 — Stage 7.1, slicing
+
+- `.scratch/7-1-backups-export/issues/01…05` (accepted): 01 Settings block «Копии и выгрузка», manual copies, local `backup_failed` (medium); 02 CSV/JSON export (medium); 03 Google Drive connection, `docs/backups.md` setting-up, live check of the redirect (complex); 04 archive, sending, rotation, retries, report (complex); 05 `restore-bot.ps1` and `app.utils.restore` (complex).
+- Decisions: strict order 01 → 02 → 03 → 04 → 05; the Google Drive line and the export buttons are left as named places in ticket 01 for 02–04; ticket 03 builds the connect with a named seam for the first sending that ticket 04 plugs in; ticket 03 settles which redirect Google accepts with the owner's client (three variants behind one switch) and records it in `checks.md`; ticket 04 checks real 7-Zip for Windows with the Cyrillic password.
+
 ## 2026-11-07 — Stage 7.1, spec
 
 - `.scratch/7-1-backups-export/spec.md` (accepted), `checks.md` next to it: py7zr 1.1.4 and pyzipper 0.4.0 archives tested with real 7-Zip 25.01 (both open; `.7z` chosen: hidden names, half the size, UTF-16 password; py7zr adds ~25 MB; a wrong password gives garbage exceptions, so restore says «пароль не подходит, или архив повреждён»); rclone's shared Google client retires in 2026 and its sign-in cannot finish in the container.

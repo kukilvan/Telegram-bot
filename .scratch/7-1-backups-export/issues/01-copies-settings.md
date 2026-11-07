@@ -1,6 +1,6 @@
 # 01: Settings block «Копии и выгрузка» — copies on the PC, «Сделать копию сейчас», the failure report
 
-Status: in review
+Status: open
 Complexity: medium (a settings block, a new kind of copy with rotation and a lock, one new event; no external service)
 Blocked by: —
 

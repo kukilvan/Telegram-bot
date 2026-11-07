@@ -1,6 +1,6 @@
 # 04: Google Drive copies — the archive, sending, rotation, retries, the report, the full lines of Settings
 
-Status: in review
+Status: open
 Complexity: complex (a new dependency, a multi-step Google Drive API client, failure classification, retries and reports in the hourly job)
 Blocked by: 03 (the connection, the token file, the lines of Settings)
 
