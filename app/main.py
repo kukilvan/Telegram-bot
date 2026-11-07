@@ -30,7 +30,7 @@ from app.providers.tmdb import TMDbProvider
 from app.runtime import Health, Runtime
 from app.startup_report import forget_failure, report_failure
 from app.tracker.core import Tracker
-from app.tracker.db import create_session_factory
+from app.tracker.db import TRACKER_DATABASE_URL, create_session_factory
 from app.tracker.models import TitleKind
 from app.tracker.sources.igdb_follow_ups import IgdbFollowUpSource
 from app.tracker.sources.igdb_games import IgdbGameSource
@@ -126,6 +126,7 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
         price_source=SteamPriceSource(steam),
         follow_up_source=IgdbFollowUpSource(igdb),
         imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
+        database_url=TRACKER_DATABASE_URL,  # the copies of this database are made and listed
     )
 
 

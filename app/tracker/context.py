@@ -36,6 +36,7 @@ class CoreContext:
     default_tz: tzinfo  # the time zone when the owner has set none (BOT_TIMEZONE); the set one is read from the database
     delivery_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     poll_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    backup_lock: asyncio.Lock = field(default_factory=asyncio.Lock)  # one copy of the database at a time: the hourly job and the manual press
 
     def write_session(self) -> Session:
         """A session whose transaction is already open for writing: use it as `with ctx.write_session() as session:`.

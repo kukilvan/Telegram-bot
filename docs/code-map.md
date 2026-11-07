@@ -47,6 +47,9 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
 - `app/tracker/actions.py` — Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons.
 - `app/tracker/anime_events.py` — Anime events: the episodes the two sources agree on, and the films of a franchise.
+- `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the message, the once-a-day key and the sample of «Тестовое событие».
+- `app/tracker/backup_rows.py` — What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
+- `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the report of a failed daily copy.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
 - `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot.
 - `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks.
@@ -85,6 +88,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0013_price_history.py` — The price history of the games (spec 4.5 of part 6.2): a record of a Steam price each time a price check saw it change.
 - `app/tracker/migrations/versions/0014_inbox.py` — «Входящие» (spec 10 of stage 6.4): the table `inbox_items`, one row per inbox item — what the owner sent to the bot.
 - `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings, game platforms, the price history and the inbox items.
+- `app/tracker/moment_words.py` — A moment in words for the owner (pure): «сегодня в 07:58», «вчера в 18:32», «4 ноября в 07:58», «4 ноября 2025 в 07:58».
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
 - `app/tracker/offers.py` — Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner sees them, and the text of an offer card (spec 3, 5 and 6.1 of stage 6.4).
 - `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out and whose region its dates are.
@@ -127,7 +131,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/text.py` — How the owner's text is compared: one function for the order «по названию», the search by name and the merging of genres.
 - `app/tracker/titles.py` — The owner's list: searching, adding and deleting titles and «Следить».
 - `app/tracker/zones.py` — The time zones the owner can choose from, and how each one reads in the list.
-- `app/utils/backup.py` — Backup of the tracker database: a copy when the last one is over a day old, and rotation of the old ones.
+- `app/utils/backup.py` — Backups of the tracker database: the daily copy when the last one is over a day old, the manual copy, the reading of the folder as a list of copies, and the rotation of the old ones.
 - `app/utils/logging_config.py` — Logging of the application: the console and the rotated file `data/logs/bot.log`, both with secrets masked.
 - `app/utils/secrets_mask.py` — Mask secrets (API keys, tokens) in any text that is about to be logged or sent anywhere.
 - `app/web/app.py` — The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages behind them.

@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.runtime import Health
-from app.tracker.core import SettingsChange, SettingsView, Tracker, ZoneOption
+from app.tracker.core import BackupBlock, SettingsChange, SettingsView, Tracker, ZoneOption
 from app.tracker.results import Choice
 from app.tracker.db import create_session_factory
 from app.web import create_web_app
@@ -153,6 +153,9 @@ class FakeCore:
 
     async def overview(self):
         raise RuntimeError("not needed")
+
+    async def backup_block(self):
+        return BackupBlock("Копий базы на этом ПК пока нет.", "")
 
 
 def test_a_zone_from_the_database_is_text_on_the_page_not_markup(tmp_path):

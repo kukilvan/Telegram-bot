@@ -12,7 +12,8 @@ from datetime import datetime, time, timedelta, timezone
 from typing import Any
 
 from app.tracker import (
-    anime_events, failures, follow_ups, game_events, movie_events, price_events, sequel_events, series_events,
+    anime_events, backup_events, failures, follow_ups, game_events, movie_events, price_events, sequel_events,
+    series_events,
 )
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
@@ -93,6 +94,7 @@ class TestSamples:
             + game_events.TEST_SAMPLES
             + follow_ups.TEST_SAMPLES
             + failures.TEST_SAMPLES
+            + backup_events.TEST_SAMPLES
         )
         for sample_id, label, text in sample_texts:
             self.register(TestSample(sample_id, label, lambda text=text: {"text": text}))

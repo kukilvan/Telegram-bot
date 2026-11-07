@@ -4,8 +4,8 @@
 settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards, `feed`
 for what comes out and what happened),
 polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`),
-test events (`test_samples`) and «Входящие» (`inbox`; the answers to an item and its offers — `inbox_answers`,
-`offers`). It holds no rules of its own.
+test events (`test_samples`), the copies of the database (`backups`) and «Входящие» (`inbox`; the answers to an item and
+its offers — `inbox_answers`, `offers`). It holds no rules of its own.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -19,6 +19,8 @@ from typing import Any
 from sqlalchemy.orm import sessionmaker
 
 from app.tracker import delivery
+from app.tracker.backup_rows import BackupBlock
+from app.tracker.backups import Backups
 from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
@@ -66,7 +68,7 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
+    "BackupBlock", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
     "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason", "InboxReply",
     "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
@@ -87,6 +89,7 @@ class Tracker:
     price_source: Any = None  # the Steam prices of the games (`SteamPriceSource`); None — prices are not checked
     follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
     imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
+    database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies (a core made for a test)
     _settings: SettingsStore = field(init=False, repr=False)
     _queue: EventQueue = field(init=False, repr=False)
     _polling: Polling = field(init=False, repr=False)
@@ -98,6 +101,7 @@ class Tracker:
     _samples: TestSamples = field(init=False, repr=False)
     _inbox: Inbox = field(init=False, repr=False)
     _answers: InboxAnswers = field(init=False, repr=False)
+    _backups: Backups = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
@@ -118,6 +122,7 @@ class Tracker:
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
         self._inbox = Inbox(ctx, self._settings)
         self._answers = InboxAnswers(ctx, self._settings, pollers, self._titles, self.imdb_source)
+        self._backups = Backups(ctx, self._settings, self._queue, self.database_url)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -307,6 +312,20 @@ class Tracker:
     async def delivery_check_moment(self, check: DeliveryCheck) -> datetime:
         """The next moment of the delivery check on the owner's clock, as an aware moment."""
         return await self._samples.delivery_check_moment(check)
+
+    # --- copies of the database ------------------------------------------------------------------
+
+    async def backup_block(self) -> BackupBlock:
+        """The lines of the Settings block «Копии и выгрузка»; a folder that cannot be read gives the line that says so."""
+        return await self._backups.block()
+
+    async def make_backup_now(self) -> str:
+        """«Сделать копию сейчас»: a manual copy under the lock of the daily one; returns the notice for the page."""
+        return await self._backups.press()
+
+    async def backup_database(self) -> None:
+        """The scheduler's job: a daily copy when it is due; a failed one is queued as the event `backup_failed`."""
+        await self._backups.hourly()
 
     # --- «Входящие» -----------------------------------------------------------------------------
 

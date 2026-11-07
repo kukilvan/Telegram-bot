@@ -564,25 +564,30 @@ def test_a_file_that_cannot_be_deleted_does_not_stop_the_rotation(tmp_path, capl
 
 
 class StubTracker:
+    """The jobs of the bot are the methods of the tracker; the backup one fires at the start and must not copy the real
+    database, so here it only counts."""
+
+    def __init__(self):
+        self.backups = 0
+
     async def poll_due(self): ...
 
     async def deliver_pending(self): ...
 
     async def expire_inbox(self): ...
 
-
-async def not_a_real_backup():
-    """Stands for `backup_database` in these tests: the job fires at the start and must not copy the real database."""
+    async def backup_database(self):
+        self.backups += 1
 
 
 def scheduled_jobs():
     async def build():
         scheduler = AsyncIOScheduler()
-        with patch("app.bot.main.backup_database", not_a_real_backup):
-            add_jobs(scheduler, StubTracker())
+        tracker = StubTracker()
+        add_jobs(scheduler, tracker)
         scheduler.start()
         try:
-            return {job.func: job for job in scheduler.get_jobs()}
+            return {job.func: job for job in scheduler.get_jobs()}, tracker
         finally:
             scheduler.shutdown(wait=False)
 
@@ -590,7 +595,8 @@ def scheduled_jobs():
 
 
 def test_the_backup_job_runs_every_hour(tmp_path):
-    job = scheduled_jobs()[not_a_real_backup]
+    jobs, tracker = scheduled_jobs()
+    job = jobs[tracker.backup_database]
 
     assert BACKUP_EVERY_HOURS == 1
     assert job.trigger.interval == timedelta(hours=1)
@@ -598,15 +604,11 @@ def test_the_backup_job_runs_every_hour(tmp_path):
 
 
 def test_the_backup_job_runs_right_at_the_start_not_in_an_hour():
-    runs = []
-
-    async def spying_backup():
-        runs.append(1)
+    tracker = StubTracker()
 
     async def start_and_wait():
         scheduler = AsyncIOScheduler()
-        with patch("app.bot.main.backup_database", spying_backup):
-            add_jobs(scheduler, StubTracker())
+        add_jobs(scheduler, tracker)
         scheduler.start()
         try:
             await asyncio.sleep(0.3)
@@ -615,18 +617,18 @@ def test_the_backup_job_runs_right_at_the_start_not_in_an_hour():
 
     asyncio.run(start_and_wait())
 
-    assert runs == [1]
+    assert tracker.backups == 1
 
 
 def test_there_is_no_job_at_three_in_the_morning():
-    jobs = scheduled_jobs()
+    jobs, _ = scheduled_jobs()
 
     assert not any(isinstance(job.trigger, CronTrigger) for job in jobs.values())
     assert len(jobs) == 4  # polling, delivery, the inbox items and the backup
 
 
 def test_the_inbox_items_have_a_job_of_their_own_every_beat():
-    jobs = {getattr(func, "__name__", ""): job for func, job in scheduled_jobs().items()}
+    jobs = {getattr(func, "__name__", ""): job for func, job in scheduled_jobs()[0].items()}
 
     job = jobs["expire_inbox"]
     assert job.trigger.interval == timedelta(seconds=TRACKER_BEAT_SECONDS)

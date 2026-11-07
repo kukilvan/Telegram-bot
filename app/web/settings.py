@@ -1,8 +1,9 @@
 """The settings page: one form for the time zone, the working days, the hour of the summary, the quiet hours, the break
 between parts of a season, the platforms and the country of the stores. It has one button; under it are the line
-«Сейчас» and the state of the bot in Telegram. The form is saved as a whole or not at all: a value the core refuses is
-shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the spec of part
-5.4, section 11 of the spec of part 6.1."""
+«Сейчас», the state of the bot in Telegram and the block «Копии и выгрузка» (the copies of the database, with its own
+button «Сделать копию сейчас» that posts to `/settings/backup`). The form is saved as a whole or not at all: a value the
+core refuses is shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the
+spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1."""
 
 from typing import NamedTuple
 
@@ -66,6 +67,8 @@ async def _show(
         current=str(request.app.url_path_for("settings")), form_address=str(request.app.url_path_for("settings_save")),
         zones=zones, days=days, platforms=platforms, countries=countries, shown=shown, log_note=log_note,
         now_line=view.now_line, telegram_state=pages.telegram_note(request) or CONNECTED,
+        backup=await pages.tracker_of(request).backup_block(),
+        backup_address=str(request.app.url_path_for("settings_backup")),
         error_text=error.text if error is not None else "", invalid={error.field.value: True} if error is not None else {},
     )
 
@@ -87,4 +90,12 @@ async def settings_save(request: Request) -> Response:
     except SettingsRefused as refused:
         return await _show(request, await tracker.settings(), change, error=refused)
     pages.notify(request, SAVED)
+    return RedirectResponse(str(request.app.url_path_for("settings")), status_code=303)
+
+
+@router.post("/settings/backup", name="settings_backup")
+@pages.guarded_with_refresh("settings")
+async def settings_backup(request: Request) -> Response:
+    """«Сделать копию сейчас»: the core makes the copy, the page shows the notice of how it went."""
+    pages.notify(request, await pages.tracker_of(request).make_backup_now())
     return RedirectResponse(str(request.app.url_path_for("settings")), status_code=303)

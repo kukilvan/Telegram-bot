@@ -11,7 +11,6 @@ from app.bot.access import AccessMiddleware
 from app.bot.error_handler import ErrorMiddleware
 from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker
-from app.utils.backup import backup_database
 
 TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles, sends the queue (retrying failed sends) and moves the inbox items that waited 12 hours
 BACKUP_EVERY_HOURS = 1  # how often the bot checks whether a database copy is due (the copy itself: over a day since the last)
@@ -51,7 +50,7 @@ def add_jobs(scheduler: AsyncIOScheduler, tracker: Tracker) -> None:
     # The owner's PC is not on at night, so there is no fixed hour: every hour, starting now, the job makes a copy if
     # the last one is over a day old (so a start after a day off copies at once)
     scheduler.add_job(
-        backup_database, "interval",
+        tracker.backup_database, "interval",
         hours=BACKUP_EVERY_HOURS, next_run_time=dt.now(timezone.utc),
         misfire_grace_time=300, coalesce=True, max_instances=1,
     )

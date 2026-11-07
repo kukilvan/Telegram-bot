@@ -176,6 +176,13 @@ In code: `delivery check` — `DeliveryCheck`, `DELIVERY_CHECKS`, `Tracker.deliv
 A span of time when the bot sends nothing; what accumulated comes after it ends (for the owner 21:00 to 7:30).
 In code: `quiet hours` — `quiet_from` / `quiet_until`.
 
+## Copies
+
+**Копия базы** (backup):
+A file of `data/backups` that holds the whole database at one moment, made with SQLite's online backup. Kinds: the daily copy (the hourly job makes it when the newest daily one is over a day old; 14 newest and one a month for 12 months are kept), the manual copy (the button «Сделать копию сейчас»; 10 newest kept), the copy before an update (before a migration; never deleted) and the copy before a restore (never deleted). The time in its name is the container's clock; it names the copy.
+_Avoid_: бэкап (in messages to the owner), дамп
+In code: `backup` — `app/utils/backup.py` (`Copy`, `copies`), the core's `Backups`, `Tracker.backup_block`, `make_backup_now`, `backup_database`; the event `backup_failed`.
+
 ## Interface
 
 **Лента** (feed):

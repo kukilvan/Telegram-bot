@@ -76,5 +76,14 @@
 
   <h2>Бот в Telegram</h2>
   <p class="telegram-state">{{ telegram_state }}</p>
+
+  <h2>Копии и выгрузка</h2>
+  <p class="backup-line">{{ backup.copies_line }}</p>
+  <p class="hint">{{ backup.copies_hint }}</p>
+  {# the line of the Google Drive copy and its button: ticket 03 #}
+  <form class="backup-actions" method="post" action="{{ backup_address }}">
+    <button type="submit">Сделать копию сейчас</button>
+  </form>
+  {# the buttons of the export and their hint: ticket 02 #}
 </section>
 {% endblock %}
