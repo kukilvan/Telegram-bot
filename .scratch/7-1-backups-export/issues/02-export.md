@@ -1,6 +1,6 @@
 # 02: Export — «Скачать список (CSV)» and «Скачать всё (JSON)»
 
-Status: in review
+Status: accepted
 Complexity: medium (two read-only downloads over many tables; exact formats, but no external service and no migration)
 Blocked by: 01 (the block of Settings and the place of the buttons)
 

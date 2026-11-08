@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-08 — Ticket 7.1.02
+
+- Export of the owner's data, download only: `GET /settings/export.csv` («Скачать список (CSV)») and `/settings/export.json` («Скачать всё (JSON)») behind the sign-in, `attachment`, names with the owner's date, buttons and hint in the block «Копии и выгрузка» (`app/web/settings.py`, `settings.html`). Core: `Tracker.export_list` / `export_all` → `exports.py` (one read session per file, zone read in it), `export_all.py` (the JSON document of version 1), pure `export_rows.py` (CSV bytes with BOM, `;`, `
+`, the `'` cell guard, ISO moments with the owner's offset); `text.by_name` is now the one sort key of the List and the CSV.
+- Decisions: the CSV score is the visible one (`scores.visible`, as the card), the JSON scores are the stored own ones (title and season) so a hidden score is not lost; the base game of an expansion is its name in the list, else the IGDB name; the export reads the IGDB id straight from `external_ids`, not through the game poller, so it works without a game source. Live check on 28 titles by HTTP: both files, headers, sign-in, equal counts.
+- Tests: `tests/test_tracker_export.py`, `tests/test_web_export.py`; 3538 pass, 2 skipped, the three known Windows failures.
+
 ## 2026-11-08 — Ticket 7.1.01
 
 - Settings block «Копии и выгрузка» (`app/web/settings.py`, `settings.html`), `POST /settings/backup` «Сделать копию сейчас»; core module `app/tracker/backups.py` (block, press, hourly job, report) behind three facade methods; pure `backup_rows.py`, `backup_events.py`, `moment_words.py`; file side in `app/utils/backup.py` (`Copy`, `copies`, `create_manual_backup`, `rotate_manual`, the job with a lock and `on_failure`). Accepted by the owner.
