@@ -42,3 +42,14 @@ rclone (current, `downloads.rclone.org/rclone-current-linux-amd64.zip`): `rclone
 - developers.google.com/identity/protocols/oauth2/native-app: desktop apps are public clients (the secret is not secret), PKCE S256 recommended, loopback redirect `http://127.0.0.1:port` (`localhost` possible); the loopback flow stays supported for desktop clients.
 
 Not checked live: the requests to Google (needs the owner's own client). Ticket 03 saves the first real answers (tokens masked) next to this file.
+
+## 4. The real sign-in (ticket 03, 2026-11-08)
+
+With the owner's own client «Desktop app», External, scope `drive.file`, the app in the bot in Docker on the PC, the browser on the PC at `http://localhost:8080/settings`.
+
+- **The return address that works: `http://localhost:8080/settings/google-drive/callback`** — the first of the three (`google_drive.REDIRECT = Redirect.CALLBACK`). Google accepted `localhost` with a path for a desktop client; no `redirect_uri_mismatch`. The fallbacks (`127.0.0.1`, the path `/`) stay in the code behind the switch, tested by fakes; ADR 0012 holds unchanged.
+- **The consent screen needs more than the spec said to publish it.** «Publish app» stays refused («To publish your app, you must complete your configuration on the Branding page») until «Branding» has «Application home page» and «Application privacy policy link» with their domain in «Authorized domains»; the owner gave the public repository `https://github.com/kukilvan/Telegram-bot` for both and `github.com`. No logo: a logo makes Google ask for a verification. `docs/backups.md` says so.
+- **Google's answers** (the app logs no bodies; tokens never reach the log):
+  - `POST https://oauth2.googleapis.com/token` (`grant_type=authorization_code`, PKCE) → `HTTP/1.1 200 OK`, with a refresh token (`prompt=consent`);
+  - the token file `data/google_drive_token.json` — fields `connected_at`, `folder_id` (`null`), `refresh_token` (`***`); rights `600` inside the container.
+- The «unverified app» warning came as expected: «Advanced» → «Go to Tracker (unsafe)».

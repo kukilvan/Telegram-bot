@@ -43,7 +43,11 @@ Once, about 15 minutes. You need the Google account whose Google Drive will keep
 5. «Data Access» (left) → «Add or remove scopes». In the filter type `drive.file`, tick the line
    `.../auth/drive.file` («See, edit, create, and delete only the specific Google Drive files you use with this app»),
    press «Update», then «Save» at the bottom.
-6. **Publish the app:** «Audience» (left) → «Publishing status: Testing» → «Publish app» → «Confirm». The status
+6. «Branding» (left): Google publishes the app only with the «App domain» filled. «Application home page» and
+   «Application privacy policy link»: `https://github.com/kukilvan/Telegram-bot` (the tracker has no site of its own);
+   «Authorized domains» → «Add domain» → `github.com`. Leave «App logo» empty: a logo makes Google ask for a
+   verification. Press «Save».
+7. **Publish the app:** «Audience» (left) → «Publishing status: Testing» → «Publish app» → «Confirm». The status
    becomes «In production». This matters: in «Testing» Google ends the connection after 7 days. The scope `drive.file`
    is not sensitive, so Google does not ask for a review.
 
