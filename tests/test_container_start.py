@@ -139,6 +139,48 @@ def test_the_refusal_message_names_the_owner_of_the_folder():
 
 def test_the_container_replaces_itself_with_the_one_process_app():
     assert cs.app_command() == [sys.executable, "-m", "app.main"]
+    assert cs.app_command([]) == [sys.executable, "-m", "app.main"]
+
+
+def test_a_module_named_after_it_runs_with_its_arguments():
+    assert cs.app_command(["app.utils.restore", "check", "data/restore/a b.7z"]) == [
+        sys.executable, "-m", "app.utils.restore", "check", "data/restore/a b.7z"]
+
+
+@pytest.mark.parametrize("name", ["os", "app", "app.", "app..main", "-c", "myapp.main", "app.main;rm"])
+def test_only_a_module_of_the_application_may_be_run(name):
+    with pytest.raises(StartError, match="только модуль приложения"):
+        cs.app_command([name])
+
+
+def test_start_runs_the_given_module_after_the_same_preparation(tmp_path, monkeypatch):
+    executed = []
+    monkeypatch.setattr(cs.os, "execv", lambda path, argv: executed.append(argv), raising=False)
+    monkeypatch.setattr(cs.os, "geteuid", lambda: 1000, raising=False)
+
+    cs.start({}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path, args=["app.utils.restore", "list"])
+
+    assert (tmp_path / "data" / "backups").is_dir()
+    assert executed == [[sys.executable, "-m", "app.utils.restore", "list"]]
+
+
+def test_a_wrong_module_stops_before_anything_is_made(tmp_path, monkeypatch):
+    monkeypatch.setattr(cs.os, "geteuid", lambda: 1000, raising=False)
+
+    with pytest.raises(StartError):
+        cs.start({}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path, args=["os"])
+
+    assert not (tmp_path / "data").exists()
+
+
+def test_main_hands_its_arguments_to_the_start(monkeypatch):
+    seen = []
+    monkeypatch.setattr(cs, "start", lambda args=None: seen.append(args))
+    monkeypatch.setattr(cs.sys, "argv", ["app/container_start.py", "app.utils.restore", "list"])
+
+    assert cs.main() == 0
+    assert cs.main([]) == 0
+    assert seen == [["app.utils.restore", "list"], []]
 
 
 def test_start_makes_the_folders_checks_and_executes_the_application(tmp_path, monkeypatch):
@@ -176,7 +218,7 @@ def test_start_as_root_drops_the_rights_after_handing_over_the_folder(tmp_path, 
 
 
 def test_main_prints_the_error_and_exits_with_1(monkeypatch, capsys):
-    def refuse():
+    def refuse(args=None):
         raise StartError("нельзя")
 
     monkeypatch.setattr(cs, "start", refuse)

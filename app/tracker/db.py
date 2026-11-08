@@ -110,6 +110,19 @@ def _alembic_config() -> Config:
     return config
 
 
+def head_revision() -> str:
+    """The newest migration revision this version of the code knows."""
+    return ScriptDirectory.from_config(_alembic_config()).get_current_head()
+
+
+def is_known_revision(revision: str) -> bool:
+    """The revision is one of the migrations of this version of the code (all of them stay in the code)."""
+    try:
+        return ScriptDirectory.from_config(_alembic_config()).get_revision(revision) is not None
+    except Exception:  # Alembic raises its own errors for an unknown or malformed revision
+        return False
+
+
 def migrate(engine: Engine) -> None:
     """Bring the database up to the latest revision (safe to call on every start)."""
     config = _alembic_config()
@@ -199,7 +212,7 @@ def _backup_before_migration(file: pathlib.Path, now: datetime) -> None:
     A migration that failed is rolled back whole, and Docker starts the process again every minute: when the newest
     copy before the same revision holds what the database holds, it is the copy, and no new one is made."""
     revision = _revision_of(file)
-    if revision is None or revision == ScriptDirectory.from_config(_alembic_config()).get_current_head():
+    if revision is None or revision == head_revision():
         return
     folder = file.parent / BACKUP_FOLDER
     earlier = _newest_copy_before(folder, revision)

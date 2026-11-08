@@ -23,7 +23,7 @@ The owner is not a programmer: anything to do by hand is written step by step, i
 - Health: `http://localhost:8080/health`. Web: `http://localhost:8080`, login with `WEB_PASSWORD`.
 - Tests: `.venv\Scripts\python.exe -m pytest tests/ -v` (full run ≈ 3 minutes; known Windows failures — `PROJECT_CONTEXT.md`, "Environment").
 - Database migrations run by themselves at start (a copy goes to `data/backups/` first); by hand: `alembic -c alembic_tracker.ini upgrade head`. Logs: `data/logs/bot.log`.
-- Copies of the database and the Google Drive copy (turning it on and off): `docs/backups.md`.
+- Copies of the database, the Google Drive copy (on and off) and the restore `.\restore-bot.ps1`: `docs/backups.md`.
 
 ## Agent skills
 

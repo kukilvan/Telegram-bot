@@ -1,8 +1,7 @@
 # Copies of the database
 
-The owner's guide to the copies: what is copied where, how to turn the Google Drive copy on and off, and how to open
-its archive by hand. Rules behind
-it: spec of stage 7.1 (`.scratch/7-1-backups-export/spec.md`), ADR 0005 and ADR 0012.
+The owner's guide to the copies: what is copied where, how to turn the Google Drive copy on and off, how to open its
+archive by hand, and how to bring the database back from a copy. Rules behind it: spec of stage 7.1 (`.scratch/7-1-backups-export/spec.md`), ADR 0005 and ADR 0012.
 
 ## What is copied where
 
@@ -11,6 +10,7 @@ it: spec of stage 7.1 (`.scratch/7-1-backups-export/spec.md`), ADR 0005 and ADR 
 | Daily copy `tracker_db_<time>.db` | `data\backups\` on this PC | by itself, once a day (checked every hour) | 14 newest and one for each of 12 months |
 | Manual copy `tracker_db_<time>_manual.db` | `data\backups\` | the button «Сделать копию сейчас» in Settings | 10 newest |
 | Copy before an update `…_before-<revision>.db` | `data\backups\` | before every change of the database structure | never deleted |
+| Copy before a restore `…_before-restore.db` | `data\backups\` | by `.\restore-bot.ps1`, just before it replaces the database | never deleted |
 | Google Drive copy `tracker_db_<time>[_manual].7z` | the folder «Трекер — копии» in your Google Drive | after each daily copy and each «Сделать копию сейчас», and at once after «Подключить Google Drive» (off by default); a copy that did not go is tried again every hour | 30 newest |
 
 The Google Drive copy is an archive 7-Zip opens: the copy of the database inside, encrypted with AES-256 by the password
@@ -115,7 +115,58 @@ Needed when the PC is lost, or the archive was made with an older password (see 
 5. Next to the archive appears one file `tracker_db_<time>.db` (or `…_manual.db`): the copy of the database.
 
 A wrong password: 7-Zip says «Wrong password?» or shows no file names at all (the names are encrypted too). Restoring
-the database from that `.db`: `.\restore-bot.ps1 "<path to the .db>"` in the tracker folder (ticket 05 of stage 7.1).
+the database from that `.db`: «Restoring the database» below, «From a `.db` taken out by 7-Zip».
+
+## Restoring the database
+
+`.\restore-bot.ps1` in PowerShell, in the tracker folder `E:\LocalAI\Bionic\Telegram-bot`. It replaces the whole
+database by a copy: everything that changed after that copy is gone from the app (it is kept apart, see «The way back»).
+The work is done inside Docker, so nothing has to be installed on the PC; Docker Desktop must be running. Until you
+answer `да` nothing is changed and the bot keeps working; after `да` the script stops the bot, replaces the database
+and starts the bot again (also when the bot was stopped before).
+
+### From the list of copies on this PC
+
+1. PowerShell in the tracker folder: `.\restore-bot.ps1`.
+2. The list appears, newest first: `1) сегодня в 07:58`, `2) вчера в 18:32 — сделана вручную`, … (the kind after the
+   dash; a daily copy has none).
+3. Type the number of the copy and press Enter. Enter alone — «Отменено. Ничего не изменено.».
+4. The script checks the copy («Копия от … в порядке, тайтлов в ней: …») and asks «Вернуть базу к копии от …?».
+   Type `да` and press Enter; anything else cancels.
+5. The bot stops, «Нынешняя база сохранена: data\backups\…_before-restore.db», «База восстановлена из копии от …»,
+   the bot starts, and the last line is «Готово: бот работает на копии от …».
+
+A copy made by an older version of the tracker is restored too: the line «Копия от более старой версии…» says so, and
+the start brings the database up to date by itself. A copy of a newer version is refused: update the tracker first.
+
+### From a downloaded archive (Google Drive)
+
+1. Download the archive: https://drive.google.com → «Мой диск» → «Трекер — копии» → right click on
+   `tracker_db_….7z` → «Скачать». It lands in «Загрузки».
+2. PowerShell in the tracker folder: `.\restore-bot.ps1 "C:\Users\<you>\Downloads\tracker_db_….7z"` (the path in
+   quotes; dragging the file into the PowerShell window types its path).
+3. The archive is opened inside Docker by `BACKUP_PASSWORD` of `.env`; then the same question as above.
+
+«Пароль из .env не подходит к этой копии…» — the archive was made with another password (it was changed later) or it is
+damaged: open it with 7-Zip by hand and the old password (above), then restore the `.db` as below.
+
+### From a `.db` taken out by 7-Zip
+
+`.\restore-bot.ps1 "C:\Users\<you>\Downloads\tracker_db_….db"`: the file is checked as it is, then the same question.
+Without `BACKUP_PASSWORD` in `.env` (on another PC, say) this is the way for an archive: 7-Zip by hand, then this.
+
+### The way back
+
+Every restore first saves the database it replaces as the copy «перед восстановлением» (never deleted). To undo a
+restore: `.\restore-bot.ps1`, choose the copy «перед восстановлением» of that minute, `да`. The same when the last line
+is «База восстановлена, но бот не запустился — ошибка выше…»: that copy is the database the bot worked with.
+
+### What the restore does not touch
+
+Only the database file `data\tracker.db` is replaced. `.env`, `data\web_secret` (the web sign-in), the Google Drive
+connection (`data\google_drive_*.json`), the logs and the other copies stay as they are. The Google Drive copy goes on:
+its next archive is of the restored database. A downloaded file is copied into `data\restore\` for Docker to see it;
+that folder is emptied when the script ends.
 
 ## When something goes wrong
 

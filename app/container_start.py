@@ -1,12 +1,15 @@
 """Start of the container (`python -m app.container_start`, KI-4).
 
 The container starts as root only to fix the rights on the mounted `data` folder, then drops them and replaces itself
-with the application (`python -m app.main`). Everything here is Python, not a shell script: GitHub Desktop may rewrite
-line endings and a shell script would then not start in Linux. The module imports on Windows (the tests run there):
+with the application (`python -m app.main`), or with the module named after it with its arguments
+(`python -m app.container_start app.utils.restore list`: the restore runs in a one-off container with the same rights).
+Everything here is Python, not a shell script: GitHub Desktop may rewrite line endings and a shell script would then not
+start in Linux. The module imports on Windows (the tests run there):
 changing the user and the like are done only inside the start function; paths are passed to the pure functions.
 """
 
 import os
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,11 +19,13 @@ APP_DIR = Path("/app")
 DATA_DIR = APP_DIR / "data"
 ZONEINFO_DIR = Path("/usr/share/zoneinfo")
 DEFAULT_ID = 1000
-APP_COMMAND = [sys.executable, "-m", "app.main"]
+APP_MODULE = "app.main"
+MODULE_NAME = re.compile(r"^app(\.[A-Za-z_]\w*)+$")  # only a module of the application may be run
 
 BAD_ID_MESSAGE = ("PUID и PGID должны быть числами (номера пользователя и группы на компьютере, "
                   "где лежит папка data)")
 ROOT_WARNING = "PUID или PGID равен 0: приложение работает от root"
+BAD_MODULE_MESSAGE = "Запустить можно только модуль приложения (app.…): {name}"
 
 
 class StartError(Exception):
@@ -127,8 +132,15 @@ def check_writable(folders: list[Path], identity: Identity) -> None:
             raise StartError(write_refusal_message(folder, identity, owner)) from None
 
 
-def app_command() -> list[str]:
-    return list(APP_COMMAND)
+def app_command(args: list[str] | None = None) -> list[str]:
+    """The command the container becomes: `python -m app.main` without arguments, otherwise `python -m <module> <rest>`
+    for the module named first (one of `app`)."""
+    if not args:
+        return [sys.executable, "-m", APP_MODULE]
+    module, *rest = args
+    if not MODULE_NAME.match(module):
+        raise StartError(BAD_MODULE_MESSAGE.format(name=module))
+    return [sys.executable, "-m", module, *rest]
 
 
 def _make_folders(data_dir: Path) -> None:
@@ -136,8 +148,10 @@ def _make_folders(data_dir: Path) -> None:
         folder.mkdir(parents=True, exist_ok=True)
 
 
-def start(environ: Mapping[str, str] = os.environ, data_dir: Path = DATA_DIR, zoneinfo_dir: Path = ZONEINFO_DIR) -> None:
-    """Prepare the folders and the rights, then become the application. Does not return."""
+def start(environ: Mapping[str, str] = os.environ, data_dir: Path = DATA_DIR, zoneinfo_dir: Path = ZONEINFO_DIR,
+          args: list[str] | None = None) -> None:
+    """Prepare the folders and the rights, then become the application (or the module of `args`). Does not return."""
+    command = app_command(args)  # a wrong module name stops before anything is changed
     is_root = os.geteuid() == 0
     identity = read_identity(environ)
     if is_root and 0 in (identity.uid, identity.gid):
@@ -159,13 +173,12 @@ def start(environ: Mapping[str, str] = os.environ, data_dir: Path = DATA_DIR, zo
         os.setgid(identity.gid)
         os.setuid(identity.uid)
     check_writable([data_dir, data_dir / "logs"], identity)
-    command = app_command()
     os.execv(command[0], command)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     try:
-        start()
+        start(args=sys.argv[1:] if argv is None else argv)
     except StartError as exc:
         print(exc, file=sys.stderr, flush=True)
         return 1

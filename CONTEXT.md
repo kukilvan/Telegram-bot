@@ -193,6 +193,11 @@ The password the archives of the Google Drive copy are encrypted with: `BACKUP_P
 _Avoid_: ключ шифрования
 In code: `backup_password` (`Settings`), `DriveSettings.password`.
 
+**Восстановление** (restore):
+The database replaced as a whole by a copy — one of `data/backups`, a downloaded archive of the Google Drive copy or a `.db` taken out of it — by `restore-bot.ps1` with the bot stopped; the base it replaces is kept first as the copy before a restore. It touches nothing but `tracker.db`. Not «Вернуть в список» of a title (in code `restore_title`).
+_Avoid_: откат, импорт
+In code: `restore` — `app/utils/restore.py` (`list_copies`, `check`, `apply`), run by `restore-bot.ps1` in a one-off container (`app.container_start app.utils.restore`).
+
 **Выгрузка** (export):
 The data of the owner as a file to download from Settings: the CSV list (one line per title, for Excel) and the JSON of everything (titles with seasons, episodes, platforms, prices, the settings and «Входящие»). Download only: there is no import, the data comes back from a copy of the database.
 _Avoid_: импорт, дамп

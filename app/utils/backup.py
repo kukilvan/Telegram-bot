@@ -29,6 +29,7 @@ COPY_NAME = re.compile(r"^tracker_db_(\d{8}_\d{6})(?:_(manual|before-.+))?\.db$"
 DAILY, MANUAL, OTHER = "daily", "manual", "other"  # the kinds of a copy; the others are those made before an update or a restore
 KIND_ORDER = {DAILY: 0, MANUAL: 1, OTHER: 2}  # on equal times in a name: the daily copy first
 MANUAL_SUFFIX = "manual"
+BEFORE_RESTORE_SUFFIX = "before-restore"  # the copy of the base the restore replaces (`app/utils/restore.py`)
 KEPT_MANUAL = 10  # manual copies kept: the newest
 DUE_AFTER = timedelta(hours=24)  # a new copy once the newest daily one is older than this
 KEPT_NEWEST = 14  # daily copies kept: the newest
