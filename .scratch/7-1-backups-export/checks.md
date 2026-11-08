@@ -53,3 +53,12 @@ With the owner's own client «Desktop app», External, scope `drive.file`, the a
   - `POST https://oauth2.googleapis.com/token` (`grant_type=authorization_code`, PKCE) → `HTTP/1.1 200 OK`, with a refresh token (`prompt=consent`);
   - the token file `data/google_drive_token.json` — fields `connected_at`, `folder_id` (`null`), `refresh_token` (`***`); rights `600` inside the container.
 - The «unverified app» warning came as expected: «Advanced» → «Go to Tracker (unsafe)».
+
+## 5. The first real copy to Google Drive (ticket 04, 2026-11-08)
+
+The bot in Docker on the PC, the owner's Google Drive connected in ticket 03 (no folder yet, no state file). At the start the hourly job sent the newest copy at once:
+
+- Requests and Google's answers, in order: `POST oauth2.googleapis.com/token` (refresh) → 200; `GET drive/v3/files?q=name='Трекер — копии' and mimeType=…folder…` → 200, none; `POST drive/v3/files` (the folder) → 200; `GET drive/v3/files?q='<folder>' in parents…` → 200, empty; `POST upload/drive/v3/files?uploadType=resumable` → 200 with `Location`; `PUT <Location>` → 200. About 4 seconds in all.
+- `data/google_drive_state.json`: `error: null`, `kept: 1`, `last_success_name: tracker_db_20261108_174444_manual.db`; the token file got the `folder_id`; `data/backups/upload/` empty after the attempt.
+- The log showed the `upload_id` of the resumable session in httpx's request line: masked since (`secrets_mask`, `upload_id=***`).
+- Not checked by the session: 7-Zip for Windows opening the archive with `BACKUP_PASSWORD` (no 7-Zip on the PC; the owner's check, step 3).
