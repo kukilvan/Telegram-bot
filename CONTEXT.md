@@ -183,6 +183,11 @@ A file of `data/backups` that holds the whole database at one moment, made with 
 _Avoid_: бэкап (in messages to the owner), дамп
 In code: `backup` — `app/utils/backup.py` (`Copy`, `copies`), the core's `Backups`, `Tracker.backup_block`, `make_backup_now`, `backup_database`; the event `backup_failed`.
 
+**Выгрузка** (export):
+The data of the owner as a file to download from Settings: the CSV list (one line per title, for Excel) and the JSON of everything (titles with seasons, episodes, platforms, prices, the settings and «Входящие»). Download only: there is no import, the data comes back from a copy of the database.
+_Avoid_: импорт, дамп
+In code: `export` — `Tracker.export_list`, `export_all`, the core's `Exports` (`exports`), `export_all` (the JSON document), `export_rows` (the formats, pure); the addresses `/settings/export.csv`, `/settings/export.json`.
+
 ## Interface
 
 **Лента** (feed):

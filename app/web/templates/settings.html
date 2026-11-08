@@ -84,6 +84,10 @@
   <form class="backup-actions" method="post" action="{{ backup_address }}">
     <button type="submit">Сделать копию сейчас</button>
   </form>
-  {# the buttons of the export and their hint: ticket 02 #}
+  <div class="backup-actions">
+    <a class="button-link" href="{{ export_csv_address }}" download>Скачать список (CSV)</a>
+    <a class="button-link" href="{{ export_json_address }}" download>Скачать всё (JSON)</a>
+  </div>
+  <p class="hint">CSV открывается в Excel: один тайтл — одна строка. JSON — все данные целиком, на память или для переноса. Загрузить выгрузку обратно нельзя: данные возвращают из копии базы.</p>
 </section>
 {% endblock %}

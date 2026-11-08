@@ -1,9 +1,10 @@
 """The settings page: one form for the time zone, the working days, the hour of the summary, the quiet hours, the break
 between parts of a season, the platforms and the country of the stores. It has one button; under it are the line
 «Сейчас», the state of the bot in Telegram and the block «Копии и выгрузка» (the copies of the database, with its own
-button «Сделать копию сейчас» that posts to `/settings/backup`). The form is saved as a whole or not at all: a value the
+button «Сделать копию сейчас» that posts to `/settings/backup`, and the downloads «Скачать список (CSV)» and «Скачать всё (JSON)»
+at `/settings/export.csv` and `/settings/export.json`). The form is saved as a whole or not at all: a value the
 core refuses is shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the
-spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1."""
+spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1 (the downloads: section 3)."""
 
 from typing import NamedTuple
 
@@ -11,7 +12,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 from starlette.datastructures import FormData
 
-from app.tracker.core import SettingsChange, SettingsRefused, SettingsView
+from app.tracker.core import ExportFile, SettingsChange, SettingsRefused, SettingsView
 from app.web import pages
 
 WEEKDAYS = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")  # Monday is 0, as in the core
@@ -69,6 +70,8 @@ async def _show(
         now_line=view.now_line, telegram_state=pages.telegram_note(request) or CONNECTED,
         backup=await pages.tracker_of(request).backup_block(),
         backup_address=str(request.app.url_path_for("settings_backup")),
+        export_csv_address=str(request.app.url_path_for("settings_export_csv")),
+        export_json_address=str(request.app.url_path_for("settings_export_json")),
         error_text=error.text if error is not None else "", invalid={error.field.value: True} if error is not None else {},
     )
 
@@ -99,3 +102,24 @@ async def settings_backup(request: Request) -> Response:
     """«Сделать копию сейчас»: the core makes the copy, the page shows the notice of how it went."""
     pages.notify(request, await pages.tracker_of(request).make_backup_now())
     return RedirectResponse(str(request.app.url_path_for("settings")), status_code=303)
+
+
+def _download(file: ExportFile) -> Response:
+    """A built export as a download; the names are plain ASCII, so the header needs no encoding."""
+    return Response(
+        file.content, media_type=file.media_type, headers={"Content-Disposition": f'attachment; filename="{file.name}"'}
+    )
+
+
+@router.get("/settings/export.csv", name="settings_export_csv")
+@pages.guarded_with_refresh("settings")
+async def settings_export_csv(request: Request) -> Response:
+    """«Скачать список (CSV)»: the list of all the titles for Excel."""
+    return _download(await pages.tracker_of(request).export_list())
+
+
+@router.get("/settings/export.json", name="settings_export_json")
+@pages.guarded_with_refresh("settings")
+async def settings_export_json(request: Request) -> Response:
+    """«Скачать всё (JSON)»: the owner's data whole."""
+    return _download(await pages.tracker_of(request).export_all())

@@ -451,6 +451,8 @@ select, input[type="time"], input[type="number"] {
 
 .inbox-actions form { margin: 0; }
 
+.backup-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0; }
+
 @media (max-width: 40rem) {
   .inbox-actions > .button-link, .inbox-actions > form, .inbox-actions button { width: 100%; }
 }

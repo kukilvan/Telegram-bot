@@ -24,6 +24,8 @@ from app.tracker.backups import Backups
 from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.delivery_service import DeliveryService
+from app.tracker.export_rows import ExportFile
+from app.tracker.exports import Exports
 from app.tracker.errors import (
     CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent,
     UnknownInboxItem, UnknownKind, UnknownPlatform, UnknownSeason, UnknownTitle,
@@ -68,7 +70,7 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
-    "BackupBlock", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
+    "BackupBlock", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
     "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason", "InboxReply",
     "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
@@ -102,6 +104,7 @@ class Tracker:
     _inbox: Inbox = field(init=False, repr=False)
     _answers: InboxAnswers = field(init=False, repr=False)
     _backups: Backups = field(init=False, repr=False)
+    _exports: Exports = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
@@ -123,6 +126,7 @@ class Tracker:
         self._inbox = Inbox(ctx, self._settings)
         self._answers = InboxAnswers(ctx, self._settings, pollers, self._titles, self.imdb_source)
         self._backups = Backups(ctx, self._settings, self._queue, self.database_url)
+        self._exports = Exports(ctx, self._settings)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -326,6 +330,14 @@ class Tracker:
     async def backup_database(self) -> None:
         """The scheduler's job: a daily copy when it is due; a failed one is queued as the event `backup_failed`."""
         await self._backups.hourly()
+
+    async def export_list(self) -> ExportFile:
+        """«Скачать список (CSV)»: the file `tracker-list-<date>.csv`, one line per title, the archive too."""
+        return await self._exports.list_file()
+
+    async def export_all(self) -> ExportFile:
+        """«Скачать всё (JSON)»: the file `tracker-all-<date>.json`, the owner's data whole."""
+        return await self._exports.all_file()
 
     # --- «Входящие» -----------------------------------------------------------------------------
 

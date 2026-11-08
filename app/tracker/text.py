@@ -7,3 +7,8 @@ def key(text: str) -> str:
     letters next, Cyrillic last. Spaces at the ends are not touched: whoever must ignore them (a genre, a search query)
     strips before."""
     return text.casefold().replace("ё", "е")
+
+
+def by_name(name: str, number: int) -> tuple[str, int]:
+    """The order «по названию» of the List: by `key`, titles of one name by their number. The sort key of a title."""
+    return key(name), number

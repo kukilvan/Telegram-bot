@@ -59,6 +59,9 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/delivery.py` — Delivery rules: when a queued event may reach the owner, and how a summary reads.
 - `app/tracker/delivery_service.py` — Delivery: sending what the queue holds to the owner, one message or one summary, and noting every attempt.
 - `app/tracker/errors.py` — Errors the tracker core raises to its callers (the bot, later the web app).
+- `app/tracker/export_all.py` — The JSON document of the export «Скачать всё (JSON)»: every table the owner's data lives in, read from one session.
+- `app/tracker/export_rows.py` — The files of the export as bytes (pure): the CSV list with its cell guard and the JSON values, the owner's dates, the file names.
+- `app/tracker/exports.py` — The export of the owner's data, download only: the CSV list and the JSON of everything (spec 3 of stage 7.1).
 - `app/tracker/failures.py` — Source failure notices: why a title could not be checked, and how the message to the owner reads.
 - `app/tracker/feed.py` — The feed (`Tracker.feed()`): one read of the database for «Скоро», «Позже» and «Недавно».
 - `app/tracker/feed_rows.py` — The rows of the feed (`Tracker.feed()`): what comes out in the next days, what comes later, and what happened in the last week.

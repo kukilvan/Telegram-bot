@@ -16,6 +16,7 @@ from app.tracker.cards import SequelsView, TitleCard, sequel_view
 from app.tracker.genres import key_of as genre_key
 from app.tracker.genres import keys_of as genre_keys
 from app.tracker.genres import merge as merge_genres
+from app.tracker.text import by_name
 from app.tracker.text import key as text_key
 from app.tracker.context import CoreContext
 from app.tracker.models import SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus
@@ -92,7 +93,7 @@ class Listing:
             marks = self._of_kinds(titles, lambda poller, own: poller.list_marks(session, own))
             tags = self._of_kinds(titles, lambda poller, own: poller.list_tags(session, own))
         if order == ListOrder.NAME:
-            titles.sort(key=lambda t: (text_key(t.name), t.id))
+            titles.sort(key=lambda t: by_name(t.name, t.id))
         elif order == ListOrder.ARCHIVED:
             titles.sort(key=lambda t: (t.status_changed_at, t.id), reverse=True)
         elif order == ListOrder.SCORE:
