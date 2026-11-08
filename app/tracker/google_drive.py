@@ -29,11 +29,12 @@ from urllib.parse import urlsplit
 from app.tracker import drive_rows
 from app.tracker.context import CoreContext
 from app.tracker.drive_rows import DrivePart, DriveSetup
+from app.tracker.drive_state import DriveState, state_of
 
 MIN_PASSWORD_LENGTH = 12  # BACKUP_PASSWORD, after the outer spaces are dropped
 SIGN_IN_LASTS = timedelta(minutes=10)
 TOKEN_FILE = "google_drive_token.json"
-STATE_FILE = "google_drive_state.json"  # written by the sending (ticket 04); read and removed here
+STATE_FILE = "google_drive_state.json"  # the state of the sending (`drive_state`), written by `drive_copies`
 CALLBACK_PATH = "/settings/google-drive/callback"
 SETTINGS_PATH = "/settings"
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1"})
@@ -75,7 +76,7 @@ class DriveToken:
 
     refresh_token: str
     connected_at: datetime  # naive UTC
-    folder_id: str | None = None  # the folder «Трекер — копии»; found or made by the sending (ticket 04)
+    folder_id: str | None = None  # the folder «Трекер — копии»; found or made by the sending (`drive_copies`)
 
 
 @dataclass(frozen=True)
@@ -150,9 +151,19 @@ class DriveFiles:
             logging.warning("%s is spoiled, Google Drive counts as not connected: %r", TOKEN_FILE, exc)
             return None
 
-    def state(self) -> dict[str, Any] | None:
-        """The state of the sending (ticket 04 gives it its fields); absent or spoiled — None: no attempts yet."""
-        return self._read(STATE_FILE)
+    def state(self) -> DriveState | None:
+        """The state of the sending; absent, unreadable or spoiled — None: no attempts yet (the last two with a warning)."""
+        data = self._read(STATE_FILE)
+        if data is None:
+            return None
+        try:
+            return state_of(data)
+        except ValueError as exc:
+            logging.warning("%s is spoiled, it counts as no attempts yet: %r", STATE_FILE, exc)
+            return None
+
+    def write_state(self, state: DriveState) -> None:
+        self._write(STATE_FILE, json.dumps(state.to_json(), ensure_ascii=False, indent=2).encode("utf-8"))
 
     def write_token(self, token: DriveToken) -> None:
         content = {
@@ -214,8 +225,8 @@ class GoogleDrive:
         self.api = api
         self.files = DriveFiles(folder)
         self._pending: _Pending | None = None
-        # The seam of ticket 04: after a successful sign-in it finds or makes the folder and sends the newest copy, in
-        # the background. None until the sending exists: the sign-in only stores the token
+        # After a successful sign-in, in the background: the newest copy is sent (`DriveCopies.send_newest`, set by
+        # `Backups`). None — the sign-in only stores the token
         self.on_connected: Callable[[], Awaitable[None]] | None = None
         self._background: set[asyncio.Task[None]] = set()
 
@@ -223,10 +234,18 @@ class GoogleDrive:
     def _on(self) -> bool:
         return self.settings.setup is DriveSetup.ON and self.api is not None
 
-    async def part(self, host: str) -> DrivePart:
-        """The Google Drive part of the Settings block for a page opened at `host`."""
-        connected = await asyncio.to_thread(self.files.token) is not None
-        return drive_rows.drive_part(self.settings.setup, connected, is_this_pc(host), self.settings.web_port)
+    @property
+    def on(self) -> bool:
+        """Whether the copy is on: set up in `.env` (`DriveSettings.setup`) and with a Google client."""
+        return self._on
+
+    async def part(self, host: str, words: Callable[[datetime], str]) -> DrivePart:
+        """The Google Drive part of the Settings block for a page opened at `host`; `words` gives a stored moment (naive
+        UTC) in words on the owner's clock."""
+        token, state = await asyncio.to_thread(lambda: (self.files.token(), self.files.state()))
+        return drive_rows.drive_part(
+            self.settings.setup, token is not None, is_this_pc(host), self.settings.web_port, state, words
+        )
 
     async def sign_in(self, host: str) -> SignInStep:
         """«Подключить Google Drive» on a page opened at `host` (with its port): the address of Google's page, with a

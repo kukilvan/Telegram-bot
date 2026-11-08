@@ -186,7 +186,7 @@ In code: `backup` — `app/utils/backup.py` (`Copy`, `copies`), the core's `Back
 **Копия в Google Drive** (drive copy):
 An encrypted archive of a copy of the database in the owner's own Google Drive, in the folder «Трекер — копии» (7z with AES-256, the password `BACKUP_PASSWORD`; 30 kept). Off by default: on when `.env` has the owner's Google client and the password (`DriveSettings.setup`), then connected once by «Подключить Google Drive» in Settings on this PC; the connection is the file `data/google_drive_token.json`, outside the database.
 _Avoid_: бэкап в облаке, облачная копия
-In code: `drive copy` — module `google_drive` (`GoogleDrive`, `DriveSettings`, `DriveFiles`), its texts `drive_rows`, the Google client `app/providers/google_drive.py`; `Tracker.drive_sign_in`, `drive_signed_in`, `drive_sign_out`.
+In code: `drive copy` — module `google_drive` (`GoogleDrive`, `DriveSettings`, `DriveFiles`), its sending `drive_copies` (`DriveCopies`: after each daily and manual copy and after the sign-in), the state of the sending `drive_state` (`DriveState`, the file `data/google_drive_state.json`), its texts `drive_rows` and `backup_events` (the reason keys `connection`, `sign_in`, `full`, `down`, `no_copy`, `unknown`), the archive `app/utils/archive.py`, the Google client `app/providers/google_drive.py`; `Tracker.drive_sign_in`, `drive_signed_in`, `drive_sign_out`.
 
 **Пароль копий** (backup password):
 The password the archives of the Google Drive copy are encrypted with: `BACKUP_PASSWORD` in `.env`, at least 12 characters. Kept by the owner outside this PC too: without it the copies in Google Drive cannot be opened; a new password holds only for new copies.

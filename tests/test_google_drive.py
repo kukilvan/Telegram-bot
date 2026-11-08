@@ -19,6 +19,7 @@ from app.providers.google_drive import GoogleDriveApi
 from app.tracker import drive_rows, google_drive
 from app.tracker.core import DriveSettings, DriveSetup, Redirect, Tracker
 from app.tracker.db import create_session_factory
+from app.tracker.drive_state import DriveState
 from app.tracker.google_drive import DriveFiles, DriveToken, challenge_of
 from app.utils.logging_config import MaskingFormatter
 from app.utils.secrets_mask import remember_secrets
@@ -283,7 +284,7 @@ def test_missing_files_read_as_absent_without_a_warning(tmp_path, caplog):
 def test_the_state_file_is_read_as_written(tmp_path):
     (tmp_path / "google_drive_state.json").write_text('{"error": null, "failures_in_row": 0}', encoding="utf-8")
 
-    assert DriveFiles(tmp_path).state() == {"error": None, "failures_in_row": 0}
+    assert DriveFiles(tmp_path).state() == DriveState()
 
 
 # ---- the sign-in ---------------------------------------------------------------------------
@@ -589,7 +590,7 @@ def test_the_block_reads_the_connection_from_the_token_file(tracker, tmp_path):
 
 
 def test_a_part_that_cannot_be_built_leaves_the_copies_line(tracker, monkeypatch, caplog):
-    async def broken(host):
+    async def broken(*args):
         raise RuntimeError("boom")
 
     monkeypatch.setattr(tracker._drive, "part", broken)

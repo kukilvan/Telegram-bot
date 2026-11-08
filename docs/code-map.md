@@ -22,8 +22,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/static/` — `style.css` (light and dark theme, one column under 40rem, touch targets of 44 px), `htmx.min.js` (HTMX 2.0.4 from the npm package `htmx.org@2.0.4`, file `dist/htmx.min.js` unchanged; update the same way and fix this line), `manifest.webmanifest` and `icons/` (installation on PC and iPhone; the PNGs were made once from `icon.svg` with headless Edge; the folder is open without a login).
 - `app/tracker/migrations/versions/` — Alembic revisions `NNNN_*.py` of the tracker database; the list below shows the newest number.
 - Root: `Dockerfile`, `docker-compose.yml` (the web port on `127.0.0.1` unless `WEB_HOST` says otherwise), `start-bot.ps1`, `stop-bot.ps1`, `logs-bot.ps1`, `requirements.txt`, `pyproject.toml`, `.env.example`, `tools/code_map.py` (builds the list below).
-- `data/` (not in git) — `tracker.db`, `backups/`, `logs/bot.log`, `web_secret`, `startup_failure.json`, `google_drive_token.json` (the refresh token of the Google Drive copy; secret) and `google_drive_state.json` (its sending, ticket 04).
-- `docs/backups.md` — the owner's guide to the copies: what is copied where, turning the Google Drive copy on and off.
+- `data/` (not in git) — `tracker.db`, `backups/`, `logs/bot.log`, `web_secret`, `startup_failure.json`, `google_drive_token.json` (the refresh token of the Google Drive copy; secret) and `google_drive_state.json` (the state of its sending, `drive_state`); `backups/upload/` holds the `.7z` archive only during an attempt to send it.
+- `docs/backups.md` — the owner's guide to the copies: what is copied where, turning the Google Drive copy on and off, opening its archive by hand with 7-Zip, what to do when it fails.
 
 ## Modules of `app/` (built)
 
@@ -40,7 +40,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/healthcheck.py` — The health check for Docker (`python -m app.healthcheck`, KI-3): asks the application's own `/health`.
 - `app/main.py` — Process entry point, `python -m app.main`: the bot, the scheduler and the web in one process (ADR 0007).
 - `app/providers/anilist.py` — AniList provider: anime metadata + airing schedule via GraphQL.
-- `app/providers/google_drive.py` — Google client of the Google Drive copy: the address of the sign-in page and the requests of the OAuth sign-in of a desktop client.
+- `app/providers/google_drive.py` — Google client of the Google Drive copy: the OAuth sign-in of a desktop client and the Drive API requests that send an archive.
 - `app/providers/igdb.py` — IGDB client: queries to `/games` in the Apicalypse language of IGDB, with the token of Twitch and the pace of IGDB.
 - `app/providers/shikimori.py` — Shikimori API client: anime search, franchise grouping, season selection.
 - `app/providers/steam.py` — Steam client: the prices of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
@@ -49,9 +49,9 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
 - `app/tracker/actions.py` — Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons.
 - `app/tracker/anime_events.py` — Anime events: the episodes the two sources agree on, and the films of a franchise.
-- `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the message, the once-a-day key and the sample of «Тестовое событие».
+- `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the messages of both kinds (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
 - `app/tracker/backup_rows.py` — What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
-- `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the report of a failed daily copy.
+- `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
 - `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot.
 - `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks.
@@ -60,7 +60,9 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/dedup.py` — Pieces of dedup keys that several kinds of events share.
 - `app/tracker/delivery.py` — Delivery rules: when a queued event may reach the owner, and how a summary reads.
 - `app/tracker/delivery_service.py` — Delivery: sending what the queue holds to the owner, one message or one summary, and noting every attempt.
-- `app/tracker/drive_rows.py` — What the owner reads about the Google Drive copy (pure): its line in Settings, the button under it and the notices of the sign-in and the sign-out.
+- `app/tracker/drive_copies.py` — The sending of the Google Drive copy: the newest copy archived and sent to the folder «Трекер — копии», the old archives rotated, the state written and a failure reported.
+- `app/tracker/drive_rows.py` — What the owner reads about the Google Drive copy (pure): its line in Settings, the buttons under it and the notices of the sign-in and the sign-out.
+- `app/tracker/drive_state.py` — The state of the Google Drive copy's sending (pure): the content of `google_drive_state.json`, its strict reading and what a success or a failure makes of it.
 - `app/tracker/errors.py` — Errors the tracker core raises to its callers (the bot, later the web app).
 - `app/tracker/export_all.py` — The JSON document of the export «Скачать всё (JSON)»: every table the owner's data lives in, read from one session.
 - `app/tracker/export_rows.py` — The files of the export as bytes (pure): the CSV list with its cell guard and the JSON values, the owner's dates, the file names.
@@ -138,6 +140,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/text.py` — How the owner's text is compared: one function for the order «по названию», the search by name and the merging of genres.
 - `app/tracker/titles.py` — The owner's list: searching, adding and deleting titles and «Следить».
 - `app/tracker/zones.py` — The time zones the owner can choose from, and how each one reads in the list.
+- `app/utils/archive.py` — The encrypted archive of a copy of the database: one file in a `.7z`, LZMA2 with AES-256 and the names hidden, that 7-Zip opens by the password.
 - `app/utils/backup.py` — Backups of the tracker database: the daily copy when the last one is over a day old, the manual copy, the reading of the folder as a list of copies, and the rotation of the old ones.
 - `app/utils/logging_config.py` — Logging of the application: the console and the rotated file `data/logs/bot.log`, both with secrets masked.
 - `app/utils/secrets_mask.py` — Mask secrets (API keys, tokens) in any text that is about to be logged or sent anywhere.

@@ -197,7 +197,7 @@ def format_weekday_date(value: date) -> str:
     return f"{_WEEKDAYS[value.weekday()]}, {value.day} {_SHORT_MONTHS[value.month - 1]}"
 
 
-def _plural(count: int, one: str, few: str, many: str) -> str:
+def plural(count: int, one: str, few: str, many: str) -> str:
     """The form of a word that follows the number: `one` after 1 and 21, `few` after 2–4 and 22–24, `many` otherwise
     (5, 11–14)."""
     if count % 10 == 1 and count % 100 != 11:
@@ -209,12 +209,12 @@ def _plural(count: int, one: str, few: str, many: str) -> str:
 
 def titles_word(count: int) -> str:
     """«тайтл» in the form that follows the number: 1 тайтл, 2 тайтла, 5 тайтлов, 11 тайтлов, 21 тайтл."""
-    return _plural(count, "тайтл", "тайтла", "тайтлов")
+    return plural(count, "тайтл", "тайтла", "тайтлов")
 
 
 def games_word(count: int) -> str:
     """«2 игры», «5 игр», «21 игра»: the number of games of a bundle of Steam."""
-    return f"{count} {_plural(count, 'игра', 'игры', 'игр')}"
+    return f"{count} {plural(count, 'игра', 'игры', 'игр')}"
 
 
 def local_moment(moment: datetime, tz: tzinfo | None) -> datetime:

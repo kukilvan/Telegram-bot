@@ -1,6 +1,7 @@
 # Copies of the database
 
-The owner's guide to the copies: what is copied where, and how to turn the Google Drive copy on and off. Rules behind
+The owner's guide to the copies: what is copied where, how to turn the Google Drive copy on and off, and how to open
+its archive by hand. Rules behind
 it: spec of stage 7.1 (`.scratch/7-1-backups-export/spec.md`), ADR 0005 and ADR 0012.
 
 ## What is copied where
@@ -10,7 +11,7 @@ it: spec of stage 7.1 (`.scratch/7-1-backups-export/spec.md`), ADR 0005 and ADR 
 | Daily copy `tracker_db_<time>.db` | `data\backups\` on this PC | by itself, once a day (checked every hour) | 14 newest and one for each of 12 months |
 | Manual copy `tracker_db_<time>_manual.db` | `data\backups\` | the button «Сделать копию сейчас» in Settings | 10 newest |
 | Copy before an update `…_before-<revision>.db` | `data\backups\` | before every change of the database structure | never deleted |
-| Google Drive copy `tracker_db_<time>.7z` | the folder «Трекер — копии» in your Google Drive | once a day, after the daily copy (off by default) | 30 newest |
+| Google Drive copy `tracker_db_<time>[_manual].7z` | the folder «Трекер — копии» in your Google Drive | after each daily copy and each «Сделать копию сейчас», and at once after «Подключить Google Drive» (off by default); a copy that did not go is tried again every hour | 30 newest |
 
 The Google Drive copy is an archive 7-Zip opens: the copy of the database inside, encrypted with AES-256 by the password
 `BACKUP_PASSWORD` from `.env` (even the file name inside is hidden). The app sees only the files it made itself in your
@@ -99,3 +100,32 @@ browser back to `localhost`.
    «Shut down»).
 
 To connect again later, fill the lines back and press «Подключить Google Drive» again.
+
+## Opening an archive by hand with 7-Zip
+
+Needed when the PC is lost, or the archive was made with an older password (see below). On Windows:
+
+1. Install 7-Zip if you have none: https://www.7-zip.org → «Download» the «64-bit Windows x64» line → run the file →
+   «Install».
+2. Download the archive: https://drive.google.com → «Мой диск» → the folder «Трекер — копии» → right click on a file
+   `tracker_db_….7z` → «Скачать». It lands in «Загрузки».
+3. In «Загрузки», right click on the file → «7-Zip» → «Extract Here» («Распаковать здесь»; on Windows 11 first «Show
+   more options»).
+4. 7-Zip asks for the password: type `BACKUP_PASSWORD` (the one that was in `.env` when the archive was made) → «OK».
+5. Next to the archive appears one file `tracker_db_<time>.db` (or `…_manual.db`): the copy of the database.
+
+A wrong password: 7-Zip says «Wrong password?» or shows no file names at all (the names are encrypted too). Restoring
+the database from that `.db`: `.\restore-bot.ps1 "<path to the .db>"` in the tracker folder (ticket 05 of stage 7.1).
+
+## When something goes wrong
+
+- **The line in Settings says «Копия в Google Drive не ушла: … — нет связи с Google Drive»** (or «Google Drive сейчас
+  недоступен»): nothing to do, the copy is tried again every hour. A message in Telegram comes only from the second
+  failure in a row, at most one a day.
+- **«Google Drive не принял вход — подключите его заново в Настройках»**: the access was ended (revoked in your Google
+  account, or the app is back in «Testing»). Press «Подключить Google Drive» in Settings; until then nothing is tried.
+- **«в Google Drive нет места»**: free space in your Google Drive; the copy is tried again every hour.
+- **You changed `BACKUP_PASSWORD`**: new archives use the new password; the older ones in the folder still open only
+  with the old one (7-Zip by hand, as above). Keep the old password until those archives rotate out (30 copies).
+- **You deleted the folder «Трекер — копии»**: the next copy makes it anew; the archives that were in it are gone.
+- **You moved archives out of the folder**: they are no longer counted nor deleted by the app.

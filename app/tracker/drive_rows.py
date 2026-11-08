@@ -1,12 +1,18 @@
-"""What the owner reads about the Google Drive copy (pure): its line in Settings, the button under it and the notices of the sign-in and the sign-out.
+"""What the owner reads about the Google Drive copy (pure): its line in Settings, the buttons under it and the notices of the sign-in and the sign-out.
 
-Texts only, no files and no network: the core (`google_drive`) hands over whether the copy is set up, connected and
-whether the page is opened on this PC. Rules: sections 4.2 and 4.7 of the spec of stage 7.1; the lines of the copies
-sent and failed (rows 5 and 6 of 4.7) are ticket 04's.
+Texts only, no files and no network: the core (`google_drive`) hands over whether the copy is set up, connected, the
+state of its sending and whether the page is opened on this PC. Rules: sections 4.2 and 4.7 of the spec of stage 7.1;
+the reasons of a copy that did not go are `backup_events`'s.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+
+from app.tracker.backup_events import SIGN_IN, drive_reason
+from app.tracker.cards import plural
+from app.tracker.drive_state import KEPT_IN_DRIVE, DriveState
 
 
 class DriveSetup(Enum):
@@ -60,10 +66,30 @@ def google_refused(error: str) -> str:
     return f"Google не подтвердил вход ({error}). Попробуйте ещё раз."
 
 
-def drive_part(setup: DriveSetup, connected: bool, here: bool, port: int) -> DrivePart:
+def copies_word(count: int) -> str:
+    """«копия» in the form that follows the number: 1 копия, 2 копии, 5 копий."""
+    return plural(count, "копия", "копии", "копий")
+
+
+def sent_line(state: DriveState, words: Callable[[datetime], str]) -> str | None:
+    """The line of a connection that has tried to send («Works» or «Failed last time»); None — nothing tried yet.
+    `words` gives a stored moment (naive UTC) in words on the owner's clock."""
+    if state.failed and state.last_attempt_at is not None:
+        last = f"Последняя удачная — {words(state.last_success_at)}." if state.last_success_at else "Удачных ещё не было."
+        return f"Копия в Google Drive не ушла: {words(state.last_attempt_at)} — {drive_reason(state.error)}. {last}"
+    if state.last_success_at is not None:
+        kept = state.kept
+        return f"Копия в Google Drive: {words(state.last_success_at)}, там {kept} {copies_word(kept)} из {KEPT_IN_DRIVE} хранимых."
+    return None
+
+
+def drive_part(
+    setup: DriveSetup, connected: bool, here: bool, port: int,
+    state: DriveState | None = None, words: Callable[[datetime], str] = str,
+) -> DrivePart:
     """The part for the copy set up so (`setup`), `connected` (a token file that reads), the page opened on this PC
-    (`here`) or not, and the port of the web on the PC (`port`, for the sentence of another host). Until ticket 04 sends
-    copies, a connection is always «nothing sent yet»."""
+    (`here`) or not, the port of the web on the PC (`port`, for the sentence of another host), and the `state` of the
+    sending (None — no attempts yet) with `words` for its moments."""
     if setup is DriveSetup.OFF:
         return DrivePart(OFF_LINE)
     if setup is DriveSetup.NO_PASSWORD:
@@ -72,4 +98,11 @@ def drive_part(setup: DriveSetup, connected: bool, here: bool, port: int) -> Dri
         if here:
             return DrivePart(NOT_CONNECTED_LINE, buttons=(DriveButton.CONNECT,))
         return DrivePart(NOT_CONNECTED_LINE, elsewhere=only_here(port))
-    return DrivePart(CONNECTED_LINE, PASSWORD_HINT, (DriveButton.DISCONNECT,))
+    line = sent_line(state, words) if state is not None else None
+    if line is None:
+        return DrivePart(CONNECTED_LINE, PASSWORD_HINT, (DriveButton.DISCONNECT,))
+    if state is not None and state.error == SIGN_IN:  # Google refused the sign-in: connecting again is the way out
+        if here:
+            return DrivePart(line, PASSWORD_HINT, (DriveButton.CONNECT, DriveButton.DISCONNECT))
+        return DrivePart(line, PASSWORD_HINT, (DriveButton.DISCONNECT,), only_here(port))
+    return DrivePart(line, PASSWORD_HINT, (DriveButton.DISCONNECT,))

@@ -264,3 +264,46 @@ def test_with_the_callback_switch_the_feed_ignores_such_a_query(tmp_path, google
     answer = client.get("/", params={"code": "4/0Acode", "state": state})
 
     assert answer.status_code == 200 and not token_file(tmp_path).exists()
+
+
+# ---- the lines of a copy sent or failed, and the press (ticket 04) --------------------------------
+
+def put_state(tmp_path, content: str) -> None:
+    (tmp_path / "google_drive_state.json").write_text(content, encoding="utf-8")
+
+
+def test_the_block_shows_the_copy_that_works(tmp_path, google):
+    put_token(tmp_path)
+    put_state(tmp_path, '{"last_attempt_at": "2026-11-08T04:58:00", "last_success_at": "2026-11-08T04:58:00", '
+                        '"last_success_name": "tracker_db_20261108_075800.db", "kept": 3, "error": null, '
+                        '"failures_in_row": 0}')
+
+    page = make_client(tmp_path, google).get("/settings").text
+
+    text = block_text(page)
+    assert "Копия в Google Drive: сегодня в 07:58, там 3 копии из 30 хранимых." in text
+    assert "Копии зашифрованы паролем" in text and "Подключить Google Drive" not in text
+
+
+def test_the_block_of_a_refused_sign_in_has_both_buttons(tmp_path, google):
+    put_token(tmp_path)
+    put_state(tmp_path, '{"last_attempt_at": "2026-11-08T08:00:00", "error": "sign_in", "failures_in_row": 1}')
+
+    page = make_client(tmp_path, google).get("/settings").text
+
+    text = block_text(page)
+    assert ("Копия в Google Drive не ушла: сегодня в 11:00 — Google Drive не принял вход — подключите его заново в "
+            "Настройках. Удачных ещё не было.") in text
+    assert 'href="/settings/google-drive/connect"' in page and 'action="/settings/google-drive/disconnect"' in page
+
+
+def test_a_press_whose_copy_did_not_go_says_why(tmp_path, google):
+    put_token(tmp_path)
+    client = make_client(tmp_path, google)  # the fake Google answers a listing without files: an unknown failure
+
+    assert client.post("/settings/backup").status_code == 303
+
+    page = client.get("/settings").text
+    assert ("Копия сделана, но в Google Drive не ушла: неизвестная ошибка, подробности в журнале. Попробую снова через "
+            "час.") in html.unescape(page)
+    assert "Копия в Google Drive не ушла: сегодня в 12:00 — неизвестная ошибка" in block_text(page)

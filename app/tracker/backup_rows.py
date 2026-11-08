@@ -1,7 +1,7 @@
 """What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
 
-Texts only, no files and no database: the core hands over the times of the copies and the owner's clock. Tickets 02–04
-add their lines (the export, the Google Drive copy) to `BackupBlock` and their outcomes to `PressOutcome` and `press_notice`.
+Texts only, no files and no database: the core hands over the times of the copies and the owner's clock. The Google
+Drive part of the block is `drive_rows`'s; the notice after the press covers the copy sent there too (spec 2.2).
 """
 
 from collections.abc import Sequence
@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
+from app.tracker.backup_events import RETRY, SIGN_IN, drive_reason
 from app.tracker.drive_rows import DrivePart
 from app.tracker.moment_words import moment_in_words
 
@@ -30,9 +31,12 @@ class BackupBlock:
 
 
 class PressOutcome(Enum):
-    """How «Сделать копию сейчас» ended. The Google Drive outcomes join these in ticket 04."""
+    """How «Сделать копию сейчас» ended."""
 
-    MADE = "made"  # the copy is made
+    MADE = "made"  # the copy is made; Google Drive is off or not connected
+    SENT = "sent"  # the copy is made and sent to Google Drive
+    NOT_SENT = "not_sent"  # the copy is made, sending it failed (`reason` — the reason key of `backup_events`)
+    SENDING = "sending"  # the copy is made, sending it takes over a minute and goes on in the background
     FAILED = "failed"  # the copy is not made
     BUSY = "busy"  # another copy is being made, or one was made in this very second
 
@@ -52,10 +56,17 @@ def unreadable_block() -> BackupBlock:
 
 
 def press_notice(outcome: PressOutcome, *, when: str = "", reason: str = "") -> str:
-    """The notice on the page after the press: `when` (the copy in words) for a copy made, `reason` for a copy not made.
-    This is the one place that decides it; the sending to Google Drive adds its outcomes here."""
+    """The notice on the page after the press: `when` (the copy in words) for a copy made, `reason` for a copy not made
+    (its text) or not sent (its key). This is the one place that decides it."""
     if outcome is PressOutcome.MADE:
         return f"Копия сделана: {when}."
+    if outcome is PressOutcome.SENT:
+        return "Копия сделана и отправлена в Google Drive."
+    if outcome is PressOutcome.NOT_SENT:  # nothing is retried after `sign_in` until the owner connects again
+        retry = "" if reason == SIGN_IN else f" {RETRY}"
+        return f"Копия сделана, но в Google Drive не ушла: {drive_reason(reason)}.{retry}"
+    if outcome is PressOutcome.SENDING:
+        return "Копия сделана; в Google Drive она ещё отправляется — итог появится здесь."
     if outcome is PressOutcome.FAILED:
         return f"Копия не сделана: {reason}."
     return "Копия уже делается — подождите несколько секунд."

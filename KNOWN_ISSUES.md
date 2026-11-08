@@ -80,6 +80,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | open | — |
 | KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | open | — |
 | KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | open | — |
+| KI-67 | Google Drive copy: a folder of over 1000 files is listed only in part | `app/providers/google_drive.py` | open | — |
+| KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | open | — |
 
 ## Entries
 
@@ -692,3 +694,21 @@ Format of a new entry:
 - Likelihood / impact: rare (the owner sets one zone in both places); the order and the content of copies are right, only the hour shown. A fix: names in UTC with a marker (old names kept readable), or reading `BOT_TIMEZONE` for the names' clock.
 - Status: open.
 - Found: 2026-11-07, spec of stage 7.1.
+
+## KI-67. Google Drive copy: a folder of over 1000 files is listed only in part
+
+- Where: `app/providers/google_drive.py` (`list_folder` asks one page of 1000 and does not follow `nextPageToken`).
+- What's wrong: when the owner puts over 1000 files into «Трекер — копии», the archives on the later pages are neither counted nor rotated, and «already there» may miss a file.
+- How to reproduce: 1001 files in the folder, the app's archives among the last ones listed.
+- Likelihood / impact: very rare (the app keeps 30; the folder is the app's own); at worst a few archives over 30 and a duplicate. A fix: follow `nextPageToken`.
+- Status: open.
+- Found: 2026-11-08, ticket 7.1.04.
+
+## KI-68. Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out
+
+- Where: `app/tracker/drive_copies.py` (`_upload`: only a file of the same name and size counts as sent).
+- What's wrong: if a file of the archive's name but another size is in the folder (an archive made before `BACKUP_PASSWORD` changed is the same size, so this needs a copy file changed on the PC, or a file put there by hand), the new archive is sent next to it; both have one name and both count among the 30.
+- How to reproduce: upload by hand a file `tracker_db_<time of the newest copy>.7z` of a few bytes, wait for the hourly job.
+- Likelihood / impact: very rare; one extra file of the same name in the folder until it rotates out. A fix: delete the same-name file of another size after the upload.
+- Status: open.
+- Found: 2026-11-08, ticket 7.1.04.
