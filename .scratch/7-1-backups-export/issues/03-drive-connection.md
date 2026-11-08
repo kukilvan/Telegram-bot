@@ -1,6 +1,6 @@
 # 03: Google Drive connection — variables, sign-in and sign-out, the first lines of Settings, `docs/backups.md`
 
-Status: in review
+Status: accepted
 Complexity: complex (OAuth with PKCE against a real Google client, secrets on disk, a live risk the ticket must settle)
 Blocked by: 01 (the block of Settings and the place of the Google Drive line)
 
