@@ -1,6 +1,6 @@
 # 05: Restore — `restore-bot.ps1` and `app.utils.restore`
 
-Status: in review
+Status: accepted
 Complexity: complex (replaces the live database; a PowerShell script around a one-off container; many refusals that must leave the base whole)
 Blocked by: 01 (the copies and the moment in words), 04 (the archive made by py7zr and the by-hand section of `docs/backups.md`)
 
