@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
+from app.tracker.drive_rows import DrivePart
 from app.tracker.moment_words import moment_in_words
 
 COPIES_HINT = (
@@ -25,6 +26,7 @@ class BackupBlock:
 
     copies_line: str  # the copies on this PC
     copies_hint: str
+    drive: DrivePart | None = None  # the Google Drive copy (`drive_rows`); None — its part could not be built
 
 
 class PressOutcome(Enum):

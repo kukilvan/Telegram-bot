@@ -154,7 +154,7 @@ class FakeCore:
     async def overview(self):
         raise RuntimeError("not needed")
 
-    async def backup_block(self):
+    async def backup_block(self, host=""):
         return BackupBlock("Копий базы на этом ПК пока нет.", "")
 
 

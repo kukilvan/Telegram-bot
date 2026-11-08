@@ -55,6 +55,8 @@ Rows in the order of work. Status values: not started · description · spec · 
 | `WEB_PASSWORD` | for web | login password, at least 8 characters (outer spaces ignored); without it the login page shows a hint and the bot works as usual; changing it ends all sessions; session signing key is `data/web_secret` (created itself) |
 | `WEB_PORT` | no | web port on the PC (default 8080); read by `docker compose` |
 | `WEB_HOST` | no | `127.0.0.1` (default) — this PC only; `0.0.0.0` — also the home network, e.g. a phone at `http://<PC address>:8080` (ADR 0008); read by `docker compose` |
+| `BACKUP_PASSWORD` | for the Google Drive copy | the password of its archives, at least 12 characters (outer spaces ignored); keys set but no or a short password — Settings says the copy will not turn on, a warning at start; masked |
+| `GOOGLE_DRIVE_CLIENT_ID`, `GOOGLE_DRIVE_CLIENT_SECRET` | for the Google Drive copy | the owner's own Google client «Desktop app» (`docs/backups.md`); without them the copy is off; the secret is masked |
 | `PUID`, `PGID` | no | user and group of the process in the container (default 1000); on a NAS the owner of `data`; read by `app/container_start.py` |
 | `TMDB_MIN_CALL_INTERVAL`, `TMDB_MAX_CALLS_PER_MINUTE`, `TMDB_429_BACKOFF_BASE_SECONDS`, `TMDB_429_MAX_RETRIES` | no | TMDb request rate (1.5 s / 30 per minute / 5 s / 3); AniList and IGDB have fixed limits in their clients; polling runs once a minute (`TRACKER_BEAT_SECONDS` in `app/bot/main.py`) |
 
@@ -70,6 +72,7 @@ Rows in the order of work. Status values: not started · description · spec · 
 | Steam Store | works (unofficial) | `app/providers/steam.py`, no key: prices by `IStoreBrowseService/GetItems` (up to 100 apps per request, Russian, the store country; no currency code — the currency is how Steam writes the price; adapter `sources/steam_prices.py`), the Russian name and description at adding (`appdetails`), and the name of a Steam link IGDB does not know; link «Открыть в Steam» by the Steam id from IGDB — under the messages of Steam too (a link button, `https://store.steampowered.com/app/<id>/`) |
 | PlayStation Store | not used | no prices: PlatPrices does not give a key for personal use (refusal 2026-10-30; ADR 0009 supersedes 0003); the card links to the store page by the country from Settings (KI-37) |
 | Telegram Bot API (aiogram 3.31) | works | long polling |
+| Google (OAuth, Drive API) | sign-in built (7.1.03) | the Google Drive copy: OAuth for a desktop client with PKCE, scope `drive.file`, the owner's own client; the return address `http://localhost:<port>/settings/google-drive/callback` (the switch `google_drive.REDIRECT`; what Google accepted live — `.scratch/7-1-backups-export/checks.md`); `prompt=consent` for a refresh token every time; the app must be «In production», in «Testing» the token dies in 7 days |
 | KinoPub / Kinopoisk | not used | no partner contract, no `CLIENT_ID`/`CLIENT_SECRET` |
 
 ## Gotchas
@@ -87,5 +90,6 @@ Rows in the order of work. Status values: not started · description · spec · 
 - **Undeclared names:** `NameError` in rarely run branches is found by `pyflakes` (`.venv\Scripts\python.exe -m pyflakes app tests`).
 - **GitHub Desktop can look at a copy of the project on drive C**, while the bot lives in `E:\LocalAI\Bionic\Telegram-bot` (`.env`, `data`, `.venv`). If files on E are old after a pull, choose the repository on E (File → Add local repository).
 - **Scripts outside the project that read `.env` must not log without `MaskingFormatter`** — otherwise the token reaches the screen.
+- **`data/google_drive_token.json`** is the connection of the Google Drive copy (refresh token, secret: never print or copy it); `data/google_drive_state.json` the state of its sending. Both outside the database on purpose (a restore does not bring an old connection back); a spoiled one counts as absent; «Отключить Google Drive» removes both.
 - **`data/startup_failure.json`** records the last startup failure (fingerprint, since when, when the report went; no error text). While it exists the same failure is reported to Telegram at most once a day; a successful start deletes it; deleting it by hand just makes the next failure report at once.
 - **`docker compose` substitutes variables into `.env` values and reads `.env` for its own substitutions:** `$` spoils values, `${` without `}` breaks every `docker compose` command, even `.\stop-bot.ps1`. `format: raw` does not help (keeps quotes and trailing comments, and still reads substitutions for `docker-compose.yml`). So `.\start-bot.ps1` refuses such an `.env`.

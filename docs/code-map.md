@@ -22,7 +22,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/static/` — `style.css` (light and dark theme, one column under 40rem, touch targets of 44 px), `htmx.min.js` (HTMX 2.0.4 from the npm package `htmx.org@2.0.4`, file `dist/htmx.min.js` unchanged; update the same way and fix this line), `manifest.webmanifest` and `icons/` (installation on PC and iPhone; the PNGs were made once from `icon.svg` with headless Edge; the folder is open without a login).
 - `app/tracker/migrations/versions/` — Alembic revisions `NNNN_*.py` of the tracker database; the list below shows the newest number.
 - Root: `Dockerfile`, `docker-compose.yml` (the web port on `127.0.0.1` unless `WEB_HOST` says otherwise), `start-bot.ps1`, `stop-bot.ps1`, `logs-bot.ps1`, `requirements.txt`, `pyproject.toml`, `.env.example`, `tools/code_map.py` (builds the list below).
-- `data/` (not in git) — `tracker.db`, `backups/`, `logs/bot.log`, `web_secret`, `startup_failure.json`.
+- `data/` (not in git) — `tracker.db`, `backups/`, `logs/bot.log`, `web_secret`, `startup_failure.json`, `google_drive_token.json` (the refresh token of the Google Drive copy; secret) and `google_drive_state.json` (its sending, ticket 04).
+- `docs/backups.md` — the owner's guide to the copies: what is copied where, turning the Google Drive copy on and off.
 
 ## Modules of `app/` (built)
 
@@ -39,6 +40,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/healthcheck.py` — The health check for Docker (`python -m app.healthcheck`, KI-3): asks the application's own `/health`.
 - `app/main.py` — Process entry point, `python -m app.main`: the bot, the scheduler and the web in one process (ADR 0007).
 - `app/providers/anilist.py` — AniList provider: anime metadata + airing schedule via GraphQL.
+- `app/providers/google_drive.py` — Google client of the Google Drive copy: the address of the sign-in page and the requests of the OAuth sign-in of a desktop client.
 - `app/providers/igdb.py` — IGDB client: queries to `/games` in the Apicalypse language of IGDB, with the token of Twitch and the pace of IGDB.
 - `app/providers/shikimori.py` — Shikimori API client: anime search, franchise grouping, season selection.
 - `app/providers/steam.py` — Steam client: the prices of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
@@ -58,6 +60,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/dedup.py` — Pieces of dedup keys that several kinds of events share.
 - `app/tracker/delivery.py` — Delivery rules: when a queued event may reach the owner, and how a summary reads.
 - `app/tracker/delivery_service.py` — Delivery: sending what the queue holds to the owner, one message or one summary, and noting every attempt.
+- `app/tracker/drive_rows.py` — What the owner reads about the Google Drive copy (pure): its line in Settings, the button under it and the notices of the sign-in and the sign-out.
 - `app/tracker/errors.py` — Errors the tracker core raises to its callers (the bot, later the web app).
 - `app/tracker/export_all.py` — The JSON document of the export «Скачать всё (JSON)»: every table the owner's data lives in, read from one session.
 - `app/tracker/export_rows.py` — The files of the export as bytes (pure): the CSV list with its cell guard and the JSON values, the owner's dates, the file names.
@@ -71,6 +74,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/game_scope.py` — What the owner sees of the games: the country of the stores, «Мои платформы» and the marks «играю здесь».
 - `app/tracker/games.py` — The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
 - `app/tracker/genres.py` — Genres as the owner picks them: the same genre written in two cases or with «е» for «ё» is one genre.
+- `app/tracker/google_drive.py` — The connection of the Google Drive copy: whether it is on, the sign-in to Google and the sign-out, and the files of the connection in `data/`.
 - `app/tracker/inbox.py` — «Входящие»: taking in what the owner sends to the bot, the states of an item and its moves, the 12 hours, the list, the count and deleting.
 - `app/tracker/inbox_answers.py` — The answers to an inbox item: the end of its pause, the analysis by its links or by the kind the owner chose, the offer cards, «Да» and «Нет» (spec 1.3, 2.3, 6 and 7 of stage 6.4).
 - `app/tracker/kinds.py` — What each kind of title is for the owner: one table, so a new kind cannot be added half-way.
@@ -142,6 +146,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the lock after wrong tries.
 - `app/web/card.py` — The card of a title: its details, the marks of seasons and platforms, «Следить» at a row of a follow list, the buttons.
 - `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms, the line of an expansion and the follow lists.
+- `app/web/drive_sign_in.py` — The sign-in and the sign-out of the Google Drive copy from Settings: «Подключить Google Drive», Google's return and «Отключить Google Drive».
 - `app/web/feed.py` — The feed, the main page after the sign-in: «Скоро» (the next two weeks, by days), «Позже» (the nearest date of the titles with nothing in those days) and «Недавно» (the events of the last week).
 - `app/web/filters.py` — What the list and the archive share about their filters: a value read from the address, the row of links for the kind, the sentence of an empty page and the answer under the search field.
 - `app/web/inbox.py` — The tab «Входящие»: the items the bot could not resolve, newest first, with «Найти» and «Убрать».

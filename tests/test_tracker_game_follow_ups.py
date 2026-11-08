@@ -686,7 +686,8 @@ def test_build_tracker_gives_both_igdb_sources_one_client(monkeypatch):
 
     monkeypatch.setattr(main, "create_session_factory", lambda: create_session_factory("sqlite://"))
     settings = SimpleNamespace(
-        owner_chat=1, igdb_client_id="", igdb_client_secret="", bot_timezone="UTC", model_fields_set={"bot_timezone"}
+        owner_chat=1, igdb_client_id="", igdb_client_secret="", bot_timezone="UTC", model_fields_set={"bot_timezone"},
+        google_drive_client_id="", google_drive_client_secret="", backup_password="", web_port_number=8080,
     )
 
     tracker = main.build_tracker(settings, None)

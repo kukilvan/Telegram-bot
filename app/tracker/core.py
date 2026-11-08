@@ -4,7 +4,8 @@
 settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards, `feed`
 for what comes out and what happened),
 polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`),
-test events (`test_samples`), the copies of the database (`backups`) and «Входящие» (`inbox`; the answers to an item and
+test events (`test_samples`), the copies of the database (`backups`; the connection of the Google Drive copy —
+`google_drive`) and «Входящие» (`inbox`; the answers to an item and
 its offers — `inbox_answers`, `offers`). It holds no rules of its own.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
@@ -23,6 +24,7 @@ from app.tracker.backup_rows import BackupBlock
 from app.tracker.backups import Backups
 from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
+from app.tracker.db import database_file
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.export_rows import ExportFile
 from app.tracker.exports import Exports
@@ -31,6 +33,10 @@ from app.tracker.errors import (
     UnknownInboxItem, UnknownKind, UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
+from app.tracker.drive_rows import DriveButton, DrivePart, DriveSetup
+from app.tracker.google_drive import CALLBACK_PATH as DRIVE_CALLBACK_PATH
+from app.tracker.google_drive import REDIRECT as DRIVE_REDIRECT
+from app.tracker.google_drive import DriveSettings, GoogleDrive, Redirect, SignInStep
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, FollowOffer, Followable, RecentRow, UpcomingRow
 from app.tracker.inbox import Inbox
 from app.tracker.inbox_answers import InboxAnswers
@@ -40,28 +46,9 @@ from app.tracker.polling import Polling, Pollers
 from app.tracker.posters import CARD_SIZE, IGDB_IMAGE_SITE, LIST_SIZE, TMDB_IMAGE_SITE, PosterSize, poster_url
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
-    INBOX_REASONS,
-    MEDIA_WORDS,
-    AddResult,
-    ChangeResult,
-    DeleteResult,
-    DeliveryReport,
-    InboxEntry,
-    InboxOutcome,
-    InboxReply,
-    IncomingMessage,
-    ListOrder,
-    OfferCard,
-    Overview,
-    PollReport,
-    SettingsChange,
-    SettingsView,
-    SummaryResult,
-    TakeIn,
-    TestEventResult,
-    TitleSummary,
-    WatchableSeason,
-    ZoneOption,
+    INBOX_REASONS, MEDIA_WORDS, AddResult, ChangeResult, DeleteResult, DeliveryReport, InboxEntry, InboxOutcome,
+    InboxReply, IncomingMessage, ListOrder, OfferCard, Overview, PollReport, SettingsChange, SettingsView,
+    SummaryResult, TakeIn, TestEventResult, TitleSummary, WatchableSeason, ZoneOption,
 )
 from app.tracker.scores import ScoreView
 from app.tracker.settings_store import SettingsStore
@@ -70,6 +57,7 @@ from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
+    "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect", "SignInStep",
     "BackupBlock", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
     "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason", "InboxReply",
     "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
@@ -92,6 +80,8 @@ class Tracker:
     follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
     imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
     database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies (a core made for a test)
+    drive_settings: DriveSettings = field(default_factory=DriveSettings)  # the Google Drive copy from .env; off by default
+    drive_api: Any = None  # the Google client of that copy (`GoogleDriveApi`); None — the copy is off
     _settings: SettingsStore = field(init=False, repr=False)
     _queue: EventQueue = field(init=False, repr=False)
     _polling: Polling = field(init=False, repr=False)
@@ -104,6 +94,7 @@ class Tracker:
     _inbox: Inbox = field(init=False, repr=False)
     _answers: InboxAnswers = field(init=False, repr=False)
     _backups: Backups = field(init=False, repr=False)
+    _drive: GoogleDrive = field(init=False, repr=False)
     _exports: Exports = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -125,7 +116,9 @@ class Tracker:
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
         self._inbox = Inbox(ctx, self._settings)
         self._answers = InboxAnswers(ctx, self._settings, pollers, self._titles, self.imdb_source)
-        self._backups = Backups(ctx, self._settings, self._queue, self.database_url)
+        database = database_file(self.database_url) if self.database_url else None
+        self._drive = GoogleDrive(ctx, self.drive_settings, self.drive_api, database.parent if database else None)
+        self._backups = Backups(ctx, self._settings, self._queue, self.database_url, self._drive)
         self._exports = Exports(ctx, self._settings)
 
     # --- events ---------------------------------------------------------------------------------
@@ -319,9 +312,10 @@ class Tracker:
 
     # --- copies of the database ------------------------------------------------------------------
 
-    async def backup_block(self) -> BackupBlock:
-        """The lines of the Settings block «Копии и выгрузка»; a folder that cannot be read gives the line that says so."""
-        return await self._backups.block()
+    async def backup_block(self, host: str = "") -> BackupBlock:
+        """The lines of the Settings block «Копии и выгрузка» for a page opened at `host` (the `Host` of the request: the
+        Google Drive button is only for this PC); a folder that cannot be read gives the line that says so."""
+        return await self._backups.block(host)
 
     async def make_backup_now(self) -> str:
         """«Сделать копию сейчас»: a manual copy under the lock of the daily one; returns the notice for the page."""
@@ -330,6 +324,18 @@ class Tracker:
     async def backup_database(self) -> None:
         """The scheduler's job: a daily copy when it is due; a failed one is queued as the event `backup_failed`."""
         await self._backups.hourly()
+
+    async def drive_sign_in(self, host: str) -> SignInStep:
+        """«Подключить Google Drive» on a page opened at `host`: where to send the owner, or the notice."""
+        return await self._drive.sign_in(host)
+
+    async def drive_signed_in(self, answer: Mapping[str, str]) -> str:
+        """Google sent the owner back with `answer` (the query): the notice for Settings, "" for none."""
+        return await self._drive.signed_in(answer)
+
+    async def drive_sign_out(self) -> str:
+        """«Отключить Google Drive»: revoked at Google, the files removed; the notice."""
+        return await self._drive.sign_out()
 
     async def export_list(self) -> ExportFile:
         """«Скачать список (CSV)»: the file `tracker-list-<date>.csv`, one line per title, the archive too."""

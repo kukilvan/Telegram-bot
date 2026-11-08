@@ -80,7 +80,19 @@
   <h2>Копии и выгрузка</h2>
   <p class="backup-line">{{ backup.copies_line }}</p>
   <p class="hint">{{ backup.copies_hint }}</p>
-  {# the line of the Google Drive copy and its button: ticket 03 #}
+  {% if backup.drive %}
+  <p class="drive-line">{{ backup.drive.line }}</p>
+  {% if backup.drive.hint %}<p class="hint">{{ backup.drive.hint }}</p>{% endif %}
+  {% if backup.drive.elsewhere %}<p class="hint drive-elsewhere">{{ backup.drive.elsewhere }}</p>{% endif %}
+  {% if backup.drive.buttons %}
+  <div class="backup-actions">
+    {% if drive_buttons.CONNECT in backup.drive.buttons %}<a class="button-link" href="{{ drive_connect_address }}">Подключить Google Drive</a>{% endif %}
+    {% if drive_buttons.DISCONNECT in backup.drive.buttons %}
+    <form method="post" action="{{ drive_disconnect_address }}"><button type="submit">Отключить Google Drive</button></form>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
   <form class="backup-actions" method="post" action="{{ backup_address }}">
     <button type="submit">Сделать копию сейчас</button>
   </form>

@@ -12,17 +12,18 @@ _PATTERNS = [
     (re.compile(r"(bot)\d{6,}:[A-Za-z0-9_-]{20,}"), r"\1" + MASK),
     # Telegram bot token anywhere else
     (re.compile(r"\b\d{6,}:[A-Za-z0-9_-]{30,}\b"), MASK),
-    # query strings / form bodies: api_key=..., key=..., client_secret=...
+    # query strings / form bodies: api_key=..., key=..., client_secret=..., the code and verifier of a Google sign-in
     (
         re.compile(
-            r"(?i)\b(api_key|apikey|access_token|refresh_token|client_secret|token|secret|password|key)=[^&\s\"'<>]+"
+            r"(?i)\b(api_key|apikey|access_token|refresh_token|client_secret|token|secret|password|key|code|code_verifier)"
+            r"=[^&\s\"'<>]+"
         ),
         r"\1=" + MASK,
     ),
     # JSON bodies: "access_token": "..."
     (
         re.compile(
-            r"(?i)(\"(?:api_key|apikey|access_token|refresh_token|client_secret|token|secret|password)\"\s*:\s*\")[^\"]+"
+            r"(?i)(\"(?:api_key|apikey|access_token|refresh_token|id_token|client_secret|token|secret|password)\"\s*:\s*\")[^\"]+"
         ),
         r"\1" + MASK,
     ),

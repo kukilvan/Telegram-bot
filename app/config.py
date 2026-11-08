@@ -9,6 +9,8 @@ from pydantic_settings import BaseSettings
 
 from app.utils.secrets_mask import remember_secrets
 
+DEFAULT_WEB_PORT = 8080
+
 
 def parse_user_ids(raw: str) -> list[int]:
     """Parse "123, 456" into [123, 456]; blank items are skipped, junk raises ValueError."""
@@ -57,10 +59,25 @@ class Settings(BaseSettings):
     # Time zone of the owner's rules when the owner has set none; read through `time_zone_of`
     bot_timezone: str = "UTC"
 
-    @field_validator("web_password")
+    # The port of the web on the PC (docker compose maps it); read through `web_port_number`
+    web_port: str = ""
+
+    # The Google Drive copy (spec 4.1 of stage 7.1): the password of the archives and the owner's Google client
+    # «Desktop app». None is required; whether the copy is on is decided in one place, `DriveSettings.on`
+    backup_password: str = ""
+    google_drive_client_id: str = ""
+    google_drive_client_secret: str = ""
+
+    @field_validator("web_password", "backup_password", "google_drive_client_id", "google_drive_client_secret")
     @classmethod
-    def _strip_web_password(cls, value: str) -> str:
+    def _strip(cls, value: str) -> str:
         return value.strip()
+
+    @property
+    def web_port_number(self) -> int:
+        """WEB_PORT as a number; 8080 (docker compose's default too) when it is blank or not a port."""
+        value = self.web_port.strip()
+        return int(value) if value.isdigit() and 0 < int(value) < 65536 else DEFAULT_WEB_PORT
 
     @property
     def allowed_telegram_user_ids(self) -> list[int]:

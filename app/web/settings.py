@@ -1,8 +1,9 @@
 """The settings page: one form for the time zone, the working days, the hour of the summary, the quiet hours, the break
 between parts of a season, the platforms and the country of the stores. It has one button; under it are the line
 «Сейчас», the state of the bot in Telegram and the block «Копии и выгрузка» (the copies of the database, with its own
-button «Сделать копию сейчас» that posts to `/settings/backup`, and the downloads «Скачать список (CSV)» and «Скачать всё (JSON)»
-at `/settings/export.csv` and `/settings/export.json`). The form is saved as a whole or not at all: a value the
+button «Сделать копию сейчас» that posts to `/settings/backup`, the line of the Google Drive copy with its buttons (their
+addresses are `drive_sign_in`'s), and the downloads «Скачать список (CSV)» and «Скачать всё (JSON)» at
+`/settings/export.csv` and `/settings/export.json`). The form is saved as a whole or not at all: a value the
 core refuses is shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the
 spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1 (the downloads: section 3)."""
 
@@ -12,7 +13,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 from starlette.datastructures import FormData
 
-from app.tracker.core import ExportFile, SettingsChange, SettingsRefused, SettingsView
+from app.tracker.core import DriveButton, ExportFile, SettingsChange, SettingsRefused, SettingsView
 from app.web import pages
 
 WEEKDAYS = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")  # Monday is 0, as in the core
@@ -68,8 +69,10 @@ async def _show(
         current=str(request.app.url_path_for("settings")), form_address=str(request.app.url_path_for("settings_save")),
         zones=zones, days=days, platforms=platforms, countries=countries, shown=shown, log_note=log_note,
         now_line=view.now_line, telegram_state=pages.telegram_note(request) or CONNECTED,
-        backup=await pages.tracker_of(request).backup_block(),
+        backup=await pages.tracker_of(request).backup_block(request.headers.get("host", "")),
         backup_address=str(request.app.url_path_for("settings_backup")),
+        drive_connect_address=str(request.app.url_path_for("settings_drive_connect")),
+        drive_disconnect_address=str(request.app.url_path_for("settings_drive_disconnect")), drive_buttons=DriveButton,
         export_csv_address=str(request.app.url_path_for("settings_export_csv")),
         export_json_address=str(request.app.url_path_for("settings_export_json")),
         error_text=error.text if error is not None else "", invalid={error.field.value: True} if error is not None else {},

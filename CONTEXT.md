@@ -183,6 +183,16 @@ A file of `data/backups` that holds the whole database at one moment, made with 
 _Avoid_: бэкап (in messages to the owner), дамп
 In code: `backup` — `app/utils/backup.py` (`Copy`, `copies`), the core's `Backups`, `Tracker.backup_block`, `make_backup_now`, `backup_database`; the event `backup_failed`.
 
+**Копия в Google Drive** (drive copy):
+An encrypted archive of a copy of the database in the owner's own Google Drive, in the folder «Трекер — копии» (7z with AES-256, the password `BACKUP_PASSWORD`; 30 kept). Off by default: on when `.env` has the owner's Google client and the password (`DriveSettings.setup`), then connected once by «Подключить Google Drive» in Settings on this PC; the connection is the file `data/google_drive_token.json`, outside the database.
+_Avoid_: бэкап в облаке, облачная копия
+In code: `drive copy` — module `google_drive` (`GoogleDrive`, `DriveSettings`, `DriveFiles`), its texts `drive_rows`, the Google client `app/providers/google_drive.py`; `Tracker.drive_sign_in`, `drive_signed_in`, `drive_sign_out`.
+
+**Пароль копий** (backup password):
+The password the archives of the Google Drive copy are encrypted with: `BACKUP_PASSWORD` in `.env`, at least 12 characters. Kept by the owner outside this PC too: without it the copies in Google Drive cannot be opened; a new password holds only for new copies.
+_Avoid_: ключ шифрования
+In code: `backup_password` (`Settings`), `DriveSettings.password`.
+
 **Выгрузка** (export):
 The data of the owner as a file to download from Settings: the CSV list (one line per title, for Excel) and the JSON of everything (titles with seasons, episodes, platforms, prices, the settings and «Входящие»). Download only: there is no import, the data comes back from a copy of the database.
 _Avoid_: импорт, дамп

@@ -23,13 +23,14 @@ from app.bot.main import add_jobs, build_dispatcher
 from app.bot.tracker_handlers import BOT_COMMANDS, MALFORMED_TOKEN, TelegramSender
 from app.config import Settings, get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
+from app.providers.google_drive import GoogleDriveApi
 from app.providers.igdb import IGDBProvider
 from app.providers.shikimori import ShikimoriClient
 from app.providers.steam import SteamProvider
 from app.providers.tmdb import TMDbProvider
 from app.runtime import Health, Runtime
 from app.startup_report import forget_failure, report_failure
-from app.tracker.core import Tracker
+from app.tracker.core import DriveSettings, DriveSetup, Tracker
 from app.tracker.db import TRACKER_DATABASE_URL, create_session_factory
 from app.tracker.models import TitleKind
 from app.tracker.sources.igdb_follow_ups import IgdbFollowUpSource
@@ -127,6 +128,11 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
         follow_up_source=IgdbFollowUpSource(igdb),
         imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
         database_url=TRACKER_DATABASE_URL,  # the copies of this database are made and listed
+        drive_settings=DriveSettings(
+            settings.google_drive_client_id, settings.google_drive_client_secret, settings.backup_password,
+            settings.web_port_number,
+        ),
+        drive_api=GoogleDriveApi(settings.google_drive_client_id, settings.google_drive_client_secret),
     )
 
 
@@ -145,6 +151,8 @@ async def main() -> int:
 
     bot = telegram_bot(settings.telegram_bot_token)
     tracker = build_tracker(settings, bot)
+    if tracker.drive_settings.setup is DriveSetup.NO_PASSWORD:
+        logging.warning("BACKUP_PASSWORD не задан или короче 12 знаков: копия в Google Drive не включится")
 
     health = Health()
     host = os.environ.get(WEB_BIND_HOST, "").strip() or "127.0.0.1"

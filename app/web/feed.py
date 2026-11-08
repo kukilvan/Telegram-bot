@@ -12,9 +12,9 @@ from typing import NamedTuple
 from fastapi import APIRouter, Form, Request, Response
 
 from app.tracker.cards import format_date, format_weekday_date
-from app.tracker.core import Feed, FeedDay, RecentRow, UnknownTitle, UpcomingRow
+from app.tracker.core import DRIVE_REDIRECT, Feed, FeedDay, Redirect, RecentRow, UnknownTitle, UpcomingRow
 from app.tracker.kinds import KINDS
-from app.web import pages
+from app.web import drive_sign_in, pages
 from app.tracker.core import LIST_SIZE
 
 NOTHING_SOON = "В ближайшие 14 дней ничего не выходит"
@@ -134,6 +134,8 @@ async def _pressed(request: Request, notice: str) -> Response:
 @router.get("/", name="feed")
 @refreshing
 async def show_feed(request: Request) -> Response:
+    if DRIVE_REDIRECT is Redirect.ROOT and drive_sign_in.is_google_answer(request):
+        return await drive_sign_in.finish(request)  # Google sends the owner back to this address under that switch
     feed = await pages.tracker_of(request).feed()
     return await pages.page(request, "feed.html", current=str(request.app.url_path_for("feed")), **_view(request, feed))
 
