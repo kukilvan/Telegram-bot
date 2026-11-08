@@ -719,7 +719,7 @@ Format of a new entry:
 
 - Where: `app/utils/restore.py` (`OLDER`) and `app/tracker/db.py` (`_backup_before_migration`).
 - What's wrong: the confirmation of a copy of an older revision says «перед этим сделается ещё одна копия», but the start makes no copy before the migration when the newest copy before that revision already holds the same content — for instance when the owner restores that very copy «перед обновлением базы».
-- How to reproduce: `.estore-bot.ps1`, choose a copy «перед обновлением базы», «да»: after the start `dataackups` has no new `…_before-<revision>.db` (checked live 2026-11-08 on a copy of the project: 0013 → 0014).
+- How to reproduce: `.\restore-bot.ps1`, choose a copy «перед обновлением базы», «да»: after the start `data\backups` has no new `…_before-<revision>.db` (checked live 2026-11-08 on a copy of the project: 0013 → 0014).
 - Likelihood / impact: whenever a before-update copy is restored; nothing is lost (the same content is in the copy already, and the restore made its «перед восстановлением» copy), only the promise of the text is wrong. A fix: «перед этим сохранится копия» or no promise at all.
 - Status: open.
 - Found: 2026-11-08, ticket 7.1.05.
