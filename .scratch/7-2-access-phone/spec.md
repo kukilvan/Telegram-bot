@@ -1,6 +1,6 @@
 # Spec 7.2: the app address, the phone, the bot as links, a safer login
 
-Status: in review
+Status: accepted
 
 From `description.md` (accepted 2026-11-15) and its «Open questions for the spec». Terms of `CONTEXT.md`; new terms in section 13. What was checked against real answers: `checks.md` next to this file. ADRs it leans on: 0002, 0004, 0007, 0008, 0012, 0013; new: 0014 (section 13).
 

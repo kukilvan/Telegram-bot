@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-15 — Spec 7.2
+
+- `.scratch/7-2-access-phone/spec.md` and `checks.md`; ADR 0014 (new): web sign-ins and the login lock live in `data/web_login.json`, outside the database (a restore never revives an ended sign-in). KI-72 (an iPad reads as macOS), KI-73 (a login report that failed to send waits for the delivery rules), KI-74 (the chosen filter past the edge of its row on the phone) recorded.
+- Checks: Telegram refuses `http://localhost:…` in an inline button and in a text link (`Wrong HTTP URL`; one such button refuses the whole message) and takes `192.168.x`, `127.0.0.1` and a domain — test messages to the owner's chat with leave, deleted at once. Every screen measured at 375 and 320 px on a scratch web server over a copy of the database: no overflow, every control ≥ 44 px; the menu and the filters take the first screen. Chrome installs from its menu without a service worker (108 Android, 112 desktop).
+- Decisions (with the owner's «ОК»): `APP_URL` rules (http/https, an IP or a dotted name, no path); link mode vs chat mode of the bot; `/start` and the old menu texts carry their link in the text (one keyboard per message); the delivery check moves into one core method `Tracker.delivery_check`; the own session middleware (per-request `Secure`), sessions ≤ 20, `seen` written hourly; the lock stays one for the whole app; the client address shown only when public; the login report as events `web_login`, `web_login_locked` sent at once, then by the rules; phone fixes CSS and markup only under 40rem; Cloudflare Access Bypass for `/static/*` asked of the NAS project. Six tickets proposed.
+
 ## 2026-11-15 — Description 7.2
 
 - `.scratch/7-2-access-phone/description.md`, mockups `bot-links.html` and `settings-test-event.html` updated (the address example without Tailscale, the «Вход» block, the 🔐 login message). ADR 0013 (new): outside access by the owner's domain (~$10 a year), Cloudflare Tunnel and Cloudflare Access (a mail code before the app), set up with the NAS by the owner's separate Claude Code project for this app and another one; it makes the choice ADR 0006 left open, so 0006 and 0008 stand; 7.1's decision 2 (Tailscale on the PC in 7.2) is dropped.
