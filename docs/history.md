@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-15 — Ticket 7.2.01
+
+- `APP_URL` (`app/config.py`: `parse_app_url` → `AppUrl`, five rules with Russian reasons, one form; `Settings.app_url_reading`); `app/main.py` reads it once and hands it to the bot (`AppLinks`, link mode) and the web (`create_web_app(app_url, web_host)`); log lines at start (the address is not logged). The Settings line and its two hints: `app/web/address_line.py`, `settings.html`.
+- Link mode (`app/bot/tracker_handlers.py`): every `CARD` button a link (`_action_button`, `TelegramSender(links)`), a card in the chat has «📄 Открыть в приложении», the menu is «📋 Сводка сейчас», `/start` and the old texts «📚 Мои тайтлы» / «🧪 Тестовое событие» answer with a text link (HTML, preview off), «➕ Добавить» with the new menu; the old callbacks work in both modes. Split: `list_handlers.py`, `test_event_handlers.py` (menu texts only in chat mode, callbacks in both); the button constants are re-exported from `tracker_handlers` (`__all__`).
+- Tests: `test_app_url`, `test_bot_link_mode`, `test_tracker_owner_filter` (link mode added); 3902 pass, the three known Windows failures. Checked live by the owner with `APP_URL` set: Settings line, `/start`, the old texts, the card button. Decision: the owner's «все работает» after the check counted as «ОК».
+
 ## 2026-11-15 — Slicing 7.2
 
 - `.scratch/7-2-access-phone/issues/01…06`: 01 the app address and the bot as links (medium), 02 Settings test event and delivery check (medium, after 01), 03 sign-ins on the server (complex), 04 host names and the proxy (medium, after 01 and 03), 05 the login report (medium, after 03 and 04), 06 the phone pass, the PWA check and `docs/outside-access.md` (medium, after 02, 03 and 05).
