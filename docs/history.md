@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-15 — Slicing 7.2
+
+- `.scratch/7-2-access-phone/issues/01…06`: 01 the app address and the bot as links (medium), 02 Settings test event and delivery check (medium, after 01), 03 sign-ins on the server (complex), 04 host names and the proxy (medium, after 01 and 03), 05 the login report (medium, after 03 and 04), 06 the phone pass, the PWA check and `docs/outside-access.md` (medium, after 02, 03 and 05).
+- Decisions: the device words and the login report come only in 05, so 03 fills `device` with `неизвестное устройство` and sends no report; the client address and `Secure` come only in 04, so 03 leaves `address` empty. KI-72…74 were already in `KNOWN_ISSUES.md` from the spec, so tickets 05 and 06 only check them.
+
 ## 2026-11-15 — Spec 7.2
 
 - `.scratch/7-2-access-phone/spec.md` and `checks.md`; ADR 0014 (new): web sign-ins and the login lock live in `data/web_login.json`, outside the database (a restore never revives an ended sign-in). KI-72 (an iPad reads as macOS), KI-73 (a login report that failed to send waits for the delivery rules), KI-74 (the chosen filter past the edge of its row on the phone) recorded.
