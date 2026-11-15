@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-15 — Review 7.1 (stage 7.1 done)
+
+- Two sessions (2026-11-08 partial, 2026-11-15), `.scratch/7-1-backups-export/review.md`. Fixed now: F4 `restore-bot.ps1` asked «Вернуть базу к копии  Всё…» (`$phrase?` read as another variable) → `${phrase}?` and a test over the `.ps1` scripts; F5 a failed daily copy reported even when the copies folder cannot be read (no sentence of the last copy); F2 `session_crd` masked; F3 a date-dependent test; F7 `Copy.origin`, `ORIGIN_WORDS`, `dedup_key(place, …)` (rule 5); F8 `parse_moment` for the Drive files; F9 `backup_events.retry_words`; F10, F11 small. Deferred: KI-71 (`export_all` asks `TitleKind.GAME`); `exports`, `export_rows` joined the core-split test lists.
+- Live: the PC off for a week sent its copy at the start; `restore-bot.ps1` refusals, a `.7z` by the real password, a real restore without loss (bot stopped, a manual copy of the still base restored).
+- Tests: 3788 pass, 3 skipped, the three known Windows failures.
+
 ## 2026-11-08 — Ticket 7.1.05
 
 - The restore. `app.container_start` runs a given module of `app` with its arguments after the same rights fix (`app_command(args)`, a wrong name refused before anything is made; the default stays `app.main`). `app/utils/restore.py`: `list` (all copies newest first, the moment in words, the kind after a dash, `@copy <n> <path>` lines for the script), `check` (a `.7z` by `BACKUP_PASSWORD` from the container's environment into a temporary folder — any py7zr error is the one «пароль не подходит» text; a `.db` read `immutable` so nothing is left next to it; integrity, the tables, a newer revision refused, an older one with the note; `@when <phrase>`), `apply` (checked again; the current base copied by the online backup to `_before-restore` with its `-wal`; `wal_checkpoint(TRUNCATE)` and the `-wal`/`-shm` removed only after a finished checkpoint; the copy written to `tracker.db.restoring`, checked, `os.replace`). `app/tracker/db.py` gained `head_revision`, `is_known_revision`; `backup.BEFORE_RESTORE_SUFFIX`.

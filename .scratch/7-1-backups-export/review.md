@@ -1,6 +1,6 @@
 # Review 7.1: backups and export
 
-Status: in review
+Status: accepted
 
 Two sessions: the first (2026-11-08) ran the Settings block, the press and the downloads and hit the usage limit; the second (2026-11-15) ran the two-axis review, the restore script live, and made the decisions.
 
