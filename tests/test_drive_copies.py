@@ -722,7 +722,10 @@ def test_the_pc_that_was_off_sends_at_its_start(tracker, tmp_path, google):
 
     run(tracker.backup_database())  # the first run of the job is at the start
 
-    assert state(tmp_path).last_success_name.startswith("tracker_db_20261108_")
+    # The daily copy is named by the real clock (`backup_if_due`), so the test finds it in the folder, whatever the date
+    newest = backup.daily_backups(tmp_path / "backups")[-1][1].name
+    assert newest != "tracker_db_20261102_040000.db"
+    assert state(tmp_path).last_success_name == newest
 
 
 def test_after_a_refused_sign_in_the_hourly_job_waits_for_a_new_one(tracker, tmp_path, google, clock):

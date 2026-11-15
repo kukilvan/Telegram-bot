@@ -32,6 +32,7 @@ from app.runtime import Health, Runtime
 from app.startup_report import forget_failure, report_failure
 from app.tracker.core import DriveSettings, DriveSetup, Tracker
 from app.tracker.db import TRACKER_DATABASE_URL, create_session_factory
+from app.tracker.google_drive import MIN_PASSWORD_LENGTH as MIN_BACKUP_PASSWORD_LENGTH
 from app.tracker.models import TitleKind
 from app.tracker.sources.igdb_follow_ups import IgdbFollowUpSource
 from app.tracker.sources.igdb_games import IgdbGameSource
@@ -152,7 +153,9 @@ async def main() -> int:
     bot = telegram_bot(settings.telegram_bot_token)
     tracker = build_tracker(settings, bot)
     if tracker.drive_settings.setup is DriveSetup.NO_PASSWORD:
-        logging.warning("BACKUP_PASSWORD не задан или короче 12 знаков: копия в Google Drive не включится")
+        logging.warning(
+            "BACKUP_PASSWORD не задан или короче %s знаков: копия в Google Drive не включится", MIN_BACKUP_PASSWORD_LENGTH
+        )
 
     health = Health()
     host = os.environ.get(WEB_BIND_HOST, "").strip() or "127.0.0.1"

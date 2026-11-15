@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
-from app.tracker.backup_events import RETRY, SIGN_IN, drive_reason
+from app.tracker.backup_events import drive_reason, retry_words
 from app.tracker.drive_rows import DrivePart
 from app.tracker.moment_words import moment_in_words
 
@@ -62,9 +62,8 @@ def press_notice(outcome: PressOutcome, *, when: str = "", reason: str = "") -> 
         return f"Копия сделана: {when}."
     if outcome is PressOutcome.SENT:
         return "Копия сделана и отправлена в Google Drive."
-    if outcome is PressOutcome.NOT_SENT:  # nothing is retried after `sign_in` until the owner connects again
-        retry = "" if reason == SIGN_IN else f" {RETRY}"
-        return f"Копия сделана, но в Google Drive не ушла: {drive_reason(reason)}.{retry}"
+    if outcome is PressOutcome.NOT_SENT:
+        return f"Копия сделана, но в Google Drive не ушла: {drive_reason(reason)}.{retry_words(reason)}"
     if outcome is PressOutcome.SENDING:
         return "Копия сделана; в Google Drive она ещё отправляется — итог появится здесь."
     if outcome is PressOutcome.FAILED:

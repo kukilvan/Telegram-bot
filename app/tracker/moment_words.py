@@ -6,9 +6,7 @@ restore list. It lives in a module of its own (rule 7) so that all of them reach
 
 from datetime import datetime, timedelta
 
-_MONTHS = (
-    "января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря",
-)
+from app.tracker.cards import format_day_month
 
 
 def moment_in_words(moment: datetime, now: datetime) -> str:
@@ -23,4 +21,4 @@ def moment_in_words(moment: datetime, now: datetime) -> str:
     if day == today - timedelta(days=1):
         return f"вчера в {clock}"
     year = "" if day.year == today.year else f" {day.year}"
-    return f"{day.day} {_MONTHS[day.month - 1]}{year} в {clock}"
+    return f"{format_day_month(day)}{year} в {clock}"

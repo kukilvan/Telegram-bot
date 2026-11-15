@@ -192,6 +192,8 @@ def test_the_password_and_the_secret_are_masked_by_their_names(env):
     ('{"id_token": "eyJfake.id.token"}', "eyJfake.id.token"),
     ('PUT https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=AFy3sg16nV_fake "HTTP/1.1 200"',
      "AFy3sg16nV_fake"),
+    ('PUT https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&upload_id=***&session_crd=AHSoBR_fake_crd '
+     '"HTTP/1.1 200"', "AHSoBR_fake_crd"),
 ])
 def test_the_codes_and_tokens_of_a_google_sign_in_are_masked(text, secret):
     record = logging.LogRecord("t", logging.INFO, __file__, 1, "%s", (text,), None)

@@ -1,6 +1,6 @@
-"""The event «copy not made» (pure): the reasons, the messages of both kinds (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
+"""The event «copy not made» (pure): the reasons, the messages of both places (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
 
-It sits next to `failures.py` (the same kind of message: a failure the owner can do something about) but in a module of
+It sits next to `failures.py` (the same sort of message: a failure the owner can do something about) but in a module of
 its own (rule 7): `failures.py` is about titles that could not be checked, this one is about copies. The event has no
 title, so the Feed does not show it; it is delivered by the delivery rules. The Google Drive reasons (spec 4.6 of stage
 7.1) are keys stored in `google_drive_state.json`; their texts and the rule «at once or at the 2nd failure in a row»
@@ -13,8 +13,8 @@ from datetime import date
 
 BACKUP_FAILED = "backup_failed"  # event type
 
-LOCAL = "local"  # the kind of the copy on this PC
-DRIVE = "drive"  # the kind of the copy to Google Drive
+LOCAL = "local"  # the place of the copy: on this PC
+DRIVE = "drive"  # the place of the copy: in Google Drive
 
 # the reasons of a copy that did not go to Google Drive (spec 4.6), as stored in the state file
 CONNECTION = "connection"  # no answer, DNS, timeout
@@ -49,16 +49,19 @@ def reason_of(exc: BaseException) -> str:
     return OTHER_ERROR
 
 
-def dedup_key(kind: str, day: date) -> str:
-    """One report of each kind a day; `day` is the owner's date."""
-    return f"{BACKUP_FAILED}:{kind}:{day.isoformat()}"
+def dedup_key(place: str, day: date) -> str:
+    """One report of each place a day; `day` is the owner's date."""
+    return f"{BACKUP_FAILED}:{place}:{day.isoformat()}"
 
 
-def local_text(reason: str, last: str | None) -> str:
+def local_text(reason: str, last: str | None, *, folder_read: bool = True) -> str:
     """«⚠️ Копия базы не сделана: на диске нет места. Последняя — вчера в 18:32. Попробую снова через час.»; `last` is
-    the newest copy in words, None when the PC has none."""
+    the newest copy in words, None when the PC has none. When the folder of the copies could not be read, nothing is
+    said of the last copy."""
+    if not folder_read:
+        return f"⚠️ Копия базы не сделана: {reason}. {RETRY}"
     after = f"Последняя — {last}." if last else "Копий базы на этом ПК пока нет."
-    return f"⚠️ Копия базы не сделана: {reason}. {after} Попробую снова через час."
+    return f"⚠️ Копия базы не сделана: {reason}. {after} {RETRY}"
 
 
 def drive_reason(key: str | None) -> str:
@@ -72,13 +75,18 @@ def drive_reported(reason: str, failures_in_row: int) -> bool:
     return reason in REPORTED_AT_ONCE or failures_in_row >= 2
 
 
+def retry_words(reason: str) -> str:
+    """« Попробую снова через час.» after a Google Drive failure; nothing after `sign_in`: nothing is retried until the
+    owner connects again (spec 4.6)."""
+    return "" if reason == SIGN_IN else f" {RETRY}"
+
+
 def drive_text(reason: str, last: str | None) -> str:
     """«⚠️ Копия в Google Drive не ушла: нет связи с Google Drive. Последняя удачная — вчера в 18:32. Попробую снова
     через час.»; `last` is the last success in words, None when none went yet. For `sign_in` nothing is retried, so the
     last sentence is left out."""
     after = f"Последняя удачная — {last}." if last else "Удачных копий там ещё не было."
-    retry = "" if reason == SIGN_IN else f" {RETRY}"
-    return f"⚠️ Копия в Google Drive не ушла: {drive_reason(reason)}. {after}{retry}"
+    return f"⚠️ Копия в Google Drive не ушла: {drive_reason(reason)}. {after}{retry_words(reason)}"
 
 
 # (id, menu label, message text) of the samples of «Тестовое событие»

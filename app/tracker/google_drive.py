@@ -27,6 +27,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from app.tracker import drive_rows
+from app.tracker.sources.dates import parse_moment
 from app.tracker.context import CoreContext
 from app.tracker.drive_rows import DrivePart, DriveSetup
 from app.tracker.drive_state import DriveState, state_of
@@ -146,7 +147,7 @@ class DriveFiles:
                 raise ValueError("refresh_token or connected_at is not a text")
             if folder_id is not None and not isinstance(folder_id, str):
                 raise ValueError("folder_id is not a text")
-            return DriveToken(refresh_token, datetime.fromisoformat(connected_at), folder_id)
+            return DriveToken(refresh_token, parse_moment(connected_at), folder_id)
         except (KeyError, ValueError) as exc:
             logging.warning("%s is spoiled, Google Drive counts as not connected: %r", TOKEN_FILE, exc)
             return None

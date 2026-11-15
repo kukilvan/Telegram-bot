@@ -179,9 +179,9 @@ In code: `quiet hours` — `quiet_from` / `quiet_until`.
 ## Copies
 
 **Копия базы** (backup):
-A file of `data/backups` that holds the whole database at one moment, made with SQLite's online backup. Kinds: the daily copy (the hourly job makes it when the newest daily one is over a day old; 14 newest and one a month for 12 months are kept), the manual copy (the button «Сделать копию сейчас»; 10 newest kept), the copy before an update (before a migration; never deleted) and the copy before a restore (never deleted). The time in its name is the container's clock; it names the copy.
+A file of `data/backups` that holds the whole database at one moment, made with SQLite's online backup. Four, by what made it (its origin, not a «kind»: that word is a title's): the daily copy (the hourly job makes it when the newest daily one is over a day old; 14 newest and one a month for 12 months are kept), the manual copy (the button «Сделать копию сейчас»; 10 newest kept), the copy before an update (before a migration; never deleted) and the copy before a restore (never deleted). The time in its name is the container's clock; it names the copy.
 _Avoid_: бэкап (in messages to the owner), дамп
-In code: `backup` — `app/utils/backup.py` (`Copy`, `copies`), the core's `Backups`, `Tracker.backup_block`, `make_backup_now`, `backup_database`; the event `backup_failed`.
+In code: `backup` — `app/utils/backup.py` (`Copy`, `Copy.origin`, `copies`), the core's `Backups`, `Tracker.backup_block`, `make_backup_now`, `backup_database`; the event `backup_failed`.
 
 **Копия в Google Drive** (drive copy):
 An encrypted archive of a copy of the database in the owner's own Google Drive, in the folder «Трекер — копии» (7z with AES-256, the password `BACKUP_PASSWORD`; 30 kept). Off by default: on when `.env` has the owner's Google client and the password (`DriveSettings.setup`), then connected once by «Подключить Google Drive» in Settings on this PC; the connection is the file `data/google_drive_token.json`, outside the database.

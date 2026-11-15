@@ -113,7 +113,7 @@ class DriveCopies:
         """The newest daily or manual copy on the PC; None — none. Blocking: called in a worker thread."""
         if self.folder is None:
             return None
-        return next((copy for copy in backup.copies(self.folder) if copy.kind in SENDABLE), None)
+        return next((copy for copy in backup.copies(self.folder) if copy.origin in SENDABLE), None)
 
     def _due(self) -> tuple[bool, backup.Copy | None]:
         """For the hourly job: whether an attempt is due, and the copy it sends (None — there is no copy, which the

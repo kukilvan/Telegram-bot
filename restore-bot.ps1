@@ -139,7 +139,8 @@ function Invoke-Main {
     Show-Lines $checked.Lines
     $phrase = "$($checked.Lines | Where-Object { $_.StartsWith('@when ') } | Select-Object -First 1)".Substring(6)
 
-    $answer = "$(Read-Host "Вернуть базу к копии $phrase? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет)")"
+    # ${phrase} in braces: without them PowerShell takes the question mark into the name and finds an empty variable
+    $answer = "$(Read-Host "Вернуть базу к копии ${phrase}? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет)")"
     if (($answer -replace '\s', '') -ne "да") {
         Write-Host $cancelled
         return 0

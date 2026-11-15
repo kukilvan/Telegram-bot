@@ -142,8 +142,13 @@ class Backups:
         """Queue «⚠️ Копия базы не сделана…»: at most one a day (the key carries the owner's date), no title."""
         rules = await self.settings.delivery_rules()
         local_now = rules.local(self.ctx.now())
-        moments = await asyncio.to_thread(self._moments)
-        last = moment_in_words(moments[0], local_now) if moments else None
-        text = backup_events.local_text(backup_events.reason_of(exc), last)
+        try:
+            moments = await asyncio.to_thread(self._moments)
+        except OSError as unread:  # the folder that failed the copy may fail this listing too: the report still goes
+            logging.warning("The copies folder cannot be read for the report of the failed copy: %r", unread)
+            text = backup_events.local_text(backup_events.reason_of(exc), None, folder_read=False)
+        else:
+            last = moment_in_words(moments[0], local_now) if moments else None
+            text = backup_events.local_text(backup_events.reason_of(exc), last)
         key = backup_events.dedup_key(backup_events.LOCAL, local_now.date())
         await self.queue.record_event(backup_events.BACKUP_FAILED, {"text": text}, key)

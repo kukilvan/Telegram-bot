@@ -13,10 +13,10 @@ _PATTERNS = [
     # Telegram bot token anywhere else
     (re.compile(r"\b\d{6,}:[A-Za-z0-9_-]{30,}\b"), MASK),
     # query strings / form bodies: api_key=..., key=..., client_secret=..., the code and verifier of a Google sign-in,
-    # the session of a Google Drive upload (whoever has it may write into that upload for a week)
+    # the session of a Google Drive upload and its credential (whoever has them may write into that upload for a week)
     (
         re.compile(
-            r"(?i)\b(api_key|apikey|access_token|refresh_token|client_secret|token|secret|password|key|code|code_verifier|upload_id)"
+            r"(?i)\b(api_key|apikey|access_token|refresh_token|client_secret|token|secret|password|key|code|code_verifier|upload_id|session_crd)"
             r"=[^&\s\"'<>]+"
         ),
         r"\1=" + MASK,

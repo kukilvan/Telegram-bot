@@ -49,7 +49,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
 - `app/tracker/actions.py` — Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons.
 - `app/tracker/anime_events.py` — Anime events: the episodes the two sources agree on, and the films of a franchise.
-- `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the messages of both kinds (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
+- `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the messages of both places (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
 - `app/tracker/backup_rows.py` — What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
 - `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.

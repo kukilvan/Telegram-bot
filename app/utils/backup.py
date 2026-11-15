@@ -26,8 +26,8 @@ from app.tracker.db import (
 )
 
 COPY_NAME = re.compile(r"^tracker_db_(\d{8}_\d{6})(?:_(manual|before-.+))?\.db$")  # a valid time, one of the suffixes
-DAILY, MANUAL, OTHER = "daily", "manual", "other"  # the kinds of a copy; the others are those made before an update or a restore
-KIND_ORDER = {DAILY: 0, MANUAL: 1, OTHER: 2}  # on equal times in a name: the daily copy first
+DAILY, MANUAL, OTHER = "daily", "manual", "other"  # what made a copy; the others are those made before an update or a restore
+ORIGIN_ORDER = {DAILY: 0, MANUAL: 1, OTHER: 2}  # on equal times in a name: the daily copy first
 MANUAL_SUFFIX = "manual"
 BEFORE_RESTORE_SUFFIX = "before-restore"  # the copy of the base the restore replaces (`app/utils/restore.py`)
 KEPT_MANUAL = 10  # manual copies kept: the newest
@@ -39,7 +39,7 @@ KEPT_MONTHS = 12  # and the earliest daily copy of each of this many calendar mo
 class Copy(NamedTuple):
     moment: datetime  # the time written in the name (the container's clock)
     path: Path
-    kind: str  # DAILY, MANUAL or OTHER
+    origin: str  # what made it: DAILY, MANUAL or OTHER
 
 
 def copies(folder: Path) -> list[Copy]:
@@ -58,20 +58,20 @@ def copies(folder: Path) -> list[Copy]:
             except ValueError:  # no such date
                 continue
             suffix = match.group(2)
-            kind = DAILY if suffix is None else MANUAL if suffix == MANUAL_SUFFIX else OTHER
-            found.append(Copy(moment, path, kind))
-    found.sort(key=lambda copy: (KIND_ORDER[copy.kind], copy.path.name))
+            origin = DAILY if suffix is None else MANUAL if suffix == MANUAL_SUFFIX else OTHER
+            found.append(Copy(moment, path, origin))
+    found.sort(key=lambda copy: (ORIGIN_ORDER[copy.origin], copy.path.name))
     return sorted(found, key=lambda copy: copy.moment, reverse=True)  # stable: equal times keep the order above
 
 
-def _of_kind(folder: Path, kind: str) -> list[tuple[datetime, Path]]:
-    return sorted((copy.moment, copy.path) for copy in copies(folder) if copy.kind == kind)
+def _of_origin(folder: Path, origin: str) -> list[tuple[datetime, Path]]:
+    return sorted((copy.moment, copy.path) for copy in copies(folder) if copy.origin == origin)
 
 
 def daily_backups(folder: Path) -> list[tuple[datetime, Path]]:
     """The daily copies in the folder, oldest first, with the time written in their names. Names that only look like a
     daily copy (and the manual copies) are not in the list."""
-    return _of_kind(folder, DAILY)
+    return _of_origin(folder, DAILY)
 
 
 def rotate(folder: Path, now: datetime) -> None:
@@ -95,7 +95,7 @@ def rotate(folder: Path, now: datetime) -> None:
 def rotate_manual(folder: Path) -> None:
     """Delete the manual copies but the 10 newest. Daily copies and the others are left alone; the daily rotation does not
     see the manual copies either."""
-    for _, path in _of_kind(folder, MANUAL)[:-KEPT_MANUAL]:
+    for _, path in _of_origin(folder, MANUAL)[:-KEPT_MANUAL]:
         try:
             path.unlink()
         except OSError as exc:  # in use, say: it goes at the next rotation

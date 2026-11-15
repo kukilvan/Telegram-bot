@@ -63,7 +63,7 @@ class Settings(BaseSettings):
     web_port: str = ""
 
     # The Google Drive copy (spec 4.1 of stage 7.1): the password of the archives and the owner's Google client
-    # «Desktop app». None is required; whether the copy is on is decided in one place, `DriveSettings.on`
+    # «Desktop app». None is required; whether the copy is on is decided in one place, `DriveSettings.setup`
     backup_password: str = ""
     google_drive_client_id: str = ""
     google_drive_client_secret: str = ""

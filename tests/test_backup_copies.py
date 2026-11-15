@@ -120,7 +120,7 @@ def test_the_kinds_of_names_are_copies_and_the_look_alikes_are_not(folder):
     found = backup.copies(folder)
 
     assert [c.path.name for c in found] == list(reversed(real))
-    assert {c.kind for c in found} == {backup.DAILY, backup.MANUAL, backup.OTHER}
+    assert {c.origin for c in found} == {backup.DAILY, backup.MANUAL, backup.OTHER}
 
 
 def test_copies_are_newest_first_and_equal_times_go_daily_manual_others(folder):
@@ -131,9 +131,9 @@ def test_copies_are_newest_first_and_equal_times_go_daily_manual_others(folder):
     ):
         put(folder, name)
 
-    kinds = [(c.moment, c.kind) for c in backup.copies(folder)]
+    origins = [(c.moment, c.origin) for c in backup.copies(folder)]
 
-    assert kinds == [
+    assert origins == [
         (moment + timedelta(seconds=1), backup.MANUAL), (moment, backup.DAILY), (moment, backup.MANUAL),
         (moment, backup.OTHER), (moment - timedelta(days=1), backup.DAILY),
     ]
@@ -172,7 +172,7 @@ def test_the_manual_rotation_never_touches_the_daily_or_the_other_copies(tmp_pat
         backup.create_manual_backup(url, WALL + timedelta(seconds=number))
 
     assert all(path.exists() for path in safe)
-    assert len([c for c in backup.copies(folder) if c.kind == backup.MANUAL]) == 10
+    assert len([c for c in backup.copies(folder) if c.origin == backup.MANUAL]) == 10
 
 
 def test_the_daily_rotation_never_sees_the_manual_copies(tmp_path):
@@ -185,7 +185,7 @@ def test_the_daily_rotation_never_sees_the_manual_copies(tmp_path):
     backup.create_backup(url, WALL)
 
     assert all(path.exists() for path in manual)
-    daily = [c for c in backup.copies(folder) if c.kind == backup.DAILY]
+    daily = [c for c in backup.copies(folder) if c.origin == backup.DAILY]
     assert len(daily) == 14 + 1  # the 14 newest and the earliest of the month that has older ones
 
 
@@ -385,6 +385,19 @@ def test_another_error_gives_the_general_reason_and_no_copy_says_so(tracker):
         "⚠️ Копия базы не сделана: ошибка, подробности в журнале. Копий базы на этом ПК пока нет. Попробую снова через час."
     )
     assert "secret detail" not in event.payload["text"]
+
+
+def test_a_copies_folder_that_cannot_be_read_still_gets_the_report_without_the_last_copy(tracker, caplog):
+    # review 7.1, F5: the listing that failed the copy failed the report too, and the failure never reached Telegram
+    unreadable = PermissionError(errno.EACCES, "Permission denied")
+    with patch.object(backup, "copies", side_effect=unreadable), caplog.at_level(logging.WARNING):
+        failing_hourly(tracker, unreadable)
+
+    [event] = events(tracker)
+    assert event.payload["text"] == (
+        "⚠️ Копия базы не сделана: ошибка, подробности в журнале. Попробую снова через час."
+    )
+    assert "cannot be read for the report" in caplog.text
 
 
 def test_the_failure_is_reported_once_a_day_on_the_owners_date(tracker, clock):

@@ -2,8 +2,9 @@
 
 Run in a one-off container by `restore-bot.ps1` (spec 5 of stage 7.1): `python -m app.container_start app.utils.restore
 list | check <path> | apply <path>`. Texts in Russian go to stdout, the exit code is 0 (done) or 1 (refused, nothing
-changed); nothing here asks the owner: the script asks. Lines that begin with `@` are for the script, not the owner:
-`@copy <n> <path>` (a copy of the list) and `@when <phrase>` (the copy in words, for the question and the last line).
+changed; 2 for an unknown command); nothing here asks the owner: the script asks. Lines that begin with `@` are for the
+script, not the owner: `@copy <n> <path>` (a copy of the list) and `@when <phrase>` (the copy in words, for the question
+and the last line).
 `list` and `check` change nothing; `apply` is run only while the bot is stopped and touches only `tracker.db` and its
 `-wal`/`-shm`: the current base goes first to `tracker_db_<now>_before-restore.db` (SQLite's online backup, so the
 content of its `-wal` too), and a failure before the final `os.replace` leaves the base as it was.
@@ -46,7 +47,7 @@ HEADER = "Копии базы в data\\backups (новые сверху):"
 NO_COPIES = ('В data\\backups нет копий базы. Восстановить можно из скачанной копии: '
              '.\\restore-bot.ps1 "путь к файлу"')
 UNREADABLE = "Папку data\\backups не прочитать ({reason}). Ничего не изменено."
-KIND_WORDS = {backup.MANUAL: "сделана вручную"}
+ORIGIN_WORDS = {backup.MANUAL: "сделана вручную"}
 BEFORE_RESTORE_WORDS = "перед восстановлением"
 BEFORE_UPDATE_WORDS = "перед обновлением базы"
 
@@ -79,7 +80,7 @@ class Refusal(Exception):
 
 @dataclass(frozen=True)
 class Outcome:
-    code: int  # 0 — done, 1 — refused
+    code: int  # 0 — done, 1 — refused; 2 — a command this module does not know (the script never gives one)
     lines: list[str]
 
 
@@ -93,12 +94,12 @@ class Examined:
     older: bool  # its revision is older than the head: the start migrates it
 
 
-def kind_words(copy: backup.Copy) -> str:
-    """The kind of a copy after a dash in the list; a daily copy has none."""
-    if copy.kind == backup.OTHER:
+def origin_words(copy: backup.Copy) -> str:
+    """What made a copy, after a dash in the list; a daily copy has none."""
+    if copy.origin == backup.OTHER:
         suffix = copy.path.stem.split("_", 4)[-1]
         return BEFORE_RESTORE_WORDS if suffix == backup.BEFORE_RESTORE_SUFFIX else BEFORE_UPDATE_WORDS
-    return KIND_WORDS.get(copy.kind, "")
+    return ORIGIN_WORDS.get(copy.origin, "")
 
 
 def list_copies(folder: Path, now: datetime) -> Outcome:
@@ -111,8 +112,8 @@ def list_copies(folder: Path, now: datetime) -> Outcome:
         return Outcome(0, [NO_COPIES])
     lines = [HEADER]
     for number, copy in enumerate(found, start=1):
-        kind = kind_words(copy)
-        lines.append(f"{number:>3}) {moment_in_words(copy.moment, now)}{' — ' + kind if kind else ''}")
+        words = origin_words(copy)
+        lines.append(f"{number:>3}) {moment_in_words(copy.moment, now)}{' — ' + words if words else ''}")
         lines.append(f"@copy {number} {copy.path.as_posix()}")
     return Outcome(0, lines)
 

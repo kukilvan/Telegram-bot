@@ -84,6 +84,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | open | — |
 | KI-69 | Restore: the note «ещё одна копия» of an older copy is not always true | `app/utils/restore.py` | open | — |
 | KI-70 | Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`) | `restore-bot.ps1` | open | 7.3 |
+| KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | open | — |
 
 ## Entries
 
@@ -732,3 +733,12 @@ Format of a new entry:
 - Likelihood / impact: none on the owner's PC; on the NAS (stage 7.3) the restore would not start until the script builds the image separately (`docker compose build --quiet`) and runs without `--build`.
 - Status: open.
 - Found: 2026-11-08, ticket 7.1.05.
+
+## KI-71. Export: the JSON asks which titles are games and copies the poller's rule of the base game
+
+- Where: `app/tracker/export_all.py` (`_parents`).
+- What's wrong: rule 7 of `docs/coding-standards.md`: the core does not ask a title's kind outside `polling.py`, and a rule lives in one place. `_parents` reads the states of the games by `Title.kind == TitleKind.GAME` and finds the base game of an expansion by its own query, a copy of `GamePoller.parent` and `Poller.known_ids` («the smaller number, as `known_ids`»). `tests/test_tracker_core_split.py` did not see it: `exports` and `export_all` were missing from its list of core modules (review 7.1 added `exports` and the pure `export_rows`; `export_all` stays out until this is fixed, or the test fails).
+- How to reproduce: add `"export_all"` to `MODULES` of `tests/test_tracker_core_split.py`: `test_the_core_does_not_ask_which_kind_a_title_is` fails.
+- Likelihood / impact: no wrong output today — `expansion_of` in the JSON is the name the card shows. The risk is a change of the card's rule (say, the base game found by another id) that the export does not follow. A fix: the export asks every poller for the extra fields of its titles (a poller action with an empty default; the game poller answers with `parent`), then `export_all` joins the list of the test.
+- Status: open.
+- Found: 2026-11-15, review 7.1 (F6).

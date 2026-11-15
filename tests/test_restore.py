@@ -3,6 +3,7 @@ texts and commands of `restore-bot.ps1`."""
 
 import errno
 import hashlib
+import re
 import shutil
 import sqlite3
 from datetime import datetime
@@ -63,14 +64,14 @@ def _database(template: Path, file: Path, marker: str = "copy", titles: int = 0,
 
 
 def _filler(column_type: str, number: int):
-    kind = column_type.upper()
-    if "INT" in kind or "BOOL" in kind:
+    declared = column_type.upper()
+    if "INT" in declared or "BOOL" in declared:
         return 0
-    if "DATE" in kind:
+    if "DATE" in declared:
         return "2026-11-01 10:00:00.000000"
-    if "JSON" in kind:
+    if "JSON" in declared:
         return "[]"
-    if "VARCHAR(16)" in kind:  # the enumerations stored as text
+    if "VARCHAR(16)" in declared:  # the enumerations stored as text
         return "movie"
     return f"Тайтл {number}"
 
@@ -553,7 +554,7 @@ def test_the_script_has_every_text_of_the_spec():
         "Отменено. Ничего не изменено.",
         "Файл не найден: $Path",
         "Нужен файл .7z из Google Drive или .db из копий. Ничего не изменено.",
-        "Вернуть базу к копии $phrase? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет)",
+        "Вернуть базу к копии ${phrase}? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет)",
         "Бот не остановился за 60 секунд. База не тронута. Остановите его: .\\stop-bot.ps1 и запустите восстановление снова.",
         "Запускаю бота…",
         "Готово: бот работает на копии $phrase.",
@@ -611,3 +612,12 @@ def test_a_relative_path_counts_from_where_the_owner_stands_and_typed_answers_ar
     resolve = "[System.IO.Path]::GetFullPath([System.IO.Path]::Combine((Get-Location).ProviderPath, $Path))"
     assert script.index(resolve) < script.index("Set-Location $PSScriptRoot")
     assert "if ([Console]::IsInputRedirected) { [Console]::InputEncoding = [System.Text.Encoding]::UTF8 }" in script
+
+
+@pytest.mark.parametrize("name", ["restore-bot.ps1", "start-bot.ps1", "stop-bot.ps1", "logs-bot.ps1"])
+def test_no_variable_of_a_script_runs_into_a_question_mark(name):
+    # PowerShell reads «$phrase?» as the variable «phrase?» (empty): the question of the restore lost its copy (review
+    # 7.1, F4). A variable right before «?» is written «${phrase}?»
+    script = (ROOT / name).read_bytes().decode("utf-8-sig")
+
+    assert re.findall(r"\$[A-Za-z_][A-Za-z0-9_]*\?", script) == []

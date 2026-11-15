@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any
 
 from app.tracker.backup_events import SIGN_IN
+from app.tracker.sources.dates import parse_moment
 
 KEPT_IN_DRIVE = 30  # archives kept in the folder: the newest by the time in their names
 
@@ -59,10 +60,7 @@ def _moment(data: dict[str, Any], key: str) -> datetime | None:
         return None
     if not isinstance(value, str):
         raise ValueError(f"{key} is not a text")
-    moment = datetime.fromisoformat(value)
-    if moment.tzinfo is not None:
-        raise ValueError(f"{key} is not naive UTC")
-    return moment
+    return parse_moment(value)  # strict, rule 9: naive UTC, garbage or a time zone is a ValueError
 
 
 def _count(data: dict[str, Any], key: str) -> int:
