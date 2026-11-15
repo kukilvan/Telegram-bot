@@ -1,6 +1,6 @@
 # Stage 7.2: the app address, the phone, the bot as a link to the web, a safer login
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. The decisions taken for 7.2 in `.scratch/7-1-backups-export/description.md` are the starting point; **this description changes two of them** (decision 2 there — Tailscale, and the NAS move as stage 7.3 of this project), see «Decisions taken with the owner» and ADR 0013. Mockups: `mockups/bot-links.html`, `mockups/settings-test-event.html`. ADRs it leans on: 0002 (the web is the main interface, the bot delivers), 0004 (no own JavaScript), 0006 and 0008 (Docker on the PC until the NAS, the web open to the home network on request), 0010 (the bot takes posts and names), 0012 (the Google Drive sign-in returns to `localhost`), 0013 (new: outside access by the owner's domain).
 

@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-15 — Description 7.2
+
+- `.scratch/7-2-access-phone/description.md`, mockups `bot-links.html` and `settings-test-event.html` updated (the address example without Tailscale, the «Вход» block, the 🔐 login message). ADR 0013 (new): outside access by the owner's domain (~$10 a year), Cloudflare Tunnel and Cloudflare Access (a mail code before the app), set up with the NAS by the owner's separate Claude Code project for this app and another one; it makes the choice ADR 0006 left open, so 0006 and 0008 stand; 7.1's decision 2 (Tailscale on the PC in 7.2) is dropped.
+- Decisions: 7.3 becomes «NAS readiness and the move guide» (UGREEN DXP2800: the same `amd64` image, the database on the NVMe SSD, never a network share; `docker compose` without PowerShell; KI-15, KI-70; the guide of what to move) and comes after stages 9 and 8; the tunnel is not set up on the PC now (until the NAS the phone opens the app only at home); «Выйти на всех устройствах» and a Telegram message on every login (owner's wishes); every screen at phone width in 7.2; old buttons in old messages get no special handling (the owner clears the chat). `docs/project-spec.md` stages 7, 7.2, 7.3, Features and Interface updated.
+
 ## 2026-11-15 — Review 7.1 (stage 7.1 done)
 
 - Two sessions (2026-11-08 partial, 2026-11-15), `.scratch/7-1-backups-export/review.md`. Fixed now: F4 `restore-bot.ps1` asked «Вернуть базу к копии  Всё…» (`$phrase?` read as another variable) → `${phrase}?` and a test over the `.ps1` scripts; F5 a failed daily copy reported even when the copies folder cannot be read (no sentence of the last copy); F2 `session_crd` masked; F3 a date-dependent test; F7 `Copy.origin`, `ORIGIN_WORDS`, `dedup_key(place, …)` (rule 5); F8 `parse_moment` for the Drive files; F9 `backup_events.retry_words`; F10, F11 small. Deferred: KI-71 (`export_all` asks `TitleKind.GAME`); `exports`, `export_rows` joined the core-split test lists.
