@@ -205,6 +205,11 @@ In code: `export` — `Tracker.export_list`, `export_all`, the core's `Exports` 
 
 ## Interface
 
+**Адрес приложения** (app address):
+The address the links of the bot lead to: `APP_URL` in `.env`, the PC's address in the home network with the port or a name with a dot (not `localhost`: Telegram refuses such links). With it the bot is in link mode: «Карточка» under a message is a link, a card in the chat has «Открыть в приложении», the menu is «Сводка сейчас» alone. Without it (or with a malformed one) the bot is in chat mode and keeps the cards in the chat, as before. The mode is fixed at start.
+_Avoid_: URL бота, ссылка на веб
+In code: `app_url` (`Settings`, read through `app_url_reading` → `AppUrl`, `parse_app_url`), `AppLinks` (`app/bot/app_links.py`), `link mode` / `chat mode`.
+
 **Лента** (feed):
 The main screen of the app: what comes out in the next days and what came out recently, by dates. Blocks: «Скоро» — the next 14 days by day, «Позже» — what comes out after them, «Недавно» — events of 7 days.
 _Avoid_: дашборд, календарь

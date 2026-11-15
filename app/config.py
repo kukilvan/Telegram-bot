@@ -1,6 +1,9 @@
 """Application configuration loaded from environment variables."""
 
+import ipaddress
 import logging
+import re
+from dataclasses import dataclass
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
@@ -24,6 +27,84 @@ def parse_user_ids(raw: str) -> list[int]:
         except ValueError:
             raise ValueError("ALLOWED_TELEGRAM_USER_IDS must be comma-separated integers") from None
     return ids
+
+
+_NOT_NAMED = "нужно http:// или https:// в начале"
+_NO_HOST = "нет адреса ПК или имени сайта"
+_TELEGRAM_REFUSES = (
+    "Telegram не открывает такие ссылки — укажите адрес ПК в сети (например, http://192.168.1.124:8080) "
+    "или имя сайта с точкой"
+)
+_BAD_PORT = "порт должен быть числом от 1 до 65535"
+_EXTRA = "после адреса не должно быть ничего лишнего: только http(s)://адрес[:порт]"
+_HOST_NAME = re.compile(r"[a-z0-9-]+(\.[a-z0-9-]+)+")  # at least one dot, inside the name
+
+
+@dataclass(frozen=True)
+class AppUrl:
+    """What `APP_URL` says: `address` in its one form, or no address with the `reason` it is malformed (None for an
+    empty line). `host` is the host of a valid address (lower case, an IPv6 one without brackets)."""
+
+    address: str | None = None
+    reason: str | None = None
+    host: str | None = None
+
+
+def _host_reads(host: str) -> str | None:
+    """The host in the form Telegram opens (lower case), or None: an IPv4 address, an IPv6 one in brackets, a name with a
+    dot inside, never `localhost` or `*.localhost`."""
+    if host.startswith("["):
+        inner = host[1:-1] if host.endswith("]") else ""
+        try:
+            ipaddress.IPv6Address(inner)
+        except ValueError:
+            return None
+        return host.lower()
+    host = host.lower()
+    try:
+        ipaddress.IPv4Address(host)
+        return host
+    except ValueError:
+        pass
+    if host == "localhost" or host.endswith(".localhost"):
+        return None
+    return host if _HOST_NAME.fullmatch(host) else None
+
+
+def parse_app_url(raw: str) -> AppUrl:
+    """The address of the app from `APP_URL`: text in, the address in its one form (scheme and host in lower case, the
+    port as written, no `/` at the end) or the first broken rule's reason out. An empty text is no address and no reason."""
+    text = raw.strip()
+    if not text:
+        return AppUrl()
+    lowered = text.lower()
+    scheme = next((s for s in ("http://", "https://") if lowered.startswith(s)), None)
+    if scheme is None:
+        return AppUrl(reason=_NOT_NAMED)
+    rest = text[len(scheme):]
+    end = next((i for i, c in enumerate(rest) if c in "/?#"), len(rest))
+    authority, tail = rest[:end], rest[end:]
+    host_part = authority.rpartition("@")[2]
+    if host_part.startswith("["):  # an IPv6 address: its colons are no port
+        close = host_part.find("]")
+        host, port = (host_part[:close + 1], host_part[close + 1:]) if close >= 0 else (host_part, "")
+    else:
+        host, _, port = host_part.partition(":")
+        port = f":{port}" if ":" in host_part else ""
+    if not host:
+        return AppUrl(reason=_NO_HOST)
+    known = _host_reads(host)
+    if known is None:
+        return AppUrl(reason=_TELEGRAM_REFUSES)
+    if port and not port.startswith(":"):  # something stuck to the closing bracket: «[::1]x»
+        return AppUrl(reason=_EXTRA)
+    if port:
+        number = port[1:]
+        if not (number.isascii() and number.isdigit() and 0 < int(number) < 65536):
+            return AppUrl(reason=_BAD_PORT)
+    if authority != host_part or tail not in ("", "/"):
+        return AppUrl(reason=_EXTRA)
+    return AppUrl(address=f"{scheme.lower()}{known}{port}", host=known.strip("[]"))
 
 
 class Settings(BaseSettings):
@@ -62,13 +143,17 @@ class Settings(BaseSettings):
     # The port of the web on the PC (docker compose maps it); read through `web_port_number`
     web_port: str = ""
 
+    # The address the owner opens the app at from the phone and from Telegram; empty — no address, the bot keeps the cards
+    # in the chat. Read through `app_url_reading` (the rules and the reasons: `parse_app_url`)
+    app_url: str = ""
+
     # The Google Drive copy (spec 4.1 of stage 7.1): the password of the archives and the owner's Google client
     # «Desktop app». None is required; whether the copy is on is decided in one place, `DriveSettings.setup`
     backup_password: str = ""
     google_drive_client_id: str = ""
     google_drive_client_secret: str = ""
 
-    @field_validator("web_password", "backup_password", "google_drive_client_id", "google_drive_client_secret")
+    @field_validator("web_password", "backup_password", "google_drive_client_id", "google_drive_client_secret", "app_url")
     @classmethod
     def _strip(cls, value: str) -> str:
         return value.strip()
@@ -78,6 +163,11 @@ class Settings(BaseSettings):
         """WEB_PORT as a number; 8080 (docker compose's default too) when it is blank or not a port."""
         value = self.web_port.strip()
         return int(value) if value.isdigit() and 0 < int(value) < 65536 else DEFAULT_WEB_PORT
+
+    @property
+    def app_url_reading(self) -> AppUrl:
+        """APP_URL as `parse_app_url` reads it."""
+        return parse_app_url(self.app_url)
 
     @property
     def allowed_telegram_user_ids(self) -> list[int]:

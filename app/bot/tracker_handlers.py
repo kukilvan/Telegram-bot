@@ -1,8 +1,11 @@
-"""Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
+"""Bot side of the tracker core: the menu, `/start`, «Сводка сейчас», the buttons under messages and cards, and the Telegram sender.
 
-The menu is «Мои тайтлы», «Сводка сейчас», «Тестовое событие» (the delivery-rules check is the last item of the
-test-event list); the buttons under messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить» and the link
-«🛒 Открыть в Steam» (a button with an address opens the page itself, the bot never hears of it).
+Two modes by the app address (`APP_URL`, `AppLinks`). Chat mode (no address): the menu is «Мои тайтлы», «Сводка сейчас»,
+«Тестовое событие», and «Карточка» sends the card to the chat. Link mode: «Карточка» is a link button to the app, a card in
+the chat has the one button «Открыть в приложении», the menu is «Сводка сейчас» alone, and the old texts of the menu are
+answered with a link. The list and the test event live in `list_handlers` and `test_event_handlers`. The buttons under
+messages and cards are «Посмотрел», «Следить», «Карточка», «Удалить» and the link «🛒 Открыть в Steam» (a button with an
+address opens the page itself, the bot never hears of it).
 
 Handlers talk to the core only through the `Tracker` facade. They live on one router with the owner filter on it;
 a handler never checks the owner itself. A title is added by sending the bot a post or a name: every message no
@@ -10,10 +13,9 @@ handler here takes goes to «Входящие» (`inbox_handlers`, registered la
 keyboard on the phone gets a sentence about that and the new keyboard, its old buttons are dead.
 """
 
+import html
 import logging
-import secrets
 from collections.abc import Sequence
-from datetime import timezone
 
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.filters import Command, CommandStart
@@ -23,18 +25,32 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     KeyboardButton,
+    LinkPreviewOptions,
     Message,
     ReplyKeyboardMarkup,
 )
 
+from app.bot.app_links import AppLinks
 from app.bot.card_message import send_card_message
 from app.bot.inbox_handlers import TitleCards, register_inbox_handlers
+from app.bot.list_handlers import (
+    CARD_PREFIX,
+    MY_TITLES_BUTTON,
+    confirm_markup,
+    delete_question,
+    register_list_handlers,
+)
+from app.bot.test_event_handlers import (
+    RULES_CHECK_BUTTON,
+    RULES_CHECK_CALLBACK,
+    TEST_EVENT_BUTTON,
+    register_test_event_handlers,
+)
 from app.tracker.actions import CARD, DELETE, FOLLOW, SEASONS, WATCHED, Action, card_actions
-from app.tracker.cards import TitleCard, format_card, format_when
+from app.tracker.cards import TitleCard, format_card
 from app.tracker.core import (
     CARD_SIZE,
     TitleNotFound,
-    TitleSummary,
     Tracker,
     UnknownEvent,
     UnknownKind,
@@ -45,19 +61,17 @@ from app.tracker.core import (
 )
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
-from app.tracker.series_events import SAMPLE_EPISODES_ID
-from app.tracker.test_samples import DELIVERY_CHECKS, delivery_check_by_id
 
-TEST_EVENT_BUTTON = "🧪 Тестовое событие"
+__all__ = [
+    "ADD_BUTTON", "BOT_COMMANDS", "MALFORMED_TOKEN", "MY_TITLES_BUTTON", "RULES_CHECK_BUTTON", "RULES_CHECK_CALLBACK",
+    "SUMMARY_BUTTON", "TEST_EVENT_BUTTON", "TelegramSender", "actions_markup", "main_keyboard",
+    "register_tracker_handlers", "seasons_markup",
+]  # the buttons that live in `list_handlers` and `test_event_handlers` are told here too: callers know one module
+
 ADD_BUTTON = "➕ Добавить"  # gone from the keyboard; the old keyboard on the phone still sends it
-MY_TITLES_BUTTON = "📚 Мои тайтлы"
 SUMMARY_BUTTON = "📋 Сводка сейчас"
-RULES_CHECK_BUTTON = "🕒 Проверить правила доставки"  # the last item of the test-event list
-RULES_CHECK_CALLBACK = "tchk:open"
-_SAMPLE_PREFIX = "tev:"
-_CHECK_PREFIX = "twin:"  # twin:<delivery check id>: a test event as if it were queued at that moment of the week (sent buttons keep it)
+OPEN_IN_APP_BUTTON = "📄 Открыть в приложении"  # the one button of a card in the chat in link mode
 _OLD_ADD_PREFIXES = ("tadd:", "tpick:")  # the kind menu and the suggestions of «Добавить»: dead buttons now
-_CARD_PREFIX = "tcard:"
 _ACTION_PREFIX = "tact:"  # tact:<action name>:<number>, see app.tracker.actions
 _SEASON_PREFIX = "tsid:"  # tsid:<title id>:<season record id> flips a mark, tsid:<title id>:done closes the choice
 # the buttons sent before the seasons were known by their records: tsea:<title id>:<season number> (or :done). The number
@@ -66,11 +80,8 @@ _OLD_SEASON_PREFIX = "tsea:"
 _STALE_SEASON_BUTTON = "Эта кнопка устарела — откройте карточку заново"
 _DONE = "done"
 _DELETE_PREFIX = "tdel:"  # tdel:y:<title id> deletes after the question, tdel:n:<title id> drops it
-_BULK_PREFIX = "tdm:"  # tdm:open starts a selection; tdm:<selection id>:t:<title id> | go | yes | no work on it
 _YES, _NO = "y", "n"
-_BULK_OPEN, _BULK_TOGGLE, _BULK_GO, _BULK_YES, _BULK_NO = "open", "t", "go", "yes", "no"
 
-MAX_LIST_BUTTONS = 50
 SUMMARY_COMMAND = "summary"
 BOT_COMMANDS = [BotCommand(command=SUMMARY_COMMAND, description="Сводка сейчас")]  # shown in Telegram's «/» menu
 # aiogram refuses to make a bot of such a token; the process starts without one (`app.main`), and the start script
@@ -82,56 +93,71 @@ START_TEXT = (
     "Кнопки меню внизу: «Мои тайтлы» — ваш список, «Сводка сейчас» присылает накопленные события, «Тестовое событие» "
     "показывает, как выглядят сообщения, и проверяет правила доставки."
 )
+START_TEXT_LINK = (  # link mode: the text link «🌐 Открыть приложение» follows it
+    "👋 Бот работает. Чтобы добавить фильм, сериал, аниме или игру, перешлите мне пост о нём или напишите название: "
+    "я найду и предложу добавить, а что не найду — сохраню во «Входящие» приложения.\n\n"
+    "Кнопка «Сводка сейчас» присылает накопленные события. Список, карточки, тестовое событие и настройки — "
+    "в приложении: "
+)
+OPEN_APP_LINK = "🌐 Открыть приложение"
+LIST_MOVED_TEXT, OPEN_LIST_LINK = "Список теперь в приложении: ", "📚 Открыть список"
+TEST_EVENT_MOVED_TEXT = "Тестовое событие и проверка правил доставки теперь в Настройках приложения: "
+OPEN_SETTINGS_LINK = "⚙️ Открыть Настройки"
 NO_ADD_BUTTON = "Кнопки «Добавить» больше нет: просто перешлите мне пост или напишите название."
-EMPTY_LIST = "Список пуст. Перешлите мне пост о фильме, сериале, аниме или игре или напишите название."
-DELETE_BULK_BUTTON = "🗑 Удалить несколько"
 _NOT_IN_LIST = "Этого тайтла больше нет в списке."
 _DEAD_BUTTON = "Эта кнопка больше не работает."
 _ADDING = "Добавляю…"
-_STALE_SELECTION = "Эта кнопка больше не работает, откройте список заново."
 _ASK_SEASONS = (
     "Какие сезоны вы уже посмотрели? Нажмите на сезон, чтобы отметить его; "
     "повторное нажатие снимает отметку. Когда закончите, нажмите «Готово»."
 )
 
 
-def _action_button(action: Action) -> InlineKeyboardButton:
-    """A button with an address opens it (the game in Steam); the others call the bot."""
+def _action_button(action: Action, links: AppLinks | None = None) -> InlineKeyboardButton:
+    """A button with an address opens it (the game in Steam); in link mode «Карточка» opens the card in the app; the
+    others call the bot."""
     if action.url is not None:
         return InlineKeyboardButton(text=action.label, url=action.url)
+    if links is not None and action.name == CARD and isinstance(action.arg, int):
+        return InlineKeyboardButton(text=action.label, url=links.card(action.arg))
     return InlineKeyboardButton(text=action.label, callback_data=f"{_ACTION_PREFIX}{action.name}:{action.arg}")
 
 
-def actions_markup(actions: Sequence[Action]) -> InlineKeyboardMarkup | None:
+def actions_markup(actions: Sequence[Action], links: AppLinks | None = None) -> InlineKeyboardMarkup | None:
     """One button per row under a message; None when there is nothing to press."""
     if not actions:
         return None
-    return InlineKeyboardMarkup(inline_keyboard=[[_action_button(a)] for a in actions])
+    return InlineKeyboardMarkup(inline_keyboard=[[_action_button(a, links)] for a in actions])
 
 
 class TelegramSender:
     """Delivers tracker messages to the owner's chat. Without a bot (a malformed token) every send fails, and the
-    queue keeps the event, as with no network."""
+    queue keeps the event, as with no network. With `links` (link mode) the «Карточка» buttons open the app."""
 
-    def __init__(self, bot: Bot | None, chat_id: int) -> None:
+    def __init__(self, bot: Bot | None, chat_id: int, links: AppLinks | None = None) -> None:
         self._bot = bot
         self._chat_id = chat_id
+        self._links = links
 
     async def send(self, message: str, actions: Sequence[Action] = ()) -> None:
         if self._bot is None:
             raise RuntimeError(MALFORMED_TOKEN)
-        await self._bot.send_message(chat_id=self._chat_id, text=message, reply_markup=actions_markup(actions))
+        await self._bot.send_message(
+            chat_id=self._chat_id, text=message, reply_markup=actions_markup(actions, self._links)
+        )
 
 
-def main_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text=MY_TITLES_BUTTON)],
-            [KeyboardButton(text=SUMMARY_BUTTON)],
-            [KeyboardButton(text=TEST_EVENT_BUTTON)],
-        ],
-        resize_keyboard=True,
-    )
+def main_keyboard(links: AppLinks | None = None) -> ReplyKeyboardMarkup:
+    """The menu at the bottom of the chat: one button in link mode, three in chat mode."""
+    rows = [[KeyboardButton(text=SUMMARY_BUTTON)]]
+    if links is None:
+        rows = [[KeyboardButton(text=MY_TITLES_BUTTON)], *rows, [KeyboardButton(text=TEST_EVENT_BUTTON)]]
+    return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
+
+
+def _with_link(text: str, label: str, url: str) -> str:
+    """HTML of a message that ends with a text link (a message with the menu cannot carry a button under it)."""
+    return f"{html.escape(text, quote=False)}<a href=\"{html.escape(url)}\">{html.escape(label, quote=False)}</a>"
 
 
 def seasons_markup(title_id: int, seasons: Sequence[WatchableSeason]) -> InlineKeyboardMarkup:
@@ -148,15 +174,6 @@ def seasons_markup(title_id: int, seasons: Sequence[WatchableSeason]) -> InlineK
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def _title_button_text(name: str, year: int | None) -> str:
-    return f"{name} ({year})" if year else name
-
-
-def _delete_question(names: Sequence[str]) -> str:
-    quoted = ", ".join(f"«{name}»" for name in names)
-    return f"Удалить {quoted} из списка? Сезоны, отметки и накопленные события тоже сотрутся. Вернуть нельзя."
-
-
 def _kind_of(raw: str) -> TitleKind | None:
     """The kind a button names; None for text that is no kind (a button of an older version of the bot)."""
     try:
@@ -165,71 +182,40 @@ def _kind_of(raw: str) -> TitleKind | None:
         return None
 
 
-def _confirm_markup(yes: str, no: str) -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="Да, удалить", callback_data=yes)],
-            [InlineKeyboardButton(text="Отмена", callback_data=no)],
-        ]
-    )
-
-
-def _selection_markup(selection_id: str, titles: Sequence[TitleSummary], chosen: set[int]) -> InlineKeyboardMarkup:
-    """The titles with a mark on the chosen ones, then the delete button (with the count) and the cancel button."""
-    rows = [
-        [
-            InlineKeyboardButton(
-                text=f"{'✅' if t.id in chosen else KINDS[t.kind].icon} {_title_button_text(t.name, t.year)}",
-                callback_data=f"{_BULK_PREFIX}{selection_id}:{_BULK_TOGGLE}:{t.id}",
-            )
-        ]
-        for t in titles
-    ]
-    go = f"{_BULK_PREFIX}{selection_id}:{_BULK_GO}"
-    rows.append([InlineKeyboardButton(text=f"Удалить выбранные ({len(chosen)})", callback_data=go)])
-    rows.append([InlineKeyboardButton(text="Отмена", callback_data=f"{_BULK_PREFIX}{selection_id}:{_BULK_NO}")])
-    return InlineKeyboardMarkup(inline_keyboard=rows)
-
-
-def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids: list[int]) -> Router:
+def register_tracker_handlers(
+    dp: Dispatcher, tracker: Tracker, allowed_user_ids: list[int], links: AppLinks | None = None
+) -> Router:
     """Put every tracker handler on one router behind the owner filter and include it in `dp`.
 
     The filter is the second line of defence behind `AccessMiddleware`: an update from anyone else, or from nobody
-    (no sender), matches no handler. A new handler goes on this router and never checks the owner itself.
+    (no sender), matches no handler. A new handler goes on this router and never checks the owner itself. `links`
+    set is link mode, `None` is chat mode (module description).
     """
     router = Router(name="tracker")
     owner = F.from_user.id.in_(frozenset(allowed_user_ids))
     router.message.filter(owner)
     router.callback_query.filter(owner)
-    selections: dict[int, tuple[str, set[int]]] = {}  # owner id -> (id of the open selection, chosen ids); lost on restart
 
-    async def start(message: Message) -> None:
-        await message.answer(START_TEXT, reply_markup=main_keyboard())
-
-    async def show_menu(message: Message) -> None:
-        rows = [
-            [InlineKeyboardButton(text=sample.label, callback_data=f"{_SAMPLE_PREFIX}{sample.id}")]
-            for sample in tracker.test_samples()
-        ]
-        rows.append([InlineKeyboardButton(text=RULES_CHECK_BUTTON, callback_data=RULES_CHECK_CALLBACK)])
+    async def answer_with_link(message: Message, text: str, label: str, url: str) -> None:
+        """The new menu comes with the answer (it replaces the old one on the phone), so the link is in the text."""
         await message.answer(
-            "Какое тестовое событие отправить?",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=rows),
+            _with_link(text, label, url), parse_mode="HTML", reply_markup=main_keyboard(links),
+            link_preview_options=LinkPreviewOptions(is_disabled=True),
         )
 
-    async def send_test_event(callback: CallbackQuery) -> None:
-        sample_id = callback.data.removeprefix(_SAMPLE_PREFIX)
-        try:
-            result = await tracker.send_test_event(sample_id)
-        except KeyError:
-            await callback.answer("Такого события больше нет, откройте меню заново.")
-            return
-        if result.delivered:
-            await callback.answer("Отправлено")
+    async def start(message: Message) -> None:
+        if links is None:
+            await message.answer(START_TEXT, reply_markup=main_keyboard())
         else:
-            await callback.answer("Не удалось отправить, событие осталось в очереди и придёт позже.")
+            await answer_with_link(message, START_TEXT_LINK, OPEN_APP_LINK, links.home())
 
-    # --- «Сводка сейчас» и проверка правил доставки ---------------------------------------------
+    async def list_moved(message: Message) -> None:
+        await answer_with_link(message, LIST_MOVED_TEXT, OPEN_LIST_LINK, links.list())
+
+    async def test_event_moved(message: Message) -> None:
+        await answer_with_link(message, TEST_EVENT_MOVED_TEXT, OPEN_SETTINGS_LINK, links.settings())
+
+    # --- «Сводка сейчас» ------------------------------------------------------------------------
 
     async def send_summary_now(message: Message) -> None:
         try:
@@ -243,54 +229,10 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         elif not result.delivered:
             await message.answer("Не удалось отправить сводку. События остались в очереди и придут позже.")
 
-    async def show_rules_check(callback: CallbackQuery) -> None:
-        rows = [
-            [InlineKeyboardButton(text=c.label, callback_data=f"{_CHECK_PREFIX}{c.id}")]
-            for c in DELIVERY_CHECKS
-        ]
-        await callback.answer()
-        if callback.message is None:
-            return
-        await callback.message.answer(
-            "Какой момент недели подставить? Я отправлю тестовое событие «Сериал: две серии подряд» "
-            "так, как будто оно появилось именно тогда, и покажу, что с ним сделают правила доставки.",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=rows),
-        )
-
-    async def run_rules_check(callback: CallbackQuery) -> None:
-        check = delivery_check_by_id(callback.data.removeprefix(_CHECK_PREFIX))
-        if check is None:
-            await callback.answer("Такого момента больше нет, откройте меню заново.")
-            return
-        try:
-            moment = await tracker.delivery_check_moment(check)
-            tz = (await tracker.delivery_rules()).tz
-            result = await tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment)
-        except Exception as exc:
-            logging.warning("delivery rules check failed: %s", repr(exc))
-            await callback.answer("Не удалось выполнить проверку. Попробуйте ещё раз.")
-            return
-        await callback.answer()
-
-        def when(value) -> str:
-            return format_when(value.astimezone(timezone.utc).replace(tzinfo=None), tz)
-
-        if result.delivered_at_once:
-            text = f"Как будто сейчас {when(moment)}: сообщения пришли сразу, правила их не задерживают."
-        elif result.delivered and result.held_until is not None:
-            text = (
-                f"Как будто сейчас {when(moment)}: в этот момент ничего не пришло, события копились. "
-                f"Выше — сводка, которая уйдёт {when(result.held_until)}."
-            )
-        else:
-            text = "Не удалось отправить, события остались в очереди и придут позже."
-        if callback.message is not None:
-            await callback.message.answer(text)
-
     # --- «Добавить» is gone ----------------------------------------------------------------------
 
     async def no_add_button(message: Message) -> None:
-        await message.answer(NO_ADD_BUTTON, reply_markup=main_keyboard())
+        await message.answer(NO_ADD_BUTTON, reply_markup=main_keyboard(links))
 
     async def refuse_old_add_button(callback: CallbackQuery) -> None:
         await callback.answer(_DEAD_BUTTON)
@@ -313,9 +255,18 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
     async def ask_watched_seasons(callback: CallbackQuery, title_id: int) -> bool:
         return callback.message is not None and await ask_seasons_in(callback.message, title_id)
 
+    def card_markup(card: TitleCard) -> InlineKeyboardMarkup | None:
+        """Under a card in the chat: its buttons, or in link mode the one that opens the card in the app (what the
+        other buttons do is done in the app)."""
+        if links is None:
+            return actions_markup(card_actions(card))
+        return InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text=OPEN_IN_APP_BUTTON, url=links.card(card.id))]]
+        )
+
     async def send_card_in(message: Message, card: TitleCard, heading: str | None = None) -> None:
         text = format_card(card) if heading is None else f"{heading}\n\n{format_card(card)}"
-        await send_card_message(message, text, poster_url(card.poster_path, CARD_SIZE), actions_markup(card_actions(card)))
+        await send_card_message(message, text, poster_url(card.poster_path, CARD_SIZE), card_markup(card))
 
     async def send_card(callback: CallbackQuery, card: TitleCard | None, heading: str | None = None) -> None:
         if card is None or callback.message is None:
@@ -328,28 +279,6 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         if card is not None:
             await send_card_in(message, card, heading)
 
-    # --- «Мои тайтлы» ---------------------------------------------------------------------------
-
-    async def show_my_titles(message: Message) -> None:
-        titles = await tracker.list_titles()
-        if not titles:
-            await message.answer(EMPTY_LIST)
-            return
-        rows = [
-            [
-                InlineKeyboardButton(
-                    text=f"{KINDS[t.kind].icon} {_title_button_text(t.name, t.year)}",
-                    callback_data=f"{_CARD_PREFIX}{t.id}",
-                )
-            ]
-            for t in titles[:MAX_LIST_BUTTONS]
-        ]
-        rows.append([InlineKeyboardButton(text=DELETE_BULK_BUTTON, callback_data=f"{_BULK_PREFIX}{_BULK_OPEN}")])
-        header = "Ваши тайтлы. Нажмите на название, чтобы открыть карточку:"
-        if len(titles) > MAX_LIST_BUTTONS:
-            header += f"\nПоказаны первые {MAX_LIST_BUTTONS} из {len(titles)}."
-        await message.answer(header, reply_markup=InlineKeyboardMarkup(inline_keyboard=rows))
-
     async def show_card_of(callback: CallbackQuery, title_id: int) -> None:
         card = await tracker.title_card(title_id)
         if card is None:
@@ -360,7 +289,7 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
 
     async def show_card(callback: CallbackQuery) -> None:
         try:
-            title_id = int(callback.data.removeprefix(_CARD_PREFIX))
+            title_id = int(callback.data.removeprefix(CARD_PREFIX))
         except ValueError:
             title_id = -1
         await show_card_of(callback, title_id)
@@ -499,8 +428,8 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         await callback.answer()
         if callback.message is not None:
             await callback.message.answer(
-                _delete_question([card.name]),
-                reply_markup=_confirm_markup(f"{_DELETE_PREFIX}{_YES}:{title_id}", f"{_DELETE_PREFIX}{_NO}:{title_id}"),
+                delete_question([card.name]),
+                reply_markup=confirm_markup(f"{_DELETE_PREFIX}{_YES}:{title_id}", f"{_DELETE_PREFIX}{_NO}:{title_id}"),
             )
 
     async def answer_delete(callback: CallbackQuery) -> None:
@@ -527,96 +456,6 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
         if callback.message is not None:
             await callback.message.answer(f"🗑 Удалено: {result.name}")
 
-    # --- «Удалить несколько» --------------------------------------------------------------------
-
-    async def open_selection(callback: CallbackQuery) -> None:
-        titles = (await tracker.list_titles())[:MAX_LIST_BUTTONS]
-        if not titles:
-            await callback.answer("Список пуст, удалять нечего.")
-            return
-        selection_id = secrets.token_hex(3)  # told apart from the selections of earlier runs and of earlier presses
-        selections[callback.from_user.id] = (selection_id, set())
-        await callback.answer()
-        if callback.message is not None:
-            await callback.message.answer(
-                "Отметьте тайтлы, которые нужно удалить. Повторное нажатие снимает отметку.",
-                reply_markup=_selection_markup(selection_id, titles, set()),
-            )
-
-    async def press_selection(callback: CallbackQuery) -> None:
-        rest = callback.data.removeprefix(_BULK_PREFIX)
-        if rest == _BULK_OPEN:
-            await open_selection(callback)
-            return
-        selection_id, _, action = rest.partition(":")
-        current = selections.get(callback.from_user.id)
-        if current is None or current[0] != selection_id:  # after a restart, or after a newer selection was opened
-            await callback.answer(_STALE_SELECTION)
-            return
-        chosen = current[1]
-        verb, _, raw = action.partition(":")
-        if verb == _BULK_TOGGLE and raw.isascii() and raw.isdigit():
-            chosen.symmetric_difference_update({int(raw)})
-            await callback.answer()
-            if callback.message is None:
-                return
-            try:
-                await callback.message.edit_reply_markup(
-                    reply_markup=_selection_markup(selection_id, (await tracker.list_titles())[:MAX_LIST_BUTTONS], chosen)
-                )
-            except Exception as exc:  # the marks are kept; a stale message only keeps its old look
-                logging.debug("could not refresh the selection buttons: %s", repr(exc))
-        elif verb == _BULK_GO:
-            await ask_delete_selected(callback, selection_id, chosen)
-        elif verb == _BULK_YES:
-            await delete_selected(callback, chosen)
-        elif verb == _BULK_NO:
-            selections.pop(callback.from_user.id, None)
-            await drop_buttons(callback)
-            await callback.answer("Отменено, ничего не удалено.")
-        else:
-            await callback.answer("Эта кнопка больше не работает.")
-
-    async def ask_delete_selected(callback: CallbackQuery, selection_id: str, chosen: set[int]) -> None:
-        names = [t.name for t in await tracker.list_titles() if t.id in chosen]
-        if not names:
-            await callback.answer("Ничего не выбрано, удалять нечего.")
-            return
-        # the question is about exactly these titles: the selection moves under a new id, so the old buttons go stale
-        # and a title marked after the question cannot be deleted by the answer to it
-        asked_id = secrets.token_hex(3)
-        selections[callback.from_user.id] = (asked_id, set(chosen))
-        await callback.answer()
-        if callback.message is not None:
-            await callback.message.answer(
-                _delete_question(names),
-                reply_markup=_confirm_markup(
-                    f"{_BULK_PREFIX}{asked_id}:{_BULK_YES}", f"{_BULK_PREFIX}{asked_id}:{_BULK_NO}"
-                ),
-            )
-
-    async def delete_selected(callback: CallbackQuery, chosen: set[int]) -> None:
-        selections.pop(callback.from_user.id, None)  # one question, one answer
-        await drop_buttons(callback)
-        names = {t.id: t.name for t in await tracker.list_titles()}
-        removed: list[str] = []
-        failed: list[str] = []
-        for title_id in sorted(chosen):
-            try:
-                removed.append((await tracker.delete_title(title_id)).name)
-            except UnknownTitle:
-                continue  # already removed from its own card
-            except Exception as exc:
-                logging.warning("deleting a title failed: %s", repr(exc))
-                failed.append(names.get(title_id, str(title_id)))
-        await callback.answer()
-        if callback.message is None:
-            return
-        lines = [f"🗑 Удалено: {', '.join(removed)}"] if removed else []
-        if failed:
-            lines.append(f"Не удалось удалить: {', '.join(failed)}. Откройте список и попробуйте ещё раз.")
-        await callback.message.answer("\n".join(lines) if lines else "Этих тайтлов уже нет в списке.")
-
     async def press_action(callback: CallbackQuery) -> None:
         name, _, raw = callback.data.removeprefix(_ACTION_PREFIX).partition(":")
         number = int(raw) if raw.isascii() and raw.isdigit() else None
@@ -634,21 +473,19 @@ def register_tracker_handlers(dp: Dispatcher, tracker: Tracker, allowed_user_ids
             await callback.answer(_DEAD_BUTTON)
 
     router.message.register(start, CommandStart())
-    router.message.register(show_menu, F.text == TEST_EVENT_BUTTON)
-    router.callback_query.register(send_test_event, F.data.startswith(_SAMPLE_PREFIX))
-
     router.message.register(send_summary_now, Command(SUMMARY_COMMAND))
     router.message.register(send_summary_now, F.text == SUMMARY_BUTTON)
-    router.callback_query.register(show_rules_check, F.data == RULES_CHECK_CALLBACK)
-    router.callback_query.register(run_rules_check, F.data.startswith(_CHECK_PREFIX))
-
     router.message.register(no_add_button, F.text == ADD_BUTTON)
-    router.message.register(show_my_titles, F.text == MY_TITLES_BUTTON)
+    if links is not None:  # the old texts of the menu: an old keyboard on the phone still sends them
+        router.message.register(list_moved, F.text == MY_TITLES_BUTTON)
+        router.message.register(test_event_moved, F.text == TEST_EVENT_BUTTON)
+    register_list_handlers(router, tracker, chat_mode=links is None)
+    register_test_event_handlers(router, tracker, chat_mode=links is None)
+
     router.callback_query.register(refuse_old_add_button, F.data.startswith(_OLD_ADD_PREFIXES))
-    router.callback_query.register(show_card, F.data.startswith(_CARD_PREFIX))
+    router.callback_query.register(show_card, F.data.startswith(CARD_PREFIX))
     router.callback_query.register(press_action, F.data.startswith(_ACTION_PREFIX))
     router.callback_query.register(answer_delete, F.data.startswith(_DELETE_PREFIX))
-    router.callback_query.register(press_selection, F.data.startswith(_BULK_PREFIX))
     router.callback_query.register(flip_season, F.data.startswith(_SEASON_PREFIX))
     router.callback_query.register(refuse_old_season_button, F.data.startswith(_OLD_SEASON_PREFIX))
 

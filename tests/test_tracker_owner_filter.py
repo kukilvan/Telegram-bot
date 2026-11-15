@@ -8,6 +8,7 @@ import pytest
 from aiogram import Bot, Dispatcher
 from aiogram.types import CallbackQuery, Chat, Message, Update, User
 
+from app.bot.app_links import AppLinks
 from app.bot.tracker_handlers import (
     ADD_BUTTON,
     SUMMARY_BUTTON,
@@ -83,10 +84,10 @@ def replies(monkeypatch):
     return said
 
 
-def bare_dispatcher(tracker):
+def bare_dispatcher(tracker, links=None):
     """No AccessMiddleware: only the router's own filter stands between the update and the handlers."""
     dp = Dispatcher()
-    register_tracker_handlers(dp, tracker, [OWNER])
+    register_tracker_handlers(dp, tracker, [OWNER], links)
     return dp
 
 
@@ -141,3 +142,21 @@ def test_the_owner_button_press_is_answered(tracker, replies, data):
     feed(bare_dispatcher(tracker), callback_update(OWNER, data))
 
     assert replies
+
+
+LINKS = AppLinks("http://192.168.1.124:8080")  # link mode registers the answers to the old texts of the menu instead
+
+
+@pytest.mark.parametrize("text", MESSAGES + TAKEN_IN)
+def test_in_link_mode_a_stranger_message_gets_no_answer_and_is_not_taken_in(tracker, sender, replies, text):
+    feed(bare_dispatcher(tracker, LINKS), message_update(STRANGER, text))
+
+    assert replies == [] and sender.sent == []
+    assert asyncio.run(tracker.inbox_item(1)) is None
+
+
+@pytest.mark.parametrize("data", CALLBACKS)
+def test_in_link_mode_a_stranger_button_press_gets_no_answer(tracker, sender, replies, data):
+    feed(bare_dispatcher(tracker, LINKS), callback_update(STRANGER, data))
+
+    assert replies == [] and sender.sent == []

@@ -18,10 +18,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.utils.token import TokenValidationError, validate_token
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from app.bot.app_links import AppLinks
 from app.bot.error_handler import send_startup_error_sync
 from app.bot.main import add_jobs, build_dispatcher
 from app.bot.tracker_handlers import BOT_COMMANDS, MALFORMED_TOKEN, TelegramSender
-from app.config import Settings, get_settings, time_zone_of
+from app.config import AppUrl, Settings, get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
 from app.providers.google_drive import GoogleDriveApi
 from app.providers.igdb import IGDBProvider
@@ -50,6 +51,7 @@ WEB_PORT = 8080  # inside the process; the port on the PC is docker compose's bu
 # Not the owner's setting (not in .env.example): run from .venv on Windows the web must not open to the whole home
 # network, so the default is this PC only; the Docker image sets 0.0.0.0
 WEB_BIND_HOST = "WEB_BIND_HOST"
+WEB_HOST = "WEB_HOST"  # the owner's setting that opens the web to the home network (docker compose reads it; the process sees it too)
 WEB_STOP_GRACE_SECONDS = 5  # the started requests get this long on stop
 WEB_SECRET_FILE = Path("data") / "web_secret"  # the key that signs the session cookie (next to the database)
 STARTUP_FAILURE_FILE = Path("data") / "startup_failure.json"  # the last failure before the start and its report
@@ -106,7 +108,20 @@ def telegram_bot(token: str) -> Bot | None:
     return Bot(token=token)
 
 
-def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
+def app_links(app_url: AppUrl) -> AppLinks | None:
+    """Link mode (the links of the bot lead to the app) with a valid address, chat mode (None) without one; says which
+    in the log. The address itself is not logged."""
+    if app_url.address is not None:
+        logging.info("APP_URL: ссылки бота ведут в приложение")
+        return AppLinks(app_url.address)
+    if app_url.reason is not None:
+        logging.warning(
+            "APP_URL: %s — адрес не используется, кнопки «Карточка» показывают карточку в чате", app_url.reason
+        )
+    return None
+
+
+def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = None) -> Tracker:
     """The tracker core with its sources; the database is migrated (and copied first) here."""
     tmdb = TMDbProvider()
     steam = SteamProvider()  # one client for the Russian texts of a game being added and for its prices
@@ -115,7 +130,7 @@ def build_tracker(settings: Settings, bot: Bot | None) -> Tracker:
     return Tracker(
         create_session_factory(),
         clock=lambda: dt.now(tz=timezone.utc),
-        sender=TelegramSender(bot, settings.owner_chat),
+        sender=TelegramSender(bot, settings.owner_chat, links),
         sources={
             TitleKind.MOVIE: TmdbMovieSource(tmdb),
             TitleKind.SERIES: TmdbSeriesSource(tmdb),
@@ -150,8 +165,10 @@ async def main() -> int:
     if len(settings.web_password) < MIN_PASSWORD_LENGTH:
         logging.warning("WEB_PASSWORD не задан или короче %s символов: вход в веб закрыт", MIN_PASSWORD_LENGTH)
 
+    app_url = settings.app_url_reading  # read once: the bot's links and the line of Settings
+    links = app_links(app_url)
     bot = telegram_bot(settings.telegram_bot_token)
-    tracker = build_tracker(settings, bot)
+    tracker = build_tracker(settings, bot, links)
     if tracker.drive_settings.setup is DriveSetup.NO_PASSWORD:
         logging.warning(
             "BACKUP_PASSWORD не задан или короче %s знаков: копия в Google Drive не включится", MIN_BACKUP_PASSWORD_LENGTH
@@ -162,12 +179,13 @@ async def main() -> int:
     web_app = create_web_app(
         health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE, tracker=tracker,
         image_sources=image_sources(settings.shikimori_base_url), telegram_down=lambda: health.telegram_down,
+        app_url=app_url, web_host=os.environ.get(WEB_HOST, "").strip(),
     )
     server = web_server(web_app, host=host, port=WEB_PORT, stop_grace=WEB_STOP_GRACE_SECONDS)
     scheduler = AsyncIOScheduler()
     add_jobs(scheduler, tracker)
     runtime = Runtime(
-        web=server, scheduler=scheduler, bot=TelegramPart(bot, build_dispatcher(tracker, allowed_ids)), health=health,
+        web=server, scheduler=scheduler, bot=TelegramPart(bot, build_dispatcher(tracker, allowed_ids, links)), health=health,
     )
     forget_failure(STARTUP_FAILURE_FILE)  # everything is assembled: the start succeeded
     return await runtime.run()

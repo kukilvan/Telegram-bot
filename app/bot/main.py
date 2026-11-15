@@ -8,6 +8,7 @@ from aiogram import Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.bot.access import AccessMiddleware
+from app.bot.app_links import AppLinks
 from app.bot.error_handler import ErrorMiddleware
 from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker
@@ -16,14 +17,15 @@ TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles, sends the q
 BACKUP_EVERY_HOURS = 1  # how often the bot checks whether a database copy is due (the copy itself: over a day since the last)
 
 
-def build_dispatcher(tracker: Tracker, allowed_ids: list[int]) -> Dispatcher:
-    """The whole bot: the allowlist, the error reporter and the tracker menu. Nothing else answers."""
+def build_dispatcher(tracker: Tracker, allowed_ids: list[int], links: AppLinks | None = None) -> Dispatcher:
+    """The whole bot: the allowlist, the error reporter and the tracker menu. Nothing else answers. `links` is link mode
+    (the buttons lead to the app), `None` is chat mode."""
     dp = Dispatcher()
     # Allowlist goes first so strangers never reach the handlers or the error reporter
     dp.update.outer_middleware(AccessMiddleware(allowed_ids))
     # Error reporting middleware (catches all unhandled exceptions)
     dp.update.outer_middleware(ErrorMiddleware())
-    register_tracker_handlers(dp, tracker, allowed_ids)
+    register_tracker_handlers(dp, tracker, allowed_ids, links)
     return dp
 
 

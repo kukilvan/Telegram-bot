@@ -16,6 +16,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
+from app.config import AppUrl
 from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownKind
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
@@ -44,6 +45,8 @@ class WebContext:
     signed_in: Callable[[Request], bool]
     sections: "Sequence[Section]"
     telegram_down: Callable[[], bool] = lambda: False  # whether the bot has no connection to Telegram (the runtime knows)
+    app_url: AppUrl = AppUrl()  # what APP_URL says, read once at start (the line of Settings)
+    web_host: str = ""  # the environment variable WEB_HOST: «0.0.0.0» opens the web to the home network
 
 
 def report_source_failure(kind: TitleKind, exc: SourceFailed, doing: str) -> str:

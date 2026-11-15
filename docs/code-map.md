@@ -29,12 +29,15 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 
 <!-- code-map:start (built by tools/code_map.py from the docstrings; do not edit by hand) -->
 - `app/bot/access.py` — Owner allowlist: one gate in front of every incoming Telegram update.
+- `app/bot/app_links.py` — The addresses of the app the bot's links lead to, made from the app address (`APP_URL`); the bot holds them in link mode.
 - `app/bot/card_message.py` — The one function that sends a card to the chat: the text and the buttons with the poster above the text.
 - `app/bot/error_handler.py` — Error reporting to bot owner via Telegram Bot API.
 - `app/bot/inbox_handlers.py` — Bot side of «Входящие»: taking in every other message of the owner, the pause after it, «Что это?», the offer cards and their buttons.
 - `app/bot/inbox_message.py` — Reading a Telegram message of the owner into an `IncomingMessage` (spec 1.1 of stage 6.4), pure: no bot, no database.
+- `app/bot/list_handlers.py` — Bot side of the list: «Мои тайтлы» (the titles as buttons) and «Удалить несколько» (the selection and its question).
 - `app/bot/main.py` — The bot's assembly: the access gate and the tracker handlers (`build_dispatcher`), the scheduler's jobs (`add_jobs`).
-- `app/bot/tracker_handlers.py` — Bot side of the tracker core: the menu, the buttons under messages and cards, and the Telegram sender.
+- `app/bot/test_event_handlers.py` — Bot side of «Тестовое событие»: the list of samples, the delivery-rules check and their buttons.
+- `app/bot/tracker_handlers.py` — Bot side of the tracker core: the menu, `/start`, «Сводка сейчас», the buttons under messages and cards, and the Telegram sender.
 - `app/config.py` — Application configuration loaded from environment variables.
 - `app/container_start.py` — Start of the container (`python -m app.container_start`, KI-4).
 - `app/healthcheck.py` — The health check for Docker (`python -m app.healthcheck`, KI-3): asks the application's own `/health`.
@@ -145,6 +148,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/utils/logging_config.py` — Logging of the application: the console and the rotated file `data/logs/bot.log`, both with secrets masked.
 - `app/utils/restore.py` — The restore of the database from a copy: the list of the copies on the PC, the checks of a copy or a downloaded archive, and the replacement of `tracker.db`.
 - `app/utils/secrets_mask.py` — Mask secrets (API keys, tokens) in any text that is about to be logged or sent anywhere.
+- `app/web/address_line.py` — The line of Settings about the app address (`APP_URL`) and the hint under it (spec 1.2 of stage 7.2); pure.
 - `app/web/app.py` — The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages behind them.
 - `app/web/archive.py` — The archive: the titles with a final status («Просмотрено», «Пройдено», «Бросил») with a search by name, a filter by kind, by genre and by status, and an order (links, so «Назад» and bookmarks work).
 - `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the lock after wrong tries.

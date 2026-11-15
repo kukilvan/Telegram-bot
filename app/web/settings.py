@@ -15,6 +15,7 @@ from starlette.datastructures import FormData
 
 from app.tracker.core import DriveButton, ExportFile, SettingsChange, SettingsRefused, SettingsView
 from app.web import pages
+from app.web.address_line import address_note
 
 WEEKDAYS = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")  # Monday is 0, as in the core
 DAY_VALUES = frozenset(str(number) for number in range(len(WEEKDAYS)))
@@ -69,6 +70,7 @@ async def _show(
         current=str(request.app.url_path_for("settings")), form_address=str(request.app.url_path_for("settings_save")),
         zones=zones, days=days, platforms=platforms, countries=countries, shown=shown, log_note=log_note,
         now_line=view.now_line, telegram_state=pages.telegram_note(request) or CONNECTED,
+        address=address_note(pages.context_of(request).app_url, pages.context_of(request).web_host),
         backup=await pages.tracker_of(request).backup_block(request.headers.get("host", "")),
         backup_address=str(request.app.url_path_for("settings_backup")),
         drive_connect_address=str(request.app.url_path_for("settings_drive_connect")),

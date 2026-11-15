@@ -76,6 +76,8 @@
 
   <h2>Бот в Telegram</h2>
   <p class="telegram-state">{{ telegram_state }}</p>
+  <p class="app-address">{{ address.line }}</p>
+  {% if address.hint %}<p class="hint app-address-hint">{{ address.hint }}</p>{% endif %}
 
   <h2>Копии и выгрузка</h2>
   <p class="backup-line">{{ backup.copies_line }}</p>

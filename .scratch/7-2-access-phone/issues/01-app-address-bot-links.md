@@ -1,6 +1,6 @@
 # 01: The app address and the bot as links — `APP_URL`, the Settings line, link mode, the split of `tracker_handlers.py`
 
-Status: open
+Status: in review
 Complexity: medium (a pure parser, a mode of the bot, a split of a 659-line module; no external service, no database)
 Blocked by: —
 

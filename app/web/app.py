@@ -17,6 +17,7 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from app.config import AppUrl
 from app.tracker.core import Tracker, poster_url
 from app.web import archive, auth, card, drive_sign_in, feed, inbox, pages, search, settings, title_list
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
@@ -75,6 +76,8 @@ def create_web_app(
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     image_sources: Sequence[str] = (),
     telegram_down: Callable[[], bool] = lambda: False,
+    app_url: AppUrl = AppUrl(),
+    web_host: str = "",
 ) -> FastAPI:
     """The web app. `health` is the process's own report (`Health.report`): it reads neither the database nor the
     network, so `/health` answers even when they are slow. `password` is WEB_PASSWORD (without it, or when it is
@@ -82,7 +85,9 @@ def create_web_app(
     wrong tries (seconds). `tracker` is the one door into the core (without it the status line has no data); `now`
     is the wall clock (aware) the status line compares with. `image_sources` are the sites pictures may be loaded
     from (`posters.image_sources`); without them the page loads none. `telegram_down` tells whether the bot has no
-    connection to Telegram (the line under the status line); the web knows nothing of the runtime or of aiogram."""
+    connection to Telegram (the line under the status line); the web knows nothing of the runtime or of aiogram.
+    `app_url` is what APP_URL said and `web_host` the environment variable WEB_HOST, both read by `app.main` (the line of
+    Settings about the address)."""
     # No /docs, /redoc or /openapi.json: they would describe every address to anyone who asks
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     templates = Jinja2Templates(directory=HERE / "templates")
@@ -101,7 +106,8 @@ def create_web_app(
 
     templates.env.globals["poster_url"] = poster_url
     app.state.web = WebContext(
-        templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS, telegram_down=telegram_down
+        templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS, telegram_down=telegram_down,
+        app_url=app_url, web_host=web_host,
     )
 
     async def message(request: Request, heading: str, text: str, status: int) -> Response:
