@@ -22,12 +22,12 @@ One owner per instance (ADR 0001). The web is protected by a password (`WEB_PASS
 ## Features
 
 - **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1); prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark (6.2).
-- **Next** (in this order): 7.1 backups and export; 7.2 access from outside the home and the phone; 9 fixes after real use; 8 template for GitHub; 7.3 the move to the NAS when it appears. Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010).
+- **Next** (in this order): 7.1 backups and export; 7.2 the app address, the phone, bot links and a safer login; 9 fixes after real use; 8 template for GitHub; 7.3 NAS readiness and the move guide (the move itself and outside access — the owner's separate NAS project, ADR 0013). Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010).
 - **Never:** notes and tags, the commands `/add`, `/remove`, `/watchlist`, `/note`, `/notes`, `/events`, `/search`, `/searchgame`, inline search, the events «Русская озвучка» and «KinoPub», RAWG and the unofficial PSN request, PlayStation prices (ADR 0009), anything hard-coded for one owner.
 
 ## Interface
 
-Web (FastAPI + HTMX, no own JavaScript, ADR 0004), Russian UI, installable on phone (PWA manifest). Telegram bot: takes posts and names for «Входящие» (ADR 0010); menu «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие», «Карточка» under events. In 7.2, once the address of the app is set: «Карточка» becomes a link to the web card, «Мои тайтлы» goes, «Тестовое событие» moves to the web Settings, «Сводка сейчас» stays; without the address the bot stays as it is.
+Web (FastAPI + HTMX, no own JavaScript, ADR 0004), Russian UI, installable on phone (PWA manifest). Telegram bot: takes posts and names for «Входящие» (ADR 0010); menu «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие», «Карточка» under events. In 7.2, once the address of the app is set: «Карточка» becomes a link to the web card, «Мои тайтлы» goes, «Сводка сейчас» stays; «Тестовое событие» moves to the web Settings; without the address the bot stays as it is.
 
 ## Running and data
 
@@ -68,7 +68,7 @@ Finished (details — `docs/history.md`, `.scratch/`):
 
 ### Stage 7. Backups, NAS and phone — split into 7.1, 7.2, 7.3
 
-Split by `.scratch/7-1-backups-export/description.md` (2026-11-07), which also holds the decisions for 7.2 and 7.3. Order: 7.1 → 7.2 → 9 → 8 → 7.3 (the NAS is not bought yet).
+Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `.scratch/7-2-access-phone/description.md` (2026-11-15, ADR 0013): outside access by the owner's domain, Cloudflare Tunnel and Cloudflare Access instead of Tailscale, and the NAS move itself are done by the owner's separate NAS project for two apps; 7.3 here only prepares the move. Order: 7.1 → 7.2 → 9 → 8 → 7.3.
 
 ### Stage 7.1. Backups and export
 
@@ -77,12 +77,12 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07), which also h
 - Contains: `.scratch/7-1-backups-export/description.md` → `spec.md` → tickets → review.
 - Sessions (est.): about 8 (spec, slicing, 5 tickets, review).
 
-### Stage 7.2. Access from outside the home and the phone
+### Stage 7.2. The app address, the phone, the bot as links, a safer login
 
-- Goal: open the app from the phone anywhere and from the bot's messages.
-- The owner sees at the end: Tailscale with an `https` address (on the PC; a new ADR supersedes the «until the NAS» part of ADR 0006 and 0008); the address of the app in `.env`; bot buttons as links (see Interface); «Тестовое событие» and the delivery-rules check in the web Settings; the phone installation (PWA) checked; the login hardened for the outside (KI-7, KI-8, KI-12, KI-13).
-- Contains: description (decisions already in 7.1's description; mockups in `.scratch/7-2-access-phone/mockups/`) → spec → tickets → review.
-- Sessions (est.): about 6.
+- Goal: open the card of a bot message in the web on the PC or the phone; every screen fits a phone; the login ready for the internet.
+- The owner sees at the end: the address of the app in `.env` (until the NAS — the PC's home address); bot buttons as links (see Interface); «Тестовое событие» and the delivery-rules check in the web Settings; the «Вход» block with «Выйти на всех устройствах»; a Telegram message on every login; every screen walked at phone width; PWA installability checked on the PC; KI-7, KI-8, KI-12, KI-13 fixed and trusted proxy headers; a short document of what the app needs behind a domain (for the NAS project). Not here: the domain and the tunnel (ADR 0013).
+- Contains: `.scratch/7-2-access-phone/description.md` → spec → tickets → review.
+- Sessions (est.): about 7 (spec, slicing, 4–5 tickets, review).
 
 ### Stage 9. Fixes after real use
 
@@ -96,11 +96,11 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07), which also h
 - The owner sees at the end: a cleaned repository (junk files, unused `.env` variables), a new repository with a clean history, MIT licence, Russian README, description of keys and settings. **Replace all API keys before publishing.** A final review on Fable 5.1.
 - Sessions (est.): 1.
 
-### Stage 7.3. The move to the NAS
+### Stage 7.3. NAS readiness and the move guide
 
-- Goal: the app lives on the NAS and works while the PC is off.
-- The owner sees at the end: `data` and the container on the NAS (preliminary UGREEN DXP2800), rights on files (`PUID`/`PGID`, KI-15), start, stop and restore without PowerShell, Tailscale on the NAS, the NAS instructions in the template's README.
-- Waits for the NAS; comes after stage 8.
-- Sessions (est.): 3+.
+- Goal: the owner's separate NAS project can move the app to a UGREEN DXP2800 (Intel N100, NVMe SSD, 3 TB HDD) and everything keeps working; the move itself is not done here (ADR 0013).
+- The owner sees at the end: the app proven to run in its container as on the NAS (the same `amd64` image, the database on a local SSD volume, never on a network share; copies may go to the HDD), start, stop and restore by `docker compose` without PowerShell, KI-15, KI-70, and a guide: what to move (`data`, `.env`, the compose file), where, in what order, the one-instance rule, the checks after the move, the Google Drive connection, the app address.
+- Needs no NAS; comes after stage 8 (the guide describes the final app and the new repository).
+- Sessions (est.): 3.
 
 Risks to the estimates: Shikimori has no official «part of a season» link (a heuristic on names can err); realistic events do not come on schedule, so part of the checks runs on faked events; open question — how to tell reliably «closed or cancelled» for anime.
