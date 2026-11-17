@@ -88,6 +88,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | open | — |
 | KI-73 | Login report: a report that failed to send waits for the delivery rules | `app/tracker` (stage 7.2) | open | — |
 | KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | open | — |
+| KI-75 | Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key | `app/web/sessions.py` | open | — |
+| KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | — |
 
 ## Entries
 
@@ -772,3 +774,21 @@ Format of a new entry:
 - Likelihood / impact: only the look; the shown rows and the line «Показано …» follow the filter.
 - Status: open.
 - Found: 2026-11-15, spec 7.2.
+
+## KI-75. Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key
+
+- Where: `app/web/sessions.py` (`SignIns.count`, `end_all`, the cap of 20), the block «Вход» of Settings (spec 4.3–4.5 of stage 7.2).
+- What's wrong: a change of `WEB_PASSWORD` or a new `data/web_secret` (deleted, or made anew when spoiled, KI-13) ends every sign-in through the cookie (the fingerprint or the signature no longer matches), but the sign-ins stay in `data/web_login.json` until 30 days without a request. So «Вход открыт на N устройствах» counts them, «Выйти на всех устройствах» logs them in its count, and they keep places among the 20.
+- How to reproduce: sign in on the PC and the phone, change `WEB_PASSWORD`, `.\start-bot.ps1`, sign in on the PC — Settings says «Вход открыт на 3 устройствах.», though only one works.
+- Likelihood / impact: rare (a password change); the number is too high, nobody gets in. «Выйти на всех устройствах» clears them. A fix keeps the fingerprint of the password and the key in the file and drops the sign-ins when it differs at start — a change of the file's shape (ADR 0014).
+- Status: open.
+- Found: 2026-11-17, review 7.2 (F2).
+
+## KI-76. `APP_URL`: a Cyrillic domain is refused with a reason about the dot
+
+- Where: `app/config.py`, `parse_app_url` (`_HOST_NAME`: latin letters, digits and hyphens), spec 1.1 of stage 7.2.
+- What's wrong: `APP_URL=https://трекер.рф` is malformed with the reason «Telegram не открывает такие ссылки — … или имя сайта с точкой», though the name has a dot; the bot stays in chat mode. Whether Telegram opens such a name in a button was not checked.
+- How to reproduce: put `APP_URL=https://трекер.рф` into `.env`, `.\start-bot.ps1` — Settings shows the line «записан с ошибкой» with that reason.
+- Likelihood / impact: only if the owner buys a Cyrillic domain. Workaround: write the name in its `xn--…` form (the domain registrar shows it), which is taken.
+- Status: open.
+- Found: 2026-11-17, review 7.2 (F3).

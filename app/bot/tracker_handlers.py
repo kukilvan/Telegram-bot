@@ -38,6 +38,7 @@ from app.bot.list_handlers import (
     MY_TITLES_BUTTON,
     confirm_markup,
     delete_question,
+    drop_buttons,
     register_list_handlers,
 )
 from app.bot.test_event_handlers import (
@@ -295,13 +296,6 @@ def register_tracker_handlers(
         await show_card_of(callback, title_id)
 
     # --- buttons under messages and cards -------------------------------------------------------
-
-    async def drop_buttons(callback: CallbackQuery) -> None:
-        """A pressed button is spent: take the keyboard off its message."""
-        try:
-            await callback.message.edit_reply_markup(reply_markup=None)
-        except Exception as exc:  # an old or missing message: the answer to the press matters more
-            logging.debug("could not remove buttons: %s", repr(exc))
 
     async def drop_pressed_button(callback: CallbackQuery) -> None:
         """Only the pressed button is spent: the others under the message (a summary's other titles) stay."""

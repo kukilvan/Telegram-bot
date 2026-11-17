@@ -38,6 +38,16 @@ def host_name(value: str) -> str | None:
     return name or None
 
 
+def is_private_ipv4(text: str) -> bool:
+    """Whether `text` is a private IPv4 address of a home network (10.x, 172.16–31.x, 192.168.x): the one rule, also for
+    the hint of Settings (`address_line`)."""
+    try:
+        address = ipaddress.IPv4Address(text)
+    except ValueError:
+        return False
+    return any(address in network for network in PRIVATE_NETWORKS)
+
+
 def _canonical(name: str) -> str:
     """One form per address (`0:0:0:0:0:0:0:1` and `::1` are the same), a name as it is; no brackets."""
     inner = name[1:-1] if name.startswith("[") and name.endswith("]") else name
@@ -62,13 +72,7 @@ class HostRules:
         known = _canonical(name)
         if known in self._own:
             return True
-        if not self.open_to_network or name.startswith("["):
-            return False
-        try:
-            address = ipaddress.IPv4Address(known)
-        except ValueError:
-            return False
-        return any(address in network for network in PRIVATE_NETWORKS)
+        return self.open_to_network and not name.startswith("[") and is_private_ipv4(known)
 
 
 def _host_header(scope: Scope) -> str | None:

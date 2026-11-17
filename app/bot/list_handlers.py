@@ -44,6 +44,14 @@ def confirm_markup(yes: str, no: str) -> InlineKeyboardMarkup:
     )
 
 
+async def drop_buttons(callback: CallbackQuery) -> None:
+    """A pressed button is spent: take the keyboard off its message (the list's buttons and those of `tracker_handlers`)."""
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except Exception as exc:  # an old or missing message: the answer to the press matters more
+        logging.debug("could not remove buttons: %s", repr(exc))
+
+
 def _selection_markup(selection_id: str, titles: Sequence[TitleSummary], chosen: set[int]) -> InlineKeyboardMarkup:
     """The titles with a mark on the chosen ones, then the delete button (with the count) and the cancel button."""
     rows = [
@@ -64,13 +72,6 @@ def _selection_markup(selection_id: str, titles: Sequence[TitleSummary], chosen:
 def register_list_handlers(router: Router, tracker: Tracker, *, chat_mode: bool) -> None:
     """«Мои тайтлы» (only in chat mode) and the buttons of the list and of the selection (always) on `router`."""
     selections: dict[int, tuple[str, set[int]]] = {}  # owner id -> (id of the open selection, chosen ids); lost on restart
-
-    async def drop_buttons(callback: CallbackQuery) -> None:
-        """A pressed button is spent: take the keyboard off its message."""
-        try:
-            await callback.message.edit_reply_markup(reply_markup=None)
-        except Exception as exc:  # an old or missing message: the answer to the press matters more
-            logging.debug("could not remove buttons: %s", repr(exc))
 
     # --- «Мои тайтлы» ---------------------------------------------------------------------------
 

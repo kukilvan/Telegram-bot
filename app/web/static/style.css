@@ -480,7 +480,7 @@ select, input[type="time"], input[type="number"] {
 
 /* Settings, «Тестовое событие» and «Проверка правил доставки»: a list and its button in one row that wraps on a phone,
    the answer under it */
-section.card h3 { margin: 1rem 0 0.25rem; font-size: 1rem; }
+.bot-tests h3 { margin: 1rem 0 0.25rem; font-size: 1rem; }  /* only these: the Feed's day headings are h3 too (review 7.2, F1) */
 
 .test-form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0; }
 

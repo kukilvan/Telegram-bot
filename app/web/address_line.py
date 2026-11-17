@@ -5,26 +5,17 @@ only with an address: a private home-network address while the web is open to th
 phone cannot open.
 """
 
-import ipaddress
 from typing import NamedTuple
 
 from app.config import AppUrl
+from app.web.hosts import is_private_ipv4
 
 OPEN_TO_NETWORK = "0.0.0.0"  # the value of WEB_HOST that opens the web to the home network
-_PRIVATE_NETWORKS = tuple(ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
 
 
 class AddressNote(NamedTuple):
     line: str
     hint: str  # empty: no hint
-
-
-def _is_private_ipv4(host: str) -> bool:
-    try:
-        address = ipaddress.IPv4Address(host)
-    except ValueError:
-        return False
-    return any(address in network for network in _PRIVATE_NETWORKS)
 
 
 def address_note(app_url: AppUrl, web_host: str) -> AddressNote:
@@ -42,7 +33,7 @@ def address_note(app_url: AppUrl, web_host: str) -> AddressNote:
     line = f"Адрес приложения: {app_url.address}. Кнопки «Карточка» в сообщениях бота открывают его."
     if app_url.host == "127.0.0.1":
         hint = "Адрес 127.0.0.1 открывается только на этом ПК: на телефоне кнопки не откроются."
-    elif _is_private_ipv4(app_url.host or "") and web_host.strip() != OPEN_TO_NETWORK:
+    elif is_private_ipv4(app_url.host or "") and web_host.strip() != OPEN_TO_NETWORK:
         hint = (
             "Адрес — в домашней сети, а приложение открыто только этому ПК: "
             "добавьте в .env строку WEB_HOST=0.0.0.0 и запустите .\\start-bot.ps1."

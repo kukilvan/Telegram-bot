@@ -12,6 +12,7 @@ from typing import NamedTuple
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
+from app.tracker.cards import plural
 from app.tracker.moment_words import moment_in_words
 from app.web import pages
 from app.web.sessions import LastLogin
@@ -44,8 +45,7 @@ def last_login_line(last: LastLogin | None, words: str) -> str:
 
 def devices_line(count: int) -> str:
     """«устройстве» for 1, 21, 31… but not 11, 111…; «устройствах» otherwise."""
-    word = "устройстве" if count % 10 == 1 and count % 100 != 11 else "устройствах"
-    return f"Вход открыт на {count} {word}."
+    return f"Вход открыт на {count} {plural(count, 'устройстве', 'устройствах', 'устройствах')}."
 
 
 async def sign_in_block(request: Request) -> SignInBlock:
