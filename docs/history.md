@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Ticket 7.2.04
+
+- `app/web/hosts.py` (new): `AllowedHosts`, the outermost layer inside `HeadAsGet`, and the pure `HostRules`/`host_name`; own names `localhost`, `127.0.0.1`, `[::1]`, the host of `APP_URL`, private IPv4 only with `WEB_HOST=0.0.0.0`; anything else or no/two `Host` → `400` «Неизвестный адрес сайта.» with the security headers and no cookie; one warning per name (100 remembered). KI-12 fixed.
+- `app/web/proxy.py` (new): `parse_trusted_proxies` (address or network; junk and `*` skipped with a warning at start), `public_address` (`is_global`: private, loopback, link-local, CGNAT and documentation ranges are not shown), `is_https`. `app/web/server.py`: `trusted_proxies` → uvicorn `proxy_headers=True` + `forwarded_allow_ips`, empty → `proxy_headers=False` (uvicorn's default would believe `127.0.0.1`).
+- `app/web/app.py`: the session cookie gets `Secure` under `https`; the login passes the public client address to `last_login` and the log line (`web login: ok from <address>`).
+- Decisions: uvicorn lower bound is 0.31.0 (the first with networks in `forwarded_allow_ips`; the spec said 0.54); `tests/conftest.py` makes every test client come as `localhost` (the default `testserver` is not an own name); the drive tests open the web to the network.
+- Tests: `test_web_hosts`, `test_web_proxy` (new), `test_app_main` extended. 4113 in total; the three known Windows failures only. Checked live by the owner: `localhost`, `127.0.0.1`, the network address on the PC and the phone, a foreign `Host` → `400`. A stale cached llama-ui page at `127.0.0.1:8080` in the owner's browser looked like another server (cleared in the browser; nothing to do with the app).
+
 ## 2026-11-17 — Ticket 7.2.03
 
 - `app/web/sessions.py` (new): the store `SignIns` of `data/web_login.json` (sessions `sid` → since, seen, device; the last login; the lock count), held in memory, every change written by a temporary file and `os.replace` (`0600`) in a thread; a later write skips an older document; spoiled → warning, empty, rewritten; unreadable or unwritable → in memory, one warning. `seen` written at most once an hour, 30 days end a sign-in, 20 at most (the least recently used goes). `SessionCookies` replaces Starlette's `SessionMiddleware` with the same `request.session` and the same signing; `secure` per request is a parameter, off until 04. `device_words` is the seam for 05.

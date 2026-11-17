@@ -1,6 +1,6 @@
 # 04: Host names and the proxy — allowed hosts (KI-12), `TRUSTED_PROXIES`, `Secure` under `https`
 
-Status: in review
+Status: accepted
 Complexity: medium (a layer in front of the app, uvicorn options, one cookie attribute; no database, no new screen)
 Blocked by: 01 (the host of `APP_URL` is allowed), 03 (the session middleware that sets the cookie, and `last_login.address`)
 
