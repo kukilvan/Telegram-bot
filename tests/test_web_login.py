@@ -41,7 +41,10 @@ def make_app(secret_file, clock, password=PASSWORD):
     health = Health()
     health.bot_running = health.scheduler_running = True
     health.scheduler_mark = health.clock()
-    return create_web_app(health=health.report, password=password, secret_file=secret_file, clock=clock)
+    return create_web_app(
+        health=health.report, password=password, secret_file=secret_file, login_file=secret_file.parent / "web_login.json",
+        clock=clock,
+    )
 
 
 @pytest.fixture
@@ -298,14 +301,18 @@ def test_without_a_key_file_to_read_or_make_the_key_lives_in_memory_and_the_log_
     assert client.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login
 
 
-def test_a_broken_key_file_is_not_overwritten(secret_file, clock, caplog):
+def test_a_short_key_file_is_made_anew_with_the_warning(secret_file, clock, caplog):
     secret_file.parent.mkdir(parents=True)
     secret_file.write_bytes(b"short")
 
     with caplog.at_level(logging.WARNING):
         key = load_key(secret_file)
 
-    assert len(key) == 32 and secret_file.read_bytes() == b"short" and "повреждён" in caplog.text
+    assert len(key) == 32 and secret_file.read_bytes() == key  # KI-13: the file is no longer left spoiled
+    assert "web_secret был испорчен и создан заново: на всех устройствах нужен новый вход" in caplog.text
+    assert [path.name for path in secret_file.parent.iterdir()] == ["web_secret"]  # no temporary file left
+    if Path("/").anchor == "/":
+        assert secret_file.stat().st_mode & 0o777 == 0o600
 
 
 def test_another_password_throws_everybody_out(secret_file, clock):

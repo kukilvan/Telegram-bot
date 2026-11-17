@@ -1,6 +1,6 @@
 # 03: Sign-ins on the server — `data/web_login.json`, the session middleware, «Выйти», «Выйти на всех устройствах», the block «Вход» (KI-7, KI-8, KI-13)
 
-Status: open
+Status: in review
 Complexity: complex (the way the whole web knows who is signed in changes; a new store with a file, a middleware of its own, the lock moved to disk; a mistake here locks the owner out or lets a stranger in)
 Blocked by: —
 

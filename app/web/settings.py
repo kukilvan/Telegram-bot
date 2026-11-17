@@ -4,9 +4,9 @@ between parts of a season, the platforms and the country of the stores. It has o
 button «Сделать копию сейчас» that posts to `/settings/backup`, the line of the Google Drive copy with its buttons (their
 addresses are `drive_sign_in`'s), and the downloads «Скачать список (CSV)» and «Скачать всё (JSON)» at
 `/settings/export.csv` and `/settings/export.json`; the two test forms under «Бот в Telegram» post to the routes of
-`settings_test_event`). The form is saved as a whole or not at all: a value the
+`settings_test_event`); last comes the block «Вход» with «Выйти на всех устройствах» (`settings_sign_in`). The form is saved as a whole or not at all: a value the
 core refuses is shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the
-spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1 (the downloads: section 3)."""
+spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1 (the downloads: section 3), section 4.5 of the spec of stage 7.2 (the block «Вход»)."""
 
 from typing import NamedTuple
 
@@ -17,6 +17,7 @@ from starlette.datastructures import FormData
 from app.tracker.core import DriveButton, ExportFile, SettingsChange, SettingsRefused, SettingsView
 from app.web import pages
 from app.web.address_line import address_note
+from app.web.settings_sign_in import sign_in_block
 from app.web.settings_test_event import check_lines, sample_lines
 
 WEEKDAYS = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")  # Monday is 0, as in the core
@@ -82,6 +83,7 @@ async def _show(
         drive_disconnect_address=str(request.app.url_path_for("settings_drive_disconnect")), drive_buttons=DriveButton,
         export_csv_address=str(request.app.url_path_for("settings_export_csv")),
         export_json_address=str(request.app.url_path_for("settings_export_json")),
+        sign_in=await sign_in_block(request),
         error_text=error.text if error is not None else "", invalid={error.field.value: True} if error is not None else {},
     )
 

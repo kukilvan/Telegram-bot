@@ -3,6 +3,7 @@
 {% block content %}
 <section class="card narrow">
   <h1>Вход</h1>
+  {% if farewell %}<p class="notice" role="status">{{ farewell }}</p>{% endif %}
   {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
   <form method="post" action="/login">
     <input type="hidden" name="next" value="{{ next }}">

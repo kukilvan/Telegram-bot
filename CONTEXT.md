@@ -210,6 +210,11 @@ The address the links of the bot lead to: `APP_URL` in `.env`, the PC's address 
 _Avoid_: URL бота, ссылка на веб
 In code: `app_url` (`Settings`, read through `app_url_reading` → `AppUrl`, `parse_app_url`), `AppLinks` (`app/bot/app_links.py`), `link mode` / `chat mode`.
 
+**Вход** (sign-in):
+One browser where the password was typed and that has not been ended: the PC, the phone, the browser of Telegram each count as a device. «Выйти» ends this one; «Выйти на всех устройствах» in Settings ends all of them; 30 days without a request end one by itself. The server keeps them, the last login and the count of wrong passwords in `data/web_login.json` (ADR 0014); the block «Вход» of Settings shows the last login and how many are open.
+_Avoid_: сессия (in the owner's texts), авторизация
+In code: `sign-in` — the store `SignIns` and the cookie middleware `SessionCookies` of `app/web/sessions.py`, the id `sid` in the cookie and the file; the block `app/web/settings_sign_in.py`. Not the Google Drive sign-in (`drive_sign_in`).
+
 **Лента** (feed):
 The main screen of the app: what comes out in the next days and what came out recently, by dates. Blocks: «Скоро» — the next 14 days by day, «Позже» — what comes out after them, «Недавно» — events of 7 days.
 _Avoid_: дашборд, календарь

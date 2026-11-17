@@ -123,5 +123,13 @@
     <a class="button-link" href="{{ export_json_address }}" download>Скачать всё (JSON)</a>
   </div>
   <p class="hint">CSV открывается в Excel: один тайтл — одна строка. JSON — все данные целиком, на память или для переноса. Загрузить выгрузку обратно нельзя: данные возвращают из копии базы.</p>
+
+  <h2>Вход</h2>
+  <p class="sign-in-line">{{ sign_in.last_login }}</p>
+  <p class="sign-in-line">{{ sign_in.devices }}</p>
+  <form class="backup-actions" method="post" action="{{ sign_in.address }}">
+    <button type="submit">Выйти на всех устройствах</button>
+  </form>
+  <p class="hint">{{ sign_in.hint }}</p>
 </section>
 {% endblock %}

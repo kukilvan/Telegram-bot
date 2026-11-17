@@ -7,7 +7,7 @@ The page carries the menu (with the number of «Входящие») and the stat
 import functools
 import logging
 from collections.abc import Awaitable, Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -21,6 +21,7 @@ from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownKind
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web.menu import with_inbox_count
+from app.web.sessions import SignIns
 from app.web.status_line import NO_DATA, TELEGRAM_DOWN, status_text
 
 if TYPE_CHECKING:
@@ -47,6 +48,7 @@ class WebContext:
     telegram_down: Callable[[], bool] = lambda: False  # whether the bot has no connection to Telegram (the runtime knows)
     app_url: AppUrl = AppUrl()  # what APP_URL says, read once at start (the line of Settings)
     web_host: str = ""  # the environment variable WEB_HOST: «0.0.0.0» opens the web to the home network
+    sign_ins: SignIns = field(default_factory=lambda: SignIns(None))  # the sign-ins (`data/web_login.json`)
 
 
 def report_source_failure(kind: TitleKind, exc: SourceFailed, doing: str) -> str:

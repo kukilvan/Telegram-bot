@@ -14,19 +14,19 @@ from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
-from starlette.middleware.sessions import SessionMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.config import AppUrl
 from app.tracker.core import Tracker, poster_url
-from app.web import archive, auth, card, drive_sign_in, feed, inbox, pages, search, settings, settings_test_event, title_list
+from app.web import (
+    archive, auth, card, drive_sign_in, feed, inbox, pages, search, settings, settings_sign_in, settings_test_event, title_list,
+)
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
+from app.web.sessions import SessionCookies, SignIns, device_words
 
 HERE = Path(__file__).resolve().parent
 mimetypes.add_type("application/manifest+json", ".webmanifest")  # the installed app's file: not every system knows it
-SESSION_COOKIE = "tracker_session"
-SESSION_SECONDS = 30 * 24 * 60 * 60  # from the last request: every answer renews the cookie
 SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
 SECURITY_HEADERS = {
     "Content-Security-Policy": "default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
@@ -71,7 +71,8 @@ def create_web_app(
     health: Callable[[], tuple[int, dict[str, object]]],
     password: str = "",
     secret_file: Path | None = None,
-    clock: Callable[[], float] = time.monotonic,
+    login_file: Path | None = None,
+    clock: Callable[[], float] = time.time,
     tracker: Tracker | None = None,
     now: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     image_sources: Sequence[str] = (),
@@ -81,8 +82,9 @@ def create_web_app(
 ) -> FastAPI:
     """The web app. `health` is the process's own report (`Health.report`): it reads neither the database nor the
     network, so `/health` answers even when they are slow. `password` is WEB_PASSWORD (without it, or when it is
-    short, the login is closed); `secret_file` keeps the key that signs the session; `clock` times the lock after
-    wrong tries (seconds). `tracker` is the one door into the core (without it the status line has no data); `now`
+    short, the login is closed); `secret_file` keeps the key that signs the session cookie, `login_file` the sign-ins,
+    the last login and the lock (`data/web_login.json`; None: in memory only); `clock` is the wall clock in UTC seconds
+    they run on. `tracker` is the one door into the core (without it the status line has no data); `now`
     is the wall clock (aware) the status line compares with. `image_sources` are the sites pictures may be loaded
     from (`posters.image_sources`); without them the page loads none. `telegram_down` tells whether the bot has no
     connection to Telegram (the line under the status line); the web knows nothing of the runtime or of aiogram.
@@ -94,28 +96,35 @@ def create_web_app(
     configured = auth.login_configured(password)
     key = auth.load_key(secret_file) if configured else b""
     expected = auth.fingerprint(key, password) if configured else ""
-    guard = auth.LoginGuard(clock)
+    sign_ins = SignIns(login_file if configured else None, clock)
+    guard = sign_ins.guard
     security_headers = {**SECURITY_HEADERS}
     if image_sources:
         security_headers["Content-Security-Policy"] += "; img-src 'self' " + " ".join(image_sources)
 
     def signed_in(request: Request) -> bool:
-        # The cookie is signed and has a lifetime (SessionMiddleware); the fingerprint dies with the password.
-        # Outside the session middleware (the foreign-origin answer) nobody is signed in
-        return configured and "session" in request.scope and auth.same(request.session.get("pw"), expected)
+        # The cookie is signed and has a lifetime (SessionCookies); the fingerprint dies with the password; the sign-in
+        # it names must live in the store (KI-8). Outside the session middleware (the foreign-origin answer) nobody is
+        # signed in
+        return (
+            configured and "session" in request.scope and auth.same(request.session.get("pw"), expected)
+            and sign_ins.live(request.session.get("sid"))
+        )
 
     templates.env.globals["poster_url"] = poster_url
     app.state.web = WebContext(
         templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS, telegram_down=telegram_down,
-        app_url=app_url, web_host=web_host,
+        app_url=app_url, web_host=web_host, sign_ins=sign_ins,
     )
 
     async def message(request: Request, heading: str, text: str, status: int) -> Response:
         return await pages.message_page(request, heading, text, status)
 
-    async def login_page(request: Request, next_address: str, error: str = "", status: int = 200) -> Response:
+    async def login_page(
+        request: Request, next_address: str, error: str = "", status: int = 200, farewell: str = ""
+    ) -> Response:
         return await pages.page(
-            request, "login.html", status_code=status, signed_in=False, next=next_address, error=error
+            request, "login.html", status_code=status, signed_in=False, next=next_address, error=error, farewell=farewell
         )
 
     async def locked_page(request: Request, next_address: str, seconds: int) -> Response:
@@ -138,6 +147,7 @@ def create_web_app(
             return await call_next(request)
         if signed_in(request):
             request.session["pw"] = expected  # writing it again makes the middleware send a fresh cookie: 30 days from now
+            await sign_ins.touch(request.session["sid"])
             return await call_next(request)
         if request.headers.get("hx-request") or path == "/status-line":
             return Response(status_code=401, headers={"HX-Redirect": "/login"})
@@ -147,10 +157,7 @@ def create_web_app(
             target += f"?next={quote(address, safe='/')}"
         return RedirectResponse(target, status_code=303)
 
-    app.add_middleware(
-        SessionMiddleware, secret_key=key.hex() if configured else "unused", session_cookie=SESSION_COOKIE,
-        max_age=SESSION_SECONDS, same_site="lax", https_only=False,
-    )
+    app.add_middleware(SessionCookies, key=key or auth.unused_key())
 
     @app.middleware("http")
     async def protect_requests(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -172,32 +179,38 @@ def create_web_app(
         return JSONResponse(body, status_code=status)
 
     @app.get("/login")
-    async def login_form(request: Request, next: str = "/") -> Response:
+    async def login_form(request: Request, next: str = "/", out: str = "") -> Response:
         if signed_in(request):
             return RedirectResponse("/", status_code=303)
-        return await login_page(request, auth.safe_next(next))
+        farewell = settings_sign_in.SIGNED_OUT_EVERYWHERE if out == settings_sign_in.OUT_EVERYWHERE else ""
+        return await login_page(request, auth.safe_next(next), farewell=farewell)
 
     @app.post("/login")
     async def login(request: Request, password_typed: str = Form("", alias="password"), next: str = Form("/")) -> Response:
         target = auth.safe_next(next)
         seconds = guard.locked_for()
+        await sign_ins.save_guard()  # the end of a lock starts the count anew
         if seconds:
             return await locked_page(request, target, seconds)  # the password is not even looked at
         if not auth.password_matches(password_typed.strip(), password):
             left = guard.wrong()
+            await sign_ins.save_guard()
             logging.warning("web login: wrong password (%s in a row)", guard.wrong_in_a_row)
             if left == 0:
                 logging.warning("web login blocked for %s min", auth.LOCK_SECONDS // 60)
                 return await locked_page(request, target, guard.locked_for())
             return await login_page(request, target, f"Неверный пароль. До блокировки осталось попыток: {left}", status=401)
-        guard.right()
+        guard.right()  # written with the new sign-in
+        device = device_words(request.headers.get("user-agent", ""))
+        sid = await sign_ins.sign_in(device, None, replacing=request.session.get("sid"))
         logging.info("web login: ok")
         request.session.clear()
-        request.session["pw"] = expected
+        request.session.update(pw=expected, sid=sid)
         return RedirectResponse(target, status_code=303)
 
     @app.post("/logout")
     async def logout(request: Request) -> Response:
+        await sign_ins.end(request.session.get("sid"))  # a copy of this cookie no longer works (KI-8)
         request.session.clear()
         return RedirectResponse("/login", status_code=303)
 
@@ -213,6 +226,7 @@ def create_web_app(
     app.include_router(title_list.router)
     app.include_router(settings.router)
     app.include_router(settings_test_event.router)
+    app.include_router(settings_sign_in.router)
     app.include_router(drive_sign_in.router)
 
     @app.exception_handler(404)

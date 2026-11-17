@@ -54,6 +54,7 @@ WEB_BIND_HOST = "WEB_BIND_HOST"
 WEB_HOST = "WEB_HOST"  # the owner's setting that opens the web to the home network (docker compose reads it; the process sees it too)
 WEB_STOP_GRACE_SECONDS = 5  # the started requests get this long on stop
 WEB_SECRET_FILE = Path("data") / "web_secret"  # the key that signs the session cookie (next to the database)
+WEB_LOGIN_FILE = Path("data") / "web_login.json"  # the web sign-ins, the last login and the lock (ADR 0014)
 STARTUP_FAILURE_FILE = Path("data") / "startup_failure.json"  # the last failure before the start and its report
 EMPTY_ALLOWLIST = (
     "ALLOWED_TELEGRAM_USER_IDS пуст: бот не запускается открытым для всех. "
@@ -177,7 +178,8 @@ async def main() -> int:
     health = Health()
     host = os.environ.get(WEB_BIND_HOST, "").strip() or "127.0.0.1"
     web_app = create_web_app(
-        health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE, tracker=tracker,
+        health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE, login_file=WEB_LOGIN_FILE,
+        tracker=tracker,
         image_sources=image_sources(settings.shikimori_base_url), telegram_down=lambda: health.telegram_down,
         app_url=app_url, web_host=os.environ.get(WEB_HOST, "").strip(),
     )
