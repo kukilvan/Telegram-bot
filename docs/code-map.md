@@ -164,6 +164,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/search.py` — The search: the page with the switch of the kind, the suggestions as the owner types (a fragment for HTMX, or the whole page without it), and adding a suggestion to the list, which leads to its card.
 - `app/web/server.py` — uvicorn for the runtime (`app/runtime.py`): no signal handling and no logging setup of its own.
 - `app/web/settings.py` — The settings page: one form for the time zone, the working days, the hour of the summary, the quiet hours, the break between parts of a season, the platforms and the country of the stores.
+- `app/web/settings_test_event.py` — The two forms of Settings under «Бот в Telegram»: «Тестовое событие» and «Проверка правил доставки» (spec 3 of stage 7.2).
 - `app/web/status_line.py` — The line at the top of every page: how many titles are in the list and when the sources were last checked; under it, while the bot is not connected to Telegram, the sentence that says so.
 - `app/web/title_list.py` — The list: the rows with a search by name, filters by kind and status and an order (links, so «Назад» and bookmarks work), and a mode of choosing that deletes several titles at once.
 - `app/web/title_rows.py` — What the list and the archive share: a row of titles, a link of a row of filters and the search query.

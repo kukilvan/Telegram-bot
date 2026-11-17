@@ -3,7 +3,8 @@ between parts of a season, the platforms and the country of the stores. It has o
 «Сейчас», the state of the bot in Telegram and the block «Копии и выгрузка» (the copies of the database, with its own
 button «Сделать копию сейчас» that posts to `/settings/backup`, the line of the Google Drive copy with its buttons (their
 addresses are `drive_sign_in`'s), and the downloads «Скачать список (CSV)» and «Скачать всё (JSON)» at
-`/settings/export.csv` and `/settings/export.json`). The form is saved as a whole or not at all: a value the
+`/settings/export.csv` and `/settings/export.json`; the two test forms under «Бот в Telegram» post to the routes of
+`settings_test_event`). The form is saved as a whole or not at all: a value the
 core refuses is shown with the first error and everything as typed, and nothing is stored. Rules: sections 3 and 4 of the
 spec of part 5.4, section 11 of the spec of part 6.1, section 2 of the spec of stage 7.1 (the downloads: section 3)."""
 
@@ -16,6 +17,7 @@ from starlette.datastructures import FormData
 from app.tracker.core import DriveButton, ExportFile, SettingsChange, SettingsRefused, SettingsView
 from app.web import pages
 from app.web.address_line import address_note
+from app.web.settings_test_event import check_lines, sample_lines
 
 WEEKDAYS = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")  # Monday is 0, as in the core
 DAY_VALUES = frozenset(str(number) for number in range(len(WEEKDAYS)))
@@ -70,6 +72,9 @@ async def _show(
         current=str(request.app.url_path_for("settings")), form_address=str(request.app.url_path_for("settings_save")),
         zones=zones, days=days, platforms=platforms, countries=countries, shown=shown, log_note=log_note,
         now_line=view.now_line, telegram_state=pages.telegram_note(request) or CONNECTED,
+        samples=sample_lines(request), checks=check_lines(request),
+        test_event_address=str(request.app.url_path_for("settings_test_event")),
+        delivery_check_address=str(request.app.url_path_for("settings_delivery_check")),
         address=address_note(pages.context_of(request).app_url, pages.context_of(request).web_host),
         backup=await pages.tracker_of(request).backup_block(request.headers.get("host", "")),
         backup_address=str(request.app.url_path_for("settings_backup")),

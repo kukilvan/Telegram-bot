@@ -165,12 +165,12 @@ Days when events accumulate until the summary hour (for the owner Sunday to Thur
 In code: `workdays`.
 
 **Тестовое событие** (test event):
-A bot button: the owner picks a sample and gets it the way a real event would come, but bypassing the queue. The last item of the list is the delivery-rules check.
-In code: `test sample` — `TestSample`, `register_test_sample`, `Tracker.test_samples()`.
+A form of Settings (the bot's menu button only in chat mode): the owner picks a sample and gets it the way a real event would come, at once, whatever the hour. In the bot the last item of the list is the delivery-rules check.
+In code: `test sample` — `TestSample`, `register_test_sample`, `Tracker.test_samples()`; the form `app/web/settings_test_event.py`.
 
 **Проверка правил доставки** (delivery check):
-An item of «Тестовое событие»: the owner picks a moment of the week and the bot shows what the delivery rules would do with an event at that moment. The real queue is not touched.
-In code: `delivery check` — `DeliveryCheck`, `DELIVERY_CHECKS`, `Tracker.delivery_check_moment`.
+A form of Settings and an item of the bot's «Тестовое событие»: the owner picks a moment of the week and sees what the delivery rules would do with an event at that moment (delivered at once, held and played out as a summary, not delivered). The real queue is not touched.
+In code: `delivery check` — `DeliveryCheck`, `DELIVERY_CHECKS`, `Tracker.delivery_check` (the one place of the logic; the bot and Settings only word its `DeliveryCheckResult`), `Tracker.delivery_check_moment`.
 
 **Тихие часы** (quiet hours):
 A span of time when the bot sends nothing; what accumulated comes after it ends (for the owner 21:00 to 7:30).

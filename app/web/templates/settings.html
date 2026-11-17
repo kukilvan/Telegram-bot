@@ -79,6 +79,26 @@
   <p class="app-address">{{ address.line }}</p>
   {% if address.hint %}<p class="hint app-address-hint">{{ address.hint }}</p>{% endif %}
 
+  <h3>Тестовое событие</h3>
+  <p class="hint">Пришлёт в Telegram пример сообщения — посмотреть, как оно выглядит.</p>
+  <form class="test-form" method="post" action="{{ test_event_address }}" hx-post="{{ test_event_address }}" hx-target="#test-event-answer" hx-swap="innerHTML" hx-disabled-elt="find button">
+    <select name="sample" aria-label="Тестовое событие">
+      {% for sample in samples %}<option value="{{ sample.value }}"{% if loop.first %} selected{% endif %}>{{ sample.label }}</option>{% endfor %}
+    </select>
+    <button type="submit">Прислать</button>
+  </form>
+  <div id="test-event-answer" class="test-answer" role="status"></div>
+
+  <h3>Проверка правил доставки</h3>
+  <p class="hint">Отправит «Сериал: две серии подряд» так, будто оно появилось в выбранный момент, и покажет, что сделали правила доставки (рабочие дни, тихие часы, сводка).</p>
+  <form class="test-form" method="post" action="{{ delivery_check_address }}" hx-post="{{ delivery_check_address }}" hx-target="#delivery-check-answer" hx-swap="innerHTML" hx-disabled-elt="find button">
+    <select name="check" aria-label="Момент недели">
+      {% for check in checks %}<option value="{{ check.value }}"{% if loop.first %} selected{% endif %}>{{ check.label }}</option>{% endfor %}
+    </select>
+    <button type="submit">Проверить</button>
+  </form>
+  <div id="delivery-check-answer" class="test-answer" role="status"></div>
+
   <h2>Копии и выгрузка</h2>
   <p class="backup-line">{{ backup.copies_line }}</p>
   <p class="hint">{{ backup.copies_hint }}</p>

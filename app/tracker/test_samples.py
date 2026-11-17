@@ -1,7 +1,8 @@
 """«Тестовое событие»: samples of the messages the owner can ask for, and the check of the delivery rules.
 
 A sample is delivered the way a real event would be, but only the sample itself is touched: what really waits in the
-queue stays where it is.
+queue stays where it is. `TestSamples.delivery_check` is the one place of «Проверка правил доставки» (the moment, the
+rules, the sample, the outcome): the bot and Settings both ask it and only word the answer themselves.
 """
 
 import asyncio
@@ -9,12 +10,14 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone
+from enum import StrEnum
 from typing import Any
 
 from app.tracker import (
     anime_events, backup_events, failures, follow_ups, game_events, movie_events, price_events, sequel_events,
     series_events,
 )
+from app.tracker.cards import format_when
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.queue import EventQueue
@@ -61,6 +64,24 @@ DELIVERY_CHECKS: tuple[DeliveryCheck, ...] = (
     DeliveryCheck("quiet-ends", "Пт, 07:29 — за минуту до конца тихих часов", 4, time(7, 29)),
     DeliveryCheck("quiet-ended", "Пт, 07:30 — тихие часы кончились", 4, time(7, 30)),
 )
+
+
+class CheckOutcome(StrEnum):
+    """What the delivery rules did with the sample of a check."""
+
+    AT_ONCE = "at_once"  # the messages came at once: the rules do not hold them at that moment
+    HELD = "held"  # the rules held them and the summary was played out at the release moment
+    NOT_DELIVERED = "not_delivered"  # the sender failed: the events stay queued
+
+
+@dataclass(frozen=True)
+class DeliveryCheckResult:
+    """The answer of `delivery_check`. `moment` and `release` are written on the owner's clock («вс, 1 ноя в 10:00»);
+    `release` is empty unless the outcome is `HELD`."""
+
+    outcome: CheckOutcome
+    moment: str
+    release: str = ""
 
 
 def delivery_check_by_id(check_id: str) -> DeliveryCheck | None:
@@ -174,3 +195,22 @@ class TestSamples:
         rules = await self.settings.delivery_rules()
         local = check.next_moment(rules.local(self.ctx.now()))
         return rules.utc(local).replace(tzinfo=timezone.utc)
+
+    async def delivery_check(self, check_id: str) -> DeliveryCheckResult:
+        """«Проверка правил доставки»: sends the sample «Сериал: две серии подряд» as if the moment of the check were now
+        and says what the delivery rules did with it. An unknown `check_id` is a `KeyError`."""
+        check = delivery_check_by_id(check_id)
+        if check is None:
+            raise KeyError(check_id)
+        moment = await self.delivery_check_moment(check)
+        tz = (await self.settings.delivery_rules()).tz
+
+        def when(value: datetime) -> str:
+            return format_when(value.astimezone(timezone.utc).replace(tzinfo=None), tz)
+
+        result = await self.send_test_event(series_events.SAMPLE_EPISODES_ID, at=moment)
+        if result.delivered_at_once:
+            return DeliveryCheckResult(CheckOutcome.AT_ONCE, when(moment))
+        if result.delivered and result.held_until is not None:
+            return DeliveryCheckResult(CheckOutcome.HELD, when(moment), when(result.held_until))
+        return DeliveryCheckResult(CheckOutcome.NOT_DELIVERED, when(moment))

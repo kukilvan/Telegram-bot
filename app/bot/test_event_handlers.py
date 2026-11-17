@@ -4,19 +4,16 @@
 is taken only in chat mode (in link mode the test event is in Settings of the app and `tracker_handlers` answers the
 text with a link); the buttons (`tev:`, `tchk:`, `twin:`) work in both modes, so a message sent before keeps its buttons
 alive. The last item of the list is «🕒 Проверить правила доставки», which asks for a moment of the week and shows what
-the delivery rules do with an event at that moment.
+the delivery rules do with an event at that moment (the logic is `Tracker.delivery_check`; the bot words the answer).
 """
 
 import logging
-from datetime import timezone
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from app.tracker.cards import format_when
-from app.tracker.core import Tracker
-from app.tracker.series_events import SAMPLE_EPISODES_ID
-from app.tracker.test_samples import DELIVERY_CHECKS, delivery_check_by_id
+from app.tracker.core import CheckOutcome, Tracker
+from app.tracker.test_samples import DELIVERY_CHECKS
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
 RULES_CHECK_BUTTON = "🕒 Проверить правила доставки"  # the last item of the test-event list
@@ -66,29 +63,23 @@ def register_test_event_handlers(router: Router, tracker: Tracker, *, chat_mode:
         )
 
     async def run_rules_check(callback: CallbackQuery) -> None:
-        check = delivery_check_by_id(callback.data.removeprefix(_CHECK_PREFIX))
-        if check is None:
+        try:
+            result = await tracker.delivery_check(callback.data.removeprefix(_CHECK_PREFIX))
+        except KeyError:
             await callback.answer("Такого момента больше нет, откройте меню заново.")
             return
-        try:
-            moment = await tracker.delivery_check_moment(check)
-            tz = (await tracker.delivery_rules()).tz
-            result = await tracker.send_test_event(SAMPLE_EPISODES_ID, at=moment)
         except Exception as exc:
             logging.warning("delivery rules check failed: %s", repr(exc))
             await callback.answer("Не удалось выполнить проверку. Попробуйте ещё раз.")
             return
         await callback.answer()
 
-        def when(value) -> str:
-            return format_when(value.astimezone(timezone.utc).replace(tzinfo=None), tz)
-
-        if result.delivered_at_once:
-            text = f"Как будто сейчас {when(moment)}: сообщения пришли сразу, правила их не задерживают."
-        elif result.delivered and result.held_until is not None:
+        if result.outcome is CheckOutcome.AT_ONCE:
+            text = f"Как будто сейчас {result.moment}: сообщения пришли сразу, правила их не задерживают."
+        elif result.outcome is CheckOutcome.HELD:
             text = (
-                f"Как будто сейчас {when(moment)}: в этот момент ничего не пришло, события копились. "
-                f"Выше — сводка, которая уйдёт {when(result.held_until)}."
+                f"Как будто сейчас {result.moment}: в этот момент ничего не пришло, события копились. "
+                f"Выше — сводка, которая уйдёт {result.release}."
             )
         else:
             text = "Не удалось отправить, события остались в очереди и придут позже."

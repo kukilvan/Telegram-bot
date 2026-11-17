@@ -107,7 +107,8 @@ def test_the_page_shows_the_defaults_the_zone_of_the_launch_file_first_and_the_l
 def test_the_form_is_a_plain_post_with_a_label_for_every_field_and_the_seven_days(client):
     html = client.get("/settings").text
 
-    assert '<form class="settings-form" method="post" action="/settings">' in html and "hx-" not in html.split("<main>")[1]
+    assert '<form class="settings-form" method="post" action="/settings">' in html
+    assert "hx-" not in re.search(r'<form class="settings-form".*?</form>', html, re.S).group(0)  # the two test forms below it have it
     for name in ("timezone", "summary_at", "quiet_from", "quiet_until", "part_gap_weeks"):
         assert f'<label for="{name}">' in html, name
     assert re.findall(r'name="workday" value="(\d)"', html) == list("0123456")
@@ -156,6 +157,9 @@ class FakeCore:
 
     async def backup_block(self, host=""):
         return BackupBlock("Копий базы на этом ПК пока нет.", "")
+
+    def test_samples(self):
+        return []
 
 
 def test_a_zone_from_the_database_is_text_on_the_page_not_markup(tmp_path):

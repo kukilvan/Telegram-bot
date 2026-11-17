@@ -1,6 +1,6 @@
 # 02: Settings — «Тестовое событие» and «Проверка правил доставки», `Tracker.delivery_check`
 
-Status: open
+Status: in review
 Complexity: medium (two forms with HTMX and a fallback, one core method moved out of the bot; no database change)
 Blocked by: 01 (the same block of Settings, «Бот в Telegram»)
 

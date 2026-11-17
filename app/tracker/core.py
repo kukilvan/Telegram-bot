@@ -53,12 +53,12 @@ from app.tracker.results import (
 from app.tracker.scores import ScoreView
 from app.tracker.settings_store import SettingsStore
 from app.tracker.statuses import Statuses
-from app.tracker.test_samples import DeliveryCheck, TestSample, TestSamples
+from app.tracker.test_samples import DELIVERY_CHECKS, CheckOutcome, DeliveryCheck, DeliveryCheckResult, TestSample, TestSamples
 from app.tracker.titles import Titles
 
 __all__ = [
     "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect", "SignInStep",
-    "BackupBlock", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
+    "BackupBlock", "CheckOutcome", "DELIVERY_CHECKS", "DeliveryCheck", "DeliveryCheckResult", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
     "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason", "InboxReply",
     "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
     "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
@@ -309,6 +309,11 @@ class Tracker:
     async def delivery_check_moment(self, check: DeliveryCheck) -> datetime:
         """The next moment of the delivery check on the owner's clock, as an aware moment."""
         return await self._samples.delivery_check_moment(check)
+
+    async def delivery_check(self, check_id: str) -> DeliveryCheckResult:
+        """«Проверка правил доставки»: the sample as if the moment of the check were now, and what the rules did with it.
+        An unknown `check_id` is a `KeyError`."""
+        return await self._samples.delivery_check(check_id)
 
     # --- copies of the database ------------------------------------------------------------------
 

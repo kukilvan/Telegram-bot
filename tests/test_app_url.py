@@ -236,7 +236,7 @@ def settings_page(tracker, tmp_path, **kwargs):
 
 
 def lines_under_telegram(html):
-    block = html.split("<h2>Бот в Telegram</h2>")[1].split("<h2>")[0]
+    block = html.split("<h2>Бот в Telegram</h2>")[1].split("<h3>")[0]  # the lines of the state; the test forms follow
     return re.findall(r'<p class="([^"]*)">([^<]*)</p>', block)
 
 
