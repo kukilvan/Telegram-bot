@@ -270,7 +270,15 @@ button.danger { background: var(--error); }
 }
 
 @media (max-width: 40rem) {
-  .menu { order: 3; flex-basis: 100%; }
+  /* The menu: a grid of three columns, two even rows, under the name and «Выйти» */
+  .menu { order: 3; flex-basis: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 0.5rem; }
+
+  .menu a { justify-content: center; text-align: center; }
+
+  /* The page box: 12 px at the sides instead of 20, so the text gets 16 px more */
+  .card { padding: 0.75rem; }
+
+  input[type="password"] { min-height: 44px; }
 
   .title-row, .sequel-row { flex-wrap: wrap; }
 
@@ -383,6 +391,14 @@ input[type="search"] {
 .row-time { flex: none; font-weight: 600; }
 
 @media (max-width: 40rem) {
+  /* A row of filter links is one line that scrolls sideways inside itself; the page does not move (KI-74) */
+  .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; }
+
+  .filters a { flex: none; white-space: nowrap; }
+
+  /* «Удалить несколько» stands in a line of text: padding above and below makes it 44 px to hit, the line is as tall as before */
+  .shown a { padding: 0.75rem 0; }
+
   .feed-text { flex-basis: 100%; }
 
   .row-link, .pick { flex-wrap: wrap; }
@@ -454,6 +470,11 @@ select, input[type="time"], input[type="number"] {
 .backup-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0; }
 
 @media (max-width: 40rem) {
+  /* «Тихие часы»: «с [время] до [время]» stays on one line, the fields share what is left */
+  .quiet { flex-wrap: nowrap; gap: 0 0.5rem; }
+
+  .quiet input { flex: 1 1 0; width: auto; min-width: 0; }
+
   .inbox-actions > .button-link, .inbox-actions > form, .inbox-actions button { width: 100%; }
 }
 

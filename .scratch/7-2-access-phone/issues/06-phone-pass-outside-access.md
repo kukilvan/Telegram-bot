@@ -1,6 +1,6 @@
 # 06: The phone pass, the PWA check on the PC, `docs/outside-access.md`
 
-Status: open
+Status: in review
 Complexity: medium (CSS and template fixes across every screen, a measuring run, one document; no behaviour change)
 Blocked by: 02, 03, 05 (the new blocks of Settings and the login page are measured with the rest)
 

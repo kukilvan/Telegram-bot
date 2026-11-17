@@ -276,6 +276,32 @@ def test_no_template_has_a_script_a_style_a_handler_an_eval_expression_a_confirm
         assert "http://" not in text and "https://" not in text, path.name
 
 
+VIEWPORT = '<meta name="viewport" content="width=device-width, initial-scale=1">'
+
+
+def test_every_template_page_has_the_viewport_tag(tmp_path):
+    """Without the tag a phone draws the page 980 px wide and scales it down (spec 7 of stage 7.2). A page is a template
+    with `<html`; the others are fragments or extend `base.html`, which holds the tag."""
+    templates = sorted((WEB / "templates").glob("*.html"))
+    pages_with_html = [path for path in templates if "<html" in path.read_text(encoding="utf-8")]
+    extending = [path for path in templates if '{% extends "base.html" %}' in path.read_text(encoding="utf-8")]
+
+    assert [path.name for path in pages_with_html] == ["base.html"]  # one skeleton, no page of its own
+    assert VIEWPORT in (WEB / "templates" / "base.html").read_text(encoding="utf-8")
+    assert len(extending) >= 8  # the pages really lean on it
+
+
+def test_the_pages_the_user_opens_come_with_the_viewport_tag(tmp_path):
+    app = make_app(tmp_path)
+    client = signed_in(app)
+    anonymous = TestClient(app, follow_redirects=False)
+
+    for section in menu.SECTIONS:
+        assert VIEWPORT in client.get(section.address).text, section.address
+    assert VIEWPORT in client.get("/nowhere").text  # a message page
+    assert VIEWPORT in anonymous.get("/login").text
+
+
 def test_the_only_script_of_a_page_is_htmx_from_the_project(tmp_path):
     html = signed_in(make_app(tmp_path)).get("/").text
 
