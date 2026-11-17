@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Plan: the known issues and the NAS before real use
+
+- The owner's decision after review 7.2: order 7.1 → 7.2 → 9.1 → 7.3 → 9.2 → 8 (was 9 → 8 → 7.3). Stage 9 split: 9.1 fixes every open `KNOWN_ISSUES.md` entry before the move (the owner chose all of them over a triage), 9.2 is the fixes after 1–2 weeks of real use on the NAS with the live check of early tickets. 7.3 comes before real use and stage 8; its checks may run on the NAS, its guide names this repository until stage 8.
+- `docs/project-spec.md` (the order, sections 9.1, 7.3, 9.2, 8), `PROJECT_CONTEXT.md` (Next step «Описание 9.1», the stages table), `KNOWN_ISSUES.md` (the column «Fix in» of the 59 open entries: 9.1, KI-15 and KI-70 7.3; KI-20, KI-48, KI-49 moved from stages 8 and 9 to 9.1). Keys are still replaced once in stage 8.
+
 ## 2026-11-17 — Review 7.2 (stage 7.2 done)
 
 - `.scratch/7-2-access-phone/review.md`: the stage diff `0d11990..1816985` against the spec and the standards with the `code-review` skill (xhigh); 13 findings, no fix round, so the stage is closed.

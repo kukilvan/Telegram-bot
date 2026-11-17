@@ -22,7 +22,7 @@ One owner per instance (ADR 0001). The web is protected by a password (`WEB_PASS
 ## Features
 
 - **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1); prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark (6.2).
-- **Next** (in this order): 7.1 backups and export; 7.2 the app address, the phone, bot links and a safer login; 9 fixes after real use; 8 template for GitHub; 7.3 NAS readiness and the move guide (the move itself and outside access — the owner's separate NAS project, ADR 0013). Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010).
+- **Next** (in this order; changed 2026-11-17: the known issues and the move come before real use): 9.1 every open known issue fixed before the move; 7.3 NAS readiness and the move guide (the move itself and outside access — the owner's separate NAS project, ADR 0013); 9.2 fixes after real use on the NAS; 8 template for GitHub. Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010), 7.1 backups and export, 7.2 the app address, the phone, bot links and a safer login.
 - **Never:** notes and tags, the commands `/add`, `/remove`, `/watchlist`, `/note`, `/notes`, `/events`, `/search`, `/searchgame`, inline search, the events «Русская озвучка» and «KinoPub», RAWG and the unofficial PSN request, PlayStation prices (ADR 0009), anything hard-coded for one owner.
 
 ## Interface
@@ -68,7 +68,7 @@ Finished (details — `docs/history.md`, `.scratch/`):
 
 ### Stage 7. Backups, NAS and phone — split into 7.1, 7.2, 7.3
 
-Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `.scratch/7-2-access-phone/description.md` (2026-11-15, ADR 0013): outside access by the owner's domain, Cloudflare Tunnel and Cloudflare Access instead of Tailscale, and the NAS move itself are done by the owner's separate NAS project for two apps; 7.3 here only prepares the move. Order: 7.1 → 7.2 → 9 → 8 → 7.3.
+Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `.scratch/7-2-access-phone/description.md` (2026-11-15, ADR 0013): outside access by the owner's domain, Cloudflare Tunnel and Cloudflare Access instead of Tailscale, and the NAS move itself are done by the owner's separate NAS project for two apps; 7.3 here only prepares the move. Order: 7.1 → 7.2 → 9.1 → 7.3 → 9.2 → 8 (changed 2026-11-17 by the owner: every known issue fixed and the app on the NAS before real use, so the fixes after real use are made where the app lives).
 
 ### Stage 7.1. Backups and export
 
@@ -84,23 +84,29 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 - Contains: `.scratch/7-2-access-phone/description.md` → spec → tickets → review.
 - Sessions (est.): about 7 (spec, slicing, 4–5 tickets, review).
 
-### Stage 9. Fixes after real use
+### Stage 9.1. Known issues before the move
 
-- Goal: fix what 1–2 weeks of real use show; the live check of early tickets happens here.
-- Contains: open `KNOWN_ISSUES.md` entries each get a test before the final polishing.
+- Goal: every open `KNOWN_ISSUES.md` entry is fixed before the app moves to the NAS (the owner's decision, 2026-11-17), so real use on the NAS starts from a clean base. KI-15 and KI-70 belong to 7.3.
+- The owner sees at the end: each open entry `fixed (test: …)`. An entry that cannot be fixed within the app's rules (no JavaScript of its own, ADR 0004: KI-72, KI-74) or where a source gives no data (KI-48) gets a test that pins the behaviour and the owner's decision in the entry. The description groups the entries (anime and series, the start and stop of the app, statuses and polling, games, Steam prices, «Входящие», copies, the web, code health) and may split the stage.
+- Sessions (est.): 10+ (57 entries on 2026-11-17; the description gives the real count).
+
+### Stage 7.3. NAS readiness and the move guide
+
+- Goal: the owner's separate NAS project can move the app to a UGREEN DXP2800 (Intel N100, NVMe SSD, 3 TB HDD) and everything keeps working; the move itself is not done here (ADR 0013).
+- The owner sees at the end: the app proven to run in its container on the NAS (the same `amd64` image, the database on a local SSD volume, never on a network share; copies may go to the HDD), start, stop and restore by `docker compose` without PowerShell, KI-15, KI-70, and a guide: what to move (`data`, `.env`, the compose file), where, in what order, the one-instance rule, the checks after the move, the Google Drive connection, the app address.
+- Comes after 9.1 and before real use (changed 2026-11-17; it used to come after stage 8). The NAS is ready by then, so the checks run on the NAS itself where that helps; the guide names this repository (stage 8 changes the address).
+- Sessions (est.): 3.
+
+### Stage 9.2. Fixes after real use
+
+- Goal: fix what 1–2 weeks of real use on the NAS show (outside access, the phone over `https`, the installed app); the live check of early tickets happens here.
+- Contains: the owner's notes; the `KNOWN_ISSUES.md` entries found since 9.1.
 - Sessions (est.): 2+.
 
 ### Stage 8. Template for GitHub
 
 - Goal: anyone can deploy their own instance.
-- The owner sees at the end: a cleaned repository (junk files, unused `.env` variables), a new repository with a clean history, MIT licence, Russian README, description of keys and settings. **Replace all API keys before publishing.** A final review on Fable 5.1.
+- The owner sees at the end: a cleaned repository (junk files), a new repository with a clean history, MIT licence, Russian README, description of keys and settings; the move guide of 7.3 points to the new repository. **Replace all API keys before publishing.** A final review on Fable 5.1.
 - Sessions (est.): 1.
-
-### Stage 7.3. NAS readiness and the move guide
-
-- Goal: the owner's separate NAS project can move the app to a UGREEN DXP2800 (Intel N100, NVMe SSD, 3 TB HDD) and everything keeps working; the move itself is not done here (ADR 0013).
-- The owner sees at the end: the app proven to run in its container as on the NAS (the same `amd64` image, the database on a local SSD volume, never on a network share; copies may go to the HDD), start, stop and restore by `docker compose` without PowerShell, KI-15, KI-70, and a guide: what to move (`data`, `.env`, the compose file), where, in what order, the one-instance rule, the checks after the move, the Google Drive connection, the app address.
-- Needs no NAS; comes after stage 8 (the guide describes the final app and the new repository).
-- Sessions (est.): 3.
 
 Risks to the estimates: Shikimori has no official «part of a season» link (a heuristic on names can err); realistic events do not come on schedule, so part of the checks runs on faked events; open question — how to tell reliably «closed or cancelled» for anime.
