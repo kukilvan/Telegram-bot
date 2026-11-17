@@ -1,6 +1,6 @@
 # 06: The phone pass, the PWA check on the PC, `docs/outside-access.md`
 
-Status: in review
+Status: accepted
 Complexity: medium (CSS and template fixes across every screen, a measuring run, one document; no behaviour change)
 Blocked by: 02, 03, 05 (the new blocks of Settings and the login page are measured with the rest)
 
@@ -21,12 +21,12 @@ Spec: `../spec.md`, sections 7 (all), 8 (all), 9 (all), 12 (the phone test), 13 
 
 ## Done when
 
-- [ ] At 320 and 375 px no screen of the list above scrolls sideways and no control is under 44 px (the run is in `checks.md`, new heading).
-- [ ] The menu is a grid of three columns under 40rem; the filter rows of «Список» and «Архив» scroll inside themselves; «Список» at 375 × 812 shows its first title on the first screen; at 40rem and wider the screens look as before.
-- [ ] The Chrome or Edge install offer and the manifest check are done and recorded; no service worker was added.
-- [ ] `docs/outside-access.md` has the eight points and says nothing the spec does not.
-- [ ] KI-74 is either fixed and marked so, or still open and unchanged.
-- [ ] The viewport-tag test passes; `.venv\Scripts\python.exe -m pyflakes app tests` clean; the full suite green (the three known Windows failures are not new).
+- [x] At 320 and 375 px no screen of the list above scrolls sideways and no control is under 44 px (the run is in `checks.md`, new heading).
+- [x] The menu is a grid of three columns under 40rem; the filter rows of «Список» and «Архив» scroll inside themselves; «Список» at 375 × 812 shows its first title on the first screen; at 40rem and wider the screens look as before.
+- [x] The Chrome or Edge install offer and the manifest check are done and recorded; no service worker was added.
+- [x] `docs/outside-access.md` has the eight points and says nothing the spec does not.
+- [x] KI-74 is either fixed and marked so, or still open and unchanged.
+- [x] The viewport-tag test passes; `.venv\Scripts\python.exe -m pyflakes app tests` clean; the full suite green (the three known Windows failures are not new).
 
 ## Tests to add
 

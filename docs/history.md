@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Ticket 7.2.06
+
+- `app/web/static/style.css`, all under `max-width: 40rem` (the PC is as before, checked at 1024 px): the menu a grid of three columns (P1); the rows of filters one line that scrolls inside itself (P2); box padding 12 px (P3); «Тихие часы» on one line (P4); `.shown a` and the password field made 44 px to hit — two things the measuring run found. No template, JavaScript or behaviour changed.
+- The run (375 and 320 px, every screen with «Входящие» filled, the card of each kind, Настройки, Вход, a message page): no overflow, no control under 44 px; numbers in `.scratch/7-2-access-phone/checks.md`, 4. The scratch server was a copy of `data/tracker.db`; the app forbids frames, so each page was fetched and drawn into the browser pane.
+- PWA: the pane has no address bar, so the install offer was not seen; the manifest, its icons and the tags were checked against Chrome's criteria and nothing failed, so `base.html` and the manifest stay, no service worker, ADR 0004 stands.
+- `docs/outside-access.md` (new): the eight points of spec 9; `docs/code-map.md` names it. KI-74 stays open (needs JavaScript).
+- Tests: two in `test_web_layout` (the viewport tag: one skeleton, every menu section, a message page, the login). 4164 in total; the three known Windows failures only. Accepted by the owner («ОК»); the install offer in Chrome or Edge was left for the owner's own look.
+
 ## 2026-11-17 — Ticket 7.2.05
 
 - `app/web/devices.py` (new): `device_words`, the two first-match tables of the spec (system, browser), `User-Agent` cut to 512 characters, `неизвестное устройство` when neither is known; it replaces the seam of ticket 03 (`UNKNOWN_DEVICE` now lives here). KI-72 (an iPad reads as `macOS, Safari`) stays open.
