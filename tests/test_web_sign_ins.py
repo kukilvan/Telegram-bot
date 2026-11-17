@@ -22,7 +22,8 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.web import create_web_app, pages
 from app.web.auth import LOCK_SECONDS, fingerprint
-from app.web.sessions import LIFE_SECONDS, MAX_SIGN_INS, SEEN_STEP_SECONDS, UNKNOWN_DEVICE, LastLogin, SignIns
+from app.web.devices import UNKNOWN_DEVICE
+from app.web.sessions import LIFE_SECONDS, MAX_SIGN_INS, SEEN_STEP_SECONDS, LastLogin, SignIns
 from app.web.settings_sign_in import HINT, NO_LAST_LOGIN, SIGNED_OUT_EVERYWHERE, devices_line, last_login_line
 
 PASSWORD = "correct horse battery"

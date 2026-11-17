@@ -1,12 +1,9 @@
 """Tracker core facade: the only door the bot (and later the web app) uses.
 
-`Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it:
-settings (`settings_store`), the list (`titles`; `statuses` for the owner's marks, `listing` for rows and cards, `feed`
-for what comes out and what happened),
-polling (`polling` and one poller per kind in `pollers/`), the delivery queue (`queue`), delivery (`delivery_service`),
-test events (`test_samples`), the copies of the database (`backups`; the connection of the Google Drive copy —
-`google_drive`) and «Входящие» (`inbox`; the answers to an item and
-its offers — `inbox_answers`, `offers`). It holds no rules of its own.
+`Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it
+(`settings_store`, `titles`, `statuses`, `listing`, `feed`, `polling` and `pollers/`, `queue`, `delivery_service`,
+`test_samples`, `login_reports`, `backups` and `google_drive`, `inbox` and its `inbox_answers` and `offers`). It holds
+no rules of its own.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -29,26 +26,24 @@ from app.tracker.delivery_service import DeliveryService
 from app.tracker.export_rows import ExportFile
 from app.tracker.exports import Exports
 from app.tracker.errors import (
-    CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent,
-    UnknownInboxItem, UnknownKind, UnknownPlatform, UnknownSeason, UnknownTitle,
+    CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent, UnknownInboxItem,
+    UnknownKind, UnknownPlatform, UnknownSeason, UnknownTitle,
 )
 from app.tracker.feed import FeedReader
 from app.tracker.drive_rows import DriveButton, DrivePart, DriveSetup
-from app.tracker.google_drive import CALLBACK_PATH as DRIVE_CALLBACK_PATH
-from app.tracker.google_drive import REDIRECT as DRIVE_REDIRECT
-from app.tracker.google_drive import DriveSettings, GoogleDrive, Redirect, SignInStep
+from app.tracker.google_drive import CALLBACK_PATH as DRIVE_CALLBACK_PATH, REDIRECT as DRIVE_REDIRECT, DriveSettings, GoogleDrive, Redirect, SignInStep
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, FollowOffer, Followable, RecentRow, UpcomingRow
 from app.tracker.inbox import Inbox
 from app.tracker.inbox_answers import InboxAnswers
 from app.tracker.listing import Listing
+from app.tracker.login_reports import WEB_LOGIN, WEB_LOGIN_LOCKED, LoginReports
 from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
 from app.tracker.polling import Polling, Pollers
 from app.tracker.posters import CARD_SIZE, IGDB_IMAGE_SITE, LIST_SIZE, TMDB_IMAGE_SITE, PosterSize, poster_url
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
-    INBOX_REASONS, MEDIA_WORDS, AddResult, ChangeResult, DeleteResult, DeliveryReport, InboxEntry, InboxOutcome,
-    InboxReply, IncomingMessage, ListOrder, OfferCard, Overview, PollReport, SettingsChange, SettingsView,
-    SummaryResult, TakeIn, TestEventResult, TitleSummary, WatchableSeason, ZoneOption,
+    INBOX_REASONS, MEDIA_WORDS, AddResult, ChangeResult, DeleteResult, DeliveryReport, InboxEntry, InboxOutcome, InboxReply, IncomingMessage, ListOrder, OfferCard, Overview, PollReport,
+    SettingsChange, SettingsView, SummaryResult, TakeIn, TestEventResult, TitleSummary, WatchableSeason, ZoneOption,
 )
 from app.tracker.scores import ScoreView
 from app.tracker.settings_store import SettingsStore
@@ -57,14 +52,13 @@ from app.tracker.test_samples import DELIVERY_CHECKS, CheckOutcome, DeliveryChec
 from app.tracker.titles import Titles
 
 __all__ = [
-    "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect", "SignInStep",
-    "BackupBlock", "CheckOutcome", "DELIVERY_CHECKS", "DeliveryCheck", "DeliveryCheckResult", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay",
-    "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason", "InboxReply",
-    "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender",
-    "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured",
-    "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary", "Tracker",
-    "UnknownEvent", "UnknownInboxItem", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow",
-    "WatchableSeason", "ZoneOption",
+    "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect", "SignInStep", "BackupBlock", "CheckOutcome", "DELIVERY_CHECKS",
+    "DeliveryCheck", "DeliveryCheckResult", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore",
+    "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay", "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason",
+    "InboxReply", "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SettingsChange", "SettingsField",
+    "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured", "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary",
+    "Tracker", "UnknownEvent", "UnknownInboxItem", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason", "ZoneOption", "WEB_LOGIN",
+    "WEB_LOGIN_LOCKED",
 ]
 
 
@@ -96,6 +90,7 @@ class Tracker:
     _backups: Backups = field(init=False, repr=False)
     _drive: GoogleDrive = field(init=False, repr=False)
     _exports: Exports = field(init=False, repr=False)
+    _logins: LoginReports = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
@@ -120,6 +115,7 @@ class Tracker:
         self._drive = GoogleDrive(ctx, self.drive_settings, self.drive_api, database.parent if database else None)
         self._backups = Backups(ctx, self._settings, self._queue, self.database_url, self._drive)
         self._exports = Exports(ctx, self._settings)
+        self._logins = LoginReports(ctx, self._queue, self._settings)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -314,6 +310,10 @@ class Tracker:
         """«Проверка правил доставки»: the sample as if the moment of the check were now, and what the rules did with it.
         An unknown `check_id` is a `KeyError`."""
         return await self._samples.delivery_check(check_id)
+
+    async def record_login_report(self, event_type: str, unique: str, device: str, address: str | None, moment: datetime) -> int | None:
+        """Queue the login report of a fact (`WEB_LOGIN` or `WEB_LOGIN_LOCKED`), its text made here; send it with `deliver_pending(force=True, only=…)`. None: reported already."""
+        return await self._logins.record(event_type, unique, device, address, moment)
 
     # --- copies of the database ------------------------------------------------------------------
 

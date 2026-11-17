@@ -41,18 +41,11 @@ COOKIE = "tracker_session"
 LIFE_SECONDS = 30 * 24 * 60 * 60  # of the cookie from the last request, and of a sign-in from its last `seen`
 SEEN_STEP_SECONDS = 60 * 60  # `seen` is written at most once an hour per sign-in
 MAX_SIGN_INS = 20  # beyond that the one used least recently is dropped
-UNKNOWN_DEVICE = "неизвестное устройство"
 MOMENT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"  # UTC
 SID = re.compile(r"[0-9a-f]{32}")
 SPOILED = "%s испорчен — все входы закрыты, счётчик неверных паролей обнулён"
 UNREADABLE = "%s не прочитать (%r): входы и счётчик неверных паролей только в памяти до перезапуска"
 UNWRITABLE = "%s не записать (%r): входы и счётчик неверных паролей только в памяти до перезапуска"
-
-
-def device_words(user_agent: str) -> str:
-    """The device of a sign-in in words, never the raw `User-Agent`. A seam: ticket 05 of stage 7.2 puts the words of
-    `app/web/devices.py` here; until then every device is unknown."""
-    return UNKNOWN_DEVICE
 
 
 @dataclass

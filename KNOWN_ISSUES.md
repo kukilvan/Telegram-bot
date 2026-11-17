@@ -748,7 +748,7 @@ Format of a new entry:
 
 ## KI-72. Login report: an iPad on iPadOS 13+ reads as «macOS, Safari»
 
-- Where: `app/web/devices.py` (spec 6.3 of stage 7.2; the module comes with ticket 7.2.05).
+- Where: `app/web/devices.py` (spec 6.3 of stage 7.2; ticket 7.2.05).
 - What's wrong: Safari on an iPad of iPadOS 13 and later sends the `User-Agent` of a Mac (`Macintosh; Intel Mac OS X …`), so the login report and the block «Вход» say «macOS, Safari» for it. Telling them apart needs JavaScript (touch points), which the app does not have (ADR 0004).
 - How to reproduce: log in from an iPad in Safari — the 🔐 message says «macOS, Safari».
 - Likelihood / impact: the owner has no iPad as far as known; the wrong word only, the report still comes.
@@ -757,7 +757,7 @@ Format of a new entry:
 
 ## KI-73. Login report: a report that failed to send waits for the delivery rules
 
-- Where: the delivery of the events `web_login` and `web_login_locked` (spec 6.2 of stage 7.2; ticket 7.2.05).
+- Where: the delivery of the events `web_login` and `web_login_locked` (`app/web/login_report.py`, `Tracker.record_login_report`; spec 6.2 of stage 7.2; ticket 7.2.05).
 - What's wrong: the report is sent at once whatever the rules; if that send fails (Telegram down, no network), the event stays in the queue and the regular delivery sends it by the rules — a login during the quiet hours is reported only when they end, or in the summary on a work day.
 - How to reproduce: stop the network of the container, log in at 22:00, bring the network back — the report comes at 07:30.
 - Likelihood / impact: rare (Telegram down at the moment of a login); a strange login is seen later. Behind Cloudflare Access a stranger has passed the mail code too.

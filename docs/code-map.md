@@ -84,6 +84,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/inbox_answers.py` — The answers to an inbox item: the end of its pause, the analysis by its links or by the kind the owner chose, the offer cards, «Да» and «Нет» (spec 1.3, 2.3, 6 and 7 of stage 6.4).
 - `app/tracker/kinds.py` — What each kind of title is for the owner: one table, so a new kind cannot be added half-way.
 - `app/tracker/listing.py` — What the owner reads of the list: its rows, the numbers of the whole list and the card of a title.
+- `app/tracker/login_events.py` — The login report (pure): the types of its two events, their texts and the sample of «Тестовое событие».
+- `app/tracker/login_reports.py` — Recording the login report: the event of a login or of a lock, with its text, in the delivery queue.
 - `app/tracker/migrations/env.py` — Alembic environment of the tracker database.
 - `app/tracker/migrations/versions/0001_events_and_delivery_queue.py` — Events and delivery queue.
 - `app/tracker/migrations/versions/0002_titles_external_ids_snapshots.py` — Titles, external ids and source snapshots.
@@ -154,11 +156,13 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the lock after wrong tries.
 - `app/web/card.py` — The card of a title: its details, the marks of seasons and platforms, «Следить» at a row of a follow list, the buttons.
 - `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms, the line of an expansion and the follow lists.
+- `app/web/devices.py` — The device of a sign-in in words (pure): the `User-Agent` of a request becomes «Android, Chrome» (spec 6.3 of stage 7.2).
 - `app/web/drive_sign_in.py` — The sign-in and the sign-out of the Google Drive copy from Settings: «Подключить Google Drive», Google's return and «Отключить Google Drive».
 - `app/web/feed.py` — The feed, the main page after the sign-in: «Скоро» (the next two weeks, by days), «Позже» (the nearest date of the titles with nothing in those days) and «Недавно» (the events of the last week).
 - `app/web/filters.py` — What the list and the archive share about their filters: a value read from the address, the row of links for the kind, the sentence of an empty page and the answer under the search field.
 - `app/web/hosts.py` — The layer that lets the web answer only under its own names: `localhost`, `127.0.0.1`, `[::1]`, the host of `APP_URL`, the home network's private addresses.
 - `app/web/inbox.py` — The tab «Входящие»: the items the bot could not resolve, newest first, with «Найти» and «Убрать».
+- `app/web/login_report.py` — The login report on the web side: records the two events through the core and sends each at once, in the background.
 - `app/web/menu.py` — The menu of the app and the one list of the addresses that need no sign-in.
 - `app/web/pages.py` — What every page shares: the page, a fragment, the answer to a press, the notice for the next page, «the title is gone» and the net under an unexpected error.
 - `app/web/posters.py` — Posters for the browser: the sites the page may load pictures from (`img-src`).

@@ -22,11 +22,13 @@ from app.web import (
     archive, auth, card, drive_sign_in, feed, inbox, pages, search, settings, settings_sign_in, settings_test_event, title_list,
 )
 from app.web.address_line import OPEN_TO_NETWORK
+from app.web.devices import device_words
 from app.web.hosts import AllowedHosts, HostRules
+from app.web.login_report import LoginReporter
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
 from app.web.proxy import is_https, public_address
-from app.web.sessions import SessionCookies, SignIns, device_words
+from app.web.sessions import SessionCookies, SignIns
 
 HERE = Path(__file__).resolve().parent
 mimetypes.add_type("application/manifest+json", ".webmanifest")  # the installed app's file: not every system knows it
@@ -101,6 +103,7 @@ def create_web_app(
     expected = auth.fingerprint(key, password) if configured else ""
     sign_ins = SignIns(login_file if configured else None, clock)
     guard = sign_ins.guard
+    reports = LoginReporter(tracker, now)
     security_headers = {**SECURITY_HEADERS}
     if image_sources:
         security_headers["Content-Security-Policy"] += "; img-src 'self' " + " ".join(image_sources)
@@ -193,6 +196,7 @@ def create_web_app(
         target = auth.safe_next(next)
         address = public_address(request.client.host if request.client else None)  # only behind a trusted proxy (5.2)
         from_address = f" from {address}" if address else ""
+        device = device_words(request.headers.get("user-agent", ""))
         seconds = guard.locked_for()
         await sign_ins.save_guard()  # the end of a lock starts the count anew
         if seconds:
@@ -203,11 +207,12 @@ def create_web_app(
             logging.warning("web login: wrong password (%s in a row)%s", guard.wrong_in_a_row, from_address)
             if left == 0:
                 logging.warning("web login blocked for %s min", auth.LOCK_SECONDS // 60)
+                await reports.locked(guard.state[1], device, address)
                 return await locked_page(request, target, guard.locked_for())
             return await login_page(request, target, f"Неверный пароль. До блокировки осталось попыток: {left}", status=401)
         guard.right()  # written with the new sign-in
-        device = device_words(request.headers.get("user-agent", ""))
         sid = await sign_ins.sign_in(device, address, replacing=request.session.get("sid"))
+        await reports.logged_in(sid, device, address)
         logging.info("web login: ok%s", from_address)
         request.session.clear()
         request.session.update(pw=expected, sid=sid)

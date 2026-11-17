@@ -14,7 +14,7 @@ from enum import StrEnum
 from typing import Any
 
 from app.tracker import (
-    anime_events, backup_events, failures, follow_ups, game_events, movie_events, price_events, sequel_events,
+    anime_events, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, sequel_events,
     series_events,
 )
 from app.tracker.cards import format_when
@@ -116,6 +116,7 @@ class TestSamples:
             + follow_ups.TEST_SAMPLES
             + failures.TEST_SAMPLES
             + backup_events.TEST_SAMPLES
+            + login_events.TEST_SAMPLES
         )
         for sample_id, label, text in sample_texts:
             self.register(TestSample(sample_id, label, lambda text=text: {"text": text}))

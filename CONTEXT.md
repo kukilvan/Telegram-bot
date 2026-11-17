@@ -215,6 +215,11 @@ One browser where the password was typed and that has not been ended: the PC, th
 _Avoid_: сессия (in the owner's texts), авторизация
 In code: `sign-in` — the store `SignIns` and the cookie middleware `SessionCookies` of `app/web/sessions.py`, the id `sid` in the cookie and the file; the block `app/web/settings_sign_in.py`. Not the Google Drive sign-in (`drive_sign_in`).
 
+**Сообщение о входе** (login report):
+The Telegram message about a sign-in or a lock: «🔐 Вход в приложение: Android, Chrome, сегодня в 14:32, адрес …» for every right password, «⚠️ Вход в приложение закрыт на 15 минут: 5 неверных паролей подряд…» for the wrong try that begins a lock. Both are sent at once, whatever the delivery rules, and never wait for Telegram; one that failed to send waits in the queue and goes by the rules (KI-73). The address is named only when it is a public one. It has a sample in «Тестовое событие» («Вход в приложение»). The device is in words (`Android, Chrome`), never the raw `User-Agent`.
+_Avoid_: уведомление о входе, алерт
+In code: the events `web_login` and `web_login_locked` (`WEB_LOGIN`, `WEB_LOGIN_LOCKED`; no title, so the Feed never shows them), the texts `app/tracker/login_events.py`, the record `Tracker.record_login_report` (`login_reports`), the web side `LoginReporter` (`app/web/login_report.py`), the device words `app/web/devices.py`.
+
 **Лента** (feed):
 The main screen of the app: what comes out in the next days and what came out recently, by dates. Blocks: «Скоро» — the next 14 days by day, «Позже» — what comes out after them, «Недавно» — events of 7 days.
 _Avoid_: дашборд, календарь

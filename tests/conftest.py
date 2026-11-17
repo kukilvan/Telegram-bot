@@ -37,3 +37,16 @@ def web_tests_come_as_localhost(monkeypatch):
         original(self, app, base_url, *args, **kwargs)
 
     monkeypatch.setattr(TestClient, "__init__", init)
+
+
+@pytest.fixture(autouse=True)
+def login_reports_off(monkeypatch):
+    """A login of a web test would send the login report (`app/web/login_report.py`) through the tracker's sender as a
+    task that may or may not run before the test client's loop ends, and a test that counts messages would see it
+    sometimes. So no report is made unless the test turns it on: `tests/test_web_login_report.py` overrides this fixture."""
+    from app.web.login_report import LoginReporter
+
+    async def nothing(self, *args, **kwargs):
+        return None
+
+    monkeypatch.setattr(LoginReporter, "_report", nothing)
