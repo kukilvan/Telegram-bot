@@ -2,6 +2,15 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Ticket 7.2.05
+
+- `app/web/devices.py` (new): `device_words`, the two first-match tables of the spec (system, browser), `User-Agent` cut to 512 characters, `неизвестное устройство` when neither is known; it replaces the seam of ticket 03 (`UNKNOWN_DEVICE` now lives here). KI-72 (an iPad reads as `macOS, Safari`) stays open.
+- `app/tracker/login_events.py` (pure: types `web_login`, `web_login_locked`, the two texts, the dedup key, the sample) and `login_reports.py` (`LoginReports.record`: the moment in words on the owner's zone, the event queued by `EventQueue`); the facade has one method, `Tracker.record_login_report(event_type, unique, device, address, moment)`, which returns the event id or None for a fact reported already. `core.py` re-exports `WEB_LOGIN` and `WEB_LOGIN_LOCKED`; it stays at 400 lines (docstring and import blocks were tightened to make room).
+- `app/web/login_report.py` (new): `LoginReporter` records inside the request and sends in an `asyncio` task (`deliver_pending(force=True, only={id})`) held in a set; the answer of the login never waits for Telegram; a record that fails is logged and never stops the login. The lock is keyed by the end of the lock (`web_login_locked:<seconds>`), a login by its `sid`. `app/web/app.py` calls it from `POST /login`: on the right password and on the wrong try that makes the fifth.
+- Sample «Вход в приложение» (`web-login`, `Android, Chrome`, `203.0.113.5`) in `test_samples`, so in the bot's list and in Settings.
+- Decisions: an `asyncio` task and not Starlette's `BackgroundTask` (the test client waits for a background task, so a hanging sender could not be tested, and under `BaseHTTPMiddleware` the end of the answer is less sure); `tests/conftest.py` turns the reports off for every web test (the send races the test client's loop) and `test_web_login_report` turns them on; the sample's address `203.0.113.5` is a documentation address, which `public_address` rightly never shows, so the live tests use `8.8.8.8`; the `sid` is part of the dedup key as the spec says (useless without the signing key).
+- Tests: `test_web_devices`, `test_web_login_report` (new, ~50); `test_tracker_core_split` lists the new modules. 4162 in total; the three known Windows failures only. Self-check: the bot rebuilt, `/health` ok, a real login answered in 0.24 s and its event was delivered. Accepted by the owner («ОК»).
+
 ## 2026-11-17 — Ticket 7.2.04
 
 - `app/web/hosts.py` (new): `AllowedHosts`, the outermost layer inside `HeadAsGet`, and the pure `HostRules`/`host_name`; own names `localhost`, `127.0.0.1`, `[::1]`, the host of `APP_URL`, private IPv4 only with `WEB_HOST=0.0.0.0`; anything else or no/two `Host` → `400` «Неизвестный адрес сайта.» with the security headers and no cookie; one warning per name (100 remembered). KI-12 fixed.

@@ -1,6 +1,6 @@
 # 05: The login report — the two events, the device words, the sample
 
-Status: in review
+Status: accepted
 Complexity: medium (two new event types sent at once outside the delivery rules, a pure parser of the `User-Agent`; touches the login of ticket 03)
 Blocked by: 03 (the login, the lock and `last_login`), 04 (the public client address)
 
