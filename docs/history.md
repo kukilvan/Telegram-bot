@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Ticket 7.2.03
+
+- `app/web/sessions.py` (new): the store `SignIns` of `data/web_login.json` (sessions `sid` → since, seen, device; the last login; the lock count), held in memory, every change written by a temporary file and `os.replace` (`0600`) in a thread; a later write skips an older document; spoiled → warning, empty, rewritten; unreadable or unwritable → in memory, one warning. `seen` written at most once an hour, 30 days end a sign-in, 20 at most (the least recently used goes). `SessionCookies` replaces Starlette's `SessionMiddleware` with the same `request.session` and the same signing; `secure` per request is a parameter, off until 04. `device_words` is the seam for 05.
+- `app/web/app.py`: signed in = good signature + fingerprint + a live `sid`; the guard moves `seen`; login makes a `sid` (a new login in the same browser replaces its old one), «Выйти» ends its own; `clock` is now the wall clock (`time.time`), `create_web_app(login_file=…)`, `app/main.py` passes `data/web_login.json`. `auth.LoginGuard` takes its state from the file (`state`), `load_key` makes a short key anew.
+- `app/web/settings_sign_in.py` (new): the block «Вход» at the bottom of Settings (the owner's zone through `Tracker.delivery_rules`; on a core failure the UTC clock and a warning) and `POST /settings/sign-out-everywhere`; the login page shows its sentence only for `?out=everywhere`.
+- Decision: the web may import the pure `app.tracker.moment_words` (rule 10 of the standards and `test_web_skeleton` extended); `core.py` is at 400 lines, so no re-export.
+- Tests: `test_web_sign_ins` (new, 48); `test_web_login` adapted (its app gets `login_file`; the spoiled-key test now expects the new key). 3998 in total; the three known Windows failures only. Checked live by the owner: two browsers, «Выйти», «Выйти на всех устройствах», the lock across a restart.
+
 ## 2026-11-17 — Ticket 7.2.02
 
 - `Tracker.delivery_check(check_id)` (`app/tracker/test_samples.py`, facade in `core.py`): the moment, the rules, the sample and the outcome in one place; returns `DeliveryCheckResult` (`CheckOutcome.AT_ONCE` / `HELD` / `NOT_DELIVERED`, the moment and the release already on the owner's clock), an unknown id is a `KeyError`. The bot's check (`app/bot/test_event_handlers.py`) calls it and keeps its own texts; its tests are untouched. `core.py` re-exports `DELIVERY_CHECKS` (a sync list method would break the facade tests and the 400-line limit).
