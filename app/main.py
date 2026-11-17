@@ -46,6 +46,7 @@ from app.tracker.sources.tmdb_series import TmdbSeriesSource
 from app.utils.logging_config import setup_logging
 from app.web import MIN_PASSWORD_LENGTH, create_web_app, web_server
 from app.web.posters import image_sources
+from app.web.proxy import parse_trusted_proxies
 
 WEB_PORT = 8080  # inside the process; the port on the PC is docker compose's business
 # Not the owner's setting (not in .env.example): run from .venv on Windows the web must not open to the whole home
@@ -183,7 +184,12 @@ async def main() -> int:
         image_sources=image_sources(settings.shikimori_base_url), telegram_down=lambda: health.telegram_down,
         app_url=app_url, web_host=os.environ.get(WEB_HOST, "").strip(),
     )
-    server = web_server(web_app, host=host, port=WEB_PORT, stop_grace=WEB_STOP_GRACE_SECONDS)
+    proxies = parse_trusted_proxies(settings.trusted_proxies)
+    for item in proxies.skipped:
+        logging.warning("TRUSTED_PROXIES: %r не адрес и не сеть — пропущено", item)
+    server = web_server(
+        web_app, host=host, port=WEB_PORT, stop_grace=WEB_STOP_GRACE_SECONDS, trusted_proxies=proxies.items
+    )
     scheduler = AsyncIOScheduler()
     add_jobs(scheduler, tracker)
     runtime = Runtime(

@@ -61,7 +61,9 @@ def make_client(tmp_path, google, drive=ON, base_url=HERE) -> TestClient:
     health = Health()
     health.bot_running = health.scheduler_running = True
     health.scheduler_mark = health.clock()
-    app = create_web_app(health=health.report, password=PASSWORD, secret_file=tmp_path / "web_secret", tracker=tracker)
+    app = create_web_app(health=health.report, password=PASSWORD, secret_file=tmp_path / "web_secret", tracker=tracker,
+        web_host="0.0.0.0",  # the web open to the home network: the phone at 192.168.1.5 is one of its own names
+    )
     client = TestClient(app, base_url=base_url, follow_redirects=False)
     assert client.post("/login", data={"password": PASSWORD}).status_code == 303
     return client

@@ -397,7 +397,7 @@ def test_the_password_setting_is_blank_by_default_and_trimmed(monkeypatch):
 def test_a_post_from_a_foreign_origin_is_refused(client):
     sign_in(client)
 
-    for origin in ("https://evil.example", "http://testserver.evil.example", "null", "http://evil.example"):
+    for origin in ("https://evil.example", "http://localhost.evil.example", "null", "http://evil.example"):
         response = client.post("/logout", headers={"Origin": origin})
         assert response.status_code == 403 and "Запрос с чужой страницы отклонён" in response.text, origin
     assert client.get("/nowhere").status_code == 404  # signed in: the 404 page, not the login  # nothing was signed out
@@ -410,8 +410,8 @@ def test_a_foreign_origin_cannot_even_try_passwords(client):
 
 
 def test_own_origin_and_none_pass(client):
-    assert client.post("/login", data={"password": PASSWORD}, headers={"Origin": "http://testserver"}).status_code == 303
-    assert client.post("/logout", headers={"Origin": "https://testserver"}).status_code == 303
+    assert client.post("/login", data={"password": PASSWORD}, headers={"Origin": "http://localhost"}).status_code == 303
+    assert client.post("/logout", headers={"Origin": "https://localhost"}).status_code == 303
     assert client.post("/login", data={"password": PASSWORD}).status_code == 303
 
 

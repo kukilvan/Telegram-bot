@@ -436,7 +436,7 @@ def test_two_presses_at_once_on_the_real_core_make_one_title(tmp_path):
 
     async def both():
         transport = httpx.ASGITransport(app=app)
-        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        async with httpx.AsyncClient(transport=transport, base_url="http://localhost") as client:
             assert (await client.post("/login", data={"password": PASSWORD})).status_code == 303
             press = {"data": {"kind": "movie", "external_id": "1"}, "headers": HTMX}
             return await asyncio.gather(client.post("/titles", **press), client.post("/titles", **press))

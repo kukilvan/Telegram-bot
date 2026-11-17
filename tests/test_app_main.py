@@ -34,6 +34,7 @@ def env(monkeypatch, tmp_path):
     monkeypatch.delenv("OWNER_CHAT_ID", raising=False)
     monkeypatch.delenv(app_main.WEB_BIND_HOST, raising=False)
     monkeypatch.delenv("WEB_PASSWORD", raising=False)
+    monkeypatch.delenv("TRUSTED_PROXIES", raising=False)
     monkeypatch.setattr(app_main, "WEB_SECRET_FILE", tmp_path / "web_secret")  # not the real data folder
     monkeypatch.setattr(app_main, "STARTUP_FAILURE_FILE", tmp_path / "startup_failure.json")
     monkeypatch.setattr(app_main, "setup_logging", lambda level: None)
@@ -45,8 +46,8 @@ def assembled(env):
     """`main` up to the runtime: an in-memory database, and the runtime and the web server recorded, not run."""
     seen = {}
 
-    def fake_web_server(app, *, host, port, stop_grace):
-        seen.update(host=host, port=port, stop_grace=stop_grace)
+    def fake_web_server(app, *, host, port, stop_grace, trusted_proxies=()):
+        seen.update(host=host, port=port, stop_grace=stop_grace, trusted_proxies=tuple(trusted_proxies))
         return "server"
 
     class FakeRuntime:
@@ -82,6 +83,26 @@ def test_web_bind_host_from_the_environment_is_used(assembled, env):
     asyncio.run(app_main.main())
 
     assert assembled["host"] == "0.0.0.0"
+
+
+def test_no_trusted_proxies_are_handed_to_the_web_server_without_the_setting(assembled):
+    asyncio.run(app_main.main())
+
+    assert assembled["trusted_proxies"] == ()
+
+
+def test_trusted_proxies_reach_the_web_server_and_junk_is_warned_about_and_skipped(assembled, env, caplog):
+    env.setenv("TRUSTED_PROXIES", "172.18.0.0/16, *, 10.0.0.5, not-an-address")
+
+    with caplog.at_level(logging.WARNING):
+        asyncio.run(app_main.main())
+
+    assert assembled["trusted_proxies"] == ("172.18.0.0/16", "10.0.0.5")
+    warnings = [r.getMessage() for r in caplog.records if r.getMessage().startswith("TRUSTED_PROXIES")]
+    assert warnings == [
+        "TRUSTED_PROXIES: '*' не адрес и не сеть — пропущено",
+        "TRUSTED_PROXIES: 'not-an-address' не адрес и не сеть — пропущено",
+    ]
 
 
 # ---- failures before the start and their report ---------------------------

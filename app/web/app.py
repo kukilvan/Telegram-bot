@@ -21,8 +21,11 @@ from app.tracker.core import Tracker, poster_url
 from app.web import (
     archive, auth, card, drive_sign_in, feed, inbox, pages, search, settings, settings_sign_in, settings_test_event, title_list,
 )
+from app.web.address_line import OPEN_TO_NETWORK
+from app.web.hosts import AllowedHosts, HostRules
 from app.web.menu import OPEN_ADDRESSES, SECTIONS
 from app.web.pages import WebContext
+from app.web.proxy import is_https, public_address
 from app.web.sessions import SessionCookies, SignIns, device_words
 
 HERE = Path(__file__).resolve().parent
@@ -89,7 +92,7 @@ def create_web_app(
     from (`posters.image_sources`); without them the page loads none. `telegram_down` tells whether the bot has no
     connection to Telegram (the line under the status line); the web knows nothing of the runtime or of aiogram.
     `app_url` is what APP_URL said and `web_host` the environment variable WEB_HOST, both read by `app.main` (the line of
-    Settings about the address)."""
+    Settings about the address, and the names the web answers under: `AllowedHosts`)."""
     # No /docs, /redoc or /openapi.json: they would describe every address to anyone who asks
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     templates = Jinja2Templates(directory=HERE / "templates")
@@ -157,7 +160,7 @@ def create_web_app(
             target += f"?next={quote(address, safe='/')}"
         return RedirectResponse(target, status_code=303)
 
-    app.add_middleware(SessionCookies, key=key or auth.unused_key())
+    app.add_middleware(SessionCookies, key=key or auth.unused_key(), secure=is_https)
 
     @app.middleware("http")
     async def protect_requests(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
@@ -188,6 +191,8 @@ def create_web_app(
     @app.post("/login")
     async def login(request: Request, password_typed: str = Form("", alias="password"), next: str = Form("/")) -> Response:
         target = auth.safe_next(next)
+        address = public_address(request.client.host if request.client else None)  # only behind a trusted proxy (5.2)
+        from_address = f" from {address}" if address else ""
         seconds = guard.locked_for()
         await sign_ins.save_guard()  # the end of a lock starts the count anew
         if seconds:
@@ -195,15 +200,15 @@ def create_web_app(
         if not auth.password_matches(password_typed.strip(), password):
             left = guard.wrong()
             await sign_ins.save_guard()
-            logging.warning("web login: wrong password (%s in a row)", guard.wrong_in_a_row)
+            logging.warning("web login: wrong password (%s in a row)%s", guard.wrong_in_a_row, from_address)
             if left == 0:
                 logging.warning("web login blocked for %s min", auth.LOCK_SECONDS // 60)
                 return await locked_page(request, target, guard.locked_for())
             return await login_page(request, target, f"Неверный пароль. До блокировки осталось попыток: {left}", status=401)
         guard.right()  # written with the new sign-in
         device = device_words(request.headers.get("user-agent", ""))
-        sid = await sign_ins.sign_in(device, None, replacing=request.session.get("sid"))
-        logging.info("web login: ok")
+        sid = await sign_ins.sign_in(device, address, replacing=request.session.get("sid"))
+        logging.info("web login: ok%s", from_address)
         request.session.clear()
         request.session.update(pw=expected, sid=sid)
         return RedirectResponse(target, status_code=303)
@@ -255,6 +260,11 @@ def create_web_app(
         response.headers.update({**security_headers, "Cache-Control": "no-store"})
         return response
 
+    # The names the web answers under (KI-12): outside everything else, so a stranger's name reaches no page, no session
+    # and not the lock count
+    app.add_middleware(
+        AllowedHosts, rules=HostRules(app_url.host, web_host.strip() == OPEN_TO_NETWORK), headers=security_headers
+    )
     app.add_middleware(HeadAsGet)  # the last one added is the outermost: a `HEAD` is a `GET` for all the layers inside
 
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")

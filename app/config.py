@@ -147,13 +147,17 @@ class Settings(BaseSettings):
     # in the chat. Read through `app_url_reading` (the rules and the reasons: `parse_app_url`)
     app_url: str = ""
 
+    # Addresses and networks whose proxy headers are believed, comma-separated; empty — the headers are ignored. Read
+    # through `app.web.proxy.parse_trusted_proxies`
+    trusted_proxies: str = ""
+
     # The Google Drive copy (spec 4.1 of stage 7.1): the password of the archives and the owner's Google client
     # «Desktop app». None is required; whether the copy is on is decided in one place, `DriveSettings.setup`
     backup_password: str = ""
     google_drive_client_id: str = ""
     google_drive_client_secret: str = ""
 
-    @field_validator("web_password", "backup_password", "google_drive_client_id", "google_drive_client_secret", "app_url")
+    @field_validator("web_password", "backup_password", "google_drive_client_id", "google_drive_client_secret", "app_url", "trusted_proxies")
     @classmethod
     def _strip(cls, value: str) -> str:
         return value.strip()

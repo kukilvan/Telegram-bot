@@ -198,14 +198,14 @@ def back_of(html):
 def test_the_back_link_leads_to_the_page_the_card_was_opened_from(tracker, client, referer):
     film = asyncio.run(tracker.add_title("movie", "1")).title_id
 
-    page = client.get(f"/titles/{film}", headers={"Referer": f"http://testserver{referer}"})
+    page = client.get(f"/titles/{film}", headers={"Referer": f"http://localhost{referer}"})
 
     assert back_of(page.text) == (referer.replace("&", "&amp;"), "← Назад")
 
 
 @pytest.mark.parametrize("referer", [
-    None, "", "http://other.example/list", "http://testserver/titles/2", "http://testserver/settings",
-    "http://testserver//evil.example/list", "http://testserver//", "javascript:alert(1)", "http://testserver/list/x",
+    None, "", "http://other.example/list", "http://localhost/titles/2", "http://localhost/settings",
+    "http://localhost//evil.example/list", "http://localhost//", "javascript:alert(1)", "http://localhost/list/x",
 ])
 def test_the_back_link_without_a_good_referer_leads_to_the_list(tracker, client, referer):
     film = asyncio.run(tracker.add_title("movie", "1")).title_id
@@ -220,7 +220,7 @@ def test_the_back_link_of_a_title_in_the_archive_leads_to_the_archive(tracker, c
     film = asyncio.run(tracker.add_title("movie", "1")).title_id
     asyncio.run(tracker.mark_watched(film))
 
-    page = client.get(f"/titles/{film}", headers={"Referer": "http://testserver/settings"})
+    page = client.get(f"/titles/{film}", headers={"Referer": "http://localhost/settings"})
 
     assert back_of(page.text) == ("/archive", "← Архив")
 
@@ -228,7 +228,7 @@ def test_the_back_link_of_a_title_in_the_archive_leads_to_the_archive(tracker, c
 def test_the_query_of_the_referer_is_escaped_in_the_back_link(tracker, client):
     film = asyncio.run(tracker.add_title("movie", "1")).title_id
 
-    page = client.get(f"/titles/{film}", headers={"Referer": 'http://testserver/list?q="><script>x</script>'})
+    page = client.get(f"/titles/{film}", headers={"Referer": 'http://localhost/list?q="><script>x</script>'})
 
     assert "<script>x" not in page.text
     assert back_of(page.text)[1] == "← Назад"

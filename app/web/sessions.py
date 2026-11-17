@@ -8,7 +8,7 @@ file that cannot be read or written leaves everything in memory until the restar
 
 The middleware (`SessionCookies`, 4.2) gives `request.session` exactly as Starlette's `SessionMiddleware` does, signed the
 same way (`itsdangerous`, the key of `data/web_secret`), but builds the cookie itself so that `Secure` can be chosen per
-request (`secure`, off until ticket 04). Who is signed in is decided in one place, `guard_sign_in` of `app/web/app.py`,
+request (`secure`: `https`, see `app/web/proxy.py`). Who is signed in is decided in one place, `guard_sign_in` of `app/web/app.py`,
 with `SignIns.live`: the cookie alone signs nobody in."""
 
 import asyncio
@@ -68,7 +68,7 @@ class SignIn:
 class LastLogin:
     at: int  # UTC seconds
     device: str
-    address: str | None  # a public address only (ticket 04); None here
+    address: str | None  # a public client address only (`app.web.proxy.public_address`), otherwise None
 
     @property
     def moment(self) -> datetime:
