@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Review 7.2 (stage 7.2 done)
+
+- `.scratch/7-2-access-phone/review.md`: the stage diff `0d11990..1816985` against the spec and the standards with the `code-review` skill (xhigh); 13 findings, no fix round, so the stage is closed.
+- Run: a scratch server of the real app (uvicorn, the middleware stack, a copy of the database, messages to a file, `TRUSTED_PROXIES=127.0.0.1`) walked by a script — 44 checks of hosts, the cookie and `Secure` behind the proxy, the forms, the login report, «Выйти» with a copied cookie, «Выйти на всех устройствах», the lock and the lock across a restart; all passed. The bot in Docker: `/health`, a foreign `Host` → `400`, link mode in the log.
+- Fixed now: F1 — `section.card h3` of ticket 02 restyled the Feed's day headings (16 px instead of 12 / 15.2 px); the forms sit in `<div class="bot-tests">`, the rule is `.bot-tests h3`. F7 — rule 7 of the standards names `login_reports` and `login_events`. F8 — one `hosts.is_private_ipv4` for the allowed hosts and the Settings hint. F9 — `devices_line` uses `cards.plural`. F10 — one `list_handlers.drop_buttons`.
+- Deferred: KI-75 (the block «Вход» counts sign-ins a new `WEB_PASSWORD` or key has ended), KI-76 (a Cyrillic domain in `APP_URL`; the `xn--` form works, said in `docs/outside-access.md`). No change, with wishes: the facade packed to exactly 400 lines, the `KeyError` of an unknown moment, the `sid` in the dedup key of the login report (against the reasoning of ADR 0014; harmless), the session middleware on Starlette's `Session`; the HTMX `200` for an unknown id and uvicorn 0.31 are the tickets' decisions.
+- Tests: 4159 passed, 3 skipped, the known Windows failures only. Accepted by the owner («ОК»).
+
 ## 2026-11-17 — Ticket 7.2.06
 
 - `app/web/static/style.css`, all under `max-width: 40rem` (the PC is as before, checked at 1024 px): the menu a grid of three columns (P1); the rows of filters one line that scrolls inside itself (P2); box padding 12 px (P3); «Тихие часы» on one line (P4); `.shown a` and the password field made 44 px to hit — two things the measuring run found. No template, JavaScript or behaviour changed.

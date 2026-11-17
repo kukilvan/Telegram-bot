@@ -1,6 +1,6 @@
 # Review 7.2: the app address, the phone, the bot as links, a safer login
 
-Status: in review
+Status: accepted
 
 One session (2026-11-17).
 
