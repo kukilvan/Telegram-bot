@@ -62,7 +62,7 @@ Findings: the Settings heading rule restyles the Feed (F1, against 7: «the PC l
 ## Tests at the end
 
 - 4159 passed, 3 skipped, 2 failed — two of the three known Windows failures (`test_app_main`, `test_docker_files`; `test_runtime`'s passed this time); `pyflakes app tests` clean; `docs/code-map.md` unchanged by `tools/code_map.py`.
-- The bot rebuilt and started on the fixes: the line below.
+- The bot rebuilt and started on the fixes (`.\start-bot.ps1`: «Готово»): `/health` 200, `APP_URL: ссылки бота ведут в приложение`, a foreign `Host` → `400`, the served `style.css` has `.bot-tests h3`, `Tracker.poll_due … executed successfully` with no `polling title … failed`, no error in the log.
 
 ## Wishes for later stages
 
