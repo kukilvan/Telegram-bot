@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-17 — Ticket 7.2.02
+
+- `Tracker.delivery_check(check_id)` (`app/tracker/test_samples.py`, facade in `core.py`): the moment, the rules, the sample and the outcome in one place; returns `DeliveryCheckResult` (`CheckOutcome.AT_ONCE` / `HELD` / `NOT_DELIVERED`, the moment and the release already on the owner's clock), an unknown id is a `KeyError`. The bot's check (`app/bot/test_event_handlers.py`) calls it and keeps its own texts; its tests are untouched. `core.py` re-exports `DELIVERY_CHECKS` (a sync list method would break the facade tests and the 400-line limit).
+- Settings: the forms «Тестовое событие» and «Проверка правил доставки» under «Бот в Telegram» (`app/web/settings_test_event.py`, routes `settings_test_event`, `settings_delivery_check`, template `settings_answer.html`). HTMX: a fragment under the form; without it `303` and the page's notice. Both modes of the bot.
+- Decision: an unknown sample or moment is a `400` on a page of its own without HTMX, and the same sentence as a fragment with `200` for HTMX (HTMX 2 does not show a `4xx`; as `pages.answer`).
+- Tests: `test_settings_test_event` (new); `test_web_settings` (the settings form alone has no `hx-`) and `test_app_url` (the state lines end at the first `<h3>`) adjusted. 3950 in total; the three known Windows failures only. Checked live by the owner: both forms, the answers, Telegram, phone width.
+
 ## 2026-11-15 — Ticket 7.2.01
 
 - `APP_URL` (`app/config.py`: `parse_app_url` → `AppUrl`, five rules with Russian reasons, one form; `Settings.app_url_reading`); `app/main.py` reads it once and hands it to the bot (`AppLinks`, link mode) and the web (`create_web_app(app_url, web_host)`); log lines at start (the address is not logged). The Settings line and its two hints: `app/web/address_line.py`, `settings.html`.
