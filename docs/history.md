@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Ticket 9.1a.04
+
+- `app/tracker/checks.py`: `still_checked(session, due)` — the title and the snapshot of the check exist; a sequel check needs «Просмотрено», an own-release check a status of `POLLED_STATUSES` (moved here from `polling.py`) and tracking on, an end-of-pass check only its snapshot. `EventQueue.record(…, due=)` and `enqueue(…, due=)` ask it after the dedup flush and roll back (no dedup key spent); `Poller.record_all` passes the `due`; `queue_failure_notices` and `Polling._still_checked` use it (KI-22).
+- `DetectedEvent.happened_at` (`movie_events.day_start` for a day): movie cinema and digital releases, the episode events of a TMDb series (the `air_date` of their episode), an anime film out, a game release and early access; `Flavor.moments=False` for anime leaves its episode events without one (KI-77). `DueTitle.restored_at` from `_due_titles`; with `baseline` only an event with `happened_at > restored_at` is queued; the log line says how many (KI-23).
+- `AnimePoller._sync_entries` takes its moves from `_free_moves` (a fixed point: a part is held back while its new place stays taken or another part wants it) and logs once `title <id>: parts <ids> keep their places, the places they move to are taken` (KI-1).
+- «Не удалось проверить» per title and source: one per (title, source) a pass, none while an event `source_failure` of that title with the same `payload.source` is younger than 24 h, the key `failure:<title>:<source>:<pass>`. Migration 0016 drops `titles.failure_notified_at` by `ALTER TABLE … DROP COLUMN` (KI-45); a game's IGDB and Steam failures in one pass are two messages now.
+- Live on the owner's PC: start «Готово», `/health` 200, migration 0015 → 0016 after a copy, every table's rows the same as in the copy, the list (33) and the feed read, `poll_due` ran with no failure. Tests: `test_tracker_check_rules`, `test_tracker_anime_part_moves`, `test_tracker_migration_0016`, additions to `test_tracker_dropped_restore` and `test_tracker_failures`; full run 4378 passed, 3 skipped, 3 known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Ticket 9.1a.03
 
 - A send and its record are one unit (KI-5): `DeliveryService._send` runs the send and `_record_attempts` as a task kept in `CoreContext.sends`, awaited through `asyncio.shield`; a cancelled caller waits for its unit, then stays cancelled (no next unit of the pass). `Tracker.finish_sends(timeout)`; `TelegramPart.close` calls it with `SEND_GRACE = 5` before closing the session. The rest is KI-78.
