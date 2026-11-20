@@ -29,11 +29,11 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-13 | Испорченный файл ключа сессий не пересоздаётся | `app/web/auth.py` | fixed | 7.2.03 |
 | KI-14 | Пауза повтора подключения бота сбрасывается раньше, чем в спеке | `app/runtime.py` | fixed | — |
 | KI-15 | Старт контейнера не от root всё равно проверяет PUID и PGID | `app/container_start.py` | open | 7.3 |
-| KI-16 | Сбой запуска с меняющимся текстом сообщается при каждом повторе | `app/startup_report.py` | fixed | 9.1a.02 |
-| KI-17 | Запись о сбое запуска не сохраняется — сообщение при каждом повторе | `app/startup_report.py` | fixed | 9.1a.02 |
-| KI-18 | `.\start-bot.ps1` останавливает и чужой `python -m app.main` | `start-bot.ps1` | fixed | 9.1a.02 |
-| KI-19 | `.\start-bot.ps1` может ждать итога дольше 90 секунд | `start-bot.ps1` | fixed | 9.1a.02 |
-| KI-20 | Имя `kind` для типа ошибки в `app/startup_report.py` | `app/startup_report.py` | fixed | 9.1a.02 |
+| KI-16 | Сбой запуска с меняющимся текстом сообщается при каждом повторе | `app/startup_report.py` | fixed (test: `tests/test_startup_report.py`) | 9.1a |
+| KI-17 | Запись о сбое запуска не сохраняется — сообщение при каждом повторе | `app/startup_report.py` | fixed (test: `tests/test_startup_report.py`) | 9.1a |
+| KI-18 | `.\start-bot.ps1` останавливает и чужой `python -m app.main` | `start-bot.ps1` | fixed (test: `tests/test_docker_files.py`) | 9.1a |
+| KI-19 | `.\start-bot.ps1` может ждать итога дольше 90 секунд | `start-bot.ps1` | fixed (test: `tests/test_docker_files.py`) | 9.1a |
+| KI-20 | Имя `kind` для типа ошибки в `app/startup_report.py` | `app/startup_report.py` | fixed (test: `tests/test_startup_report.py`) | 9.1a |
 | KI-21 | Постеры непроверяемых аниме пропадают при смене адреса Shikimori | `app/tracker/pollers/` | fixed (test: `tests/test_poster_site.py`) | 9.1a |
 | KI-22 | «Бросил» во время проверки этого же тайтла может пропустить одно сообщение | `Tracker.mark_dropped` | fixed (test: `tests/test_tracker_dropped_restore.py`, `tests/test_tracker_check_rules.py`) | 9.1a |
 | KI-23 | Факт, случившийся сразу после «Вернуть в список», становится точкой отсчёта | `Poller.record_all` | fixed (test: `tests/test_tracker_dropped_restore.py`); the rest is KI-77 | 9.1a |
@@ -54,8 +54,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-38 | Игры: запись IGDB без точности даты читается как «дата не объявлена» | `app/tracker/games.py` | open | 9.1 |
 | KI-39 | Игры: примерная дата старшей платформы прячет точную дату своей | `app/tracker/games.py` | fixed | — |
 | KI-40 | Игры: галочка «играю здесь» меняется у платформы, которой у игры больше нет | `app/tracker/statuses.py` | fixed | — |
-| KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | fixed | 9.1a.01 |
-| KI-42 | Ручной запрос «Добавить» с номером не из цифр отвечает «Не удалось связаться» | `app/tracker/titles.py` | fixed | 9.1a.01 |
+| KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | fixed (test: `tests/test_tracker_rare_input.py`) | 9.1a |
+| KI-42 | Ручной запрос «Добавить» с номером не из цифр отвечает «Не удалось связаться» | `app/tracker/titles.py` | fixed (test: `tests/test_tracker_rare_input.py`) | 9.1a |
 | KI-43 | Цены Steam: цена бандла — для покупателя без игр набора | `app/tracker/sources/steam_prices.py` | open | 9.1 |
 | KI-44 | Цены Steam: предзаказ проверен только на собранном ответе | `app/tracker/sources/steam_prices.py` | open | 9.1 |
 | KI-45 | Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_failures.py`) | 9.1a |

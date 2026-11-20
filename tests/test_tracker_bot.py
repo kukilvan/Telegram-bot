@@ -123,7 +123,8 @@ def test_a_key_error_inside_a_send_is_a_failure_not_a_stale_button(tracker, send
 
     press_sample_button(make_dispatcher(tracker), OWNER, "tev:ping")
 
-    assert replies[0][0] == "callback" and "Такого события больше нет" not in replies[0][1] and "позже" in replies[0][1]
+    # whether the sample was queued is unknown, so the answer does not promise it comes later (review 9.1a)
+    assert replies[0] == ("callback", "Не удалось отправить тестовое событие. Попробуйте ещё раз.", None)
     assert "sending the test event ping failed" in caplog.text
 
 

@@ -39,16 +39,17 @@ if ($withDollar -gt 0) {
     exit 1
 }
 
-# Бот может работать только в одном экземпляре: старого, запущенного не через Docker, останавливаем.
-# Старый бот — это python.exe из .venv этой же папки (путь к программе целиком, без учёта регистра) с целой командой
-# "-m app.main" или "-m app.bot.main": чужие "uvicorn app.main:app", "-m app.mainframe", "-m myapp.main" и такой же
-# "-m app.main" другого проекта или базового Python не трогаем. Вместе с ним — его дочерние python.exe: на Windows python.exe
-# из .venv запускает базовый Python с той же командой.
+# The bot runs in one instance only: an old one started outside Docker is stopped.
+# The old bot is a python.exe of the .venv of this very folder (the whole program path, any case) with the whole command
+# "-m app.main" or "-m app.bot.main": someone else's "uvicorn app.main:app", "-m app.mainframe", "-m myapp.main" and the
+# same "-m app.main" of another project or of the base Python are left alone. Its child python.exe goes with it: on
+# Windows the python.exe of a .venv starts the base Python with the same command. The child must have that command too:
+# Windows reuses process ids, and a stranger whose dead parent had the old bot's id is not its child.
 $oldBotPattern = '(^|\s)-m\s+app\.(bot\.)?main(\s|"|$)'
 $ownPython = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
 $pythons = @(Get-CimInstance Win32_Process -Filter "Name='python.exe'")
 $old = @($pythons | Where-Object { $_.ExecutablePath -and ($_.ExecutablePath -ieq $ownPython) -and ($_.CommandLine -match $oldBotPattern) })
-$children = @($pythons | Where-Object { $old.ProcessId -contains $_.ParentProcessId })
+$children = @($pythons | Where-Object { ($old.ProcessId -contains $_.ParentProcessId) -and ($_.CommandLine -match $oldBotPattern) })
 $toStop = @($children) + @($old)
 if ($toStop.Count -gt 0) {
     $toStop | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
@@ -90,8 +91,8 @@ $baseRestarts = if ($first) { $first.Restarts } else { 0 }
 $outcome = "waiting"
 $state = $null
 Write-Host "Жду запуска приложения (до 90 секунд)…"
-# Ждём по часам, а не по числу проверок: сами проверки (docker compose ps, docker inspect) тоже занимают время.
-# Последняя проверка начинается до срока
+# Wait by the clock, not by the number of checks: the checks themselves (docker compose ps, docker inspect) take time too.
+# The last check starts before the deadline
 $deadline = (Get-Date).AddSeconds(90)
 while ((Get-Date) -lt $deadline) {
     $state = Get-ContainerState

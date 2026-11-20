@@ -108,6 +108,8 @@ def test_the_start_script_stops_only_this_projects_old_bot_and_its_children():
     assert "$_.ExecutablePath -ieq $ownPython" in script  # the whole path, any case, the folder of the script itself
     assert "$_.CommandLine -match $oldBotPattern" in script
     assert "$old.ProcessId -contains $_.ParentProcessId" in script  # the python.exe the .venv one starts
+    # ... with the same command: a stranger whose dead parent had the old bot's id (ids are reused) is left alone
+    assert "($old.ProcessId -contains $_.ParentProcessId) -and ($_.CommandLine -match $oldBotPattern)" in script
     assert script.index("$ownPython") < script.index("Stop-Process") < script.index("docker compose up -d --build")
     assert "Остановлен старый бот, запущенный не через Docker" in script
     # the old test of the pattern alone would stop any project's `-m app.main`: the stop list is filtered by the path

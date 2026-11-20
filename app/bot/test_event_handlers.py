@@ -43,9 +43,9 @@ def register_test_event_handlers(router: Router, tracker: Tracker, *, chat_mode:
         except UnknownSample:
             await callback.answer("Такого события больше нет, откройте меню заново.")
             return
-        except Exception as exc:
+        except Exception as exc:  # not the send (a failed send is `delivered` False): whether it was queued is unknown
             logging.warning("sending the test event %s failed: %r", sample_id, exc)
-            await callback.answer("Не удалось отправить, событие осталось в очереди и придёт позже.")
+            await callback.answer("Не удалось отправить тестовое событие. Попробуйте ещё раз.")
             return
         if result.delivered:
             await callback.answer("Отправлено")
