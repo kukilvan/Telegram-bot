@@ -1,6 +1,6 @@
 # Spec 9.1b: games and Steam prices — the known issues and Russian in games
 
-Status: in review
+Status: accepted
 
 Built from `description.md` (accepted 2026-11-21) and idea 002. Terms come from `CONTEXT.md`. ADRs it leans on: 0004 (no own JavaScript), 0007 (one process), 0009 (no PlayStation prices; its reason against reading store pages is answered for ZoG in the new ADR 0016, section 11), 0011 (a followed expansion is a game of its own: its decision stands, its last consequence — KI-52 — stops being true), 0015 (`checks.still_checked`). No migration: everything new lives in JSON snapshots (section 6).
 
