@@ -16,7 +16,7 @@ from app.tracker.movie_events import RETRY_AFTER_FAILURE
 
 SOURCE_FAILED = "source_failure"  # event type
 
-COOLDOWN = timedelta(hours=24)  # one notice per title in this time, however often its check fails
+COOLDOWN = timedelta(hours=24)  # one notice per title and source in this time, however often its checks fail
 MAX_NAMES = 5  # titles named in a notice about several; the rest are «…»
 
 TIMEOUT = "timeout"

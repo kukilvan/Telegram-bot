@@ -22,7 +22,7 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.games import GameState
 from app.tracker.models import (
-    DeliveryItem, DeliveryStatus, Event, PriceRecord, SettingRecord, SourceSnapshot, Title, TitleKind,
+    DeliveryItem, DeliveryStatus, Event, PriceRecord, SettingRecord, SourceSnapshot, TitleKind,
 )
 from app.tracker import price_events
 from app.tracker.pollers.game_prices import PRICE_INTERVAL, GamePrices, is_baseline, lowest_seen
@@ -582,7 +582,7 @@ def test_an_unreadable_record_is_a_failure_of_its_game_only(tracker, igdb, price
     assert price_snapshot(session_factory, fine).state == price_look("2").state()
 
 
-def test_the_window_of_one_message_a_day_is_shared_with_igdb(tracker, igdb, prices, sender, session_factory, clock):
+def test_igdb_and_steam_have_a_window_of_one_message_a_day_each(tracker, igdb, prices, sender, session_factory, clock):
     title_id = add(tracker, igdb)
     igdb.gone = {"1"}
     igdb_says(session_factory, igdb, game())
@@ -591,13 +591,15 @@ def test_the_window_of_one_message_a_day_is_shared_with_igdb(tracker, igdb, pric
     report = run(tracker.poll_due())
     run(tracker.deliver_pending())
 
-    assert report.failed == 2 and len(sender.texts) == 1  # IGDB and Steam failed in one pass: one message
+    assert report.failed == 2 and len(sender.texts) == 2  # IGDB and Steam failed in one pass: a message each (KI-45)
+    assert any("IGDB" in text for text in sender.texts) and any("Steam" in text for text in sender.texts)
     clock.advance(hours=1)
     run(tracker.poll_due())
     run(tracker.deliver_pending())
-    assert len(sender.texts) == 1
+    assert len(sender.texts) == 2  # within the day neither source is told again
     with session_factory() as session:
-        assert session.get(Title, title_id).failure_notified_at == naive(T0)
+        keys = set(session.scalars(select(Event.dedup_key).where(Event.type == "source_failure")))
+    assert keys == {f"failure:{title_id}:IGDB:{naive(T0):%Y%m%dT%H%M%S}", f"failure:{title_id}:Steam:{naive(T0):%Y%m%dT%H%M%S}"}
 
 
 def test_a_steam_failure_leaves_the_igdb_check_as_usual(tracker, igdb, prices, session_factory):

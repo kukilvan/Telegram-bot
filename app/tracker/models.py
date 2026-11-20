@@ -71,7 +71,6 @@ class Title(TrackerBase):
     tracking_enabled: Mapped[bool] = mapped_column(Boolean)
     added_at: Mapped[datetime] = mapped_column(DateTime)
     status_changed_at: Mapped[datetime] = mapped_column(DateTime)
-    failure_notified_at: Mapped[datetime | None] = mapped_column(DateTime)  # last «could not check» notice; None: never
     # the last «Вернуть в список»; None: never brought back. A check of the own source older than this is the baseline
     restored_at: Mapped[datetime | None] = mapped_column(DateTime)
     # the owner's score in thirds of a point (`scores`): a film's only one, a series' own one over the average of its

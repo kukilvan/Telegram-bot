@@ -1,6 +1,8 @@
 """An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the
 source entries behind the seasons and the franchise films are kept beside them."""
 
+import logging
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import replace
 from datetime import datetime
@@ -144,16 +146,19 @@ class AnimePoller(SeasonalPoller):
             place = (seasons.get(part.season), part.number)
             if row is not None and place[0] is not None and place != (row.season_id, row.number):
                 wanted[row.id] = place
-        fixed = {(p.season_id, p.number) for p in rows.values() if p.id not in wanted}  # places nobody leaves
-        moves = {row_id: place for row_id, place in wanted.items() if place not in fixed}
-        taken_slots = fixed | {(p.season_id, p.number) for p in rows.values() if p.id in wanted and p.id not in moves}
+        moves = _free_moves(wanted, {row.id: (row.season_id, row.number) for row in rows.values()})
+        if len(moves) < len(wanted):
+            logging.info(
+                "title %s: parts %s keep their places, the places they move to are taken",
+                title_id, sorted(set(wanted) - set(moves)),
+            )
+        taken_slots = {(p.season_id, p.number) for p in rows.values() if p.id not in moves} | set(moves.values())
         moving = [row for row in rows.values() if row.id in moves]
         for row in moving:
             row.number = -row.id  # out of the way first: the places may be exchanged
         session.flush()
         for row in moving:
             row.season_id, row.number = moves[row.id]
-            taken_slots.add(moves[row.id])
         for part in snapshot.parts:
             row = rows.get(part.ids.shikimori)
             if row is None:
@@ -191,3 +196,22 @@ class AnimePoller(SeasonalPoller):
             if row.anilist_id is None and film.ids.anilist and film.ids.anilist not in taken_anilist:
                 row.anilist_id = film.ids.anilist
                 taken_anilist.add(film.ids.anilist)
+
+
+Place = tuple[int, int]  # (season record, number of the part in it)
+
+
+def _free_moves(wanted: Mapping[int, Place], places: Mapping[int, Place]) -> dict[int, Place]:
+    """The moves of parts that may be made (KI-1): a part takes its new place only when the place is free after the
+    moves. A part is held back while its new place is the place of a part that stays, or another part wants the same
+    place too; holding one back may hold back the next, so it repeats until nothing changes. `places`: where every part
+    stands now. Exchanges and chains of moves pass: the places they take are left by parts that move."""
+    moves = dict(wanted)
+    while True:
+        staying = {place for row_id, place in places.items() if row_id not in moves}
+        wanted_by = Counter(moves.values())
+        held = {row_id for row_id, place in moves.items() if place in staying or wanted_by[place] > 1}
+        if not held:
+            return moves
+        for row_id in held:
+            del moves[row_id]

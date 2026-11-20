@@ -187,7 +187,7 @@ def prepared(session_factory):
                       genres=["Фантастика"], overview="Песок.", poster_path="/dune.jpg",
                       added=datetime(2026, 10, 20, 16, 2, 11), changed=datetime(2026, 10, 28, 18, 40))
         series = title(TitleKind.SERIES, "Одни из нас", status=TitleStatus.IN_PROGRESS, original="The Last of Us",
-                       year=2023, genres=["Драма"], restored_at=datetime(2026, 10, 30, 6, 0), failure_notified_at=datetime(2026, 10, 31, 6, 0))
+                       year=2023, genres=["Драма"], restored_at=datetime(2026, 10, 30, 6, 0))
         anime = title(TitleKind.ANIME, "Магическая битва", original="Jujutsu Kaisen", year=2020)
         base = title(TitleKind.GAME, "Ведьмак 3", original="The Witcher 3", year=2015)
         expansion = title(TitleKind.GAME, "Кровь и вино", original="Blood and Wine", year=2016)
@@ -258,7 +258,7 @@ def test_json_has_the_shape_of_version_one(tracker, session_factory):
     doc = json.loads(file.content)
     assert list(doc) == ["format", "version", "exported_at", "time_zone", "database_revision", "titles", "settings", "inbox"]
     assert doc["exported_at"] == "2026-10-30T01:30:00+03:00" and doc["time_zone"] == "Europe/Moscow"
-    assert doc["database_revision"] == "0015"
+    assert doc["database_revision"] == "0016"
     assert [t["name"] for t in doc["titles"]] == ["Дюна", "Одни из нас", "Магическая битва", "Ведьмак 3", "Кровь и вино", "Дополнение без игры"]
     movie, series, anime, base, expansion, orphan = doc["titles"]
     assert list(movie) == [

@@ -59,6 +59,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
 - `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot.
+- `app/tracker/checks.py` — Whether a check of a title still runs: the one rule every write of a poll asks before it queues what it found.
 - `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks, the running sends.
 - `app/tracker/core.py` — Tracker core facade: the only door the bot (and later the web app) uses.
 - `app/tracker/db.py` — Tracker database: engine (WAL), session factory and Alembic migrations.
@@ -104,6 +105,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0013_price_history.py` — The price history of the games (spec 4.5 of part 6.2): a record of a Steam price each time a price check saw it change.
 - `app/tracker/migrations/versions/0014_inbox.py` — «Входящие» (spec 10 of stage 6.4): the table `inbox_items`, one row per inbox item — what the owner sent to the bot.
 - `app/tracker/migrations/versions/0015_issued_ids.py` — The table `issued_ids` (spec 5 of stage 9.1a, KI-24): the last number given to a title, so a deleted title's number never comes back.
+- `app/tracker/migrations/versions/0016_drop_failure_notified_at.py` — The column `titles.failure_notified_at` goes (spec 4.4 of stage 9.1a, KI-45).
 - `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, snapshots, events, the delivery queue, settings, game platforms, prices, the inbox and the last number given to a title.
 - `app/tracker/moment_words.py` — A moment in words for the owner (pure): «сегодня в 07:58», «вчера в 18:32», «4 ноября в 07:58», «4 ноября 2025 в 07:58».
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.

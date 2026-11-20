@@ -1,6 +1,6 @@
 # 04: Polling — the status read again, the facts after a return, the parts of a season, the window per source (migration 0016)
 
-Status: open
+Status: in review
 Complexity: complex (polling and events, anime parts, a migration that drops a column)
 Blocked by: 05 (migration 0015 comes before 0016)
 

@@ -510,7 +510,7 @@ def test_the_first_check_says_so_in_the_log(tracker, clock, caplog):
         poll(tracker, clock, days=8)
 
     lines = [r.getMessage() for r in caplog.records if "baseline" in r.getMessage()]
-    assert lines == [f"title {film}: first check after return, recorded as the baseline"]
+    assert lines == [f"title {film}: first check after return, recorded as the baseline; 0 queued"]
 
 
 def test_the_sequel_check_of_a_returned_and_watched_again_movie_announces_as_usual(
@@ -544,3 +544,109 @@ def test_a_sequel_check_that_runs_while_the_movie_is_dropped_is_not_a_failure(tr
     report = poll(tracker, clock, seconds=30)
 
     assert report.failed == 0 and event_types(session_factory, film) == []
+
+
+# ---- «Бросил» during a pass, a fact right after the return (spec 4.1, 4.2 of stage 9.1a) ------------------------------
+
+
+def dedup_keys(session_factory):
+    with session_factory() as session:
+        return set(session.scalars(select(Event.dedup_key)))
+
+
+def test_dropped_between_the_start_of_a_pass_and_the_titles_turn_queues_nothing_and_spends_no_key(
+    tracker, session_factory, movies, clock, sender
+):
+    first = add(tracker, "movie", "1")
+    movies.update(MovieSnapshot(external_id="2", name="Укрытие", original_name="Silo", year=2026, genres=[]))
+    second = add(tracker, "movie", "2")
+    clock.advance(days=2)
+    movies.update(replace(movies.by_id["2"], theatrical_date=clock.now.date()))  # out today: an event at its turn
+    real = movies.snapshot
+
+    async def drop_the_second_at_the_first(external_id):
+        if external_id == "1":
+            await tracker.mark_dropped(second)
+        return await real(external_id)
+
+    movies.snapshot = drop_the_second_at_the_first
+    report = poll(tracker, clock, seconds=1)
+    run(tracker.deliver_pending())
+
+    assert report.polled == 2 and report.events == 0 and report.failed == 0
+    assert event_types(session_factory, second) == [] and sender.sent == []
+    assert not any(key.startswith(f"movie:{second}:") for key in dedup_keys(session_factory))
+    assert event_types(session_factory, first) == []
+
+
+def test_a_failure_notice_of_a_title_dropped_before_the_end_of_the_pass_is_not_queued(
+    tracker, session_factory, movies, clock, sender
+):
+    first = add(tracker, "movie", "1")
+    movies.update(MovieSnapshot(external_id="2", name="Укрытие", original_name="Silo", year=2026, genres=[]))
+    add(tracker, "movie", "2")
+    real = movies.snapshot
+
+    async def first_fails_second_drops_it(external_id):
+        if external_id == "1":
+            raise ConnectionError("the source is down")
+        await tracker.mark_dropped(first)
+        return await real(external_id)
+
+    movies.snapshot = first_fails_second_drops_it
+    report = poll(tracker, clock, days=2)
+    run(tracker.deliver_pending())
+
+    assert report.failed == 1 and report.notices == 0
+    assert event_types(session_factory, first) == [] and sender.sent == []
+
+
+def test_a_watched_movie_dropped_during_its_sequel_check_gives_no_announcement(
+    tracker, session_factory, sequels, clock, sender
+):
+    film = add(tracker, "movie", "1")
+    run(tracker.mark_watched(film))
+    poll(tracker, clock, seconds=30)  # the first look at the collection
+    sequels.parts = [PART_THREE]
+    real = sequels.snapshot
+
+    async def dropped_meanwhile(external_id):
+        await tracker.mark_dropped(film)
+        return await real(external_id)
+
+    sequels.snapshot = dropped_meanwhile
+    report = poll(tracker, clock, days=8)
+    run(tracker.deliver_pending())
+
+    assert report.failed == 0 and report.events == 0
+    assert event_types(session_factory, film) == [] and sender.sent == []
+
+
+def returned_series_at(tracker, clock, restored_at):
+    """«Идущий» added at T0 (three episodes out, the fourth on Monday 26 Oct 00:00 UTC), dropped, brought back."""
+    series = add(tracker, "series", "10")
+    run(tracker.mark_dropped(series))
+    clock.now = restored_at
+    run(tracker.restore_title(series))
+    return series
+
+
+def test_an_episode_out_half_a_minute_after_the_return_is_told(tracker, session_factory, clock, sender):
+    series = returned_series_at(tracker, clock, datetime(2026, 10, 25, 23, 59, 30, tzinfo=timezone.utc))
+
+    report = poll(tracker, clock, minutes=1)  # 00:00:30: the fourth episode is out since 00:00
+    run(tracker.deliver_pending())
+
+    assert report.events == 1
+    assert event_types(session_factory, series) == [series_events.EPISODE_OUT]
+    assert len(sender.sent) == 1 and "Идущий" in sender.sent[0]
+
+
+def test_an_episode_out_the_day_before_the_return_stays_silent(tracker, session_factory, clock, sender):
+    series = returned_series_at(tracker, clock, datetime(2026, 10, 27, 10, 0, tzinfo=timezone.utc))
+
+    report = poll(tracker, clock, seconds=30)
+    run(tracker.deliver_pending())
+
+    assert report.polled == 1 and report.events == 0
+    assert event_types(session_factory, series) == [] and sender.sent == []

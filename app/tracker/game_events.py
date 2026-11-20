@@ -16,7 +16,7 @@ from app.tracker.dedup import moved_key
 from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, PlatformDate, platform_dates, released_by
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
-from app.tracker.movie_events import DetectedEvent
+from app.tracker.movie_events import DetectedEvent, day_start
 from app.tracker.platforms import PLATFORMS, Platform
 
 _ICON = KINDS[TitleKind.GAME].icon
@@ -144,21 +144,27 @@ def detect_events(
         prefix = f"game:{title_id}:{platform.value}"
 
         def event(
-            event_type: str, key: str, dated: PlatformDate | None, data: dict[str, Any], earlier: str | None = None
+            event_type: str,
+            key: str,
+            dated: PlatformDate | None,
+            data: dict[str, Any],
+            earlier: str | None = None,
+            out: GameDate | None = None,
         ):
             via = dated.via if dated is not None else None
             if via and older_tells(platform, told):
                 return  # the older platform tells it
             data = {"name": name, "platform": platform.value, "via": via or "", **data}
             text = message(event_type, name, [(platform, data["via"])], data)
-            events.append(DetectedEvent(event_type, key, text, data, earlier))
+            happened_at = day_start(out.start) if out is not None else None  # `out`: the exact day it came out
+            events.append(DetectedEvent(event_type, key, text, data, earlier, happened_at))
 
         old_full, new_full = _date_of(before.full if before else None), _date_of(now_dates.full)
         old_early, new_early = _date_of(before.early if before else None), _date_of(now_dates.early)
         full_out_before = released_by(old_full, observed_on)
 
         if _fresh(new_full, today) and not full_out_before:
-            event(RELEASED, f"{prefix}:released", now_dates.full, {"date": new_full.text})
+            event(RELEASED, f"{prefix}:released", now_dates.full, {"date": new_full.text}, out=new_full)
         elif new_full.exact and new_full.start > today and not old_full.exact:
             event(
                 DATE_ANNOUNCED,
@@ -179,7 +185,7 @@ def detect_events(
             )
 
         if _fresh(new_early, today) and not released_by(old_early, observed_on) and not released_by(new_full, today):
-            event(EARLY_ACCESS, f"{prefix}:early_access", now_dates.early, {"date": new_early.text})
+            event(EARLY_ACCESS, f"{prefix}:early_access", now_dates.early, {"date": new_early.text}, out=new_early)
     return events
 
 

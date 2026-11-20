@@ -20,6 +20,7 @@ MODULES = (
     "context", "settings_store", "storage", "queue", "titles", "statuses", "listing", "feed", "polling", "delivery_service",
     "test_samples", "core", "prices", "price_rows", "sources/steam_prices", "follow_ups", "sources/igdb_follow_ups", "inbox",
     "candidates", "offers", "inbox_answers", "sources/tmdb_find", "backups", "google_drive", "drive_copies", "exports", "login_reports",
+    "checks",
 )
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
 PURE = (

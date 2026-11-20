@@ -8,7 +8,7 @@ snapshot was taken before that day, so a movie added after its premiere never an
 """
 
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 from app.tracker.cards import format_date, format_short_date
@@ -61,6 +61,13 @@ class DetectedEvent:
     text: str
     data: dict[str, Any]
     earlier_key: str | None = None  # the key an earlier version gave this fact; see `EventQueue.queued_since`
+    # when the fact came out (naive UTC), for the first check after «Вернуть в список» (KI-23); None — no such moment
+    happened_at: datetime | None = None
+
+
+def day_start(day: date) -> datetime:
+    """A day as a moment: its 00:00 UTC (TMDb counts a release out from the start of its day in UTC)."""
+    return datetime.combine(day, time.min)
 
 
 def _released_by(value: date | None, day: date) -> bool:
@@ -98,7 +105,13 @@ def detect_events(
     if new.theatrical is not None and not was_in_cinemas:
         if new.theatrical <= today:
             events.append(
-                DetectedEvent(RELEASED, f"{prefix}:released", message_released(name), {"date": new.theatrical.isoformat()})
+                DetectedEvent(
+                    RELEASED,
+                    f"{prefix}:released",
+                    message_released(name),
+                    {"date": new.theatrical.isoformat()},
+                    happened_at=day_start(new.theatrical),
+                )
             )
         elif old.theatrical is None:
             events.append(
@@ -126,7 +139,13 @@ def detect_events(
 
     if new.digital is not None and new.digital <= today and not _released_by(old.digital, observed_on):
         events.append(
-            DetectedEvent(DIGITAL, f"{prefix}:digital", message_digital(name), {"date": new.digital.isoformat()})
+            DetectedEvent(
+                DIGITAL,
+                f"{prefix}:digital",
+                message_digital(name),
+                {"date": new.digital.isoformat()},
+                happened_at=day_start(new.digital),
+            )
         )
     return events
 

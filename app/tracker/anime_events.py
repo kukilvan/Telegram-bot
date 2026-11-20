@@ -37,7 +37,7 @@ from app.tracker import series_events
 from app.tracker.cards import NOT_ANNOUNCED, format_date
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
-from app.tracker.movie_events import DetectedEvent
+from app.tracker.movie_events import DetectedEvent, day_start
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.series_events import Flavor
 from app.tracker.sources.anilist_schedule import PartSchedule
@@ -51,7 +51,7 @@ MOVIE_RELEASED = "anime_movie_released"
 
 
 def flavor(tz: tzinfo | None) -> Flavor:
-    return Flavor(icon=_ICON, key_prefix=KEY_PREFIX, tz=tz)
+    return Flavor(icon=_ICON, key_prefix=KEY_PREFIX, tz=tz, moments=False)
 
 
 # --- putting the two sources together --------------------------------------------------------------
@@ -280,7 +280,12 @@ def detect_movie_events(
         if film.released and was is not True:
             if was is None and film.aired_on is not None and film.aired_on <= observed_on:
                 continue
-            events.append(DetectedEvent(MOVIE_RELEASED, f"{key}:released", message_movie_released(name, film.name), data))
+            happened_at = day_start(film.aired_on) if film.aired_on is not None else None
+            events.append(
+                DetectedEvent(
+                    MOVIE_RELEASED, f"{key}:released", message_movie_released(name, film.name), data, happened_at=happened_at
+                )
+            )
         elif not film.released and was is None:
             events.append(
                 DetectedEvent(

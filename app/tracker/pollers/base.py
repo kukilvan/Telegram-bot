@@ -36,8 +36,10 @@ class DueTitle:
     external_id: str
     snapshot_source: str  # which of the title's snapshots is due: its release source or its sequel source
     sequels: bool  # True: an archived movie, checked only for sequels
-    # True: the first check of the own source since «Вернуть в список»; what it finds is the baseline, no events
+    # True: the first check of the own source since «Вернуть в список»; what it finds is the baseline, except the facts
+    # that happened after `restored_at` (KI-23)
     baseline: bool = False
+    restored_at: datetime | None = None  # naive UTC: when the owner last brought the title back from the archive
 
 
 class Poller:
@@ -149,17 +151,25 @@ class Poller:
 
     def record_all(self, due: DueTitle, events: Iterable[Any], previous_look: datetime | None = None) -> int:
         """Queue the detected events of a title; returns how many were new. An event whose fact an earlier version of
-        its key already queued after `previous_look` is not queued again. The first check after «Вернуть в список»
-        queues nothing: what happened while the title was in the archive is the baseline, as when it is added."""
+        its key already queued after `previous_look` is not queued again. Each one is queued only while the title is
+        still checked by this check (`EventQueue.record`, KI-22). The first check after «Вернуть в список» queues only
+        the facts that happened after the return (`happened_at` later than `restored_at`, KI-23): what happened while
+        the title was in the archive, and what has no moment, is the baseline, as when it is added."""
         if due.baseline:
-            logging.info("title %s: first check after return, recorded as the baseline", due.id)
-            return 0
+            events = [event for event in events if _after_return(event, due.restored_at)]
         found = 0
         for event in events:
             earlier = getattr(event, "earlier_key", None)
             if earlier is not None and previous_look is not None and self.queue.queued_since(earlier, previous_look):
                 continue
             payload = {"text": event.text, **event.data}
-            if self.queue.record(event.type, payload, event.dedup_key, title_id=due.id) is not None:
+            if self.queue.record(event.type, payload, event.dedup_key, title_id=due.id, due=due) is not None:
                 found += 1
+        if due.baseline:
+            logging.info("title %s: first check after return, recorded as the baseline; %d queued", due.id, found)
         return found
+
+
+def _after_return(event: Any, restored_at: datetime | None) -> bool:
+    happened_at = getattr(event, "happened_at", None)
+    return happened_at is not None and restored_at is not None and happened_at > restored_at

@@ -1,6 +1,8 @@
-"""Tracker core: the owner is told when a title could not be checked — once a day per title, one message per source.
+"""Tracker core: the owner is told when a title could not be checked — once a day per title and source, one message per
+source.
 
-Driven through the facade only: fake clock, fake sources that fail on demand, fake sender, in-memory SQLite.
+Driven through the facade (and the queue itself for the window per title and source): fake clock, fake sources that
+fail on demand, fake sender, in-memory SQLite.
 """
 
 import asyncio
@@ -14,9 +16,12 @@ from sqlalchemy import select
 from app.providers.shikimori import ShikimoriError
 from app.providers.tmdb import TmdbHttpError
 from app.tracker import failures
+from app.tracker.context import CoreContext
 from app.tracker.core import SourceNotConfigured, Tracker
 from app.tracker.db import create_session_factory
-from app.tracker.models import DeliveryItem, Event, ExternalId, SourceSnapshot, Title
+from app.tracker.models import DeliveryItem, Event, ExternalId, SourceSnapshot, Title, TitleKind
+from app.tracker.pollers.base import DueTitle
+from app.tracker.queue import EventQueue
 from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.utils.logging_config import MaskingFormatter
 
@@ -326,8 +331,8 @@ def test_the_time_of_the_last_notice_survives_a_restart(session_factory, clock, 
     poll(restarted, clock, hours=2)
 
     assert len(notices(sender)) == 1
-    with session_factory() as s:
-        assert s.scalar(select(Title.failure_notified_at)) is not None
+    with session_factory() as s:  # the window is read from the event itself
+        assert s.scalar(select(Event.payload).where(Event.type == failures.SOURCE_FAILED))["source"] == "TMDb"
 
 
 def test_a_title_that_recovered_creates_no_more_messages(tracker, source, clock, sender):
@@ -523,7 +528,7 @@ def test_a_notice_that_could_not_be_sent_stays_in_the_queue(tracker, source, clo
     assert len(notices(sender)) == 1
 
 
-def test_the_dedup_key_holds_the_title_and_the_start_of_the_day_window(tracker, source, clock, session_factory):
+def test_the_dedup_key_holds_the_title_the_source_and_the_start_of_the_day_window(tracker, source, clock, session_factory):
     title_id = add_movie(tracker, "1")
     source.errors["1"] = ConnectionError("down")
 
@@ -531,7 +536,7 @@ def test_the_dedup_key_holds_the_title_and_the_start_of_the_day_window(tracker, 
 
     with session_factory() as s:
         event = s.scalars(select(Event).where(Event.type == failures.SOURCE_FAILED)).one()
-    assert event.dedup_key == f"failure:{title_id}:20261026T120000"
+    assert event.dedup_key == f"failure:{title_id}:TMDb:20261026T120000"
     assert event.title_id == title_id
 
 
@@ -683,3 +688,98 @@ def test_when_all_are_deleted_nothing_comes(session_factory, sender, source):
     run(tracker.deliver_pending())
 
     assert sender.sent == []
+
+
+# --- one window of 24 hours per title and source (spec 4.4 of stage 9.1a, KI-45) -------------------------------------
+
+
+def game_row(session_factory, name="Hades II"):
+    """A game with its IGDB check and its Steam price check, as it sits in the list."""
+    naive = T0.replace(tzinfo=None)
+    with session_factory() as s:
+        title = Title(
+            kind="game", name=name, original_name=name, year=2026, genres=[], status="want",
+            tracking_enabled=True, added_at=naive, status_changed_at=naive,
+        )
+        s.add(title)
+        s.flush()
+        s.add(ExternalId(title_id=title.id, source="igdb", external_id="1", role="primary"))
+        for source in ("igdb", "steam"):
+            s.add(SourceSnapshot(title_id=title.id, source=source, state={}, observed_at=naive, next_check_at=naive))
+        s.commit()
+        return title.id
+
+
+def queue_at(session_factory, clock):
+    return EventQueue(CoreContext(session_factory, clock, None, timezone.utc))
+
+
+def due(title_id, source):
+    return DueTitle(title_id, TitleKind.GAME, "Hades II", "1", source, False)
+
+
+def failure_keys(session_factory):
+    with session_factory() as s:
+        return list(s.scalars(select(Event.dedup_key).where(Event.type == failures.SOURCE_FAILED).order_by(Event.id)))
+
+
+def test_two_sources_of_one_title_in_one_pass_give_two_notices_with_the_source_in_the_key(session_factory, clock):
+    title_id = game_row(session_factory)
+    queue = queue_at(session_factory, clock)
+    timeout = httpx.ReadTimeout("slow", request=REQUEST)
+
+    queued = queue.queue_failure_notices([(due(title_id, "igdb"), timeout), (due(title_id, "steam"), timeout)])
+
+    assert queued == 2
+    assert failure_keys(session_factory) == [
+        f"failure:{title_id}:IGDB:20261024T120000", f"failure:{title_id}:Steam:20261024T120000",
+    ]
+
+
+def test_one_source_of_a_title_twice_in_a_pass_is_one_notice(session_factory, clock):
+    title_id = game_row(session_factory)
+    queue = queue_at(session_factory, clock)
+
+    queued = queue.queue_failure_notices(
+        [(due(title_id, "igdb"), ConnectionError("down")), (due(title_id, "igdb_follow_ups"), ConnectionError("down"))]
+    )
+
+    assert queued == 1  # the IGDB check and the follow-up check are one source; the follow-up has no snapshot either
+
+
+def test_one_source_twice_within_a_day_is_one_notice_and_another_source_is_not_blocked(session_factory, clock):
+    title_id = game_row(session_factory)
+    queue = queue_at(session_factory, clock)
+    assert queue.queue_failure_notices([(due(title_id, "igdb"), ConnectionError("down"))]) == 1
+
+    clock.advance(hours=10)
+    assert queue.queue_failure_notices([(due(title_id, "igdb"), ConnectionError("down"))]) == 0
+    assert queue.queue_failure_notices([(due(title_id, "steam"), ConnectionError("down"))]) == 1
+
+    clock.advance(hours=14)  # 24 hours after the IGDB notice
+    assert queue.queue_failure_notices([(due(title_id, "igdb"), ConnectionError("down"))]) == 1
+    assert [key.split(":")[2] for key in failure_keys(session_factory)] == ["IGDB", "Steam", "IGDB"]
+
+
+def test_old_events_without_a_source_do_not_count(session_factory, clock):
+    title_id = game_row(session_factory)
+    queue = queue_at(session_factory, clock)
+    with session_factory() as s:
+        s.add(Event(
+            type=failures.SOURCE_FAILED, title_id=title_id, payload={"text": "⚠️ старое"}, dedup_key=f"failure:{title_id}:old",
+            detected_at=T0.replace(tzinfo=None) - timedelta(hours=1),
+        ))
+        s.commit()
+
+    assert queue.queue_failure_notices([(due(title_id, "igdb"), ConnectionError("down"))]) == 1
+
+
+def test_a_notice_of_a_title_no_longer_checked_is_not_queued(session_factory, clock):
+    title_id = game_row(session_factory)
+    with session_factory() as s:
+        s.get(Title, title_id).status = "dropped"
+        s.commit()
+    queue = queue_at(session_factory, clock)
+
+    assert queue.queue_failure_notices([(due(title_id, "igdb"), ConnectionError("down"))]) == 0
+    assert failure_keys(session_factory) == []

@@ -2,7 +2,7 @@
 
 Version 1 of the shape of spec 3.2 of stage 7.1. The owner's data is exported (titles with their sources, seasons with
 episodes and parts, franchise movies, platforms, the price history, the settings, «Входящие»); the app's working state is
-left out on purpose (source snapshots, events, the delivery queue, `failure_notified_at`). Reads only: the caller opened
+left out on purpose (source snapshots, events, the delivery queue). Reads only: the caller opened
 the session, so the whole document is one picture of the database.
 """
 

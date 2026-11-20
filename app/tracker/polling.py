@@ -15,6 +15,7 @@ from sqlalchemy import and_, false, or_, select
 
 from app.tracker import failures, movie_events
 from app.tracker import storage
+from app.tracker.checks import POLLED_STATUSES, still_checked
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.models import ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.pollers.anime import AnimePoller
@@ -26,9 +27,6 @@ from app.tracker.pollers.series import SeriesPoller
 from app.tracker.queue import EventQueue
 from app.tracker.results import PollReport
 from app.tracker.settings_store import SettingsStore
-
-# an own-release check runs for these, while tracking is on
-POLLED_STATUSES = (TitleStatus.WANT, TitleStatus.IN_PROGRESS, TitleStatus.WAITING)
 
 # the only place that chooses the poller by the kind of title; a new kind is a new poller here and a row in `kinds`
 POLLER_CLASSES: Mapping[TitleKind, type[Poller]] = {
@@ -135,7 +133,8 @@ class Polling:
             baseline = and_(own, Title.restored_at.is_not(None), SourceSnapshot.observed_at < Title.restored_at)
             rows = session.execute(
                 select(
-                    Title.id, Title.kind, Title.name, ExternalId.external_id, SourceSnapshot.source, sequel_check, baseline
+                    Title.id, Title.kind, Title.name, ExternalId.external_id, SourceSnapshot.source, sequel_check, baseline,
+                    Title.restored_at,
                 )
                 .join(SourceSnapshot, SourceSnapshot.title_id == Title.id)
                 .join(
@@ -157,8 +156,8 @@ class Polling:
                 .order_by(Title.id)
             )
             return [
-                DueTitle(title_id, kind, name, external_id, source, bool(sequels), bool(first_after_return))
-                for title_id, kind, name, external_id, source, sequels, first_after_return in rows
+                DueTitle(title_id, kind, name, external_id, source, bool(sequels), bool(first_after_return), restored_at)
+                for title_id, kind, name, external_id, source, sequels, first_after_return, restored_at in rows
             ]
 
     async def _poll_one(self, due: DueTitle, report: PollReport, broken: list[tuple[DueTitle, Exception]]) -> None:
@@ -194,13 +193,10 @@ class Polling:
         broken += failed
 
     def _still_checked(self, due: DueTitle) -> bool:
-        """Whether the snapshot of this check is still there (it goes with its title, and with the sequel check)."""
+        """Whether the title is still checked by this check (`checks.still_checked`): a failure of a title deleted,
+        dropped or brought back meanwhile is no failure."""
         with self.ctx.session_factory() as session:
-            return session.scalar(
-                select(SourceSnapshot.id).where(
-                    SourceSnapshot.title_id == due.id, SourceSnapshot.source == due.snapshot_source
-                )
-            ) is not None
+            return still_checked(session, due)
 
     async def _tell_owner_about(self, broken: list[tuple[DueTitle, Exception]], report: PollReport) -> None:
         try:

@@ -9,6 +9,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 
 from app.tracker import failures
+from app.tracker.checks import still_checked
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, Title
 from app.tracker.pollers.base import DueTitle
@@ -38,10 +39,13 @@ class EventQueue:
         dedup_key: str,
         title_id: int | None = None,
         at: datetime | None = None,
+        due: DueTitle | None = None,
     ) -> int | None:
+        """`due`: the check that found the event; it is queued only while the title is still checked by it
+        (`checks.still_checked`), else nothing is queued and the dedup key is not spent (KI-22)."""
         now = naive_utc(at or self.ctx.clock())
         with self.ctx.write_session() as session:
-            event_id = self.enqueue(session, type, payload, dedup_key, title_id, now)
+            event_id = self.enqueue(session, type, payload, dedup_key, title_id, now, due)
             if event_id is not None:
                 session.commit()
             return event_id
@@ -59,10 +63,17 @@ class EventQueue:
 
     @staticmethod
     def enqueue(
-        session, type: str, payload: dict[str, Any], dedup_key: str, title_id: int | None, now: datetime
+        session,
+        type: str,
+        payload: dict[str, Any],
+        dedup_key: str,
+        title_id: int | None,
+        now: datetime,
+        due: DueTitle | None = None,
     ) -> int | None:
         """Add an event and its delivery-queue entry (status «pending») to a write session; the caller commits. None, with
-        the session rolled back, if the fact is already known or its title is gone."""
+        the session rolled back, if the fact is already known, its title is gone, or the title is no longer checked by
+        `due`, the check that found it."""
         event = Event(type=type, title_id=title_id, payload=payload, dedup_key=dedup_key, detected_at=now)
         session.add(event)
         try:
@@ -71,7 +82,8 @@ class EventQueue:
             session.rollback()
             return None
         # the write session holds the database, so the title cannot be deleted between this check and the commit
-        if title_id is not None and session.get(Title, title_id) is None:
+        gone = title_id is not None and session.get(Title, title_id) is None
+        if gone or (due is not None and not still_checked(session, due)):
             session.rollback()
             return None
         session.add(DeliveryItem(event_id=event.id, status=DeliveryStatus.PENDING, attempts=0, created_at=now))
@@ -91,31 +103,41 @@ class EventQueue:
         )
 
     def queue_failure_notices(self, broken: Sequence[tuple[DueTitle, Exception]]) -> int:
-        """Queue the «could not check» events of one pass: one per title, and none for a title the owner was told about
-        in the last 24 hours. Delivery folds the events of one source and reason into a message. The event and the time
-        it was queued are stored together, so a restart neither repeats a notice nor loses one."""
+        """Queue the «could not check» events of one pass: one per title and source, none for a title no longer checked
+        by the check that failed (KI-22), and none for a source of a title the owner was told about in the last 24
+        hours (KI-45). Delivery folds the events of one source and reason into a message. The window is read from the
+        events themselves, so a restart neither repeats a notice nor loses one."""
         now = self.ctx.now()
         stamp = now.strftime("%Y%m%dT%H%M%S")  # the moment of the pass; it opens the 24-hour window of its titles
         queued = 0
-        seen: set[int] = set()
+        seen: set[tuple[int, str]] = set()
         for due, exc in broken:
-            if due.id in seen:  # two broken sources of one title are one failure
+            source = failures.source_name(due.snapshot_source)
+            if (due.id, source) in seen:  # two broken checks of one title and source are one failure
                 continue
-            seen.add(due.id)
+            seen.add((due.id, source))
             with self.ctx.write_session() as session:
-                title = session.get(Title, due.id)
-                if title is None or (
-                    title.failure_notified_at is not None and now - title.failure_notified_at < failures.COOLDOWN
-                ):
+                if not still_checked(session, due) or _told_lately(session, due.id, source, now):
                     continue
-                payload = failures.failure_payload(
-                    title.name, failures.source_name(due.snapshot_source), failures.reason_of(exc), stamp
-                )
-                title.failure_notified_at = now
+                title = session.get(Title, due.id)
+                payload = failures.failure_payload(title.name, source, failures.reason_of(exc), stamp)
                 event_id = self.enqueue(
-                    session, failures.SOURCE_FAILED, payload, f"failure:{title.id}:{stamp}", title.id, now
+                    session, failures.SOURCE_FAILED, payload, f"failure:{title.id}:{source}:{stamp}", title.id, now
                 )
                 if event_id is not None:
                     queued += 1
-                session.commit()
+                    session.commit()
         return queued
+
+
+def _told_lately(session, title_id: int, source: str, now: datetime) -> bool:
+    """Whether a «could not check» event of this title and source was detected in the last 24 hours. Old events that
+    name no source do not count."""
+    payloads = session.scalars(
+        select(Event.payload).where(
+            Event.title_id == title_id,
+            Event.type == failures.SOURCE_FAILED,
+            Event.detected_at > now - failures.COOLDOWN,
+        )
+    )
+    return any(isinstance(payload, dict) and payload.get("source") == source for payload in payloads)

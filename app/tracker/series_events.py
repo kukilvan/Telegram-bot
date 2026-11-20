@@ -62,6 +62,9 @@ class Flavor:
     icon: str = KINDS[TitleKind.SERIES].icon
     key_prefix: str = TitleKind.SERIES.value  # the keys already stored start with the kind's value
     tz: tzinfo | None = None  # None: the source knows only the day, so no hour is shown
+    # whether an episode's moment is when it came out (TMDb's day); an anime episode found by a check without a
+    # schedule has the moment it was found, so its events carry no `happened_at` (KI-77)
+    moments: bool = True
 
     def day(self, moment: datetime) -> date:
         return local_moment(moment, self.tz).date()
@@ -325,6 +328,7 @@ def _season_events(
                     f"{season_key}:p{part.number}:ended",
                     message_part_ended(name, part, last, parts[part.number], flavor),
                     {"season": number, "episode": last, "part": part.number},
+                    happened_at=_aired_at(new, last, flavor),
                 )
             )
     return events
@@ -359,28 +363,37 @@ def _part_events(
         opens = episode == first_number and nothing_out_before
         closes = latest and part_over and not was_over
         next_line = _next_line(part, now, flavor) if latest and not closes else None
+        happened_at = _aired_at(season, episode, flavor)
         if opens:
             text = (
                 message_part_started(name, part, episode, next_line, flavor)
                 if part.split
                 else message_started(name, season, episode, next_line, flavor)
             )
-            events.append(DetectedEvent(SEASON_STARTED, f"{key}:started", text, data))
+            events.append(DetectedEvent(SEASON_STARTED, f"{key}:started", text, data, happened_at=happened_at))
         if closes:
             text = (
                 message_part_ended(name, part, episode, following, flavor)
                 if part.split
                 else message_ended(name, season, episode, flavor)
             )
-            events.append(DetectedEvent(SEASON_ENDED, f"{key}:ended", text, data))
+            events.append(DetectedEvent(SEASON_ENDED, f"{key}:ended", text, data, happened_at=happened_at))
         elif not opens:
             text = (
                 message_part_episode(name, part, episode, now, next_line, flavor)
                 if part.split
                 else message_episode(name, season, episode, next_line, flavor)
             )
-            events.append(DetectedEvent(EPISODE_OUT, f"{season_key}:e{episode}:out", text, data))
+            events.append(
+                DetectedEvent(EPISODE_OUT, f"{season_key}:e{episode}:out", text, data, happened_at=happened_at)
+            )
     return events
+
+
+def _aired_at(season: Season, number: int, flavor: Flavor) -> datetime | None:
+    """When the episode came out, for an event about it; None when the flavor's moments are not of coming out."""
+    episode = _episode(season, number) if flavor.moments else None
+    return episode.air_at if episode is not None else None
 
 
 def _moment_key(moment: datetime) -> str:
