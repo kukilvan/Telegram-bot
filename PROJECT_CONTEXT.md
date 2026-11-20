@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Тикет 9.1a.05»: do `.scratch/9-1a-start-polling/issues/05-numbers-and-posters.md` (numbers of titles never reused — migration 0015 — and posters on the current Shikimori address, KI-24, KI-21; medium). Model Sonnet 5.5, effort high (`docs/models.md`: ticket, medium). Then 03 → 04 of 9.1a (both complex, Opus 5.5 high), the review of 9.1a, then 9.1b, 9.1c, 9.1d, 7.3, 9.2, 8.
+Session «Тикет 9.1a.05»: do `.scratch/9-1a-start-polling/issues/05-issued-ids-and-posters.md` (numbers of titles never reused — migration 0015 — and posters on the current Shikimori address, KI-24, KI-21; medium). Model Sonnet 5.5, effort high (`docs/models.md`: ticket, medium). Then 03 → 04 of 9.1a (both complex, Opus 5.5 high), the review of 9.1a, then 9.1b, 9.1c, 9.1d, 7.3, 9.2, 8.
 
 ## State
 
