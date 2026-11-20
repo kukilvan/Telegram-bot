@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Ticket 9.1a.03
+
+- A send and its record are one unit (KI-5): `DeliveryService._send` runs the send and `_record_attempts` as a task kept in `CoreContext.sends`, awaited through `asyncio.shield`; a cancelled caller waits for its unit, then stays cancelled (no next unit of the pass). `Tracker.finish_sends(timeout)`; `TelegramPart.close` calls it with `SEND_GRACE = 5` before closing the session. The rest is KI-78.
+- `app/bot/runtime_watch.py`: `RunningUpdates` (outer middleware of `dp.update`, registered in `build_dispatcher` before the access gate) keeps the update tasks; `TelegramPart.stop` waits `HANDLER_GRACE = 10` s and logs those left (KI-9). `GetUpdatesWatch` (request middleware of the bot's session, registered in `app/main.py`) sets `Health.telegram_down` on a failing getUpdates and clears it on an answer; sends do not touch it (KI-33). `TelegramPart(bot, dispatcher, running, finish_sends)`.
+- `app/healthcheck.py` (KI-6, ADR 0015): `check` returns `Answer(reason, timed_out)` (only a read timeout after the connect is a timeout); pure `decide(count, timed_out, process)`; `app_process` — the only child of PID 1 from `/proc` (pid and start time); the count in `<temp>/release-tracker-health.json`; the fourth timeout in a row sends SIGKILL, prints the line and writes it to `/proc/1/fd/1` (the container log). `docker-compose.yml`: `init: true`, `stop_grace_period: 45s`.
+- Live on the owner's PC: start «Готово», `/health` 200, poll ok; `.\stop-bot.ps1` 1.7 s, exit 0, no `прервана`; `kill -STOP` of the app — killed and restarted after 131 s, `/health` 200 again, the line in the log. Tests: `test_delivery_send_unit`, `test_bot_stop_watch`, `test_healthcheck` rewritten, `test_app_main` and `test_docker_files` extended; full run 4331 passed, 3 skipped, 3 known Windows failures. The owner's internet-off check of the Telegram line is theirs. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Ticket 9.1a.05
 
 - Migration 0015: table `issued_ids` (`name`, `last_id`), one row `('titles', max(titles.id) or 0)`; model `IssuedId`. `Titles._next_number` (in the write session of `_store_title`) gives `max(last_id, max(titles.id)) + 1` and keeps it in the same commit; a missing row is made again from the titles. `titles` was not rebuilt (eight tables cascade from it). A restore of an old copy brings its own `last_id` (`docs/backups.md`). KI-24 fixed. Live: the owner's database (30 titles, biggest 37) migrated, the row holds 37, a copy was made first.

@@ -1,6 +1,6 @@
 # 03: The stop and the hang — the send and its mark, the presses, the health check, the line of Telegram; ADR 0015
 
-Status: in review
+Status: accepted
 Complexity: complex (asyncio cancellation, the process runtime and shutdown order, Docker init and the health check that kills a process, a request middleware of aiogram)
 Blocked by: 01 (the room in `core.py` for `finish_sends`)
 
