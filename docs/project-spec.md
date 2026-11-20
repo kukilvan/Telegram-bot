@@ -89,7 +89,8 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 - Goal: every open `KNOWN_ISSUES.md` entry is fixed before the app moves to the NAS (the owner's decision, 2026-11-17), so real use on the NAS starts from a clean base. KI-15 and KI-70 belong to 7.3.
 - The owner sees at the end: each open entry `fixed (test: …)`. An entry that cannot be fixed within the app's rules (no JavaScript of its own, ADR 0004: KI-72, KI-74) or where a source gives no data (KI-48) gets a test that pins the behaviour and the owner's decision in the entry. The description groups the entries (anime and series, the start and stop of the app, statuses and polling, games, Steam prices, «Входящие», copies, the web, code health) and may split the stage.
 - Split by `.scratch/9-1-known-issues/description.md` (2026-11-20) into four parts, each starting from its spec: 9.1a start, stop, polling and delivery (17 entries); 9.1b games and Steam prices (14); 9.1c Лента, web and login (11); 9.1d «Входящие», copies and code health (15). KI-43, KI-46, KI-72 (and KI-48 if no source has data) close as `won't fix` with a test and the owner's decision.
-- Sessions (est.): about 24 (9.1a 7, 9.1b 6, 9.1c 5–6, 9.1d 6).
+- Idea 002 (`docs/ideas/002-russian-in-games.md`, added 2026-11-20) joins 9.1b, taken in by its spec: the «Русский: …» line of the game card in the web and the bot (official from Steam, else IGDB; fan translations from ZoG; text, voice, both, none, no data; the «(ПК)» mark), the «Страница на ZoG» field, messages when Russian appears for a game in «Хочу» or «В процессе».
+- Sessions (est.): about 26 (9.1a 7, 9.1b 8 with idea 002, 9.1c 5–6, 9.1d 6).
 
 ### Stage 7.3. NAS readiness and the move guide
 

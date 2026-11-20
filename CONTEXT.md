@@ -158,6 +158,15 @@ In code: `GameDate` without a day.
 A checkmark at a platform in the game card: a message about the release on this platform will come; the checkmark on PC also decides Steam prices and discounts. At adding it stands on all my platforms where the game exists or is announced; a platform of mine that the game gets later receives it by itself.
 In code: `playing` (table `game_platforms`).
 
+**Русский язык** (Russian support):
+Whether a game can be played in Russian: «текст» (Russian interface or subtitles), «озвучка» (full Russian voice), both, «нет», or «нет данных» when no source has said anything yet (never shown as «нет»). Official Russian comes from Steam, for a game with no Steam page from IGDB; fan Russian (народный перевод) from ZoG. The card shows both apart in the line «Русский: …»; «(ПК)» when the data is about the PC version only and the owner plays the game elsewhere too. Idea 002, stage 9.1b.
+_Avoid_: локализация (in messages), русификатор, фанатский перевод
+In code: not in code yet.
+
+**Народный перевод** (fan translation):
+A Russian translation made by fans, not by the game's makers, as listed on the game's page on Zone of Games (ZoG): text, voice or both. Its page — «Страница на ZoG» — is found by the game's name; the owner can paste the right one or reject a wrong one («Не та игра»).
+In code: not in code yet.
+
 ## Delivery
 
 **Рабочие дни** (work days):

@@ -32,7 +32,7 @@ Session «Тикет 9.1a.02»: do `.scratch/9-1a-start-polling/issues/02-start-
 | 7.1 | Backups and export: CSV/JSON, Google Drive copy, restore | done | — | — |
 | 7.2 | The app address, phone, bot buttons as links, a safer login | done | — | — |
 | 9.1a | Known issues: start, stop, polling and delivery (17) | tickets 1/5 | 8 | — |
-| 9.1b | Known issues: games and Steam prices (14) | not started | 6 | — |
+| 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | not started | 8 | 002 |
 | 9.1c | Known issues: Лента, web and login (11) | not started | 5–6 | — |
 | 9.1d | Known issues: «Входящие», copies and code health (15) | not started | 6 | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | not started | 3 | — |
