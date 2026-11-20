@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Slicing 9.1a
+
+- `.scratch/9-1a-start-polling/issues/`: five tickets by section 10 of the spec — 01 the facade's limit, its own errors, the settings read safely, the number of «Добавить» (medium); 02 the start report and the start script (medium); 03 the stop and the hang, ADR 0015 (complex, blocked by 01); 04 polling, migration 0016 (complex, blocked by 05); 05 numbers never reused, migration 0015, Shikimori posters (medium). Order 01 → 02 → 05 → 03 → 04.
+- Decisions (with the owner's «ОК»): the split of the spec kept as proposed; ticket 03 stays one session (to be split in two if it does not fit); ticket 04 stops and tells the owner if migration 0015 is not in `master`; only ticket 03 asks the owner for a live check (the internet off for 2 minutes), the others are checked by the session.
+
 ## 2026-11-20 — Spec 9.1a
 
 - `.scratch/9-1a-start-polling/spec.md`: the 17 entries of part 9.1a and the review 7.2 wishes F4, F5. Their «Fix in» is now `9.1a`. KI-77 (an anime episode right after «Вернуть в список» stays silent — to 9.1c) and KI-78 (a send Telegram has not answered within 5 s of a stop can repeat — to 9.2) recorded.
