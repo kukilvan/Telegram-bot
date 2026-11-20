@@ -148,24 +148,48 @@ class DeliveryService:
         rest = [a for name in (WATCHED, STEAM, CARD) for a in actions if a.name == name]
         return follow + rest[: max(0, MAX_SUMMARY_BUTTONS - len(follow))]
 
+    async def finish_sends(self, timeout: float) -> bool:
+        """Wait up to `timeout` seconds for the sends running now; True when none is left. The stop calls it before
+        the session to Telegram closes."""
+        running = set(self.ctx.sends)
+        if not running:
+            return True
+        _, left = await asyncio.wait(running, timeout=timeout)
+        for _ in left:
+            logging.warning("остановка: отправка не закончилась за %g с — сообщение может прийти ещё раз", timeout)
+        return not left
+
     async def _send(
         self, members: Sequence[delivery.Pending], message: str, actions: Sequence[Action], report: DeliveryReport
     ) -> None:
-        """Send one message that settles all `members`; they are marked delivered only if the send succeeded."""
+        """Send one message that settles all `members`; they are marked delivered only if the send succeeded.
+
+        The send and the record of its outcome are one unit a cancel does not cut (KI-5): a task of its own, kept in
+        `CoreContext.sends`. A cancel of the caller waits for its unit to end (the delivery lock still held, so no
+        other pass reads its entries as pending), then goes on as a cancel: no further unit of the pass starts."""
+        unit = asyncio.create_task(self._send_and_record([m.item_id for m in members], message, actions))
+        self.ctx.sends.add(unit)
+        unit.add_done_callback(self.ctx.sends.discard)
+        try:
+            delivered = await asyncio.shield(unit)
+        except asyncio.CancelledError:
+            await asyncio.wait({unit})
+            raise
+        if delivered:
+            report.delivered += len(members)
+        else:
+            report.failed += len(members)
+
+    async def _send_and_record(self, item_ids: list[int], message: str, actions: Sequence[Action]) -> bool:
+        """The unit of `_send`: True when the send succeeded."""
         error: Exception | None = None
         try:
             await self.ctx.sender.send(message, actions)
         except Exception as exc:  # the sender is a network client: any failure means "try again later"
             error = exc
-            logging.warning(
-                "delivery of queue items %s failed: %s", [m.item_id for m in members], repr(exc)
-            )
-
-        await asyncio.to_thread(self._record_attempts, [m.item_id for m in members], error)
-        if error is None:
-            report.delivered += len(members)
-        else:
-            report.failed += len(members)
+            logging.warning("delivery of queue items %s failed: %s", item_ids, repr(exc))
+        await asyncio.to_thread(self._record_attempts, item_ids, error)
+        return error is None
 
     def _record_attempts(self, item_ids: Sequence[int], error: Exception | None) -> None:
         now = self.ctx.now()

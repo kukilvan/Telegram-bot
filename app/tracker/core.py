@@ -355,6 +355,10 @@ class Tracker:
         """«Сводка сейчас»: everything waiting goes out in one summary at once, whatever the hour."""
         return await self._deliveries.summary_now()
 
+    async def finish_sends(self, timeout: float) -> bool:
+        """Wait up to `timeout` s for the sends running now (each with its record); True when none is left."""
+        return await self._deliveries.finish_sends(timeout)
+
     # --- test events ----------------------------------------------------------------------------
 
     def register_test_sample(self, sample: TestSample) -> None:

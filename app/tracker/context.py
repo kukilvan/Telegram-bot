@@ -1,4 +1,5 @@
-"""What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks.
+"""What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks,
+the running sends.
 
 The facade `Tracker` makes one context and hands it to each module, so a part never reaches for another's state.
 """
@@ -37,6 +38,8 @@ class CoreContext:
     delivery_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     poll_lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     backup_lock: asyncio.Lock = field(default_factory=asyncio.Lock)  # one copy of the database at a time: the hourly job and the manual press
+    # the sends running now, each with the record of its outcome (`DeliveryService._send`); the stop waits for them
+    sends: set[asyncio.Task] = field(default_factory=set)
 
     def write_session(self) -> Session:
         """A session whose transaction is already open for writing: use it as `with ctx.write_session() as session:`.

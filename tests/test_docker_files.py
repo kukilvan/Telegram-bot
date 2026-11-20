@@ -33,7 +33,8 @@ def test_compose_has_no_version_no_pgrep_and_waits_for_a_stop():
 
     assert not re.search(r"^version:", compose, re.MULTILINE)
     assert "pgrep" not in compose and "healthcheck" not in compose  # the check is in the Dockerfile
-    assert "stop_grace_period: 30s" in compose
+    assert "stop_grace_period: 45s" in compose  # the stop takes at most about 31 s (KI-9)
+    assert "init: true" in compose  # the app is a child of the init: the health check can end it (KI-6, ADR 0015)
     assert 'max-size: "10m"' in compose and 'max-file: "3"' in compose
     assert "restart: unless-stopped" in compose
     assert "env_file: .env" in compose

@@ -2,12 +2,14 @@ services:
   tracker:
     build: .
     restart: unless-stopped
+    # Docker's init is PID 1 and the app its child: the health check can end a hung app (ADR 0015)
+    init: true
     env_file: .env
     ports:
       - "${WEB_HOST:-127.0.0.1}:${WEB_PORT:-8080}:8080"
     volumes:
       - ./data:/app/data
-    stop_grace_period: 30s
+    stop_grace_period: 45s  # the stop takes at most about 31 s: presses 10, jobs 16, sends 5
     logging:
       driver: json-file
       options:

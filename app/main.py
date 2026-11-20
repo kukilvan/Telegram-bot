@@ -9,7 +9,7 @@ import asyncio
 import logging
 import os
 import sys
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from datetime import datetime as dt, timezone
 from pathlib import Path
@@ -21,6 +21,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.bot.app_links import AppLinks
 from app.bot.error_handler import send_startup_error_sync
 from app.bot.main import add_jobs, build_dispatcher
+from app.bot.runtime_watch import GetUpdatesWatch, RunningUpdates
 from app.bot.tracker_handlers import BOT_COMMANDS, MALFORMED_TOKEN, TelegramSender
 from app.config import AppUrl, Settings, get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
@@ -54,6 +55,8 @@ WEB_PORT = 8080  # inside the process; the port on the PC is docker compose's bu
 WEB_BIND_HOST = "WEB_BIND_HOST"
 WEB_HOST = "WEB_HOST"  # the owner's setting that opens the web to the home network (docker compose reads it; the process sees it too)
 WEB_STOP_GRACE_SECONDS = 5  # the started requests get this long on stop
+HANDLER_GRACE = 10  # the started bot presses get this long on stop, at the same time as the web's 5 s (KI-9)
+SEND_GRACE = 5  # the running sends get this long before the session to Telegram closes (KI-5)
 WEB_SECRET_FILE = Path("data") / "web_secret"  # the key that signs the session cookie (next to the database)
 WEB_LOGIN_FILE = Path("data") / "web_login.json"  # the web sign-ins, the last login and the lock (ADR 0014)
 STARTUP_FAILURE_FILE = Path("data") / "startup_failure.json"  # the last failure before the start and its report
@@ -65,11 +68,25 @@ EMPTY_ALLOWLIST = (
 
 class TelegramPart:
     """The bot part of the runtime: aiogram's long polling without its own signal handling. Without a bot (a malformed
-    token) every connect fails with the same words, and the runtime tries again by its rules."""
+    token) every connect fails with the same words, and the runtime tries again by its rules. On stop it gives the
+    started presses (`running`) and the running sends of the queue (`finish_sends`) their time."""
 
-    def __init__(self, bot: Bot | None, dispatcher: Dispatcher) -> None:
+    def __init__(
+        self,
+        bot: Bot | None,
+        dispatcher: Dispatcher,
+        running: RunningUpdates,
+        finish_sends: Callable[[float], Awaitable[bool]],
+        *,
+        handler_grace: float = HANDLER_GRACE,
+        send_grace: float = SEND_GRACE,
+    ) -> None:
         self._bot = bot
         self._dispatcher = dispatcher
+        self._running = running
+        self._finish_sends = finish_sends
+        self._handler_grace = handler_grace
+        self._send_grace = send_grace
         self._receiving_began: Callable[[], None] = lambda: None
         # once, not per attempt: the dispatcher keeps its handlers
         dispatcher.startup.register(self._on_startup)
@@ -93,8 +110,14 @@ class TelegramPart:
     async def stop(self) -> None:
         with suppress(RuntimeError):  # "Polling is not started": the bot is connecting or waiting to connect again
             await self._dispatcher.stop_polling()
+        # aiogram does not wait for the presses it started; those still running are left to end by themselves
+        left = await self._running.wait(self._handler_grace)
+        if left:
+            logging.warning("остановка: %d нажатий в боте не закончились за %g с", left, self._handler_grace)
 
     async def close(self) -> None:
+        # the sends first (the web's too): a send cut by the closed session would come again after the start
+        await self._finish_sends(self._send_grace)
         if self._bot is not None:
             await self._bot.session.close()
 
@@ -192,8 +215,16 @@ async def main() -> int:
     )
     scheduler = AsyncIOScheduler()
     add_jobs(scheduler, tracker)
+
+    def telegram_down(down: bool) -> None:
+        health.telegram_down = down
+
+    if bot is not None:  # the web's line «Бот не подключён к Telegram» follows the answers to getUpdates (KI-33)
+        bot.session.middleware(GetUpdatesWatch(telegram_down))
+    running = RunningUpdates()
+    dispatcher = build_dispatcher(tracker, allowed_ids, links, settings.shikimori_base_url, running)
     runtime = Runtime(
-        web=server, scheduler=scheduler, bot=TelegramPart(bot, build_dispatcher(tracker, allowed_ids, links, settings.shikimori_base_url)), health=health,
+        web=server, scheduler=scheduler, bot=TelegramPart(bot, dispatcher, running, tracker.finish_sends), health=health,
     )
     forget_failure(STARTUP_FAILURE_FILE)  # everything is assembled: the start succeeded
     return await runtime.run()

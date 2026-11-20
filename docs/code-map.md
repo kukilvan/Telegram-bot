@@ -37,11 +37,12 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/bot/inbox_message.py` — Reading a Telegram message of the owner into an `IncomingMessage` (spec 1.1 of stage 6.4), pure: no bot, no database.
 - `app/bot/list_handlers.py` — Bot side of the list: «Мои тайтлы» (the titles as buttons) and «Удалить несколько» (the selection and its question).
 - `app/bot/main.py` — The bot's assembly: the access gate and the tracker handlers (`build_dispatcher`), the scheduler's jobs (`add_jobs`).
+- `app/bot/runtime_watch.py` — What the runtime watches in the bot: the updates being handled (the stop waits for them) and the answers to getUpdates.
 - `app/bot/test_event_handlers.py` — Bot side of «Тестовое событие»: the list of samples, the delivery-rules check and their buttons.
 - `app/bot/tracker_handlers.py` — Bot side of the tracker core: the menu, `/start`, «Сводка сейчас», the buttons under messages and cards, and the Telegram sender.
 - `app/config.py` — Application configuration loaded from environment variables.
 - `app/container_start.py` — Start of the container (`python -m app.container_start`, KI-4).
-- `app/healthcheck.py` — The health check for Docker (`python -m app.healthcheck`, KI-3): asks the application's own `/health`.
+- `app/healthcheck.py` — The health check for Docker (`python -m app.healthcheck`, KI-3, KI-6): asks `/health`, ends a hung app (ADR 0015).
 - `app/main.py` — Process entry point, `python -m app.main`: the bot, the scheduler and the web in one process (ADR 0007).
 - `app/providers/anilist.py` — AniList provider: anime metadata + airing schedule via GraphQL.
 - `app/providers/google_drive.py` — Google client of the Google Drive copy: the OAuth sign-in of a desktop client and the Drive API requests that send an archive.
@@ -58,7 +59,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
 - `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot.
-- `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks.
+- `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks, the running sends.
 - `app/tracker/core.py` — Tracker core facade: the only door the bot (and later the web app) uses.
 - `app/tracker/db.py` — Tracker database: engine (WAL), session factory and Alembic migrations.
 - `app/tracker/dedup.py` — Pieces of dedup keys that several kinds of events share.

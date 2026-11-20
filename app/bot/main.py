@@ -10,6 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.bot.access import AccessMiddleware
 from app.bot.app_links import AppLinks
 from app.bot.error_handler import ErrorMiddleware
+from app.bot.runtime_watch import RunningUpdates
 from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import Tracker, shikimori_site
 
@@ -18,12 +19,16 @@ BACKUP_EVERY_HOURS = 1  # how often the bot checks whether a database copy is du
 
 
 def build_dispatcher(
-    tracker: Tracker, allowed_ids: list[int], links: AppLinks | None = None, shikimori_base_url: str = ""
+    tracker: Tracker, allowed_ids: list[int], links: AppLinks | None = None, shikimori_base_url: str = "",
+    running: RunningUpdates | None = None,
 ) -> Dispatcher:
     """The whole bot: the allowlist, the error reporter and the tracker menu. Nothing else answers. `links` is link mode
     (the buttons lead to the app), `None` is chat mode; `shikimori_base_url` is SHIKIMORI_BASE_URL, the site the posters
-    of Shikimori are shown from in the cards (KI-21)."""
+    of Shikimori are shown from in the cards (KI-21); `running` keeps the updates being handled, for the stop to wait
+    for them (KI-9; a fresh one when not given)."""
     dp = Dispatcher()
+    # Outermost: every update is kept while it runs, the stop waits for it
+    dp.update.outer_middleware(running if running is not None else RunningUpdates())
     # Allowlist goes first so strangers never reach the handlers or the error reporter
     dp.update.outer_middleware(AccessMiddleware(allowed_ids))
     # Error reporting middleware (catches all unhandled exceptions)

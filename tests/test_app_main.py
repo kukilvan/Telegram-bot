@@ -14,6 +14,9 @@ from aiogram import Bot, Dispatcher
 from sqlalchemy import select
 
 import app.main as app_main
+from aiogram.methods import GetUpdates
+
+from app.bot.runtime_watch import GetUpdatesWatch, RunningUpdates
 from app.bot.tracker_handlers import MALFORMED_TOKEN, TelegramSender
 from app.startup_report import read_record
 from app.tracker.core import Tracker
@@ -72,6 +75,27 @@ def test_main_hands_the_runtime_the_web_server_the_scheduler_and_the_bot(assembl
     assert parts["web"] == "server" and isinstance(parts["bot"], app_main.TelegramPart)
     assert len(parts["scheduler"].get_jobs()) == 4  # polling, delivery, the inbox items and the backup (`add_jobs`)
     assert (assembled["port"], assembled["stop_grace"]) == (8080, 5)
+
+
+def test_main_follows_get_updates_into_health_and_hands_the_bot_part_the_sends_of_the_tracker(assembled):
+    asyncio.run(app_main.main())
+    parts = assembled["parts"]
+    part = parts["bot"]
+
+    [watch] = [m for m in part._bot.session.middleware if isinstance(m, GetUpdatesWatch)]
+
+    async def failing(bot, method):
+        raise ConnectionError("no network")
+
+    async def answering(bot, method):
+        return []
+
+    with pytest.raises(ConnectionError):
+        asyncio.run(watch(failing, part._bot, GetUpdates()))
+    down = parts["health"].telegram_down
+    asyncio.run(watch(answering, part._bot, GetUpdates()))
+    assert (down, parts["health"].telegram_down) == (True, False)
+    assert part._finish_sends.__name__ == "finish_sends" and isinstance(part._finish_sends.__self__, Tracker)
 
 
 def test_the_web_listens_on_this_pc_only_unless_the_image_says_otherwise(assembled):
@@ -195,9 +219,13 @@ def test_ctrl_c_before_the_parts_started_leaves_quietly(env):
     assert app_main.run() == 0
 
 
+async def nothing_to_finish(timeout: float) -> bool:
+    return True
+
+
 def test_stopping_the_bot_part_before_it_receives_is_quiet():
     async def scenario():
-        part = app_main.TelegramPart(Bot(token=BOT_TOKEN), Dispatcher())
+        part = app_main.TelegramPart(Bot(token=BOT_TOKEN), Dispatcher(), RunningUpdates(), nothing_to_finish)
         await part.stop()
         await part.close()
 
@@ -216,7 +244,7 @@ def test_the_bot_part_says_receiving_has_begun_on_the_dispatchers_startup():
     began = []
 
     async def scenario():
-        part = app_main.TelegramPart(Bot(token=BOT_TOKEN), StartingDispatcher())
+        part = app_main.TelegramPart(Bot(token=BOT_TOKEN), StartingDispatcher(), RunningUpdates(), nothing_to_finish)
         await part.receive(lambda: began.append("first"))
         await part.receive(lambda: began.append("second"))  # each attempt signals once, to its own runtime call
         await part.close()
