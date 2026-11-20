@@ -29,9 +29,7 @@ TIMEOUT_SECONDS = 5
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 PROC = Path("/proc")
 STATE_NAME = "release-tracker-health.json"  # in the temp folder: the count dies with the container, as it should
-# timeouts in a row; Docker checks every 30 s, so about 1.5–2 min of hang (the watchdog acts first). In the start period
-# (the first 60 s) it checks every 2 s (`--start-interval`), so a hang there is ended in about 30 s, before the watchdog
-KILL_AFTER = 4
+KILL_AFTER = 4  # timeouts in a row; Docker checks every 30 s, so about 1.5–2 min of hang (the watchdog acts first)
 KILLED = "/health не отвечает 4 раза подряд — приложение остановлено для перезапуска"
 SIGKILL = getattr(signal, "SIGKILL", 9)  # Windows has no SIGKILL, and no /proc either: there the check never kills
 

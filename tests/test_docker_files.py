@@ -85,7 +85,8 @@ def test_start_script_builds_and_raises_the_container_without_python():
 
 def _old_bot_pattern() -> re.Pattern:
     """The pattern that picks the old bot's processes, taken from the script itself: the test checks what it says."""
-    found = re.search(r"^\$oldBotPattern = '(.*)'$", _script("start-bot.ps1"), re.MULTILINE)
+    # `\r?`: a checkout on Windows has CRLF line ends, and `$` does not match before `\r` (review 9.1a)
+    found = re.search(r"^\$oldBotPattern = '(.*)'\r?$", _script("start-bot.ps1"), re.MULTILINE)
     assert found
     return re.compile(found.group(1))
 
