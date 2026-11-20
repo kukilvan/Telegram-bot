@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Ticket 9.1a.01
+
+- `app/tracker/core.py` (the facade) rewrapped to 455 lines, no line over 120 characters; rule 7 of `docs/coding-standards.md` and `tests/test_tracker_core_split.py` now say 500 lines / 120 characters for the facade (other core modules stay at 400).
+- `app/tracker/errors.py`: `UnknownSample`, `UnknownCheck`, `BadExternalId(TitleNotFound)`. The web forms and the bot catch them instead of `KeyError`; a `KeyError` from inside a send is no longer read as «Такого момента нет» (the web shows the error page, the bot has a «Не удалось отправить» branch with a log line).
+- KI-41: `part_gap_weeks`, `workdays`, `summary_at`, `quiet_from`, `quiet_until` are read through their checks in `settings_store.py`; a spoiled value gives the default and one log warning per value. `part_gap_weeks_in` and `part_gap` became instance methods.
+- KI-42: `add_title` refuses a number outside `[1-9][0-9]{0,17}` with `BadExternalId` before any source is asked or anything is stored; the web says «Такого номера тайтла не бывает. Поищите заново»; the bot and the «Да» of an inbox offer read it as `TitleNotFound`.
+- Tests: new `tests/test_tracker_rare_input.py` (68); full run 4229 passed, 3 skipped, 3 known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Slicing 9.1a
 
 - `.scratch/9-1a-start-polling/issues/`: five tickets by section 10 of the spec — 01 the facade's limit, its own errors, the settings read safely, the number of «Добавить» (medium); 02 the start report and the start script (medium); 03 the stop and the hang, ADR 0015 (complex, blocked by 01); 04 polling, migration 0016 (complex, blocked by 05); 05 numbers never reused, migration 0015, Shikimori posters (medium). Order 01 → 02 → 05 → 03 → 04.

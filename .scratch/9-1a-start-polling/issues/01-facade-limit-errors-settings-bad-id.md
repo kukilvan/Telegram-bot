@@ -1,6 +1,6 @@
 # 01: The facade's limit, its own errors, the settings read safely, the number of «Добавить» checked
 
-Status: in review
+Status: accepted
 Complexity: medium (four small changes in the core and its callers; no database change)
 Blocked by: —
 
