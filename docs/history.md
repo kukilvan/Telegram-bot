@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Review 9.1a
+
+- Stage 9.1a reviewed (`.scratch/9-1a-start-polling/review.md`): `code-review` at xhigh over `8711ded..1085dd9`, then a pass for the spec; no fix-round finding, so the stage is done. Six fixes now: the bot's «Тестовое событие» answers «Не удалось отправить тестовое событие. Попробуйте ещё раз.» when the core raises (it promised the event would come later); `start-bot.ps1` takes a child of the old bot only with the old bot's command too (process ids are reused) and its new comments are English; the index rows of KI-16–20, 41, 42 name their tests; rule 7 names `checks` (`still_checked`); `test_docker_files` reads the start script's pattern with `\r?$`, so it runs on Windows — the known Windows failures are two (`test_app_main`, `test_runtime`).
+- Verified by running: the bot in Docker (start «Готово», `/health` 200, poll pass, stop 1.8 s with no `прервана`); the hang (`SIGSTOP` of the app) ended by the health check after 133 s, and after 130 s for a freeze 18 s after a start (Docker uses `--start-interval` only until the first healthy check); the start script stops the `.venv` dummy and its child and leaves the base Python's dummy; a scratch web app on a copy of the database, 26 checks (the bad numbers, the pages and 33 cards, the Shikimori posters moved to the current site, the unknown sample and check, a spoiled `workdays`).
+- Wish for 9.1b: the Steam price and follow-up checks queue without `checks.still_checked` (their own rules, KI-47, KI-53). Tests at the end: 4380 passed, 3 skipped, the two known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Ticket 9.1a.04
 
 - `app/tracker/checks.py`: `still_checked(session, due)` — the title and the snapshot of the check exist; a sequel check needs «Просмотрено», an own-release check a status of `POLLED_STATUSES` (moved here from `polling.py`) and tracking on, an end-of-pass check only its snapshot. `EventQueue.record(…, due=)` and `enqueue(…, due=)` ask it after the dedup flush and roll back (no dedup key spent); `Poller.record_all` passes the `due`; `queue_failure_notices` and `Polling._still_checked` use it (KI-22).

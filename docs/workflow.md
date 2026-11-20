@@ -66,7 +66,7 @@ A session does one step and never starts the next, even with time left. Outside 
 
 The owner works in Claude Code on the PC, in the folder `E:\LocalAI\Bionic\Telegram-bot`: here are `.env`, `data` (database, logs, copies) and `.venv`. The session works right in it, without a separate copy: the bot in Docker is built from these files.
 
-- **Tests:** `.venv\Scripts\python.exe -m pytest tests/ -q` (about 3 minutes; run in the background). No dummy values needed: settings come from `.env` (never print them). Three process-launch tests fail on Windows without any change (`PROJECT_CONTEXT.md`, "Environment"); new failures do not.
+- **Tests:** `.venv\Scripts\python.exe -m pytest tests/ -q` (about 3 minutes; run in the background). No dummy values needed: settings come from `.env` (never print them). Two process-launch tests fail on Windows without any change (`PROJECT_CONTEXT.md`, "Environment"); new failures do not.
 - **The session starts the bot for the check, not the owner:** after the commit `.\start-bot.ps1` (stops the previous container and an old bot from `.venv`, rebuilds the image, waits for «Готово»), then `http://localhost:8080/health` and the log lines (`docker compose logs --tail 50`) — no red text. Never run the bot outside Docker (`python -m app.main`): it runs in one instance only.
 - **Instruction to the owner:** only the check block (browser, Telegram: exact text and what should come) and the launch result in one line; "stop" and "start" the session did itself. `.\stop-bot.ps1` and `.\start-bot.ps1` are given only when the owner has to do it.
 - After «ОК» and the move to `master` the folder stays on the session's branch (the same content as `master`); the next session switches to `master` itself.

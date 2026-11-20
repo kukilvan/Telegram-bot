@@ -1,6 +1,6 @@
 # Review 9.1a: start, stop, polling and delivery
 
-Status: in review
+Status: accepted
 
 One session (2026-11-20).
 
