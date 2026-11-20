@@ -1,6 +1,6 @@
 # 02: The start report and the start script
 
-Status: open
+Status: in review
 Complexity: medium (one module with a decision table, one PowerShell script; no database change)
 Blocked by: —
 
