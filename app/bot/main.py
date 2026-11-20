@@ -11,21 +11,24 @@ from app.bot.access import AccessMiddleware
 from app.bot.app_links import AppLinks
 from app.bot.error_handler import ErrorMiddleware
 from app.bot.tracker_handlers import register_tracker_handlers
-from app.tracker.core import Tracker
+from app.tracker.core import Tracker, shikimori_site
 
 TRACKER_BEAT_SECONDS = 60  # how often the tracker polls due titles, sends the queue (retrying failed sends) and moves the inbox items that waited 12 hours
 BACKUP_EVERY_HOURS = 1  # how often the bot checks whether a database copy is due (the copy itself: over a day since the last)
 
 
-def build_dispatcher(tracker: Tracker, allowed_ids: list[int], links: AppLinks | None = None) -> Dispatcher:
+def build_dispatcher(
+    tracker: Tracker, allowed_ids: list[int], links: AppLinks | None = None, shikimori_base_url: str = ""
+) -> Dispatcher:
     """The whole bot: the allowlist, the error reporter and the tracker menu. Nothing else answers. `links` is link mode
-    (the buttons lead to the app), `None` is chat mode."""
+    (the buttons lead to the app), `None` is chat mode; `shikimori_base_url` is SHIKIMORI_BASE_URL, the site the posters
+    of Shikimori are shown from in the cards (KI-21)."""
     dp = Dispatcher()
     # Allowlist goes first so strangers never reach the handlers or the error reporter
     dp.update.outer_middleware(AccessMiddleware(allowed_ids))
     # Error reporting middleware (catches all unhandled exceptions)
     dp.update.outer_middleware(ErrorMiddleware())
-    register_tracker_handlers(dp, tracker, allowed_ids, links)
+    register_tracker_handlers(dp, tracker, allowed_ids, links, shikimori_site(shikimori_base_url))
     return dp
 
 

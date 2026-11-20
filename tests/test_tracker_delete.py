@@ -281,7 +281,7 @@ def test_an_unsent_event_of_a_deleted_title_never_reaches_the_owner(tracker, mov
     assert (summary.events, summary.delivered) == (0, False)
 
 
-def test_a_new_title_with_the_number_of_a_deleted_one_gets_its_own_events(tracker, movies, sender, clock):
+def test_a_title_added_again_after_its_deletion_gets_its_own_events(tracker, movies, sender, clock):
     first = add_movie(tracker, movies)
     movies.by_id[DUNE] = movie(DUNE, theatrical=date(2027, 5, 5))
     clock.advance(days=1)
@@ -291,7 +291,7 @@ def test_a_new_title_with_the_number_of_a_deleted_one_gets_its_own_events(tracke
     run(tracker.delete_title(first))
 
     second = add_movie(tracker, movies)  # the same movie again: no marks and no past events
-    assert second == first  # SQLite hands out the number of the row that was just deleted
+    assert second != first  # the number of a deleted title is never given again (KI-24)
     movies.by_id[DUNE] = movie(DUNE, theatrical=date(2027, 5, 5))
     clock.advance(days=1)
     run(tracker.poll_due())
@@ -438,7 +438,7 @@ def test_a_film_deleted_and_added_again_can_announce_the_same_sequel_again(
 
     again = announce_sequel_again(tracker, movies, sequels, clock)
 
-    assert again == original
+    assert again != original  # a new number (KI-24); the dedup key of the old announcement is gone with its title
     run(tracker.deliver_pending())
     assert sum("Анонсировано продолжение" in text for text in sender.sent) == 2
 

@@ -1,5 +1,6 @@
-"""Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings,
-game platforms, the price history and the inbox items. Timestamps are naive UTC and are always set by the core at insert time."""
+"""Tables of the tracker database: titles, seasons, episodes, snapshots, events, the delivery queue, settings, game platforms,
+prices, the inbox and the last number given to a title. Timestamps are naive UTC and are always set by the core at insert
+time."""
 
 from datetime import date, datetime
 from enum import StrEnum
@@ -76,6 +77,16 @@ class Title(TrackerBase):
     # the owner's score in thirds of a point (`scores`): a film's only one, a series' own one over the average of its
     # seasons; None: not set. It stays when the status changes, even while it is not shown
     score: Mapped[int | None] = mapped_column(Integer)
+
+
+class IssuedId(TrackerBase):
+    """The last number given out for a kind of thing, by name (`titles`): a number of a deleted title never comes back.
+    Not `AUTOINCREMENT` — `titles` cannot be rebuilt safely, eight tables cascade from it."""
+
+    __tablename__ = "issued_ids"
+
+    name: Mapped[str] = mapped_column(String(32), primary_key=True)
+    last_id: Mapped[int] = mapped_column(Integer)
 
 
 class ExternalId(TrackerBase):

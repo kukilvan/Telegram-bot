@@ -182,7 +182,7 @@ async def main() -> int:
         health=health.report, password=settings.web_password, secret_file=WEB_SECRET_FILE, login_file=WEB_LOGIN_FILE,
         tracker=tracker,
         image_sources=image_sources(settings.shikimori_base_url), telegram_down=lambda: health.telegram_down,
-        app_url=app_url, web_host=os.environ.get(WEB_HOST, "").strip(),
+        app_url=app_url, web_host=os.environ.get(WEB_HOST, "").strip(), shikimori_base_url=settings.shikimori_base_url,
     )
     proxies = parse_trusted_proxies(settings.trusted_proxies)
     for item in proxies.skipped:
@@ -193,7 +193,7 @@ async def main() -> int:
     scheduler = AsyncIOScheduler()
     add_jobs(scheduler, tracker)
     runtime = Runtime(
-        web=server, scheduler=scheduler, bot=TelegramPart(bot, build_dispatcher(tracker, allowed_ids, links)), health=health,
+        web=server, scheduler=scheduler, bot=TelegramPart(bot, build_dispatcher(tracker, allowed_ids, links, settings.shikimori_base_url)), health=health,
     )
     forget_failure(STARTUP_FAILURE_FILE)  # everything is assembled: the start succeeded
     return await runtime.run()

@@ -54,7 +54,15 @@ from app.tracker.listing import Listing
 from app.tracker.login_reports import WEB_LOGIN, WEB_LOGIN_LOCKED, LoginReports
 from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
 from app.tracker.polling import Pollers, Polling
-from app.tracker.posters import CARD_SIZE, IGDB_IMAGE_SITE, LIST_SIZE, TMDB_IMAGE_SITE, PosterSize, poster_url
+from app.tracker.posters import (
+    CARD_SIZE,
+    IGDB_IMAGE_SITE,
+    LIST_SIZE,
+    TMDB_IMAGE_SITE,
+    PosterSize,
+    poster_url,
+    shikimori_site,
+)
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
     INBOX_REASONS,
@@ -97,6 +105,7 @@ __all__ = [
     "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect",
     "SignInStep", "BackupBlock", "CheckOutcome", "DELIVERY_CHECKS", "DeliveryCheck", "DeliveryCheckResult",
     "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url",
+    "shikimori_site",
     "AddResult", "BadExternalId", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed",
     "FeedDay", "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason",
     "InboxReply", "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport",

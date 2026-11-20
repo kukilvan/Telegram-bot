@@ -11,7 +11,8 @@ from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
+from sqlalchemy.orm import Session
 
 from app.tracker import sequel_events, storage
 from app.tracker.context import PRIMARY_ROLE, CoreContext
@@ -24,12 +25,14 @@ from app.tracker.errors import (
     UnknownKind,
     UnknownTitle,
 )
-from app.tracker.models import ExternalId, Event, SourceSnapshot, Title, TitleKind, TitleStatus
+from app.tracker.models import ExternalId, Event, IssuedId, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import AddResult, DeleteResult
 
 if TYPE_CHECKING:
     from app.tracker.pollers.base import Poller
     from app.tracker.polling import Pollers
+
+ISSUED_TITLES = "titles"  # the name of the row of `issued_ids` that keeps the last number of a title
 
 # the number of a title in every source of `add_title` (TMDb, Shikimori, IGDB): a positive whole number written plainly;
 # a leading zero is refused, as `007` would be stored as another id than `7` and add the same title twice
@@ -115,6 +118,7 @@ class Titles:
                     )
                 return AddResult(known[0], created=False)
             title = Title(
+                id=self._next_number(session),
                 kind=kind,
                 name=snapshot.name,
                 original_name=snapshot.original_name,
@@ -149,6 +153,20 @@ class Titles:
             storage.refresh_status(session, title, now)
             session.commit()
             return AddResult(title.id, created=True)
+
+    @staticmethod
+    def _next_number(session: Session) -> int:
+        """The number of a new title, the one place that gives it: above the last one given (`issued_ids`) and above
+        every title there is (a title a test or a hand wrote straight into the table), so a deleted title's number never
+        comes back (KI-24). A missing row is made again from the titles. Taken in the write session, which holds the
+        database, and kept in the same commit."""
+        top = session.scalar(select(func.max(Title.id))) or 0
+        issued = session.get(IssuedId, ISSUED_TITLES)
+        if issued is None:
+            issued = IssuedId(name=ISSUED_TITLES, last_id=top)
+            session.add(issued)
+        issued.last_id = max(issued.last_id, top) + 1
+        return issued.last_id
 
     # --- deleting -------------------------------------------------------------------------------
 

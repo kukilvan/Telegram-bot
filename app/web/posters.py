@@ -2,12 +2,9 @@
 `app.tracker.posters` (shared with the bot card); the browser takes the pictures straight from the sites."""
 
 import ipaddress
-import re
 from urllib.parse import urlsplit
 
-from app.tracker.core import IGDB_IMAGE_SITE, TMDB_IMAGE_SITE
-
-_HOST = re.compile(r"[a-z0-9]([a-z0-9.-]*[a-z0-9])?")  # what may stand in a header: no «;», spaces or quotes
+from app.tracker.core import IGDB_IMAGE_SITE, TMDB_IMAGE_SITE, shikimori_site
 
 
 def image_sources(shikimori_base_url: str) -> tuple[str, ...]:
@@ -17,16 +14,11 @@ def image_sources(shikimori_base_url: str) -> tuple[str, ...]:
 
 
 def _site_with_subdomains(address: str) -> tuple[str, ...]:
-    try:
-        parts = urlsplit(address.strip())
-        host, port = (parts.hostname or "").lower(), parts.port
-    except ValueError:
+    site = shikimori_site(address)
+    if site is None:
         return ()
-    if parts.scheme != "https" or not _HOST.fullmatch(host):
-        return ()
-    site = f"https://{host}" + (f":{port}" if port else "")
     try:
-        ipaddress.ip_address(host)
+        ipaddress.ip_address(urlsplit(site).hostname or "")
     except ValueError:
-        return (site, f"https://*.{host}" + (f":{port}" if port else ""))
+        return (site, site.replace("https://", "https://*.", 1))
     return (site,)  # an address of numbers has no subdomains

@@ -17,7 +17,7 @@ from starlette.exceptions import HTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.config import AppUrl
-from app.tracker.core import Tracker, poster_url
+from app.tracker.core import Tracker, poster_url, shikimori_site
 from app.web import (
     archive, auth, card, drive_sign_in, feed, inbox, pages, search, settings, settings_sign_in, settings_test_event, title_list,
 )
@@ -84,6 +84,7 @@ def create_web_app(
     telegram_down: Callable[[], bool] = lambda: False,
     app_url: AppUrl = AppUrl(),
     web_host: str = "",
+    shikimori_base_url: str = "",
 ) -> FastAPI:
     """The web app. `health` is the process's own report (`Health.report`): it reads neither the database nor the
     network, so `/health` answers even when they are slow. `password` is WEB_PASSWORD (without it, or when it is
@@ -94,7 +95,8 @@ def create_web_app(
     from (`posters.image_sources`); without them the page loads none. `telegram_down` tells whether the bot has no
     connection to Telegram (the line under the status line); the web knows nothing of the runtime or of aiogram.
     `app_url` is what APP_URL said and `web_host` the environment variable WEB_HOST, both read by `app.main` (the line of
-    Settings about the address, and the names the web answers under: `AllowedHosts`)."""
+    Settings about the address, and the names the web answers under: `AllowedHosts`). `shikimori_base_url` is
+    SHIKIMORI_BASE_URL: the posters of Shikimori are shown from its site, wherever they were stored (KI-21)."""
     # No /docs, /redoc or /openapi.json: they would describe every address to anyone who asks
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     templates = Jinja2Templates(directory=HERE / "templates")
@@ -117,7 +119,8 @@ def create_web_app(
             and sign_ins.live(request.session.get("sid"))
         )
 
-    templates.env.globals["poster_url"] = poster_url
+    site = shikimori_site(shikimori_base_url)
+    templates.env.globals["poster_url"] = lambda stored, size: poster_url(stored, size, site)
     app.state.web = WebContext(
         templates=templates, tracker=tracker, now=now, signed_in=signed_in, sections=SECTIONS, telegram_down=telegram_down,
         app_url=app_url, web_host=web_host, sign_ins=sign_ins,

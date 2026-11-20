@@ -168,6 +168,9 @@ connection (`data\google_drive_*.json`), the logs and the other copies stay as t
 its next archive is of the restored database. A downloaded file is copied into `data\restore\` for Docker to see it;
 that folder is emptied when the script ends.
 
+A restore of an old copy brings that copy's own `issued_ids.last_id` (the last number given to a title): numbers given
+after that copy was made may come again. This is accepted: the restore is the owner's deliberate step.
+
 ## When something goes wrong
 
 - **The line in Settings says «Копия в Google Drive не ушла: … — нет связи с Google Drive»** (or «Google Drive сейчас

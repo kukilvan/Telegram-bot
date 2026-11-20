@@ -123,7 +123,7 @@ class _Pause:
 
 
 def register_inbox_handlers(
-    router: Router, tracker: Tracker, not_taken_in: Collection[str], titles: TitleCards
+    router: Router, tracker: Tracker, not_taken_in: Collection[str], titles: TitleCards, poster_site: str | None = None
 ) -> None:
     """Put the taking-in handler and the `inb:` presses on the owner router. Call it after every other message
     handler: the taking in takes whatever is left, except commands and the texts of `not_taken_in` (menu buttons)."""
@@ -187,7 +187,7 @@ def register_inbox_handlers(
         elif outcome == InboxOutcome.OFFER:
             card = reply.offer
             markup = offer_markup(card.item_id, card.number)
-            await send_card_message(message, first + card.text, poster_url(card.poster, CARD_SIZE), markup)
+            await send_card_message(message, first + card.text, poster_url(card.poster, CARD_SIZE, poster_site), markup)
         elif outcome in (InboxOutcome.IN_LIST, InboxOutcome.ADDED):
             heading = ADDED if outcome == InboxOutcome.ADDED else IN_LIST
             await titles.show(message, reply.title_id, first + heading)

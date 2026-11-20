@@ -102,7 +102,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0012_game_platforms.py` — The platforms of a game and the owner's mark «играю здесь» on each (spec 6.2 of part 6.1).
 - `app/tracker/migrations/versions/0013_price_history.py` — The price history of the games (spec 4.5 of part 6.2): a record of a Steam price each time a price check saw it change.
 - `app/tracker/migrations/versions/0014_inbox.py` — «Входящие» (spec 10 of stage 6.4): the table `inbox_items`, one row per inbox item — what the owner sent to the bot.
-- `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, source snapshots, events, the delivery queue, settings, game platforms, the price history and the inbox items.
+- `app/tracker/migrations/versions/0015_issued_ids.py` — The table `issued_ids` (spec 5 of stage 9.1a, KI-24): the last number given to a title, so a deleted title's number never comes back.
+- `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, snapshots, events, the delivery queue, settings, game platforms, prices, the inbox and the last number given to a title.
 - `app/tracker/moment_words.py` — A moment in words for the owner (pure): «сегодня в 07:58», «вчера в 18:32», «4 ноября в 07:58», «4 ноября 2025 в 07:58».
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
 - `app/tracker/offers.py` — Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner sees them, and the text of an offer card (spec 3, 5 and 6.1 of stage 6.4).

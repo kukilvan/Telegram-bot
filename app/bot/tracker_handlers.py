@@ -184,13 +184,15 @@ def _kind_of(raw: str) -> TitleKind | None:
 
 
 def register_tracker_handlers(
-    dp: Dispatcher, tracker: Tracker, allowed_user_ids: list[int], links: AppLinks | None = None
+    dp: Dispatcher, tracker: Tracker, allowed_user_ids: list[int], links: AppLinks | None = None,
+    poster_site: str | None = None,
 ) -> Router:
     """Put every tracker handler on one router behind the owner filter and include it in `dp`.
 
     The filter is the second line of defence behind `AccessMiddleware`: an update from anyone else, or from nobody
     (no sender), matches no handler. A new handler goes on this router and never checks the owner itself. `links`
-    set is link mode, `None` is chat mode (module description).
+    set is link mode, `None` is chat mode (module description). `poster_site` is the site of Shikimori now (a card
+    shows its posters from it, `shikimori_site`).
     """
     router = Router(name="tracker")
     owner = F.from_user.id.in_(frozenset(allowed_user_ids))
@@ -267,7 +269,7 @@ def register_tracker_handlers(
 
     async def send_card_in(message: Message, card: TitleCard, heading: str | None = None) -> None:
         text = format_card(card) if heading is None else f"{heading}\n\n{format_card(card)}"
-        await send_card_message(message, text, poster_url(card.poster_path, CARD_SIZE), card_markup(card))
+        await send_card_message(message, text, poster_url(card.poster_path, CARD_SIZE, poster_site), card_markup(card))
 
     async def send_card(callback: CallbackQuery, card: TitleCard | None, heading: str | None = None) -> None:
         if card is None or callback.message is None:
@@ -485,6 +487,6 @@ def register_tracker_handlers(
 
     # last: every message the handlers above did not take is an inbox item
     menu = {TEST_EVENT_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, ADD_BUTTON}
-    register_inbox_handlers(router, tracker, menu, TitleCards(show_title, ask_seasons_in))
+    register_inbox_handlers(router, tracker, menu, TitleCards(show_title, ask_seasons_in), poster_site)
     dp.include_router(router)
     return router
