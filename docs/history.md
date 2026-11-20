@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-21 — Description 9.1b
+
+- `.scratch/9-1b-games-steam/description.md` with mockups `mockups/game-card.html` and `mockups/bot.html`: stage 9.1b holds its 14 known issues (KI-35–38, 43, 44, 46, 47, 50–55, the directions of `.scratch/9-1-known-issues/description.md`) and idea 002 (Russian in games), whose Status now points to this description. One stage, one spec; tickets of the known issues before those of Russian.
+- Decisions with the owner: the fan part of «Русский» only for what the official lacks (fan voice beside official text; never fan text beside official text); the line filled right after adding (the Steam answer at adding, one ZoG request; quiet, never failing the adding); the ZoG page by 2–4 address variants, taken only when ZoG's name matches. By the agent: the block after «Платформы», «🌐 Страница перевода» under the bot card and the fan message, the Russian events through `checks.still_checked`; the wish of review 9.1a goes to KI-47 and KI-53.
+- Checked live: `GetItems` with `include_supported_languages` gives Russian as `elanguage` 8 with `full_audio` and `subtitles`; ZoG has no usable search (Google's), a page lives at `/games/<name>/` (9 of 11 games by the original name, Hades II as `hades_2`, The Witcher 3 not found), a missing page answers 200 with the title «Ошибка», pages in `windows-1251`, translations listed after «Переводы:». `CONTEXT.md` (Русский язык, Народный перевод) and `docs/project-spec.md` (9.1b 10 sessions) updated. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Review 9.1a
 
 - Stage 9.1a reviewed (`.scratch/9-1a-start-polling/review.md`): `code-review` at xhigh over `8711ded..1085dd9`, then a pass for the spec; no fix-round finding, so the stage is done. Six fixes now: the bot's «Тестовое событие» answers «Не удалось отправить тестовое событие. Попробуйте ещё раз.» when the core raises (it promised the event would come later); `start-bot.ps1` takes a child of the old bot only with the old bot's command too (process ids are reused) and its new comments are English; the index rows of KI-16–20, 41, 42 name their tests; rule 7 names `checks` (`still_checked`); `test_docker_files` reads the start script's pattern with `\r?$`, so it runs on Windows — the known Windows failures are two (`test_app_main`, `test_runtime`).

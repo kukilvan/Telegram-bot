@@ -1,6 +1,6 @@
 # Stage 9.1b: games and Steam prices — the known issues and Russian in games
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. The stage is part b of stage 9.1 (`docs/project-spec.md`); its 14 known issues and the direction of each fix were set by `.scratch/9-1-known-issues/description.md` (part 9.1b and decisions 2–4 there). Idea 002 (`docs/ideas/002-russian-in-games.md`) joined the part later, on 2026-11-20, so the part gets this description: the idea is a new feature, not a fix. ADRs it leans on: 0004 (no own JavaScript), 0007 (one process), 0009 (no PlayStation prices), 0011 (a followed expansion is a game of its own), 0015 (a hung app is ended by its health check, for the rule of every poll write — `checks.still_checked`).
 
