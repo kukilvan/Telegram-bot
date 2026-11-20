@@ -17,7 +17,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
 from app.config import AppUrl
-from app.tracker.core import SourceFailed, TitleNotFound, Tracker, UnknownKind
+from app.tracker.core import BadExternalId, SourceFailed, TitleNotFound, Tracker, UnknownKind
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web.menu import with_inbox_count
@@ -58,6 +58,9 @@ def report_source_failure(kind: TitleKind, exc: SourceFailed, doing: str) -> str
     return f"Не удалось связаться с {KINDS[kind].source_name}. Попробуйте чуть позже"
 
 
+NO_SUCH_NUMBER = "Такого номера тайтла не бывает. Поищите заново"  # a number no source has (`BadExternalId`)
+
+
 def not_found(kind: TitleKind) -> str:
     return f"{KINDS[kind].source_name} больше не знает этот тайтл. Поищите заново"
 
@@ -70,6 +73,8 @@ async def try_follow(request: Request, kind: str, external_id: str) -> str:
         await tracker_of(request).follow(kind, external_id)
     except (UnknownKind, KeyError):  # no such kind, or one that announces nothing or has no source
         return NO_SUCH_KIND
+    except BadExternalId:  # before `TitleNotFound`, which it is
+        return NO_SUCH_NUMBER
     except TitleNotFound:
         return not_found(TitleKind(kind))
     except SourceFailed as exc:

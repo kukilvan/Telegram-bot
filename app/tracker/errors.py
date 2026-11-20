@@ -7,6 +7,11 @@ class TitleNotFound(Exception):
     """The source has nothing at the chosen id (for example a series id picked as a movie)."""
 
 
+class BadExternalId(TitleNotFound):
+    """The number is no number of any source (not written plainly as a positive whole number of at most 18 digits):
+    nothing was asked and nothing stored. It is a `TitleNotFound`: a caller that does not tell them apart reads it so."""
+
+
 class UnknownTitle(Exception):
     """There is no title with this id in the list."""
 
@@ -69,6 +74,14 @@ class SettingsRefused(Exception):
         super().__init__(text)
         self.field = field
         self.text = text
+
+
+class UnknownSample(Exception):
+    """There is no sample of «Тестовое событие» with this id (an old page or button)."""
+
+
+class UnknownCheck(Exception):
+    """There is no moment of «Проверка правил доставки» with this id (an old page or button)."""
 
 
 class UnknownInboxItem(Exception):

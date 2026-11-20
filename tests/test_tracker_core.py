@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from sqlalchemy import select, text
 
-from app.tracker.core import TestSample, Tracker
+from app.tracker.core import TestSample, Tracker, UnknownSample
 from app.tracker.db import create_tracker_engine, create_session_factory, migrate
 from app.tracker.models import DeliveryItem, Event, TitleKind
 
@@ -166,7 +166,7 @@ def test_timestamps_come_from_the_clock_at_insert_time(tracker, session_factory,
 
 
 def test_unknown_test_sample_is_rejected(tracker, sender):
-    with pytest.raises(KeyError):
+    with pytest.raises(UnknownSample):
         run(tracker.send_test_event("no-such-sample"))
     assert sender.sent == []
 

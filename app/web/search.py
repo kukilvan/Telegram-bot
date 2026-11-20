@@ -12,7 +12,15 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Form, Request, Response
 
-from app.tracker.core import LIST_SIZE, SourceFailed, SourceNotConfigured, TitleNotFound, Tracker, UnknownTitle
+from app.tracker.core import (
+    LIST_SIZE,
+    BadExternalId,
+    SourceFailed,
+    SourceNotConfigured,
+    TitleNotFound,
+    Tracker,
+    UnknownTitle,
+)
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.web import pages
@@ -201,6 +209,8 @@ async def add(
         result = await tracker.add_title(chosen, external_id)
     except KeyError:  # a kind the core has no source for
         return await _refused(request, back, pages.NO_SUCH_KIND)
+    except BadExternalId:  # before `TitleNotFound`, which it is
+        return await _refused(request, back, pages.NO_SUCH_NUMBER)
     except TitleNotFound:
         return await _refused(request, back, pages.not_found(chosen))
     except SourceNotConfigured:

@@ -9,7 +9,7 @@ value that fails it is a `ValueError` whose text is the phrase for the owner; th
 import asyncio
 import logging
 import re
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import replace
 from datetime import time, timedelta, tzinfo
@@ -134,14 +134,20 @@ class SettingsStore:
 
     # --- read inside a session someone else opened ----------------------------------------------
 
-    @staticmethod
-    def part_gap_weeks_in(session) -> int:
+    def part_gap_weeks_in(self, session) -> int:
+        """The weeks of break that split a season into parts. Nothing stored, or a stored value that is not a whole
+        number of weeks from 1 to 52 (`check_part_gap_weeks`): the default (the log says so once)."""
         record = session.get(SettingRecord, PART_GAP_SETTING)
-        return record.value if record is not None else DEFAULT_PART_GAP_WEEKS
+        if record is None:
+            return DEFAULT_PART_GAP_WEEKS
+        try:
+            return check_part_gap_weeks(record.value)
+        except _Bad:
+            self._spoiled_once(PART_GAP_SETTING, record.value, "the default")
+            return DEFAULT_PART_GAP_WEEKS
 
-    @classmethod
-    def part_gap(cls, session) -> timedelta:
-        return timedelta(weeks=cls.part_gap_weeks_in(session))
+    def part_gap(self, session) -> timedelta:
+        return timedelta(weeks=self.part_gap_weeks_in(session))
 
     def stored_zone(self, session) -> str | None:
         """The name of the zone chosen in the settings; None when none is chosen. A stored value that is not a zone of
@@ -186,16 +192,31 @@ class SettingsStore:
             return DEFAULT_COUNTRY
 
     def rules(self, session) -> delivery.DeliveryRules:
+        """The delivery rules. Each stored field is checked alone (`check_workdays`, `check_clock`): one that fails
+        reads as the default of that field, and the log says so once. The rules as a whole (a summary hour inside the
+        quiet hours) are the form's check, not this one's."""
         keys = (WORKDAYS_SETTING, SUMMARY_AT_SETTING, QUIET_FROM_SETTING, QUIET_UNTIL_SETTING)
         stored = {r.key: r.value for r in session.scalars(select(SettingRecord).where(SettingRecord.key.in_(keys)))}
-        workdays = stored.get(WORKDAYS_SETTING, delivery.DEFAULT_WORKDAYS)
         return delivery.DeliveryRules(
             tz=self.time_zone(session),
-            workdays=frozenset(workdays),
-            summary_at=delivery.parse_time(stored.get(SUMMARY_AT_SETTING, delivery.DEFAULT_SUMMARY_AT)),
-            quiet_from=delivery.parse_time(stored.get(QUIET_FROM_SETTING, delivery.DEFAULT_QUIET_FROM)),
-            quiet_until=delivery.parse_time(stored.get(QUIET_UNTIL_SETTING, delivery.DEFAULT_QUIET_UNTIL)),
+            workdays=frozenset(self._read(stored, WORKDAYS_SETTING, check_workdays, delivery.DEFAULT_WORKDAYS)),
+            summary_at=self._read_clock(stored, SUMMARY_AT_SETTING, SUMMARY_AT_PHRASE, delivery.DEFAULT_SUMMARY_AT),
+            quiet_from=self._read_clock(stored, QUIET_FROM_SETTING, QUIET_PHRASE, delivery.DEFAULT_QUIET_FROM),
+            quiet_until=self._read_clock(stored, QUIET_UNTIL_SETTING, QUIET_PHRASE, delivery.DEFAULT_QUIET_UNTIL),
         )
+
+    def _read(self, stored: dict[str, Any], key: str, check: Callable[[object], Any], default: Any) -> Any:
+        """The stored value of `key` through its `check`; not stored or failing it: `default` (once in the log)."""
+        if key not in stored:
+            return default
+        try:
+            return check(stored[key])
+        except _Bad:
+            self._spoiled_once(key, stored[key], "the default")
+            return default
+
+    def _read_clock(self, stored: dict[str, Any], key: str, phrase: str, default: time) -> time:
+        return self._read(stored, key, lambda value: check_clock(value, phrase), default)
 
     # --- the public settings --------------------------------------------------------------------
 

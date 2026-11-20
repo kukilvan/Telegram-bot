@@ -112,7 +112,19 @@ def test_stale_menu_button_is_answered_not_crashed(tracker, sender, replies):
     press_sample_button(make_dispatcher(tracker), OWNER, "tev:gone")
 
     assert sender.sent == []
-    assert replies[0][0] == "callback" and replies[0][1]
+    assert replies[0][0] == "callback" and "Такого события больше нет" in replies[0][1]
+
+
+def test_a_key_error_inside_a_send_is_a_failure_not_a_stale_button(tracker, sender, replies, monkeypatch, caplog):
+    async def broken(sample_id, at=None):
+        raise KeyError("inside")
+
+    monkeypatch.setattr(tracker, "send_test_event", broken)
+
+    press_sample_button(make_dispatcher(tracker), OWNER, "tev:ping")
+
+    assert replies[0][0] == "callback" and "Такого события больше нет" not in replies[0][1] and "позже" in replies[0][1]
+    assert "sending the test event ping failed" in caplog.text
 
 
 @pytest.mark.parametrize("with_middleware", [True, False])

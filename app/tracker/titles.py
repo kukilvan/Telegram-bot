@@ -6,6 +6,7 @@ source is `SourceFailed`, and each record carries the title of the list it alrea
 
 import asyncio
 import logging
+import re
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from typing import TYPE_CHECKING, Any
@@ -14,13 +15,25 @@ from sqlalchemy import delete, select
 
 from app.tracker import sequel_events, storage
 from app.tracker.context import PRIMARY_ROLE, CoreContext
-from app.tracker.errors import SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent, UnknownKind, UnknownTitle
+from app.tracker.errors import (
+    BadExternalId,
+    SourceFailed,
+    SourceNotConfigured,
+    TitleNotFound,
+    UnknownEvent,
+    UnknownKind,
+    UnknownTitle,
+)
 from app.tracker.models import ExternalId, Event, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.results import AddResult, DeleteResult
 
 if TYPE_CHECKING:
     from app.tracker.pollers.base import Poller
     from app.tracker.polling import Pollers
+
+# the number of a title in every source of `add_title` (TMDb, Shikimori, IGDB): a positive whole number written plainly;
+# a leading zero is refused, as `007` would be stored as another id than `7` and add the same title twice
+_EXTERNAL_ID = re.compile(r"[1-9][0-9]{0,17}")
 
 
 class Titles:
@@ -63,7 +76,10 @@ class Titles:
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
         """Put a search result into the list with status «Хочу», or open the title that is already there: the one the
-        id names, or the one any id of the fresh snapshot names (an anime by any entry of its chain, KI-2)."""
+        id names, or the one any id of the fresh snapshot names (an anime by any entry of its chain, KI-2). A number that
+        is no number of any source is a `BadExternalId`: nothing is asked of a source and nothing stored (KI-42)."""
+        if not _EXTERNAL_ID.fullmatch(external_id):
+            raise BadExternalId(f"{kind}:{external_id!r}")
         poller = self.pollers.of(kind)
         known = await asyncio.to_thread(self._known_ids, poller, [external_id])
         if external_id in known:

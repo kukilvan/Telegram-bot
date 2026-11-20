@@ -12,7 +12,7 @@ import logging
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from app.tracker.core import CheckOutcome, Tracker
+from app.tracker.core import CheckOutcome, Tracker, UnknownCheck, UnknownSample
 from app.tracker.test_samples import DELIVERY_CHECKS
 
 TEST_EVENT_BUTTON = "🧪 Тестовое событие"
@@ -40,8 +40,12 @@ def register_test_event_handlers(router: Router, tracker: Tracker, *, chat_mode:
         sample_id = callback.data.removeprefix(_SAMPLE_PREFIX)
         try:
             result = await tracker.send_test_event(sample_id)
-        except KeyError:
+        except UnknownSample:
             await callback.answer("Такого события больше нет, откройте меню заново.")
+            return
+        except Exception as exc:
+            logging.warning("sending the test event %s failed: %r", sample_id, exc)
+            await callback.answer("Не удалось отправить, событие осталось в очереди и придёт позже.")
             return
         if result.delivered:
             await callback.answer("Отправлено")
@@ -65,7 +69,7 @@ def register_test_event_handlers(router: Router, tracker: Tracker, *, chat_mode:
     async def run_rules_check(callback: CallbackQuery) -> None:
         try:
             result = await tracker.delivery_check(callback.data.removeprefix(_CHECK_PREFIX))
-        except KeyError:
+        except UnknownCheck:
             await callback.answer("Такого момента больше нет, откройте меню заново.")
             return
         except Exception as exc:

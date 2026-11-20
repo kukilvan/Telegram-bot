@@ -3,7 +3,7 @@
 `Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it
 (`settings_store`, `titles`, `statuses`, `listing`, `feed`, `polling` and `pollers/`, `queue`, `delivery_service`,
 `test_samples`, `login_reports`, `backups` and `google_drive`, `inbox` and its `inbox_answers` and `offers`). It holds
-no rules of its own.
+no rules of its own. It may have up to 500 lines, no line longer than 120 characters; the other parts stay at 400.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -23,42 +23,88 @@ from app.tracker.cards import TitleCard
 from app.tracker.context import Clock, CoreContext, Sender
 from app.tracker.db import database_file
 from app.tracker.delivery_service import DeliveryService
+from app.tracker.drive_rows import DriveButton, DrivePart, DriveSetup
+from app.tracker.errors import (
+    BadExternalId,
+    CannotScore,
+    SettingsField,
+    SettingsRefused,
+    SourceFailed,
+    SourceNotConfigured,
+    TitleNotFound,
+    UnknownCheck,
+    UnknownEvent,
+    UnknownInboxItem,
+    UnknownKind,
+    UnknownPlatform,
+    UnknownSample,
+    UnknownSeason,
+    UnknownTitle,
+)
 from app.tracker.export_rows import ExportFile
 from app.tracker.exports import Exports
-from app.tracker.errors import (
-    CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound, UnknownEvent, UnknownInboxItem,
-    UnknownKind, UnknownPlatform, UnknownSeason, UnknownTitle,
-)
 from app.tracker.feed import FeedReader
-from app.tracker.drive_rows import DriveButton, DrivePart, DriveSetup
-from app.tracker.google_drive import CALLBACK_PATH as DRIVE_CALLBACK_PATH, REDIRECT as DRIVE_REDIRECT, DriveSettings, GoogleDrive, Redirect, SignInStep
 from app.tracker.feed_rows import Feed, FeedDay, FeedTitle, FollowOffer, Followable, RecentRow, UpcomingRow
+from app.tracker.google_drive import CALLBACK_PATH as DRIVE_CALLBACK_PATH
+from app.tracker.google_drive import REDIRECT as DRIVE_REDIRECT
+from app.tracker.google_drive import DriveSettings, GoogleDrive, Redirect, SignInStep
 from app.tracker.inbox import Inbox
 from app.tracker.inbox_answers import InboxAnswers
 from app.tracker.listing import Listing
 from app.tracker.login_reports import WEB_LOGIN, WEB_LOGIN_LOCKED, LoginReports
 from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
-from app.tracker.polling import Polling, Pollers
+from app.tracker.polling import Pollers, Polling
 from app.tracker.posters import CARD_SIZE, IGDB_IMAGE_SITE, LIST_SIZE, TMDB_IMAGE_SITE, PosterSize, poster_url
 from app.tracker.queue import EventQueue
 from app.tracker.results import (
-    INBOX_REASONS, MEDIA_WORDS, AddResult, ChangeResult, DeleteResult, DeliveryReport, InboxEntry, InboxOutcome, InboxReply, IncomingMessage, ListOrder, OfferCard, Overview, PollReport,
-    SettingsChange, SettingsView, SummaryResult, TakeIn, TestEventResult, TitleSummary, WatchableSeason, ZoneOption,
+    INBOX_REASONS,
+    MEDIA_WORDS,
+    AddResult,
+    ChangeResult,
+    DeleteResult,
+    DeliveryReport,
+    InboxEntry,
+    InboxOutcome,
+    InboxReply,
+    IncomingMessage,
+    ListOrder,
+    OfferCard,
+    Overview,
+    PollReport,
+    SettingsChange,
+    SettingsView,
+    SummaryResult,
+    TakeIn,
+    TestEventResult,
+    TitleSummary,
+    WatchableSeason,
+    ZoneOption,
 )
 from app.tracker.scores import ScoreView
 from app.tracker.settings_store import SettingsStore
 from app.tracker.statuses import Statuses
-from app.tracker.test_samples import DELIVERY_CHECKS, CheckOutcome, DeliveryCheck, DeliveryCheckResult, TestSample, TestSamples
+from app.tracker.test_samples import (
+    DELIVERY_CHECKS,
+    CheckOutcome,
+    DeliveryCheck,
+    DeliveryCheckResult,
+    TestSample,
+    TestSamples,
+)
 from app.tracker.titles import Titles
 
 __all__ = [
-    "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect", "SignInStep", "BackupBlock", "CheckOutcome", "DELIVERY_CHECKS",
-    "DeliveryCheck", "DeliveryCheckResult", "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url", "AddResult", "CannotScore",
-    "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed", "FeedDay", "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason",
-    "InboxReply", "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport", "RecentRow", "ScoreView", "Sender", "SettingsChange", "SettingsField",
-    "SettingsRefused", "SettingsView", "SourceFailed", "SourceNotConfigured", "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard", "TitleNotFound", "TitleSummary",
-    "Tracker", "UnknownEvent", "UnknownInboxItem", "UnknownKind", "UnknownPlatform", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason", "ZoneOption", "WEB_LOGIN",
-    "WEB_LOGIN_LOCKED",
+    "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect",
+    "SignInStep", "BackupBlock", "CheckOutcome", "DELIVERY_CHECKS", "DeliveryCheck", "DeliveryCheckResult",
+    "ExportFile", "CARD_SIZE", "IGDB_IMAGE_SITE", "LIST_SIZE", "PosterSize", "TMDB_IMAGE_SITE", "poster_url",
+    "AddResult", "BadExternalId", "CannotScore", "ChangeResult", "Clock", "DeleteResult", "DeliveryReport", "Feed",
+    "FeedDay", "FeedTitle", "FollowOffer", "Followable", "INBOX_REASONS", "InboxEntry", "InboxOutcome", "InboxReason",
+    "InboxReply", "InboxState", "IncomingMessage", "ListOrder", "MEDIA_WORDS", "OfferCard", "Overview", "PollReport",
+    "RecentRow", "ScoreView", "Sender", "SettingsChange", "SettingsField", "SettingsRefused", "SettingsView",
+    "SourceFailed", "SourceNotConfigured", "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard",
+    "TitleNotFound", "TitleSummary", "Tracker", "UnknownCheck", "UnknownEvent", "UnknownInboxItem", "UnknownKind",
+    "UnknownPlatform", "UnknownSample", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason",
+    "ZoneOption", "WEB_LOGIN", "WEB_LOGIN_LOCKED",
 ]
 
 
@@ -68,13 +114,13 @@ class Tracker:
     clock: Clock
     sender: Sender
     sources: Mapping[TitleKind, Any] = field(default_factory=dict)
-    sequel_sources: Mapping[TitleKind, Any] = field(default_factory=dict)  # by kind: where an archived title's sequels come from
-    default_tz: tzinfo = timezone.utc  # the time zone when the owner has set none (BOT_TIMEZONE); the set one is read from the database
+    sequel_sources: Mapping[TitleKind, Any] = field(default_factory=dict)  # by kind: the sources of the sequels
+    default_tz: tzinfo = timezone.utc  # the zone when the owner has set none (BOT_TIMEZONE); the set one is in the base
     price_source: Any = None  # the Steam prices of the games (`SteamPriceSource`); None — prices are not checked
     follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
     imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
-    database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies (a core made for a test)
-    drive_settings: DriveSettings = field(default_factory=DriveSettings)  # the Google Drive copy from .env; off by default
+    database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies
+    drive_settings: DriveSettings = field(default_factory=DriveSettings)  # the Google Drive copy (.env); off by default
     drive_api: Any = None  # the Google client of that copy (`GoogleDriveApi`); None — the copy is off
     _settings: SettingsStore = field(init=False, repr=False)
     _queue: EventQueue = field(init=False, repr=False)
@@ -93,14 +139,20 @@ class Tracker:
     _logins: LoginReports = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"), which become members here
+        # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"): members from here on
         self.sources = {TitleKind(kind): source for kind, source in self.sources.items()}
         self.sequel_sources = {TitleKind(kind): source for kind, source in self.sequel_sources.items()}
         ctx = CoreContext(self.session_factory, self.clock, self.sender, self.default_tz)
         self._settings = SettingsStore(ctx)
         self._queue = EventQueue(ctx)
         pollers = Pollers(
-            ctx, self._settings, self._queue, self.sources, self.sequel_sources, self.price_source, self.follow_up_source
+            ctx,
+            self._settings,
+            self._queue,
+            self.sources,
+            self.sequel_sources,
+            self.price_source,
+            self.follow_up_source,
         )
         self._polling = Polling(ctx, self._queue, pollers)
         self._titles = Titles(ctx, pollers)
@@ -177,21 +229,22 @@ class Tracker:
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
         """Put a search result into the list with status «Хочу», or open the title that is already there (an anime is
-        known by any entry of its chain; a game by its number in IGDB). Raises SourceNotConfigured when the source has no
-        keys, SourceFailed when it fails, TitleNotFound when it has no such title."""
+        known by any entry of its chain; a game by its number in IGDB). Raises BadExternalId (a TitleNotFound) for a
+        number that is no number of any source, SourceNotConfigured when the source has no keys, SourceFailed when it
+        fails, TitleNotFound when it has no such title."""
         return await self._titles.add_title(kind, external_id)
 
     async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
-        """Seasons that can be marked as watched, with their marks and records. A season with nothing released cannot."""
+        """Seasons that can be marked as watched, with their marks and records. A season with nothing out cannot."""
         return await self._statuses.watchable_seasons(title_id)
 
     async def set_season_watched(self, title_id: int, season_id: int, watched: bool) -> None:
         """Mark a season (by its record, `SeasonRow.id`) as watched, or take the mark off (the state asked for, not a
-        switch). Marking twice changes nothing; a season with nothing released or of another title is an UnknownSeason."""
+        switch). Marking twice changes nothing; a season with nothing out or of another title is an UnknownSeason."""
         await self._statuses.set_season_watched(title_id, season_id, watched)
 
     async def mark_all_released(self, title_id: int) -> ChangeResult:
-        """«Отметить все вышедшие»: every season with a released episode gets the mark. Returns whether anything changed."""
+        """«Отметить все вышедшие»: every season with a released episode gets the mark. Returns if anything changed."""
         return await self._statuses.mark_all_released(title_id)
 
     async def toggle_season(self, title_id: int, season_id: int) -> list[WatchableSeason]:
@@ -209,8 +262,8 @@ class Tracker:
         return await self._statuses.set_season_score(title_id, season_id, score)
 
     async def mark_watched(self, title_id: int) -> ChangeResult:
-        """«Посмотрел» of a movie, «Прошёл» of a game: the final status of the kind («Просмотрено», «Пройдено»), and the
-        title moves to the archive (a movie's sequels are still watched there)."""
+        """«Посмотрел» of a movie, «Прошёл» of a game: the final status of the kind («Просмотрено», «Пройдено»), and
+        the title moves to the archive (a movie's sequels are still watched there)."""
         return await self._statuses.mark_watched(title_id)
 
     async def mark_started(self, title_id: int) -> ChangeResult:
@@ -219,7 +272,8 @@ class Tracker:
 
     async def set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
         """The mark «играю здесь» on a platform of a game (`platform` as the address gives it). The same twice changes
-        nothing. Raises UnknownTitle, and UnknownPlatform for a platform the game is not on (or a title that is no game)."""
+        nothing. Raises UnknownTitle, and UnknownPlatform for a platform the game is not on (or a title that is no
+        game)."""
         return await self._statuses.set_platform_playing(title_id, platform, playing)
 
     async def mark_dropped(self, title_id: int) -> ChangeResult:
@@ -227,7 +281,8 @@ class Tracker:
         return await self._statuses.mark_dropped(title_id)
 
     async def restore_title(self, title_id: int) -> ChangeResult:
-        """«Вернуть в список»: the title leaves the archive; its first check after that records what it finds silently."""
+        """«Вернуть в список»: the title leaves the archive; its first check after that records what it finds
+        silently."""
         return await self._statuses.restore_title(title_id)
 
     async def delete_title(self, title_id: int) -> DeleteResult:
@@ -235,8 +290,9 @@ class Tracker:
         return await self._titles.delete_title(title_id)
 
     async def follow(self, kind: str, external_id: str) -> AddResult:
-        """«Следить»: a sequel of a film, an expansion or a game of the series joins the list as «Хочу» (by its id in the
-        source of the kind). Pressing twice opens it. UnknownKind for a kind that announces nothing."""
+        """«Следить»: a sequel of a film, an expansion or a game of the series joins the list as «Хочу» (by its id in
+        the source of the kind). Pressing twice opens it. UnknownKind for a kind that announces nothing; BadExternalId
+        as `add_title` has it."""
         return await self._titles.follow(kind, external_id)
 
     async def follow_sequel(self, event_id: int) -> AddResult:
@@ -251,9 +307,9 @@ class Tracker:
         query: str | None = None,
         genre: str | None = None,
     ) -> list[TitleSummary]:
-        """The rows of the list, filtered by kind, by a set of statuses (None: all), by a part of the name (`query`) and
-        by a merged genre (`genre`, as `genres` names it), in the given order (without one: as the titles were added,
-        which is the bot's list)."""
+        """The rows of the list, filtered by kind, by a set of statuses (None: all), by a part of the name (`query`)
+        and by a merged genre (`genre`, as `genres` names it), in the given order (without one: as the titles were
+        added, which is the bot's list)."""
         return await self._listing.list_titles(kind, statuses, order, query, genre)
 
     async def genres(self, kind: TitleKind | None = None, statuses: Collection[TitleStatus] | None = None) -> list[str]:
@@ -299,7 +355,8 @@ class Tracker:
         return self._samples.samples()
 
     async def send_test_event(self, sample_id: str, at: datetime | None = None) -> TestEventResult:
-        """Create a fresh sample of the given id and deliver it, at once or as if `at` were now."""
+        """Create a fresh sample of the given id and deliver it, at once or as if `at` were now. UnknownSample for an
+        id the core does not know."""
         return await self._samples.send_test_event(sample_id, at)
 
     async def delivery_check_moment(self, check: DeliveryCheck) -> datetime:
@@ -307,19 +364,22 @@ class Tracker:
         return await self._samples.delivery_check_moment(check)
 
     async def delivery_check(self, check_id: str) -> DeliveryCheckResult:
-        """«Проверка правил доставки»: the sample as if the moment of the check were now, and what the rules did with it.
-        An unknown `check_id` is a `KeyError`."""
+        """«Проверка правил доставки»: the sample as if the moment of the check were now, and what the rules did with
+        it. An unknown `check_id` is an UnknownCheck."""
         return await self._samples.delivery_check(check_id)
 
-    async def record_login_report(self, event_type: str, unique: str, device: str, address: str | None, moment: datetime) -> int | None:
-        """Queue the login report of a fact (`WEB_LOGIN` or `WEB_LOGIN_LOCKED`), its text made here; send it with `deliver_pending(force=True, only=…)`. None: reported already."""
+    async def record_login_report(
+        self, event_type: str, unique: str, device: str, address: str | None, moment: datetime
+    ) -> int | None:
+        """Queue the login report of a fact (`WEB_LOGIN` or `WEB_LOGIN_LOCKED`), its text made here; send it with
+        `deliver_pending(force=True, only=…)`. None: reported already."""
         return await self._logins.record(event_type, unique, device, address, moment)
 
     # --- copies of the database ------------------------------------------------------------------
 
     async def backup_block(self, host: str = "") -> BackupBlock:
-        """The lines of the Settings block «Копии и выгрузка» for a page opened at `host` (the `Host` of the request: the
-        Google Drive button is only for this PC); a folder that cannot be read gives the line that says so."""
+        """The lines of the Settings block «Копии и выгрузка» for a page opened at `host` (the `Host` of the request:
+        the Google Drive button is only for this PC); a folder that cannot be read gives the line that says so."""
         return await self._backups.block(host)
 
     async def make_backup_now(self) -> str:
@@ -371,8 +431,9 @@ class Tracker:
         return await self._answers.answer_kind(item_id, kind)
 
     async def answer_offer(self, item_id: int, number: int, accepted: bool) -> InboxReply:
-        """«Да» (`accepted`): the title of offer `number` is added as on the web and the item resolved; «Нет»: the next
-        offer, or the item goes to «Входящие» «не нашёл» after the last one. UnknownInboxItem when the item is gone."""
+        """«Да» (`accepted`): the title of offer `number` is added as on the web and the item resolved; «Нет»: the
+        next offer, or the item goes to «Входящие» «не нашёл» after the last one. UnknownInboxItem when the item is
+        gone."""
         return await self._answers.answer_offer(item_id, number, accepted)
 
     async def forget_inbox_item(self, item_id: int) -> bool:

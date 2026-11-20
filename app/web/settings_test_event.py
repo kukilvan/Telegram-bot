@@ -12,7 +12,7 @@ from typing import NamedTuple
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
-from app.tracker.core import DELIVERY_CHECKS, CheckOutcome
+from app.tracker.core import DELIVERY_CHECKS, CheckOutcome, UnknownCheck, UnknownSample
 from app.web import pages
 
 router = APIRouter()
@@ -73,7 +73,7 @@ async def settings_test_event(request: Request) -> Response:
     sample_id = str((await request.form()).get("sample", ""))
     try:
         result = await pages.tracker_of(request).send_test_event(sample_id)
-    except KeyError:
+    except UnknownSample:
         return await _reply(request, Answer(NO_SUCH_SAMPLE, False, 400))
     return await _reply(request, Answer(SAMPLE_SENT, True) if result.delivered else Answer(SAMPLE_NOT_SENT, False))
 
@@ -85,7 +85,7 @@ async def settings_delivery_check(request: Request) -> Response:
     check_id = str((await request.form()).get("check", ""))
     try:
         result = await pages.tracker_of(request).delivery_check(check_id)
-    except KeyError:
+    except UnknownCheck:
         return await _reply(request, Answer(NO_SUCH_CHECK, False, 400))
     if result.outcome is CheckOutcome.AT_ONCE:
         answer = Answer(CHECK_AT_ONCE.format(moment=result.moment), True)

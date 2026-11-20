@@ -29,6 +29,8 @@ PURE = (
     "drive_rows", "drive_state", "export_rows", "login_events",
 )
 MAX_LINES = 400
+FACADE_MAX_LINES = 500  # the facade grows by one pass-through method per feature (rule 7)
+FACADE_MAX_WIDTH = 120
 
 
 def lines(path: Path) -> int:
@@ -45,9 +47,19 @@ def imported_names(path: Path) -> set[str]:
     return names
 
 
-@pytest.mark.parametrize("path", [TRACKER / f"{name}.py" for name in MODULES] + POLLERS, ids=lambda p: p.name)
+@pytest.mark.parametrize(
+    "path", [TRACKER / f"{name}.py" for name in MODULES if name != "core"] + POLLERS, ids=lambda p: p.name
+)
 def test_no_part_of_the_core_is_longer_than_the_limit(path):
     assert lines(path) <= MAX_LINES
+
+
+def test_the_facade_has_a_limit_of_its_own_and_no_line_is_wider_than_120_characters():
+    path = TRACKER / "core.py"
+
+    assert lines(path) <= FACADE_MAX_LINES
+    wide = [n for n, text in enumerate(path.read_text(encoding="utf-8").splitlines(), 1) if len(text) > FACADE_MAX_WIDTH]
+    assert wide == []
 
 
 def test_the_facade_holds_only_assembly_and_hand_overs():

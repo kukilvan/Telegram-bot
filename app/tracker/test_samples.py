@@ -20,6 +20,7 @@ from app.tracker import (
 from app.tracker.cards import format_when
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
+from app.tracker.errors import UnknownCheck, UnknownSample
 from app.tracker.queue import EventQueue
 from app.tracker.results import TestEventResult
 from app.tracker.settings_store import SettingsStore
@@ -159,8 +160,11 @@ class TestSamples:
         Without `at` it goes out at once, whatever the hour: this checks that the channel works. With `at` (an aware
         moment) the sample is queued as if that moment were now and judged by the delivery rules of the owner. When
         the rules make it wait, the moment it would be released is played out too, so the owner sees the summary.
-        Only the sample itself is touched: what really waits in the queue stays where it is."""
-        sample = self._samples[sample_id]
+        Only the sample itself is touched: what really waits in the queue stays where it is. An id the core does not
+        know is an `UnknownSample`."""
+        sample = self._samples.get(sample_id)
+        if sample is None:
+            raise UnknownSample(sample_id)
         built = sample.events() if sample.events is not None else [("test", sample.build())]
         prefix = f"Тестовое событие «{sample.label}»: "
         events = [(event_type, {**payload, "text": prefix + payload["text"], "prefix": prefix}) for event_type, payload in built]
@@ -199,10 +203,10 @@ class TestSamples:
 
     async def delivery_check(self, check_id: str) -> DeliveryCheckResult:
         """«Проверка правил доставки»: sends the sample «Сериал: две серии подряд» as if the moment of the check were now
-        and says what the delivery rules did with it. An unknown `check_id` is a `KeyError`."""
+        and says what the delivery rules did with it. An unknown `check_id` is an `UnknownCheck`."""
         check = delivery_check_by_id(check_id)
         if check is None:
-            raise KeyError(check_id)
+            raise UnknownCheck(check_id)
         moment = await self.delivery_check_moment(check)
         tz = (await self.settings.delivery_rules()).tz
 

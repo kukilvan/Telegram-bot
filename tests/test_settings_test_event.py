@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 from app.bot.access import AccessMiddleware
 from app.bot.tracker_handlers import TelegramSender, register_tracker_handlers
 from app.runtime import Health
-from app.tracker.core import CheckOutcome, Tracker
+from app.tracker.core import CheckOutcome, Tracker, UnknownCheck
 from app.tracker.db import create_session_factory
 from app.tracker.test_samples import DELIVERY_CHECKS
 from app.web import create_web_app
@@ -103,8 +103,8 @@ def test_a_failing_sender_is_not_delivered_and_not_held(tracker, sender):
     assert result.outcome is CheckOutcome.NOT_DELIVERED and result.release == ""
 
 
-def test_an_unknown_moment_is_a_key_error(tracker):
-    with pytest.raises(KeyError):
+def test_an_unknown_moment_is_an_unknown_check(tracker):
+    with pytest.raises(UnknownCheck):
         run(tracker.delivery_check("gone"))
 
 
@@ -217,6 +217,32 @@ def test_an_unexpected_error_is_the_common_sentence_with_refresh(client, tracker
 
     assert "Не получилось" in fragment.text and 'href="/settings"' in fragment.text and "Обновить" in fragment.text
     assert page.status_code == 500 and "Обновить" in page.text
+
+
+def test_a_key_error_inside_a_send_is_not_no_such_sample(client, tracker, monkeypatch):
+    async def broken(sample_id, at=None):
+        raise KeyError("inside")
+
+    monkeypatch.setattr(tracker, "send_test_event", broken)
+
+    fragment = client.post("/settings/test-event", data={"sample": "ping"}, headers=HTMX)
+    page = client.post("/settings/test-event", data={"sample": "ping"})
+
+    assert texts.NO_SUCH_SAMPLE not in fragment.text and texts.NO_SUCH_SAMPLE not in page.text
+    assert "Не получилось" in fragment.text and page.status_code == 500
+
+
+def test_a_key_error_inside_a_check_is_not_no_such_moment(client, tracker, monkeypatch):
+    async def broken(check_id):
+        raise KeyError("inside")
+
+    monkeypatch.setattr(tracker, "delivery_check", broken)
+
+    fragment = client.post("/settings/delivery-check", data={"check": "friday"}, headers=HTMX)
+    page = client.post("/settings/delivery-check", data={"check": "friday"})
+
+    assert texts.NO_SUCH_CHECK not in fragment.text and texts.NO_SUCH_CHECK not in page.text
+    assert "Не получилось" in fragment.text and page.status_code == 500
 
 
 @pytest.mark.parametrize("check", DELIVERY_CHECKS, ids=lambda c: c.id)
