@@ -5,6 +5,7 @@ import asyncio
 import logging
 import subprocess
 import sys
+import tempfile
 from datetime import datetime as dt, timezone
 from pathlib import Path
 
@@ -37,6 +38,7 @@ def env(monkeypatch, tmp_path):
     monkeypatch.delenv("TRUSTED_PROXIES", raising=False)
     monkeypatch.setattr(app_main, "WEB_SECRET_FILE", tmp_path / "web_secret")  # not the real data folder
     monkeypatch.setattr(app_main, "STARTUP_FAILURE_FILE", tmp_path / "startup_failure.json")
+    monkeypatch.setattr(tempfile, "tempdir", str(tmp_path / "temp"))  # the record's second home is not the real one
     monkeypatch.setattr(app_main, "setup_logging", lambda level: None)
     return monkeypatch
 

@@ -76,7 +76,7 @@ def test_start_script_builds_and_raises_the_container_without_python():
     assert "Set-Location $PSScriptRoot" in script
     assert "docker compose up -d --build" in script
     assert "docker info" in script and "Test-Path \".env\"" in script
-    assert "python.exe -m" not in script and "Activate.ps1" not in script and "Scripts\\python" not in script
+    assert "python.exe -m" not in script and "Activate.ps1" not in script  # never starts the bot itself, only stops an old one
     assert "WEB_PORT=8081" in script and "http://localhost:" in script
     assert "E:\\" not in script
     assert not (ROOT / "launch_bot.py").exists()
@@ -98,6 +98,30 @@ def test_the_start_script_stops_only_the_old_bot_by_the_whole_command():
     for foreign in (r"python -m uvicorn app.main:app", r"python -m app.mainframe", r"python -m myapp.main",
                     r"python -m app.bot.mainframe", r"python app\main.py"):
         assert not pattern.search(foreign), foreign
+
+
+def test_the_start_script_stops_only_this_projects_old_bot_and_its_children():
+    script = _script("start-bot.ps1")
+
+    assert '$ownPython = Join-Path $PSScriptRoot ".venv\\Scripts\\python.exe"' in script
+    assert "$_.ExecutablePath -ieq $ownPython" in script  # the whole path, any case, the folder of the script itself
+    assert "$_.CommandLine -match $oldBotPattern" in script
+    assert "$old.ProcessId -contains $_.ParentProcessId" in script  # the python.exe the .venv one starts
+    assert script.index("$ownPython") < script.index("Stop-Process") < script.index("docker compose up -d --build")
+    assert "Остановлен старый бот, запущенный не через Docker" in script
+    # the old test of the pattern alone would stop any project's `-m app.main`: the stop list is filtered by the path
+    assert "Where-Object { $_.CommandLine -match $oldBotPattern })" not in script
+
+
+def test_the_start_script_waits_for_the_outcome_by_the_clock_not_by_the_number_of_checks():
+    script = _script("start-bot.ps1")
+
+    assert "$deadline = (Get-Date).AddSeconds(90)" in script
+    assert "while ((Get-Date) -lt $deadline) {" in script  # the last check starts before the deadline
+    assert "Start-Sleep -Seconds 2" in script  # a pause of 2 s between the checks
+    assert "$waited" not in script and "-le 90" not in script
+    assert script.index("$deadline") < script.index("Get-ContainerState", script.index("$deadline"))
+    assert "Жду запуска приложения (до 90 секунд)" in script and "запускается дольше обычного" in script
 
 
 def test_the_start_script_refuses_a_dollar_in_env_without_printing_the_value():

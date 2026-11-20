@@ -39,12 +39,19 @@ if ($withDollar -gt 0) {
     exit 1
 }
 
-# Бот может работать только в одном экземпляре: старого, запущенного не через Docker (из .venv), останавливаем.
-# Только целая команда "-m app.main" или "-m app.bot.main": чужие "uvicorn app.main:app", "-m app.mainframe", "-m myapp.main" не трогаем
+# Бот может работать только в одном экземпляре: старого, запущенного не через Docker, останавливаем.
+# Старый бот — это python.exe из .venv этой же папки (путь к программе целиком, без учёта регистра) с целой командой
+# "-m app.main" или "-m app.bot.main": чужие "uvicorn app.main:app", "-m app.mainframe", "-m myapp.main" и такой же
+# "-m app.main" другого проекта или базового Python не трогаем. Вместе с ним — его дочерние python.exe: на Windows python.exe
+# из .venv запускает базовый Python с той же командой.
 $oldBotPattern = '(^|\s)-m\s+app\.(bot\.)?main(\s|"|$)'
-$old = @(Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object { $_.CommandLine -match $oldBotPattern })
-if ($old.Count -gt 0) {
-    $old | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+$ownPython = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
+$pythons = @(Get-CimInstance Win32_Process -Filter "Name='python.exe'")
+$old = @($pythons | Where-Object { $_.ExecutablePath -and ($_.ExecutablePath -ieq $ownPython) -and ($_.CommandLine -match $oldBotPattern) })
+$children = @($pythons | Where-Object { $old.ProcessId -contains $_.ParentProcessId })
+$toStop = @($children) + @($old)
+if ($toStop.Count -gt 0) {
+    $toStop | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
     Write-Host "Остановлен старый бот, запущенный не через Docker"
 }
 
@@ -83,7 +90,10 @@ $baseRestarts = if ($first) { $first.Restarts } else { 0 }
 $outcome = "waiting"
 $state = $null
 Write-Host "Жду запуска приложения (до 90 секунд)…"
-for ($waited = 0; $waited -le 90; $waited += 2) {
+# Ждём по часам, а не по числу проверок: сами проверки (docker compose ps, docker inspect) тоже занимают время.
+# Последняя проверка начинается до срока
+$deadline = (Get-Date).AddSeconds(90)
+while ((Get-Date) -lt $deadline) {
     $state = Get-ContainerState
     if (-not $state) { $outcome = "failed"; break }
     if ($state.Health -eq "healthy") { $outcome = "healthy"; break }
