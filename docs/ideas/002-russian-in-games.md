@@ -1,6 +1,6 @@
 # Idea 002: Russian in games — text, voice, official and fan
 
-Status: planned — stage 9.1b, taken in by its spec
+Status: `.scratch/9-1b-games-steam/description.md`
 Added: 2026-11-20
 
 ## Why

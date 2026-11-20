@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: карточка игры (9.1b)</title>
+<style>
+  body { font: 16px/1.45 system-ui, sans-serif; margin: 0; background: #f4f4f6; color: #1d1d22; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px 20px; margin-bottom: 28px; box-shadow: 0 1px 3px #0002; }
+  .tag { font-size: 12px; color: #fff; background: #8a5cd6; border-radius: 8px; padding: 1px 8px; margin-bottom: 6px; display: inline-block; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 22px 0 8px; }
+  .meta { color: #666; margin: 0 0 8px; }
+  .hint { color: #777; font-size: 14px; margin: 4px 0 8px; }
+  .status { display: inline-block; background: #eef1fb; color: #2c4a9a; padding: 2px 10px; border-radius: 12px; font-size: 14px; }
+  ul.rows { list-style: none; margin: 0; padding: 0; }
+  ul.rows li { padding: 6px 0; border-top: 1px solid #eee; }
+  .ru { font-size: 17px; margin: 4px 0; }
+  .ru b { font-weight: 600; }
+  a { color: #3b6fd6; }
+  form.zog { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  form.zog label { width: 100%; font-size: 14px; color: #555; }
+  input[type=url] { font: inherit; font-size: 14px; padding: 4px 8px; border: 1px solid #bbb; border-radius: 6px; flex: 1 1 260px; min-width: 0; }
+  button { font: inherit; font-size: 14px; padding: 4px 14px; border-radius: 6px; border: 1px solid #3b6fd6; background: #3b6fd6; color: #fff; cursor: pointer; white-space: nowrap; }
+  button.ghost { background: #fff; color: #3b6fd6; }
+  .error { color: #b3261e; font-size: 14px; width: 100%; margin: 2px 0 0; }
+  .muted { color: #999; }
+  .new { background: #e9f7ec; border-left: 3px solid #2e8b4a; padding: 2px 8px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="note">Набросок этапа 9.1b, раскладка грубая. Новый блок — «Русский язык»: строка «Русский: …», ссылка на перевод, поле «Страница на ZoG» и кнопка «Не та игра». Ещё две мелкие правки, они <span class="new">выделены зелёным</span>: дата только в Японии (KI-35) и «цена набора целиком» у бандла (KI-43). Остальное — как сейчас. Примеры условные: что на самом деле есть у этих игр, узнает программа.</p>
+
+  <!-- 1. Официальный русский + народная озвучка, страница ZoG найдена сама -->
+  <section class="card">
+    <span class="tag">1 · есть официальный текст, озвучка — народная</span>
+    <h1>Baldur’s Gate 3</h1>
+    <p class="meta">Игра · ПК, PlayStation 5</p>
+    <p><span class="status">Хочу</span></p>
+
+    <h2>Платформы</h2>
+    <p class="muted">… строки платформ с галочками «играю здесь» — как сейчас …</p>
+
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> текст — официально; озвучка — народная</p>
+    <p class="hint">Steam — проверено сегодня в 09:00 · ZoG — проверено 18 ноября</p>
+    <p><a href="#">Страница перевода</a> (ZoG)</p>
+    <form class="zog">
+      <label for="zog1">Страница на ZoG</label>
+      <input id="zog1" type="url" value="https://www.zoneofgames.ru/games/baldurs_gate_3/">
+      <button>Сохранить</button>
+      <button class="ghost" type="button">Не та игра</button>
+    </form>
+
+    <h2>Steam</h2>
+    <p class="hint">Цены для страны «Израиль» · проверено сегодня в 09:00</p>
+    <p>₪59,90 (−70 % до 3 декабря), обычно ₪199,90</p>
+    <h3 style="font-size:16px;margin:12px 0 4px">Бандлы</h3>
+    <ul class="rows">
+      <li class="new">«Baldur’s Gate 3 + Divinity: Original Sin 2» (2 игры) — ₪220,00, цена набора целиком</li>
+    </ul>
+  </section>
+
+  <!-- 2. Только народный, играю на PS5 и ПК -> метка (ПК) -->
+  <section class="card">
+    <span class="tag">2 · только народный перевод, играю на ПК и PS5 → «(ПК)»</span>
+    <h1>Hollow Knight: Silksong</h1>
+    <p><span class="status">Хочу</span></p>
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> текст — народный (ПК)</p>
+    <p class="hint">«(ПК)» — перевод сделан для ПК-версии, а вы играете ещё и на другой платформе</p>
+    <p><a href="#">Страница перевода</a> (ZoG)</p>
+    <form class="zog">
+      <label for="zog2">Страница на ZoG</label>
+      <input id="zog2" type="url" value="https://www.zoneofgames.ru/games/hollow_knight_silksong/">
+      <button>Сохранить</button>
+      <button class="ghost" type="button">Не та игра</button>
+    </form>
+  </section>
+
+  <!-- 3. Официально всё есть: народный не показан (решение владельца) -->
+  <section class="card">
+    <span class="tag">3 · официально есть и текст, и озвучка — народный перевод не показан</span>
+    <h1>Cyberpunk 2077</h1>
+    <p><span class="status">В процессе</span></p>
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> текст и озвучка — официально</p>
+    <form class="zog">
+      <label for="zog3">Страница на ZoG</label>
+      <input id="zog3" type="url" value="https://www.zoneofgames.ru/games/cyberpunk_2077/">
+      <button>Сохранить</button>
+      <button class="ghost" type="button">Не та игра</button>
+    </form>
+  </section>
+
+  <!-- 4. Страница не найдена; вставлена чужая ссылка -->
+  <section class="card">
+    <span class="tag">4 · ZoG-страница не найдена; вставлена не та ссылка</span>
+    <h1>Hades II</h1>
+    <p><span class="status">Хочу</span></p>
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> текст — официально</p>
+    <p class="hint">Страница на ZoG не найдена — вставьте ссылку, если перевод есть</p>
+    <form class="zog">
+      <label for="zog4">Страница на ZoG</label>
+      <input id="zog4" type="url" value="https://store.steampowered.com/app/1145350/">
+      <button>Сохранить</button>
+      <p class="error">Это не страница игры на ZoG. Нужна ссылка вида https://www.zoneofgames.ru/games/…/</p>
+    </form>
+  </section>
+
+  <!-- 5. «Не та игра» нажата -->
+  <section class="card">
+    <span class="tag">5 · после «Не та игра»</span>
+    <h1>Prey</h1>
+    <p><span class="status">Хочу</span></p>
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> текст и озвучка — официально; народный — страница на ZoG не указана</p>
+    <form class="zog">
+      <label for="zog5">Страница на ZoG</label>
+      <input id="zog5" type="url" value="" placeholder="https://www.zoneofgames.ru/games/…/">
+      <button>Сохранить</button>
+    </form>
+  </section>
+
+  <!-- 6. Анонс без языков: нет данных; дата только в Японии -->
+  <section class="card">
+    <span class="tag">6 · анонс: языков ещё нет; дата есть только в Японии</span>
+    <h1>Monster Hunter Stories 3</h1>
+    <p><span class="status">Хочу</span></p>
+    <h2>Платформы</h2>
+    <ul class="rows">
+      <li>☑ ПК — 2027</li>
+      <li>☑ PlayStation 5 — 2027</li>
+      <li class="new">в Японии — 12 марта 2027</li>
+    </ul>
+    <p class="hint new">Дата только в Японии — не выход для вашей страны: сообщения «вышла» по ней не будет.</p>
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> нет данных</p>
+    <p class="hint">Языки ещё не объявлены. Проверяю: Steam — каждые 6 часов, ZoG — раз в неделю</p>
+    <form class="zog">
+      <label for="zog6">Страница на ZoG</label>
+      <input id="zog6" type="url" value="" placeholder="https://www.zoneofgames.ru/games/…/">
+      <button>Сохранить</button>
+    </form>
+  </section>
+
+  <!-- 7. Нет ни официального, ни народного -->
+  <section class="card">
+    <span class="tag">7 · источники ответили: русского нет</span>
+    <h1>Lorelei and the Laser Eyes</h1>
+    <p><span class="status">Хочу</span></p>
+    <h2>Русский язык</h2>
+    <p class="ru"><b>Русский:</b> нет</p>
+    <form class="zog">
+      <label for="zog7">Страница на ZoG</label>
+      <input id="zog7" type="url" value="https://www.zoneofgames.ru/games/lorelei_and_the_laser_eyes/">
+      <button>Сохранить</button>
+      <button class="ghost" type="button">Не та игра</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>
