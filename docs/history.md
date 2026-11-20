@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Ticket 9.1a.05
+
+- Migration 0015: table `issued_ids` (`name`, `last_id`), one row `('titles', max(titles.id) or 0)`; model `IssuedId`. `Titles._next_number` (in the write session of `_store_title`) gives `max(last_id, max(titles.id)) + 1` and keeps it in the same commit; a missing row is made again from the titles. `titles` was not rebuilt (eight tables cascade from it). A restore of an old copy brings its own `last_id` (`docs/backups.md`). KI-24 fixed. Live: the owner's database (30 titles, biggest 37) migrated, the row holds 37, a copy was made first.
+- `app/tracker/posters.py`: `shikimori_site(address)` (the `https` site of an address, or None; `app/web/posters.image_sources` reads it too) and `poster_url(stored, size, site)`: a stored address of `shikimori.<zone>` or its subdomain is shown on the host and port of the site of `SHIKIMORI_BASE_URL`; nothing else changes; stored addresses stay. `create_web_app(shikimori_base_url=…)` and `build_dispatcher(…, shikimori_base_url)` get it from `app/main.py`; the bot card and the inbox offer card use it. KI-21 fixed.
+- Two tests of `tests/test_tracker_delete.py` that relied on a reused number now say the new title gets another number. Tests: `test_tracker_issued_ids`, `test_tracker_migration_0015`, `test_poster_site`; full run 4307 passed, 3 skipped, 3 known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Ticket 9.1a.02
 
 - `app/startup_report.py`: a failure has a code (type and places, SHA-256) and a text (every word with a digit, `/` or `\` becomes `#`, 300 characters); `data/startup_failure.json` keeps `code`, `fingerprint`, `first_seen`, `reported_at`. Same code and text — reminder after 24 h (`first_seen` kept); same code, another text — a report at once only if the last one is 1 h old, else silence and the record stays; another code — at once. A record of the old form (no `code`) reads as none. When a report of the same place with another text goes out, the record takes the new text and keeps `first_seen`.

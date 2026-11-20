@@ -1,6 +1,6 @@
 # 05: Numbers never reused (migration 0015) and posters on the current Shikimori address
 
-Status: in review
+Status: accepted
 Complexity: medium (one small migration, one place that creates titles, one pure function with three callers)
 Blocked by: —
 
