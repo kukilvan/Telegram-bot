@@ -14,30 +14,30 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 
 | ID | Title | Where | Status | Fix in |
 |---|---|---|---|---|
-| KI-1 | Аниме: сдвиг частей сезона может упереться в уникальный ключ | `app/tracker/pollers/anime.py` | open | 9.1 |
+| KI-1 | Аниме: сдвиг частей сезона может упереться в уникальный ключ | `app/tracker/pollers/anime.py` | open | 9.1a |
 | KI-2 | Аниме: новый приквел у франшизы даёт дубль тайтла при повторном добавлении | `app/tracker/titles.py` | fixed | — |
 | KI-3 | Docker: проверка здоровья контейнера всегда проваливается | `docker-compose.yml` | fixed | — |
 | KI-4 | Docker: на Linux бот может не получить права на запись в `data/` | `Dockerfile` | fixed | — |
-| KI-5 | Остановка, оборвавшая отправку, может повторить сообщение после старта | `app/runtime.py` | open | 9.1 |
-| KI-6 | Сторож не видит зависание с захваченной блокировкой интерпретатора (GIL) | `app/runtime.py` | open | 9.1 |
+| KI-5 | Остановка, оборвавшая отправку, может повторить сообщение после старта | `app/runtime.py` | open | 9.1a |
+| KI-6 | Сторож не видит зависание с захваченной блокировкой интерпретатора (GIL) | `app/runtime.py` | open | 9.1a |
 | KI-7 | Перезапуск сбрасывает счётчик блокировки входа | `app/web/auth.py` | fixed | 7.2.03 |
 | KI-8 | Украденную cookie сессии выход не отзывает | `app/web/app.py` | fixed | 7.2.03 |
-| KI-9 | Остановка не дожидается начатых нажатий в боте | `app/runtime.py` | open | 9.1 |
+| KI-9 | Остановка не дожидается начатых нажатий в боте | `app/runtime.py` | open | 9.1a |
 | KI-10 | «Посмотрел» сдвигает «последнюю проверку источников» в строке веба | `app/tracker/listing.py` | fixed | — |
 | KI-11 | Веб: неподдержанный метод и ошибка сервера отвечают не в общем виде | `app/web/app.py` | fixed | — |
 | KI-12 | Чужая страница с подменой адреса (DNS rebinding) проходит проверку Origin | `app/web/app.py` | fixed | 7.2.04 |
 | KI-13 | Испорченный файл ключа сессий не пересоздаётся | `app/web/auth.py` | fixed | 7.2.03 |
 | KI-14 | Пауза повтора подключения бота сбрасывается раньше, чем в спеке | `app/runtime.py` | fixed | — |
 | KI-15 | Старт контейнера не от root всё равно проверяет PUID и PGID | `app/container_start.py` | open | 7.3 |
-| KI-16 | Сбой запуска с меняющимся текстом сообщается при каждом повторе | `app/startup_report.py` | open | 9.1 |
-| KI-17 | Запись о сбое запуска не сохраняется — сообщение при каждом повторе | `app/startup_report.py` | open | 9.1 |
-| KI-18 | `.\start-bot.ps1` останавливает и чужой `python -m app.main` | `start-bot.ps1` | open | 9.1 |
-| KI-19 | `.\start-bot.ps1` может ждать итога дольше 90 секунд | `start-bot.ps1` | open | 9.1 |
-| KI-20 | Имя `kind` для типа ошибки в `app/startup_report.py` | `app/startup_report.py` | open | 9.1 |
-| KI-21 | Постеры непроверяемых аниме пропадают при смене адреса Shikimori | `app/tracker/pollers/` | open | 9.1 |
-| KI-22 | «Бросил» во время проверки этого же тайтла может пропустить одно сообщение | `Tracker.mark_dropped` | open | 9.1 |
-| KI-23 | Факт, случившийся сразу после «Вернуть в список», становится точкой отсчёта | `Poller.record_all` | open | 9.1 |
-| KI-24 | Номер удалённого последнего тайтла достаётся следующему добавленному | `app/tracker/models.py` | open | 9.1 |
+| KI-16 | Сбой запуска с меняющимся текстом сообщается при каждом повторе | `app/startup_report.py` | open | 9.1a |
+| KI-17 | Запись о сбое запуска не сохраняется — сообщение при каждом повторе | `app/startup_report.py` | open | 9.1a |
+| KI-18 | `.\start-bot.ps1` останавливает и чужой `python -m app.main` | `start-bot.ps1` | open | 9.1a |
+| KI-19 | `.\start-bot.ps1` может ждать итога дольше 90 секунд | `start-bot.ps1` | open | 9.1a |
+| KI-20 | Имя `kind` для типа ошибки в `app/startup_report.py` | `app/startup_report.py` | open | 9.1a |
+| KI-21 | Постеры непроверяемых аниме пропадают при смене адреса Shikimori | `app/tracker/pollers/` | open | 9.1a |
+| KI-22 | «Бросил» во время проверки этого же тайтла может пропустить одно сообщение | `Tracker.mark_dropped` | open | 9.1a |
+| KI-23 | Факт, случившийся сразу после «Вернуть в список», становится точкой отсчёта | `Poller.record_all` | open | 9.1a |
+| KI-24 | Номер удалённого последнего тайтла достаётся следующему добавленному | `app/tracker/models.py` | open | 9.1a |
 | KI-25 | Очень длинный номер в адресе карточки — «Не получилось» вместо «Этого тайтла нет в списке» | `app/web/card.py` | fixed | — |
 | KI-26 | Бот пишет в журнал сбой поиска и добавления без причины | `app/bot/tracker_handlers.py` | fixed | — |
 | KI-27 | Устаревшая карточка аниме ставит галочку не тому сезону после перенумерации | `app/web/card.py` | fixed | — |
@@ -46,7 +46,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-30 | Фильтр жанров Архива: один жанр под разными именами | `Tracker.genres` | open | 9.1 |
 | KI-31 | Список: поиск в режиме «Удалить несколько» сбрасывает галочки | `app/web/title_list.py` | fixed | — |
 | KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | open | 9.1 |
-| KI-33 | Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма | `app/runtime.py` | open | 9.1 |
+| KI-33 | Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма | `app/runtime.py` | open | 9.1a |
 | KI-34 | Настройки: старые методы ядра и страница проверяют значения по-разному | `app/tracker/settings_store.py` | fixed | — |
 | KI-35 | Игры: дата выхода только в Японии считается выходом | `app/tracker/games.py` | open | 9.1 |
 | KI-36 | Игры: выход, о котором IGDB узнал больше чем через 30 дней, приходит без сообщения | `app/tracker/game_events.py` | open | 9.1 |
@@ -54,11 +54,11 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-38 | Игры: запись IGDB без точности даты читается как «дата не объявлена» | `app/tracker/games.py` | open | 9.1 |
 | KI-39 | Игры: примерная дата старшей платформы прячет точную дату своей | `app/tracker/games.py` | fixed | — |
 | KI-40 | Игры: галочка «играю здесь» меняется у платформы, которой у игры больше нет | `app/tracker/statuses.py` | fixed | — |
-| KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | open | 9.1 |
-| KI-42 | Ручной запрос «Добавить» с номером не из цифр отвечает «Не удалось связаться» | `app/tracker/titles.py` | open | 9.1 |
+| KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | open | 9.1a |
+| KI-42 | Ручной запрос «Добавить» с номером не из цифр отвечает «Не удалось связаться» | `app/tracker/titles.py` | open | 9.1a |
 | KI-43 | Цены Steam: цена бандла — для покупателя без игр набора | `app/tracker/sources/steam_prices.py` | open | 9.1 |
 | KI-44 | Цены Steam: предзаказ проверен только на собранном ответе | `app/tracker/sources/steam_prices.py` | open | 9.1 |
-| KI-45 | Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение | `app/tracker/queue.py` | open | 9.1 |
+| KI-45 | Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение | `app/tracker/queue.py` | open | 9.1a |
 | KI-46 | Цены Steam: короткая скидка может пройти без сообщения или с неверным «до» | `app/tracker/pollers/game_prices.py` | open | 9.1 |
 | KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | open | 9.1 |
 | KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | open | 9.1 |

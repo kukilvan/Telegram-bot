@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Spec 9.1a
+
+- `.scratch/9-1a-start-polling/spec.md`: the 17 entries of part 9.1a and the review 7.2 wishes F4, F5. Their «Fix in» is now `9.1a`. KI-77 (an anime episode right after «Вернуть в список» stays silent — to 9.1c) and KI-78 (a send Telegram has not answered within 5 s of a stop can repeat — to 9.2) recorded.
+- Checked in the installed aiogram 3.31: `getUpdates` failures are retried inside `_listen_updates` and never reach the dispatcher's error handler (so a session request middleware on `GetUpdates` sets the Telegram flag); handler tasks live in the private `_handle_update_tasks` (so an own outer middleware of `dp.update` tracks them); the request of `getUpdates` waits up to 70 s.
+- Decisions (with the owner's «ОК»): the facade `core.py` has a limit of its own, 500 lines, no line over 120 characters (rule 7); a send and its «delivered» mark are one unit a cancel does not cut, `Tracker.finish_sends` before the session closes, `stop_grace_period` 45 s; the stop waits 10 s for bot presses; `init: true` and the health check kills the app after 4 timeouts in a row (ADR 0015 in ticket 03); the start report's «same failure» is the type and places, a changed text at most once an hour, the record falls back to the temp folder; title numbers by a kept maximum (`issued_ids`, migration 0015), not `AUTOINCREMENT` (a rebuild of `titles` would cascade); the «could not check» window per title and source read from the events (migration 0016 drops `failure_notified_at`); the first check after a return reports facts with `happened_at` after the return; anime part moves by a fixed point; Shikimori posters rebuilt on the site of `SHIKIMORI_BASE_URL` when shown; `BadExternalId(TitleNotFound)`, `UnknownSample`, `UnknownCheck`. Five tickets, order 01 → 02 → 05 → 03 → 04; the part is 8 sessions.
+
 ## 2026-11-20 — Description 9.1 (the stage split into four parts)
 
 - `.scratch/9-1-known-issues/description.md`: the 57 open entries with «Fix in 9.1» grouped into four parts, each starting from its spec: 9.1a start, stop, polling and delivery (KI-1, 5, 6, 9, 16–24, 33, 41, 42, 45; with the review 7.2 wishes F4, F5), 9.1b games and Steam prices (KI-35–38, 43, 44, 46, 47, 50–55), 9.1c Лента, web and login (KI-28–30, 32, 48, 65, 72–76), 9.1d «Входящие», copies and code health (KI-49, 56–64, 66–69, 71); a direction of the fix per entry; about 24 sessions.

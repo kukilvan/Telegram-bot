@@ -1,4 +1,4 @@
-Status: in review
+Status: accepted
 
 # Spec 9.1a: start, stop, polling and delivery
 
