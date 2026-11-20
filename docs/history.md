@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Description 9.1 (the stage split into four parts)
+
+- `.scratch/9-1-known-issues/description.md`: the 57 open entries with «Fix in 9.1» grouped into four parts, each starting from its spec: 9.1a start, stop, polling and delivery (KI-1, 5, 6, 9, 16–24, 33, 41, 42, 45; with the review 7.2 wishes F4, F5), 9.1b games and Steam prices (KI-35–38, 43, 44, 46, 47, 50–55), 9.1c Лента, web and login (KI-28–30, 32, 48, 65, 72–76), 9.1d «Входящие», copies and code health (KI-49, 56–64, 66–69, 71); a direction of the fix per entry; about 24 sessions.
+- The owner's decisions: four parts; KI-35 — a release in Japan only is not a release, the card shows it on a line of its own; KI-46 — short Steam discounts stay as they are (`won't fix` with a test); no wishes beyond the entries. A new entry status `won't fix (test: …)` for what the app cannot fix (KI-43 with the note «цена набора целиком», KI-46, KI-72, KI-48 if no source has data). Taken by the agent and confirmed by «ОК»: «Недавно» adds what came out before adding (KI-29, changes question 1 of the 5.3 description), one name per genre (KI-30), the offer date as precise as the card's (KI-64), a login report sent as soon as Telegram answers (KI-73), the chosen phone filter in sight without JavaScript (KI-74), the unread `.env` variables removed by the session (KI-49).
+- `docs/project-spec.md` (stage 9.1: the parts and the count), `PROJECT_CONTEXT.md` (Next step «Спека 9.1a», the stages table). Accepted by the owner («ОК»).
+
 ## 2026-11-17 — Plan: the known issues and the NAS before real use
 
 - The owner's decision after review 7.2: order 7.1 → 7.2 → 9.1 → 7.3 → 9.2 → 8 (was 9 → 8 → 7.3). Stage 9 split: 9.1 fixes every open `KNOWN_ISSUES.md` entry before the move (the owner chose all of them over a triage), 9.2 is the fixes after 1–2 weeks of real use on the NAS with the live check of early tickets. 7.3 comes before real use and stage 8; its checks may run on the NAS, its guide names this repository until stage 8.

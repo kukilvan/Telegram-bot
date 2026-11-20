@@ -1,6 +1,6 @@
 # Stage 9.1: every open known issue fixed before the move
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. The stage is planned in `docs/project-spec.md` (stage 9.1); the order 9.1 → 7.3 → 9.2 → 8 is the owner's decision of 2026-11-17. ADRs it leans on: 0004 (no own JavaScript), 0007 (bot, polling and web in one process), 0009 (no PlayStation prices), 0010 (the bot takes posts and names), 0011 (a followed expansion is a game of its own), 0012 (Drive copies), 0014 (sign-ins in a file outside the database). **This description splits the stage into four parts** (decision 1); each part skips the description step and starts with its spec.
 
