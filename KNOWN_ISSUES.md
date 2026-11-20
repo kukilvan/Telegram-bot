@@ -90,6 +90,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | open | 9.1 |
 | KI-75 | Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key | `app/web/sessions.py` | open | 9.1 |
 | KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | 9.1 |
+| KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | open | 9.1c |
+| KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
 
 ## Entries
 
@@ -792,3 +794,23 @@ Format of a new entry:
 - Likelihood / impact: only if the owner buys a Cyrillic domain. Workaround: write the name in its `xn--…` form (the domain registrar shows it), which is taken.
 - Status: open.
 - Found: 2026-11-17, review 7.2 (F3).
+
+
+## KI-77. Anime: an episode out right after «Вернуть в список» passes silently
+
+- Where: `Poller.record_all` with the reference point of the first check after a return (spec 9.1a, section 4.2, KI-23); the anime episode events carry no `happened_at`.
+- What's wrong: after 9.1a the first check after a return reports the facts that happened after the return, by the moment each one came out. An anime episode found by a check without a schedule gets the moment it was found, so its moment cannot tell «out before the return» from «out after it»; the anime episode events are therefore left without a moment and stay silent, as before 9.1a.
+- How to reproduce: return an anime to the list a minute before its episode airs; the first check after the return finds the episode and records it as the reference point — no «вышла серия».
+- Likelihood / impact: very rare (a window of up to a minute). One missed message; the episode is in the card.
+- Status: open. Fix in 9.1c: once an episode keeps whether its moment is from the schedule (KI-28, KI-32), an episode with a schedule moment gets `happened_at`.
+- Found: 2026-11-20, spec 9.1a.
+
+
+## KI-78. A send Telegram has not answered within 5 s of a stop can come again after the start
+
+- Where: `DeliveryService._send` and `Tracker.finish_sends` (spec 9.1a, section 2.1, KI-5); `TelegramPart.close` in `app/main.py`.
+- What's wrong: on a stop, a send in progress gets 5 s to finish with its «delivered» mark. If Telegram has not answered by then, the HTTP session closes, the send fails and its entry stays pending; if Telegram had in fact taken the message, it comes again after the start. Only Telegram knows whether it took it.
+- How to reproduce: a stop while Telegram hangs on a send (a slow network) for more than 5 s.
+- Likelihood / impact: very rare. One repeated message, no loss.
+- Status: open. Fix in 9.2 only if met in real use (e.g. a longer grace).
+- Found: 2026-11-20, spec 9.1a.
