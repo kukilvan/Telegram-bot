@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-20 — Ticket 9.1a.02
+
+- `app/startup_report.py`: a failure has a code (type and places, SHA-256) and a text (every word with a digit, `/` or `\` becomes `#`, 300 characters); `data/startup_failure.json` keeps `code`, `fingerprint`, `first_seen`, `reported_at`. Same code and text — reminder after 24 h (`first_seen` kept); same code, another text — a report at once only if the last one is 1 h old, else silence and the record stays; another code — at once. A record of the old form (no `code`) reads as none. When a report of the same place with another text goes out, the record takes the new text and keeps `first_seen`.
+- The record that cannot be saved in `data` goes to `<temp>/release-tracker-startup_failure.json` (one log line); both files are read, the later wins; `forget_failure` removes both. Names: `exc_type` instead of `kind`, `Fingerprint` (code, full), `decide(fingerprint, …)`, no `Decision.first_seen` (KI-20).
+- `start-bot.ps1`: stops only a `python.exe` whose `ExecutablePath` is this folder's `.venv\Scripts\python.exe` with the `-m app.main` command, and its children by `ParentProcessId`; the wait runs by a `Get-Date` deadline of 90 s, a pause of 2 s (KI-18, 19).
+- Live: a dummy `python -m app.main` of another folder on the base Python survived `.\start-bot.ps1`; a dummy from this `.venv` with its child was stopped; the start ended with «Готово», `/health` 200, no red text, `poll_due` ran.
+- Tests: `tests/test_startup_report.py` rewritten (sequence of the spec, temp record, names), two checks in `tests/test_docker_files.py`; full run 4258 passed, 3 skipped, 2 known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-20 — Ticket 9.1a.01
 
 - `app/tracker/core.py` (the facade) rewrapped to 455 lines, no line over 120 characters; rule 7 of `docs/coding-standards.md` and `tests/test_tracker_core_split.py` now say 500 lines / 120 characters for the facade (other core modules stay at 400).
