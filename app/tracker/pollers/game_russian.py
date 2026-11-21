@@ -5,7 +5,8 @@ Spec 5.3–5.5, 5.9 and 3.1 of stage 9.1b (idea 002). What a look is and what it
 
 Each pass (every minute), after the prices and the follow-ups, the snapshots `russian_official` are brought in line with
 the rule «игра для русского» (`for_russian`: «Хочу» or «В процессе», any platforms) in a constant number of reads: such
-a game without a snapshot gets an empty one (`{}`), due now. A snapshot is never dropped (the card keeps the line;
+a game without a snapshot gets an empty one (`{}`), due now (`reconcile`, shared with the ZoG check of
+`pollers/game_zog`). A snapshot is never dropped (the card keeps the line;
 deleting a title deletes it), so a press makes none and drops none: it only withdraws the undelivered Russian events of
 the games that left «Хочу» and «В процессе» (`withdraw_left`). The due games are the games for Russian whose time has
 come, never-checked ones first; a game that left the two statuses is not due, so its check stops.
@@ -21,6 +22,9 @@ all the games in one write session (`EventQueue.enqueue_all`, the check of each 
 two: `DueTitle.statuses`). Third, each look stored in a write session of its own, next check in 6 hours; while Steam
 has none and IGDB is «not asked yet» nothing is stored (the snapshot stays `{}`). A failure waits 30 minutes and joins
 the «could not check» messages of the pass, with the source «Steam».
+
+The card's view joins the official part and the ZoG part (`GameZog.card_fan`, as `FanCard`): one line, the sources hint
+«Steam — проверено … · ZoG — проверено …», the page hint and the link «Страница перевода» when a fan segment is shown.
 """
 
 import asyncio
@@ -33,6 +37,7 @@ from sqlalchemy import or_, select
 
 from app.providers.steam import MAX_ITEMS
 from app.tracker import failures, games, russian, russian_events, storage
+from app.tracker.sources import zog_pages
 from app.tracker.cards import RussianView, local_moment
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.game_scope import GameScope
@@ -104,7 +109,7 @@ class GameRussian:
         looked at again in 30 minutes."""
         if self.source is None:
             return []
-        due = await asyncio.to_thread(self._reconcile)
+        due = await asyncio.to_thread(reconcile, self.ctx, self.kind, SOURCE_KEY)
         if not due:
             return []
         read, broken = await asyncio.to_thread(self._read, due)
@@ -112,46 +117,6 @@ class GameRussian:
         await asyncio.to_thread(self._queue_and_store, answered)
         logging.info("Russian check: %s games, %s failed", len(due), len(broken))
         return [(game, exc) for game, exc in broken if await asyncio.to_thread(self._postpone, game)]
-
-    # --- the reconciliation and the due games ---
-
-    def _reconcile(self) -> list[DueTitle]:
-        """An empty snapshot for every game for Russian without one (decided again in the write session that makes
-        them); returns the due games, never-checked first, then the earliest, then by title."""
-        now = self.ctx.now()
-        with self.ctx.session_factory() as session:
-            missing = self._missing(session)
-        if missing:
-            with self.ctx.write_session() as session:
-                for title_id in self._missing(session):
-                    session.add(SourceSnapshot(title_id=title_id, source=SOURCE_KEY, state={}, observed_at=now, next_check_at=None))
-                session.commit()
-        with self.ctx.session_factory() as session:
-            rows = session.execute(
-                select(Title.id, Title.name, ExternalId.external_id)
-                .join(SourceSnapshot, SourceSnapshot.title_id == Title.id)
-                .join(ExternalId, (ExternalId.title_id == Title.id) & (ExternalId.role == PRIMARY_ROLE))
-                .where(
-                    Title.kind == self.kind,
-                    Title.status.in_(RUSSIAN_STATUSES),
-                    SourceSnapshot.source == SOURCE_KEY,
-                    or_(SourceSnapshot.next_check_at.is_(None), SourceSnapshot.next_check_at <= now),
-                )
-                .order_by(SourceSnapshot.next_check_at.is_not(None), SourceSnapshot.next_check_at, Title.id)
-            )
-            return [
-                DueTitle(title_id, self.kind, name, external_id, SOURCE_KEY, sequels=False, statuses=RUSSIAN_STATUSES)
-                for title_id, name, external_id in rows
-            ]
-
-    def _missing(self, session) -> list[int]:
-        """The games for Russian without a snapshot, in one read."""
-        have = select(SourceSnapshot.title_id).where(SourceSnapshot.source == SOURCE_KEY)
-        return list(session.scalars(
-            select(Title.id)
-            .where(Title.kind == self.kind, Title.status.in_(RUSSIAN_STATUSES), Title.id.not_in(have))
-            .order_by(Title.id)
-        ))
 
     # --- phase 1: read and ask ---
 
@@ -194,7 +159,7 @@ class GameRussian:
             back = restored_at.get(game.id)
             read.append(_Game(
                 game, previous, stored.observed_at, back is not None and stored.observed_at < back, own.steam_id or None,
-                own.russian, _played_elsewhere(scope, game.id, own),
+                own.russian, played_elsewhere(scope, game.id, own),
             ))
         return read, broken
 
@@ -304,11 +269,12 @@ class GameRussian:
     # --- what the card reads (spec 5.3, 5.4) ---
 
     def card_view(
-        self, session, title: Title, game: games.GameState, scope: GameScope, tz: tzinfo
+        self, session, title: Title, game: games.GameState, scope: GameScope, tz: tzinfo, fan: "FanCard | None" = None
     ) -> RussianView | None:
-        """Russian on the card of `title` (`game`: its own state): the line and the hints. None — the core has no source
-        of the check; the game is in another status with nothing known; its look cannot be read (the check reports it).
-        Before the first check the line reads by what IGDB gave. One read: the snapshot."""
+        """Russian on the card of `title` (`game`: its own state; `fan`: its ZoG part, `GameZog.card_fan`): the line,
+        the hints and the ZoG link. None — the core has no source of the check; the game is in another status with
+        nothing known; its look cannot be read (the check reports it). Before the first check the line reads by what
+        IGDB gave. One read: the snapshot."""
         if self.source is None:
             return None
         stored = storage.snapshot_of(session, title.id, SOURCE_KEY)
@@ -318,32 +284,81 @@ class GameRussian:
             logging.warning("title %s: a spoiled official Russian look, no block on its card: %r", title.id, spoiled)
             return None
         active = for_russian(title.status)
-        if look is not None and look.support is not None:
-            official, pc, source = look.support, look.pc_only, look.source
-        elif isinstance(game.russian, Support):  # nothing checked yet, or checked with no data: IGDB has some now
-            official, pc, source = game.russian, False, russian.IGDB
-        else:
-            official, pc, source = None, False, russian.STEAM if (look and look.appid) else russian.IGDB
-        line = russian.line(official, pc, None, _played_elsewhere(scope, title.id, game))
+        official, pc, source = russian.official_of(look, game.russian)
+        fan_look = fan.look if fan is not None else None
+        line = russian.line(official, pc, fan_look.fan if fan_look else None, played_elsewhere(scope, title.id, game))
         if not active and line.no_data:
             return None
-        hints: list[str] = []
-        if look is not None:
-            now = local_moment(self.ctx.now(), tz)
-            moment = moment_in_words(local_moment(stored.observed_at, tz), now)
-            hints.append(HINT_CHECKED.format(source=_SOURCE_WORDS[source], moment=moment))
-        elif active:
-            hints.append(HINT_NOT_CHECKED)
+        checked = [checked_hint(_SOURCE_WORDS[source], stored.observed_at, self.ctx.now(), tz)] if look is not None else []
+        checked += [fan.checked] if fan is not None and fan.checked else []
+        hints: list[str] = [" · ".join(checked)] if checked else ([HINT_NOT_CHECKED] if active else [])
         if line.pc:
             hints.append(HINT_PC)
+        if fan is not None and fan.page_hint:
+            hints.append(fan.page_hint)
         if line.no_data and look is not None:
             hints.append(HINT_NO_DATA_STEAM if game.steam_id else HINT_NO_DATA_IGDB)
         if not active:
             hints.append(HINT_OTHER_STATUS)
-        return RussianView(line.text, tuple(hints))
+        link = zog_pages.page_url(fan_look.page) if line.fan and fan_look and fan_look.page else ""
+        return RussianView(line.text, tuple(hints), link)
 
 
-def _played_elsewhere(scope: GameScope, title_id: int, game: games.GameState) -> bool:
+@dataclass(frozen=True)
+class FanCard:
+    """The ZoG part of the card (`GameZog.card_fan`): the stored state (None — not checked), the part of the sources
+    hint («ZoG — проверено 18 ноября», empty — no page read) and the hint about the page (empty — none)."""
+
+    look: russian.FanLook | None
+    checked: str = ""
+    page_hint: str = ""
+
+
+def checked_hint(source: str, observed_at: datetime, now: datetime, tz: tzinfo) -> str:
+    """«Steam — проверено сегодня в 09:00»: a source and the moment of its last check on the owner's clock."""
+    return HINT_CHECKED.format(source=source, moment=moment_in_words(local_moment(observed_at, tz), local_moment(now, tz)))
+
+
+def reconcile(ctx: CoreContext, kind: TitleKind, source_key: str) -> list[DueTitle]:
+    """An empty snapshot of `source_key` (`russian_official`, `zog`) for every game for Russian without one (decided
+    again in the write session that makes them), due now; none is dropped. Returns the due games, never-checked first,
+    then the earliest, then by title."""
+    now = ctx.now()
+    with ctx.session_factory() as session:
+        missing = _missing(session, kind, source_key)
+    if missing:
+        with ctx.write_session() as session:
+            for title_id in _missing(session, kind, source_key):
+                session.add(SourceSnapshot(title_id=title_id, source=source_key, state={}, observed_at=now, next_check_at=None))
+            session.commit()
+    with ctx.session_factory() as session:
+        rows = session.execute(
+            select(Title.id, Title.name, ExternalId.external_id)
+            .join(SourceSnapshot, SourceSnapshot.title_id == Title.id)
+            .join(ExternalId, (ExternalId.title_id == Title.id) & (ExternalId.role == PRIMARY_ROLE))
+            .where(
+                Title.kind == kind,
+                Title.status.in_(RUSSIAN_STATUSES),
+                SourceSnapshot.source == source_key,
+                or_(SourceSnapshot.next_check_at.is_(None), SourceSnapshot.next_check_at <= now),
+            )
+            .order_by(SourceSnapshot.next_check_at.is_not(None), SourceSnapshot.next_check_at, Title.id)
+        )
+        return [
+            DueTitle(title_id, kind, name, external_id, source_key, sequels=False, statuses=RUSSIAN_STATUSES)
+            for title_id, name, external_id in rows
+        ]
+
+
+def _missing(session, kind: TitleKind, source_key: str) -> list[int]:
+    """The games for Russian without a snapshot of `source_key`, in one read."""
+    have = select(SourceSnapshot.title_id).where(SourceSnapshot.source == source_key)
+    return list(session.scalars(
+        select(Title.id).where(Title.kind == kind, Title.status.in_(RUSSIAN_STATUSES), Title.id.not_in(have)).order_by(Title.id)
+    ))
+
+
+def played_elsewhere(scope: GameScope, title_id: int, game: games.GameState) -> bool:
     """The owner has «играю здесь» in the game on a platform other than PC that the game is on (`GameScope.told`
     counts a platform without a row as marked; here only the game's own platforms count)."""
     return russian.elsewhere([platform for platform in scope.told(title_id) if games.has_platform(game, platform)])

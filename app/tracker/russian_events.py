@@ -5,8 +5,12 @@ reference point by `russian.is_reference`; here the parts become a message. Each
 a line each in a summary and in «Недавно». The official event: «🎮 В «Stray» появился русский текст», «… появилась
 русская озвучка», «… появились русский текст и озвучка», with « (ПК)» at the end by the rule of the line (official
 data from Steam, the owner plays on another platform too). Its key is `moved_key("game:<id>:russian:official:<parts>",
-previous_look)`: found again after a failed store — dropped; a real later appearance — told. `TYPES` is the one list of
-the types (the buttons read it: «📄 Карточка» and «🛒 Открыть в Steam» when the payload has `steam_id`).
+previous_look)`: found again after a failed store — dropped; a real later appearance — told. The fan event: «🎮 Для
+«Baldur’s Gate 3» вышла народная русская озвучка», «… вышел народный русский перевод текста», «… вышли народный русский
+перевод текста и озвучка», « (ПК)» when the owner plays on another platform too (ZoG's data is about the PC version);
+its key is `moved_key("game:<id>:russian:fan:<page>:<parts>", previous_look)`. `TYPES` is the one list of the types
+(the buttons read it: «📄 Карточка», then «🛒 Открыть в Steam» when the payload has `steam_id`, «🌐 Страница перевода»
+when it has `zog_page`).
 """
 
 from datetime import datetime
@@ -21,7 +25,8 @@ from app.tracker.russian import PC_MARK, Support, parts_key
 _ICON = KINDS[TitleKind.GAME].icon
 
 OFFICIAL = "game_russian_official"
-TYPES = (OFFICIAL,)  # the one list of the types of the events of Russian
+FAN = "game_russian_fan"
+TYPES = (OFFICIAL, FAN)  # the one list of the types of the events of Russian
 
 
 def official_text(name: str, parts: Support, pc: bool) -> str:
@@ -54,6 +59,34 @@ def official_event(
     return DetectedEvent(OFFICIAL, key, data.pop("text"), data)
 
 
+def fan_text(name: str, parts: Support, pc: bool) -> str:
+    """«🎮 Для «Lorelei and the Laser Eyes» вышел народный русский перевод текста»; voice — «вышла народная русская
+    озвучка»; both — «вышли народный русский перевод текста и озвучка»; « (ПК)» at the end when `pc`."""
+    if parts.text and parts.voice:
+        what = "вышли народный русский перевод текста и озвучка"
+    elif parts.text:
+        what = "вышел народный русский перевод текста"
+    else:
+        what = "вышла народная русская озвучка"
+    text = f"{_ICON} Для «{name}» {what}"
+    return f"{text} {PC_MARK}" if pc else text
+
+
+def fan_payload(name: str, parts: Support, zog_page: str, pc: bool) -> dict[str, Any]:
+    """`{"text", "name", "parts", "zog_page", "pc"}` of a fan event."""
+    return {"text": fan_text(name, parts, pc), "name": name, "parts": parts_key(parts), "zog_page": zog_page, "pc": pc}
+
+
+def fan_event(
+    title_id: int, name: str, parts: Support, zog_page: str, pc: bool, previous_look: datetime
+) -> DetectedEvent:
+    """The event of the fan parts that appeared on the ZoG page `zog_page`; `previous_look` — the moment of the stored
+    ZoG state it compares with."""
+    data = fan_payload(name, parts, zog_page, pc)
+    key = moved_key(f"game:{title_id}:russian:fan:{zog_page}:{parts_key(parts)}", previous_look)
+    return DetectedEvent(FAN, key, data.pop("text"), data)
+
+
 # --- «Тестовое событие» ---------------------------------------------------------------------------------------------
 
 _SAMPLE_GAME = ("Hollow Knight: Silksong", "1030300")  # the button of the sample opens the page of a real game
@@ -64,7 +97,12 @@ def _sample_official() -> tuple[str, dict[str, Any]]:
     return OFFICIAL, official_payload(name, Support(False, True), "steam", steam_id, False)
 
 
+def _sample_fan() -> tuple[str, dict[str, Any]]:
+    return FAN, fan_payload("Baldur’s Gate 3", Support(False, True), "baldurs_gate_3", False)
+
+
 # (id, menu label, the events of the sample: type and payload each) — events of the real type, so the button works
 TEST_SAMPLES: list[tuple[str, str, Any]] = [
     ("game-russian", "Игра: появился русский язык", lambda: [_sample_official()]),
+    ("game-russian-fan", "Игра: народный перевод", lambda: [_sample_fan()]),
 ]

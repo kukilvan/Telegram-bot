@@ -130,6 +130,7 @@ class Tracker:
     price_source: Any = None  # the Steam prices of the games (`SteamPriceSource`); None — prices are not checked
     follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
     language_source: Any = None  # Steam's languages of the games (`SteamLanguageSource`); None — Russian not checked
+    zog_source: Any = None  # the ZoG pages of the games (`ZogProvider`); None — fan Russian not checked
     imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
     playstation_source: Any = None  # PlayStation Store (`PlayStationProvider`), asked at a click; None: no check
     database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies
@@ -168,6 +169,7 @@ class Tracker:
             self.price_source,
             self.follow_up_source,
             self.language_source,
+            self.zog_source,
         )
         self._settings.after_save = pollers.after_marks  # a save of Settings ends the checks it stops at once
         self._polling = Polling(ctx, self._queue, pollers)

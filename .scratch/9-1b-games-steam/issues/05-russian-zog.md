@@ -1,6 +1,6 @@
 # 05: Russian in games, the fan part — the ZoG check
 
-Status: open
+Status: in review
 Complexity: complex (a new client, page parsing, finding a page, a weekly check, fan messages, an ADR)
 Blocked by: 04 (`russian`, `russian_events`, the block and the line, `DueTitle.statuses`, the Russian part of `after_marks`)
 

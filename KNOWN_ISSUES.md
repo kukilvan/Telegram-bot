@@ -94,6 +94,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | open | 9.1c |
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
 | KI-79 | Russian: a game with a Steam page but no languages there, and IGDB not asked yet, says «Ещё не проверяли» up to 6 hours | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
+| KI-80 | ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint | `app/tracker/pollers/game_zog.py` (spec 9.1b, 5.6) | open | 9.2 |
 
 ## Entries
 
@@ -826,3 +827,12 @@ Format of a new entry:
 - Likelihood / impact: rare (old announced games with a Steam page), once per game. A hint that is wrong for at most 6 hours; no message lost or false.
 - Status: open. Fix in 9.2 only if met in real use (e.g. a hint of its own for «Steam silent, IGDB not asked»).
 - Found: 2026-11-21, ticket 9.1b.04 (self-check on the owner's PC).
+
+## KI-80. ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint
+
+- Where: `GameZog._look` (spec 9.1b, section 5.6; ADR 0016).
+- What's wrong: a stored page with an unreadable layout keeps its last support and the card says «Страницу на ZoG не удалось прочитать». A game whose page is not known yet (never checked, or not found before) meets the same layout while finding a page: the check cannot tell the game's page from another one, so it keeps the state as it was, logs once a day and tries again in a week. Its card shows no ZoG hint at all (or the old «не найдена»), not «не удалось прочитать».
+- How to reproduce: a test page whose `<title>` is not «… | Игровой архив на Zone of Games» answered for the first address of a game added just now.
+- Likelihood / impact: only while ZoG's layout is broken (the log says so every day); the fan part of new games is unknown for that time anyway. No message lost or false.
+- Status: open. Fix in 9.2 only if met (e.g. the state `{"page": null, "by": "unreadable"}` with the hint of an unreadable page).
+- Found: 2026-11-21, ticket 9.1b.05.

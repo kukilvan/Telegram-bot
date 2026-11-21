@@ -81,6 +81,7 @@
         <h2 id="russian-heading">Русский язык</h2>
         <p class="russian-line"><b>Русский:</b> {{ russian.line }}</p>
         {% for hint in russian.hints %}<p class="hint">{{ hint }}</p>{% endfor %}
+        {% if russian.zog_link %}<p class="russian-link"><a href="{{ russian.zog_link }}" target="_blank" rel="noopener">Страница перевода</a></p>{% endif %}
       </section>
       {% endif %}
 

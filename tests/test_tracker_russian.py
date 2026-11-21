@@ -1,7 +1,9 @@
 """Russian in games, the pure part (spec 5.1, 5.2, 5.5 and 5.8 of stage 9.1b, ticket 04): the line «Русский: …» for
 every row of 5.2 and the rule of «(ПК)»; the strict reading of the supports, the looks and the key `russian` of the own
 snapshot; the next look («no data» keeps the previous, «not asked yet» stores nothing), the reference point and what
-appeared; the texts, keys, payloads and the sample of `russian_events`; the buttons; `DueTitle.statuses`.
+appeared; the texts, keys, payloads and the sample of `russian_events`; the buttons; `DueTitle.statuses`. Ticket 05:
+the fan segment of the line, the ZoG states read strictly, the fan news with the official filter, the fan texts, keys,
+payloads and the sample.
 """
 
 from datetime import datetime
@@ -11,7 +13,10 @@ import pytest
 from app.tracker import actions, games, russian, russian_events
 from app.tracker.games import GameState, carry_over
 from app.tracker.platforms import Platform
-from app.tracker.russian import IGDB, NOT_ASKED, STEAM, Look, Support, appeared, is_reference, line, next_look
+from app.tracker.russian import (
+    FOUND, IGDB, NOT_ASKED, NOT_FOUND, OWNER, REJECTED, STEAM, FanLook, Look, Support, appeared, fan_news, is_reference,
+    line, next_look, official_of,
+)
 
 BOTH = Support(True, True)
 TEXT = Support(True, False)
@@ -221,7 +226,7 @@ def test_the_pc_mark_ends_the_message():
 
 
 def test_the_sample_is_an_event_of_the_real_type_with_the_steam_page():
-    [(sample_id, label, events)] = russian_events.TEST_SAMPLES
+    (sample_id, label, events), _fan = russian_events.TEST_SAMPLES
     [(event_type, payload)] = events()
 
     assert (sample_id, label) == ("game-russian", "Игра: появился русский язык")
@@ -239,3 +244,113 @@ def test_the_buttons_of_an_official_event_read_the_one_list():
         assert [button.label for button in buttons] == ["📄 Карточка", "🛒 Открыть в Steam"]
         assert buttons[1].url == "https://store.steampowered.com/app/1332010/"
         assert [button.label for button in actions.event_actions(event_type, 3, 9, {"steam_id": None})] == ["📄 Карточка"]
+
+
+# --- the fan part (ticket 05) ----------------------------------------------------------------------------------------
+
+
+def test_the_line_says_whether_a_fan_segment_is_shown():
+    assert line(TEXT, False, VOICE, False).fan is True
+    assert line(TEXT, False, TEXT, False).fan is False  # the official has it: not shown
+    assert line(NO, False, NO, False).fan is False
+
+
+@pytest.mark.parametrize(
+    "look, state",
+    [
+        (FanLook("baldurs_gate_3", FOUND, BOTH), {"page": "baldurs_gate_3", "by": "found", "text": True, "voice": True}),
+        (FanLook("hades_2", OWNER, VOICE, True), {"page": "hades_2", "by": "owner", "unreadable": True, "text": False, "voice": True}),
+        (FanLook("stray", FOUND, None, True), {"page": "stray", "by": "found", "unreadable": True}),
+        (FanLook(None, NOT_FOUND), {"page": None, "by": "none"}),
+        (FanLook(None, REJECTED), {"page": None, "by": "rejected"}),
+    ],
+)
+def test_the_zog_states_of_the_spec_read_back(look, state):
+    assert look.state() == state
+    assert FanLook.from_state(state) == look
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        None, [], {"page": None, "by": "found"}, {"page": "x", "by": "none"}, {"page": None, "by": "none", "text": True},
+        {"page": "x", "by": "found", "text": True}, {"page": "x", "by": "found", "unreadable": False},
+        {"page": 3, "by": "found"}, {"page": "", "by": "owner"}, {"page": "x", "by": "somebody"},
+    ],
+)
+def test_a_spoiled_zog_state_raises(state):
+    with pytest.raises(ValueError):
+        FanLook.from_state(state)
+
+
+def test_an_empty_zog_state_is_not_checked_and_only_a_page_gives_fan_data():
+    assert FanLook.from_state({}) is None
+    assert FanLook("stray", FOUND, NO).fan == NO
+    assert FanLook(None, NOT_FOUND).fan is None
+
+
+PAGE = FanLook("baldurs_gate_3", FOUND, TEXT)
+
+
+@pytest.mark.parametrize(
+    "previous, new, official, restored, told",
+    [
+        (PAGE, FanLook("baldurs_gate_3", FOUND, BOTH), None, False, VOICE),
+        (PAGE, FanLook("baldurs_gate_3", FOUND, BOTH), VOICE, False, None),  # the official has the voice
+        (FanLook("x", FOUND, NO), FanLook("x", FOUND, BOTH), TEXT, False, VOICE),  # the official text filters the text
+        (PAGE, FanLook("baldurs_gate_3", FOUND, BOTH), None, True, None),  # first check after «Вернуть в список»
+        (None, FanLook("baldurs_gate_3", FOUND, BOTH), None, False, None),  # the first read
+        (FanLook("x", FOUND, None, True), FanLook("x", FOUND, BOTH), None, False, None),  # never read before
+        (FanLook("old", FOUND, NO), FanLook("new", FOUND, BOTH), None, False, None),  # another page
+        (FanLook(None, NOT_FOUND), FanLook("x", FOUND, BOTH), None, False, None),
+        (PAGE, FanLook("baldurs_gate_3", FOUND, TEXT, True), None, False, None),  # unreadable keeps the support
+        (FanLook("x", FOUND, BOTH), FanLook("x", FOUND, NO), None, False, None),  # gone: silent
+        (PAGE, FanLook(None, NOT_FOUND), None, False, None),
+    ],
+)
+def test_the_fan_news(previous, new, official, restored, told):
+    assert fan_news(previous, new, official, restored) == told
+
+
+def test_the_official_part_the_line_reads():
+    assert official_of(Look(STEAM, "1", TEXT), BOTH) == (TEXT, True, STEAM)
+    assert official_of(Look(None, "1"), BOTH) == (BOTH, False, IGDB)  # checked, no data: IGDB has some now
+    assert official_of(None, NOT_ASKED) == (None, False, IGDB)
+    assert official_of(Look(None, "1"), None) == (None, False, STEAM)
+
+
+@pytest.mark.parametrize(
+    "name, parts, text, key",
+    [
+        ("Lorelei and the Laser Eyes", TEXT, "🎮 Для «Lorelei and the Laser Eyes» вышел народный русский перевод текста", "text"),
+        ("Baldur’s Gate 3", VOICE, "🎮 Для «Baldur’s Gate 3» вышла народная русская озвучка", "voice"),
+        ("Split Fiction", BOTH, "🎮 Для «Split Fiction» вышли народный русский перевод текста и озвучка", "text_voice"),
+    ],
+)
+def test_the_fan_texts_keys_and_payloads(name, parts, text, key):
+    event = russian_events.fan_event(7, name, parts, "some_page", False, PREVIOUS)
+
+    assert event.type == russian_events.FAN
+    assert event.text == text
+    assert event.dedup_key == f"game:7:russian:fan:some_page:{key}:from:20261121T090005"
+    assert event.data == {"name": name, "parts": key, "zog_page": "some_page", "pc": False}
+
+
+def test_the_fan_key_moves_with_the_stored_look_and_the_pc_mark_ends_the_text():
+    found_again = russian_events.fan_event(7, "Hades II", VOICE, "hades_2", True, PREVIOUS)  # after a failed store
+
+    assert found_again.dedup_key == russian_events.fan_event(7, "Hades II", VOICE, "hades_2", True, PREVIOUS).dedup_key
+    later = russian_events.fan_event(7, "Hades II", VOICE, "hades_2", True, datetime(2026, 11, 28, 9, 0))
+    assert later.dedup_key != found_again.dedup_key
+    assert found_again.text.endswith("вышла народная русская озвучка (ПК)")
+
+
+def test_the_fan_sample_has_only_the_translation_page():
+    _official, (sample_id, label, events) = russian_events.TEST_SAMPLES
+    [(event_type, payload)] = events()
+
+    assert (sample_id, label) == ("game-russian-fan", "Игра: народный перевод")
+    assert event_type == russian_events.FAN
+    assert payload["text"] == "🎮 Для «Baldur’s Gate 3» вышла народная русская озвучка"
+    buttons = actions.event_actions(event_type, 1, None, payload)
+    assert [(b.label, b.url) for b in buttons] == [("🌐 Страница перевода", "https://www.zoneofgames.ru/games/baldurs_gate_3/")]

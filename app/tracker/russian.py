@@ -4,9 +4,10 @@ Spec 5.1, 5.2 and 5.5 of stage 9.1b (idea 002). Pure: no database, no network, n
 
 A source says something about Russian (`Support`: text — the interface or subtitles, voice — full voice, each yes or
 no) or nothing («no data»: None, never a `Support` with both no). The official part comes from Steam when Steam has
-data for the game's Steam number (about the PC version), else from IGDB (about the game). The fan part comes from ZoG
-(ticket 9.1b.05); until then it is always «no data». A source that once had data and later says nothing keeps the
-previous value: «no data» never overwrites known data (`next_look`), and a failure is never shown as «нет».
+data for the game's Steam number (about the PC version), else from IGDB (about the game). The fan part comes from the
+game's page on ZoG (always about the PC version) and fills only what the official lacks. A source that once had data and
+later says nothing keeps the previous value: «no data» never overwrites known data (`next_look`; an unreadable ZoG page
+keeps the last support of the same page), and a failure is never shown as «нет».
 
 The official look (`Look`) is what one official check stored in the snapshot `russian_official`: the source of its
 data (`STEAM`, `IGDB` or None — checked, no data) and the Steam number the check knew (None — the game had no Steam
@@ -15,6 +16,11 @@ page). Its first look, a look of another Steam number (a Steam page appeared, we
 news (`appeared`; no data counts as no), and Russian that disappears is silent. A change of the data source under the
 same Steam number (IGDB's data, then Steam's) is no reference point: an announced game whose languages Steam lists for
 the first time with Russian is told.
+
+The ZoG look (`FanLook`) is the state of the snapshot `zog` (spec 5.6): not checked (`{}`), a page found or set by the
+owner with what it says (`unreadable` — its layout could not be read, the last support of the page kept), not found, or
+rejected by the owner. Its news (`fan_news`) are the parts that appeared on the same page and that the official lacks
+now; the first read of a page and the first check after «Вернуть в список» are reference points.
 """
 
 from collections.abc import Collection, Mapping
@@ -26,6 +32,12 @@ from app.tracker.platforms import Platform
 STEAM = "steam"
 IGDB = "igdb"
 SOURCES = (STEAM, IGDB)
+
+# Who chose the ZoG page of a game (`FanLook.by`)
+FOUND = "found"  # the check found it by the name
+OWNER = "owner"  # the owner pasted its link (ticket 9.1b.06)
+NOT_FOUND = "none"  # no page found: checked again in 7 days
+REJECTED = "rejected"  # the owner pressed «Не та игра»: never asked until a link is saved
 
 # The bodies of the line without a segment (spec 5.2)
 NONE = "нет"  # official no and fan no
@@ -139,6 +151,79 @@ class Look:
         return self.source == STEAM
 
 
+def official_of(look: "Look | None", igdb: IgdbRussian) -> tuple[Support | None, bool, str]:
+    """The official part the line reads: the stored look with data, else what IGDB says now (nothing checked yet, or
+    checked with no data), else no data; with whether it is PC-only and its source (no data: Steam when the look knew a
+    Steam number, else IGDB)."""
+    if look is not None and look.support is not None:
+        return look.support, look.pc_only, look.source
+    if isinstance(igdb, Support):
+        return igdb, False, IGDB
+    return None, False, STEAM if (look is not None and look.appid) else IGDB
+
+
+@dataclass(frozen=True)
+class FanLook:
+    """The ZoG state of a game: `page` (None — not found or rejected), `by` (`FOUND`, `OWNER`, `NOT_FOUND`, `REJECTED`),
+    `support` the last fan support read on the page (None — never read), `unreadable` — the last read could not read
+    the layout."""
+
+    page: str | None
+    by: str
+    support: Support | None = None
+    unreadable: bool = False
+
+    def state(self) -> dict[str, Any]:
+        state: dict[str, Any] = {"page": self.page, "by": self.by}
+        if self.unreadable:
+            state["unreadable"] = True
+        if self.support is not None:
+            state.update(self.support.state())
+        return state
+
+    @classmethod
+    def from_state(cls, data: Any) -> "FanLook | None":
+        """Strict: the snapshot `zog`; `{}` — not checked yet (None); a page with `found` or `owner`, optionally
+        `unreadable: true` and the support; no page with `none` or `rejected` and nothing else. Anything else raises
+        ValueError."""
+        if not isinstance(data, Mapping):
+            raise ValueError(f"not a ZoG state: {data!r}")
+        if not data:
+            return None
+        page, by = data.get("page"), data.get("by")
+        if page is None:
+            if by not in (NOT_FOUND, REJECTED) or set(data) != {"page", "by"}:
+                raise ValueError(f"a ZoG state without a page: {data!r}")
+            return cls(None, by)
+        if not isinstance(page, str) or not page or by not in (FOUND, OWNER):
+            raise ValueError(f"a ZoG state with a page: {data!r}")
+        if data.get("unreadable", True) is not True:
+            raise ValueError(f"a ZoG state with a wrong «unreadable»: {data!r}")
+        rest = {key: value for key, value in data.items() if key not in ("page", "by", "unreadable")}
+        return cls(page, by, Support.from_state(rest) if rest else None, "unreadable" in data)
+
+    @property
+    def fan(self) -> Support | None:
+        """The fan support the line reads: the page's last support; no page or never read — no data."""
+        return self.support if self.page is not None else None
+
+
+def fan_news(previous: FanLook | None, new: FanLook, official: Support | None, restored: bool) -> Support | None:
+    """The fan parts to tell (spec 5.6): yes on the page now, not yes on the same page before, and not in the official
+    now. None — nothing to tell, or the reference point: the first read of a page (another page, or never read before)
+    and the first check after «Вернуть в список» (`restored`)."""
+    if new.page is None or new.support is None or restored:
+        return None
+    if previous is None or previous.page != new.page or previous.support is None:
+        return None
+    parts = appeared(previous.support, new.support)
+    if parts is None:
+        return None
+    text = parts.text and not (official is not None and official.text)
+    voice = parts.voice and not (official is not None and official.voice)
+    return Support(text, voice) if text or voice else None
+
+
 def next_look(previous: Look | None, steam: Support | None, igdb: IgdbRussian, appid: str | None) -> Look | None:
     """The look of a check (spec 5.5): Steam data when it has some, else IGDB data, else none. «No data» never
     overwrites known data of the same Steam number: Steam silent keeps a previous Steam look, and with neither source
@@ -189,6 +274,7 @@ class Line:
 
     body: str
     pc: bool = False
+    fan: bool = False  # a fan segment is shown (the card gives the link «Страница перевода»)
 
     @property
     def text(self) -> str:
@@ -213,7 +299,7 @@ def line(official: Support | None, official_pc: bool, fan: Support | None, playe
         segments.append(_FAN[(fan_text, fan_voice)])
     if segments:
         pc_data = (official is not None and official.any and official_pc) or fan_text or fan_voice
-        return Line("; ".join(segments), played_elsewhere and pc_data)
+        return Line("; ".join(segments), played_elsewhere and pc_data, fan_text or fan_voice)
     if official is None:
         return Line(NO_DATA)
     return Line(NONE if fan is not None else OFFICIAL_NONE, played_elsewhere and official_pc)

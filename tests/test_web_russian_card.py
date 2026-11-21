@@ -1,7 +1,8 @@
 """Russian in the browser (spec 5.3 of stage 9.1b, ticket 04): the block «Русский язык» after «Платформы» and before
 «Steam», with the line «Русский: …» and the hints of every state that exists without ZoG — not checked yet, the source
 and its moment, «(ПК)», «нет данных» with and without a Steam page, another status; no block for a game in another
-status without data, nor without the source of languages; the template compares no kind and no status.
+status without data, nor without the source of languages; the template compares no kind and no status. Ticket 05: the
+link «Страница перевода» with a fan segment, none for a game ZoG has without Russian.
 
 The real core on in-memory SQLite with a stand-in clock, a made-up game source, a fake source of price looks and a fake
 source of Steam's languages; the web is the real app on a `TestClient`.
@@ -136,3 +137,60 @@ def test_the_template_of_the_block_compares_no_kind_and_no_status():
     block = template[template.index("{% if russian %}"):template.index("{% if steam %}")]
 
     assert "kind" not in block and "status" not in block
+
+
+# --- the fan part (ticket 05) ----------------------------------------------------------------------------------------
+
+
+@pytest.fixture
+def zog_tracker(igdb, steam, monkeypatch):
+    from app.tracker.pollers import game_zog
+    from test_tracker_zog_check import FakeZog
+
+    async def no_pause(seconds):
+        return None
+
+    monkeypatch.setattr(game_zog, "sleep", no_pause)
+    zog = FakeZog()
+    tracker = Tracker(
+        create_session_factory("sqlite://"), clock=FakeClock(T0), sender=FakeSender(), sources={TitleKind.GAME: igdb},
+        price_source=FakePrices(), language_source=steam, zog_source=zog,
+    )
+    return tracker, zog
+
+
+def test_a_fan_segment_gives_the_link_to_the_translation_page(zog_tracker, igdb, steam, tmp_path):
+    from test_zog_pages import saved
+
+    from test_tracker_zog_check import BALDURS
+    from test_tracker_zog_check import add as add_game
+
+    tracker, zog = zog_tracker
+    zog.pages["baldurs_gate_3"] = saved("baldurs_gate_3")
+    steam.support[BALDURS] = Support(True, False)
+    title_id = add_game(tracker, igdb, "Baldur's Gate 3", year=2023)
+    run(tracker.poll_due())
+
+    block = russian_block(make_client(tracker, tmp_path), title_id)
+
+    assert "Русский: текст — официально; озвучка — народная" in text_of(block)
+    assert "Steam — проверено сегодня в 12:00 · ZoG — проверено сегодня в 12:00" in text_of(block)
+    assert re.search(
+        r'<a href="https://www.zoneofgames.ru/games/baldurs_gate_3/" target="_blank" rel="noopener">Страница перевода</a>',
+        block,
+    )
+
+
+def test_a_game_zog_has_without_russian_shows_no_fan_part_and_no_link(zog_tracker, igdb, steam, tmp_path):
+    from test_zog_pages import saved
+
+    tracker, zog = zog_tracker
+    zog.pages["stray"] = saved("stray")
+    steam.support[STRAY] = Support(True, False)
+    title_id = add(tracker, igdb)
+    run(tracker.poll_due())
+
+    block = russian_block(make_client(tracker, tmp_path), title_id)
+
+    assert "Русский: текст — официально" in text_of(block)
+    assert "Страница перевода" not in block

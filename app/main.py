@@ -31,6 +31,7 @@ from app.providers.playstation import PlayStationProvider
 from app.providers.shikimori import ShikimoriClient
 from app.providers.steam import SteamProvider
 from app.providers.tmdb import TMDbProvider
+from app.providers.zog import ZogProvider
 from app.runtime import Health, Runtime
 from app.startup_report import forget_failure, report_failure
 from app.tracker.core import DriveSettings, DriveSetup, Tracker
@@ -169,6 +170,7 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
         default_tz=time_zone_of(settings),
         price_source=SteamPriceSource(steam),
         language_source=SteamLanguageSource(steam),  # Russian in the games: the languages in Steam
+        zog_source=ZogProvider(),  # fan Russian in the games: their pages on ZoG
         follow_up_source=IgdbFollowUpSource(igdb),
         imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
         playstation_source=PlayStationProvider(),  # the page of a concept, asked at a click on the web link

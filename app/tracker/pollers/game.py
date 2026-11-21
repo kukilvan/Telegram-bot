@@ -8,7 +8,7 @@ show the dates of the country of the stores as it is now: the feed only the plat
 card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1). At the end of each polling pass
 the Steam prices of the games are checked (`pollers/game_prices`, part 6.2), then their expansions and the new games of
 their series (`pollers/game_follow_ups`, stage 6.3), then Russian in them (`pollers/game_russian`, stage 9.1b — also the
-line of the card); the page in Steam is told here, by IGDB:
+line of the card), then their fan Russian on ZoG (`pollers/game_zog`); the page in Steam is told here, by IGDB:
 its previous snapshot had no Steam number, the new one has, and the game is one for prices by the new snapshot. What
 the owner reads of the prices (the block of the card, the mark of the list) is `pollers/game_steam`; of the expansions
 and sequels (the blocks of the card, the line of the parent) `pollers/game_follow_ups`, and the word «дополнение» after the
@@ -34,6 +34,7 @@ from app.tracker.pollers.game_follow_ups import GameFollowUps
 from app.tracker.pollers.game_prices import GamePrices, steam_number
 from app.tracker.pollers.game_russian import GameRussian
 from app.tracker.pollers.game_steam import GameSteam
+from app.tracker.pollers.game_zog import GameZog
 
 
 EXPANSION_TAG = "дополнение"  # the word after the name of an expansion in the List and the Archive
@@ -51,10 +52,12 @@ def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Plat
 class GamePoller(Poller):
     """`price_source`: the source of the Steam prices (`SteamPriceSource`), None — prices are not checked;
     `follow_up_source`: the source of the follow-up check (`IgdbFollowUpSource`), None — no check;
-    `language_source`: the source of Steam's languages (`SteamLanguageSource`), None — no Russian check."""
+    `language_source`: the source of Steam's languages (`SteamLanguageSource`), None — no Russian check;
+    `zog_source`: the ZoG client (`ZogProvider`), None — no fan Russian."""
 
     def __init__(
-        self, *args: Any, price_source: Any = None, follow_up_source: Any = None, language_source: Any = None
+        self, *args: Any, price_source: Any = None, follow_up_source: Any = None, language_source: Any = None,
+        zog_source: Any = None,
     ) -> None:
         super().__init__(*args)
         self.price_source = price_source
@@ -62,6 +65,7 @@ class GamePoller(Poller):
         self.steam = GameSteam(self.kind, price_source, self.ctx, self.settings)
         self.follow_ups = GameFollowUps(self.kind, follow_up_source, self.ctx, self.settings, self.known_ids)
         self.russian = GameRussian(self.kind, language_source, self.ctx, self.settings)
+        self.zog = GameZog(self.kind, zog_source, self.ctx, self.settings)
 
     async def snapshot_to_add(self, external_id: str) -> Any:
         return await self.source.snapshot_to_add(external_id)
@@ -97,7 +101,7 @@ class GamePoller(Poller):
             platform_note=game_rows.platform_note(game, rows),
             outside_date=game_rows.outside_date(game, scope.mine, scope.country),
             steam=self.steam.card_block(session, title, game, scope),
-            russian=self.russian.card_view(session, title, game, scope, tz),
+            russian=self.russian.card_view(session, title, game, scope, tz, self.zog.card_fan(session, title, tz)),
             parent=self.follow_ups.parent(session, game),
             follow_ups=self.follow_ups.card_view(session, title, game, scope, tz),
         )
@@ -169,10 +173,13 @@ class GamePoller(Poller):
 
     async def end_of_pass(self) -> list[tuple[DueTitle, Exception]]:
         """The Steam prices of the games (`pollers/game_prices`), then their expansions and sequels
-        (`pollers/game_follow_ups`), then Russian in them (`pollers/game_russian`). A bug in one check goes to the log
-        with its traceback and leaves the others."""
+        (`pollers/game_follow_ups`), then Russian in them (`pollers/game_russian`), then their fan Russian on ZoG
+        (`pollers/game_zog`). A bug in one check goes to the log with its traceback and leaves the others."""
         broken: list[tuple[DueTitle, Exception]] = []
-        checks = (("price", self.prices.check), ("follow-up", self.follow_ups.check), ("Russian", self.russian.check))
+        checks = (
+            ("price", self.prices.check), ("follow-up", self.follow_ups.check), ("Russian", self.russian.check),
+            ("ZoG", self.zog.check),
+        )
         for name, check in checks:
             try:
                 broken += await check()

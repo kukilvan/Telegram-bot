@@ -51,6 +51,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/providers/shikimori.py` — Shikimori API client: anime search, franchise grouping, season selection.
 - `app/providers/steam.py` — Steam client: the prices and the languages of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
 - `app/providers/tmdb.py` — TMDb provider: search + details via async httpx, with Phase 7.5 adaptive throttling.
+- `app/providers/zog.py` — ZoG client: one game page of zoneofgames.ru as text.
 - `app/runtime.py` — One process: the web server, the scheduler and the bot run in one event loop (ADR 0007).
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
 - `app/tracker/actions.py` — Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons.
@@ -120,6 +121,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/game_prices.py` — The price check at the end of a polling pass: which games have their Steam prices checked, the requests in packs of 100, the reference point, the price history and the failures (spec 4 of part 6.2).
 - `app/tracker/pollers/game_russian.py` — The official Russian check at the end of a polling pass: which games, the reconciliation, the due games, Steam in packs of 100, the reference point, the events, the store and the card's view.
 - `app/tracker/pollers/game_steam.py` — What the owner reads of the Steam prices of games: the block of a card and the marks of the rows of the list.
+- `app/tracker/pollers/game_zog.py` — The ZoG check at the end of a polling pass: the fan Russian of the games read from their pages on ZoG, and the card's part of it.
 - `app/tracker/pollers/movie.py` — A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show the same two dates.
 - `app/tracker/pollers/seasonal.py` — What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card lists.
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.
@@ -150,6 +152,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/sources/tmdb_movies.py` — TMDb adapter for movies: search suggestions and the movie snapshot.
 - `app/tracker/sources/tmdb_sequels.py` — TMDb adapter for sequels of an archived movie: the franchise collection the movie belongs to.
 - `app/tracker/sources/tmdb_series.py` — TMDb adapter for series: search suggestions and the series snapshot with its seasons.
+- `app/tracker/sources/zog_pages.py` — ZoG pages (pure): the address of a game's page by its name and its variants, the match key and the year rule, reading a page into the fan support, and the page of a link.
 - `app/tracker/statuses.py` — The owner's marks on a title (watched, started, dropped, restored, seasons, platforms, scores) and the status that follows from them.
 - `app/tracker/storage.py` — What the parts of the core read and write together in one session: a title's seasons and episodes, its stored snapshots, and its status that follows from them.
 - `app/tracker/test_samples.py` — «Тестовое событие»: samples of the messages the owner can ask for, and the check of the delivery rules.

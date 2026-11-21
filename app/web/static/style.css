@@ -215,6 +215,8 @@ button:disabled { opacity: 0.6; cursor: progress; }
 
 .russian .hint { margin: 0 0 0.25rem; font-size: 0.85rem; }
 
+.russian .russian-link { margin: 0.25rem 0 0; }
+
 /* «Steam» of a game: the line of the country and of the check is small, the price stands out, the bundles are a short list */
 .steam .steam-caption { margin: 0 0 0.5rem; font-size: 0.85rem; }
 
