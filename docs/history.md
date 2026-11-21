@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-21 — Ticket 9.1b.03
+
+- KI-53: `GamePoller.after_marks` also calls `GameFollowUps.drop_unchecked` (the same `_games_for_check`/`_unchecked` as the reconciliation): «Бросил» drops the follow-up snapshot in its write session, «Вернуть в список» gets an empty one at the next pass (a silent reference point). The check queues through `EventQueue.enqueue(…, due=game)` («the snapshot exists»); `_decide` keeps `_title_checked`.
+- KI-54: `EventQueue.withdraw` finds the title's events with a pending queue entry and deletes the entries and the events, explicitly both; delivered events stay. A withdrawn event leaves «Недавно». It holds for every kind and for the older discount withdrawn by a deeper one.
+- KI-52: `FOLLOW_UPS_QUERY` asks `parent_game.name`; `igdb_games.parent_of` (was `_parent`) and `expansion_with_parent` (the one reading for the own poll and the follow-up check); `FollowUpsSnapshot.own_expansion` / `own_parent` (not stored, not compared); `_learn_own_kind` writes them into the own snapshot in the store session when the own check does not run (not polled or tracking off); a spoiled own state is left alone. ADR 0011 stands; its consequence about KI-52 is no longer true (to be noted at the end of the stage).
+- KI-55: the reconciliation counts a game with an unreadable own snapshot by its status alone (made, never dropped); `_stored` reads the own `expansion` before IGDB (`_UnreadableOwn`: a failure, no request); one `DailyLog` per game shared by the reconciliation and the check.
+- Decisions: `CONTEXT.md` «Проверка дополнений и продолжений» says «Бросил» ends the check at once and a withdrawn announcement can come from another game; old tests that pinned «events stay after «Бросил»» (dropped-restore, three Steam tests) now deliver first or pin the deletion; `pollers/game_follow_ups.py` is exactly 400 lines. Tests: 4508 passed, 3 skipped, the two known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-21 — Ticket 9.1b.02
 
 - KI-43 (won't fix): the bundle row of the card and the bundle message end with «, цена набора целиком» (`prices.WHOLE_SET`); `CONTEXT.md` «Бандл» says the price is of the whole set. KI-44: the live preorder answer of Israel is `tests/fixtures/steam/getitems_preorder_il_live.json`, read unchanged. KI-46 (won't fix): pinned by a test (6-hour checks, a discount over before the 15:00 summary is not sent). `KNOWN_ISSUES.md` got the rule `won't fix (test: …)`.
