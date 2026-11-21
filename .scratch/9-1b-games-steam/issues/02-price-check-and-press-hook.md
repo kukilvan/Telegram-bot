@@ -1,6 +1,6 @@
 # 02: The price check — KI-43, 44, 46, 47, 50, 51; the press hook for prices
 
-Status: in review
+Status: accepted
 Complexity: complex (a check in three phases, a hook in every press, a new queue method)
 Blocked by: —
 
