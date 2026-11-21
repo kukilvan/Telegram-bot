@@ -27,8 +27,9 @@ def state(*releases, platforms=()):
     return GameState(platforms=tuple(sorted(set(platforms) | {r.platform for r in records})), releases=records)
 
 
-def detect(old, new, told=ALL, look=LOOK, today=TODAY, country="il", name="Elden Ring"):
-    return game_events.detect_events(1, name, old, new, country, told, look, today)
+def detect(old, new, told=ALL, look=LOOK, today=TODAY, country="il", name="Elden Ring", since=TODAY):
+    """`since`: the day the tracker began following the game (by default today: the 30 days count from it)."""
+    return game_events.detect_events(1, name, old, new, country, told, look, today, since)
 
 
 def texts(events):
@@ -143,6 +144,91 @@ def test_a_day_of_release_up_to_30_days_old_is_news_and_an_older_one_a_correctio
 
 def test_an_early_access_older_than_30_days_is_a_correction():
     assert detect(state((PC, "early", None)), state((PC, "early", "2026-10-10"))) == []
+
+
+# --- KI-36: the day the tracker began following the game, and the late form -------------------------------------------
+
+
+def test_a_release_20_days_before_the_game_was_added_is_told_and_one_40_days_before_is_not():
+    added = date(2026, 10, 1)
+    old = state((PC, "full", None))
+
+    [event] = detect(old, state((PC, "full", "2026-09-11")), since=added)  # 20 days before adding
+    assert event.type == game_events.RELEASED
+    assert detect(old, state((PC, "full", "2026-08-22")), since=added) == []  # 40 days before
+
+
+def test_a_game_added_with_no_date_that_gets_an_old_day_says_nothing():
+    assert detect(state((PC, "full", None)), state((PC, "full", "2015-05-19")), since=date(2026, 11, 1)) == []
+
+
+def test_a_year_that_becomes_an_old_day_says_nothing():
+    assert detect(state((PC, "full", "2015")), state((PC, "full", "2015-05-19")), since=date(2026, 11, 1)) == []
+
+
+def test_after_a_return_to_the_list_the_since_day_moves_later():
+    old, new = state((PC, "full", None)), state((PC, "full", "2026-08-20"))
+
+    assert [e.type for e in detect(old, new, since=date(2026, 6, 1))] == [game_events.RELEASED]  # added in June
+    assert detect(old, new, since=date(2026, 10, 1)) == []  # returned on 1 October: 20 August is over 30 days before
+
+
+def test_a_release_today_or_yesterday_reads_as_before_and_has_no_late_mark():
+    [today] = detect(state((PC, "full", None)), state((PC, "full", "2026-11-10")), name="Hades II")
+    [yesterday] = detect(state((PC, "full", None)), state((PC, "full", "2026-11-09")), name="Hades II")
+
+    assert today.text == yesterday.text == "🎮 Hades II вышла на ПК"
+    assert "late" not in today.data and "late" not in yesterday.data
+
+
+def test_a_late_release_names_its_day():
+    [event] = detect(state((PC, "full", None)), state((PC, "full", "2026-11-08")), name="Hades II")
+
+    assert event.text == "🎮 Hades II вышла на ПК 8 ноября"
+    assert event.data["late"] == "2026-11-08"
+    assert event.dedup_key == "game:1:pc:released"
+
+
+def test_a_late_early_access_names_its_day():
+    [event] = detect(state((PC, "early", None)), state((PC, "early", "2026-10-30")), name="Hades II")
+
+    assert event.text == "🎮 Hades II вышла в раннем доступе на ПК 30 октября"
+    assert event.data["late"] == "2026-10-30"
+
+
+def test_a_late_day_of_another_year_names_the_year():
+    [event] = detect(
+        state((PC, "full", None)), state((PC, "full", "2026-12-28")), today=date(2027, 1, 5), since=date(2027, 1, 1),
+        name="Hades II",
+    )
+
+    assert event.text == "🎮 Hades II вышла на ПК 28 декабря 2026"
+
+
+def test_two_platforms_late_on_different_days_do_not_fold_and_on_the_same_day_they_do():
+    different = detect(
+        state((PC, "full", None), (PS5, "full", None)),
+        state((PC, "full", "2026-11-05"), (PS5, "full", "2026-11-06")),
+    )
+    same = detect(
+        state((PC, "full", None), (PS5, "full", None)),
+        state((PC, "full", "2026-11-05"), (PS5, "full", "2026-11-05")),
+    )
+    ontime = detect(state((PC, "full", None)), state((PC, "full", "2026-11-10")))
+
+    keys = lambda events: {game_events.fold_key(e.type, 1, e.data) for e in events}  # noqa: E731
+    assert len(keys(different)) == 2 and len(keys(same)) == 1
+    assert keys(same) != keys(ontime)
+    members = [e.data for e in same]
+    assert game_events.folded_text(game_events.RELEASED, members) == "🎮 Elden Ring вышла на ПК и PS5 5 ноября"
+
+
+def test_a_late_and_an_on_time_release_of_two_platforms_do_not_fold():
+    events = detect(
+        state((PC, "full", None), (PS5, "full", None)), state((PC, "full", "2026-11-05"), (PS5, "full", "2026-11-10"))
+    )
+
+    assert len({game_events.fold_key(e.type, 1, e.data) for e in events}) == 2
 
 
 def test_a_game_added_on_its_day_of_release_says_nothing_at_the_first_check():

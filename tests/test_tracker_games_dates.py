@@ -84,12 +84,30 @@ def test_the_day_is_read_by_utc():
         {"date_format": 1, "y": 2027, "m": 13},
         {"date_format": 2, "y": "2027"},
         {"date_format": 2, "y": True},
-        {"date_format": 99, "y": 2027},
         {"date_format": 0, "date": 10**20},
     ],
 )
 def test_garbage_from_igdb_is_no_date(release):
     assert GameDate.from_igdb(release) == NOT_ANNOUNCED
+
+
+@pytest.mark.parametrize(
+    "release, text",
+    [
+        ({"date": 1795046400, "y": 2026}, "2026"),  # the example of KI-38: no `date_format`
+        ({"date": 1795046400}, "2026"),  # the year of `date` (UTC)
+        ({"y": 2027, "m": 5}, "2027"),  # never a month: `m` is 12 even in a year record
+        ({"date_format": 8, "y": 2027, "m": 3, "date": 1801958400}, "2027"),
+        ({"date_format": -1, "y": 2027}, "2027"),
+        ({"date_format": 99, "y": 2027}, "2027"),
+        ({"date_format": None, "y": 2027}, "2027"),
+        ({"date_format": "0", "date": 1427414400}, "2015"),
+        ({"date_format": 7, "y": 2027, "date": 1861833600}, None),  # 7 stays «not announced»
+    ],
+)
+def test_a_record_without_a_known_format_is_a_year_never_a_month_or_a_day(release, text):
+    assert GameDate.from_igdb(release).text == text
+    assert not GameDate.from_igdb(release).exact
 
 
 @pytest.mark.parametrize("text", ["", "2027-13", "2027-Q5", "2027-Q0", "27", "2027-3-12", "20270312", "garbage", "2027-02-30", 2027])
@@ -124,7 +142,7 @@ def test_yomawari_by_regions():
     assert full_label(yomawari, Platform.PS5, "us") == "5 ноября 2026"
 
 
-def test_the_world_comes_first_then_the_regions_of_the_country_then_the_earliest_of_the_others():
+def test_the_world_comes_first_then_the_regions_of_the_country_and_no_other_region_is_the_date_of_the_country():
     def release(region, text):
         return Release(6, region, FULL, GameDate.parse(text))
 
@@ -135,8 +153,11 @@ def test_the_world_comes_first_then_the_regions_of_the_country_then_the_earliest
     assert pick(every, 6, FULL, regions).text == "2026-04-01"
     assert pick(every[:3], 6, FULL, regions).text == "2026-03-01"
     assert pick(every[:2], 6, FULL, regions).text == "2026-02-01"
-    assert pick([release(JAPAN, None), release(9, "2027"), release(10, "2026-Q4")], 6, FULL, regions).text == "2026-Q4"
-    assert pick([release(JAPAN, None)], 6, FULL, regions) == NOT_ANNOUNCED
+    assert pick([release(JAPAN, None), release(9, "2027"), release(10, "2026-Q4")], 6, FULL, regions) is None
+    assert pick([release(JAPAN, "2027-03-12")], 6, FULL, regions) is None  # KI-35: a date only in Japan is no date
+    assert pick([release(0, "2027-03-12")], 6, FULL, regions) is None
+    assert pick([release(JAPAN, "2026-01-01"), release(EUROPE, None)], 6, FULL, regions) == NOT_ANNOUNCED
+    assert pick(every[:1], 6, FULL, STORE_COUNTRIES["us"].regions) is None
     assert pick(every, 6, EARLY, regions) is None
     assert pick(every, 167, FULL, regions) is None
 

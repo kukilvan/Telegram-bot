@@ -1,4 +1,4 @@
-"""What the owner reads of a game: the lines of its platforms on the card, the links to the stores, the pieces of the feed.
+"""What the owner reads of a game: the lines of its platforms on the card, the date outside the country, the links to the stores, the pieces of the feed.
 
 Pure: no database, no network. The dates are the ones of `games` for the country of the stores, which comes as a
 parameter with «Мои платформы» and the marks «играю здесь» (rule 2 of `docs/coding-standards.md`); everything that
@@ -6,14 +6,17 @@ depends on a platform or a country is read from the tables of `platforms` (rule 
 """
 
 from collections.abc import Collection, Mapping
+from dataclasses import dataclass
 from datetime import date
 from urllib.parse import quote
 
 from app.tracker.cards import PlatformRow, StoreLink
 from app.tracker.feed_rows import FeedTitle, Piece
 from app.tracker.game_events import older_tells, platforms_text
-from app.tracker.games import NOT_ANNOUNCED_LABEL, GameState, PlatformDates, has_platform, platform_dates, released_by
-from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform, steam_url
+from app.tracker.games import (
+    FULL, NOT_ANNOUNCED_LABEL, GameDate, GameState, PlatformDates, has_platform, igdb_numbers, platform_dates, released_by,
+)
+from app.tracker.platforms import NO_REGION, PLATFORMS, REGION_WORDS, STORE_COUNTRIES, Platform, steam_url
 
 CANCELLED_LABEL = "отменена"
 NO_PLATFORMS = "Платформы пока не объявлены"
@@ -53,6 +56,35 @@ def platform_rows(
     return tuple(rows)
 
 
+def outside_date(game: GameState, mine: Collection[Platform], country: str) -> str:
+    """«в Японии — 12 марта 2027»: the earliest announced full release in a region outside the country's (KI-35), which
+    is no release for the owner but worth a line. Over the platforms of «Мои платформы» the game is on and that are not
+    cancelled (a record of the platform's own IGDB number or of its older one); a platform counts only when that date
+    ends earlier than its own date for the country, or it has none. Empty: no such line."""
+    regions = STORE_COUNTRIES[country].regions
+    found: list[tuple[GameDate, int]] = []
+    for platform in Platform:
+        dates = platform_dates(game, platform, country) if platform in mine else None
+        if dates is None or dates.cancelled:
+            continue
+        numbers = igdb_numbers(platform)
+        outside = [
+            release for release in game.releases
+            if release.platform in numbers and release.type == FULL and release.region not in regions
+            and release.date.announced
+        ]
+        if not outside:
+            continue
+        earliest = min(outside, key=lambda release: release.date.start)
+        own = dates.full.date if dates.full is not None else None
+        if own is None or not own.announced or earliest.date.end < own.end:
+            found.append((earliest.date, earliest.region))
+    if not found:
+        return ""
+    day, region = min(found, key=lambda item: item[0].start)
+    return f"{REGION_WORDS.get(region, REGION_WORDS[NO_REGION])} — {day.label}"
+
+
 def platform_note(game: GameState, rows: Collection[PlatformRow]) -> str:
     """Why the card lists no platform: the game is on none of the tracker, or on none of the owner's. Empty: it lists some."""
     if rows:
@@ -62,17 +94,46 @@ def platform_note(game: GameState, rows: Collection[PlatformRow]) -> str:
     return NONE_OF_MINE
 
 
+@dataclass(frozen=True)
+class PlayStationLink:
+    """Where a game is in PlayStation Store for the country of the stores: the page of its concept (None — the game
+    has no number there) and the search by its original name, the address the store sends from a concept it lacks to."""
+
+    locale: str
+    concept: str | None
+    search_url: str
+
+    @property
+    def concept_url(self) -> str | None:
+        return PLAYSTATION_URL.format(locale=self.locale, path=f"concept/{self.concept}") if self.concept else None
+
+    @property
+    def url(self) -> str:
+        """The page of the concept, else the search."""
+        return self.concept_url or self.search_url
+
+
+def playstation_link(
+    game: GameState, mine: Collection[Platform], country: str, original_name: str
+) -> PlayStationLink | None:
+    """The link of the game in PlayStation Store: when PS5 is one of the owner's, the game is on PS5 or PS4 and the
+    country has the store. None: no link."""
+    locale = STORE_COUNTRIES[country].playstation_locale
+    if not locale or Platform.PS5 not in mine or not has_platform(game, Platform.PS5):
+        return None
+    search = PLAYSTATION_URL.format(locale=locale, path=f"search/{quote(original_name, safe='')}")
+    return PlayStationLink(locale, game.ps_concept or None, search)
+
+
 def store_links(game: GameState, mine: Collection[Platform], country: str, original_name: str) -> tuple[StoreLink, ...]:
-    """Steam, when the game has its number and ПК is one of the owner's; PlayStation Store, when PS5 is one of the
-    owner's, the game is on PS5 or PS4 and the country has the store: the page of the concept, else a search by the
-    original name."""
+    """Steam, when the game has its number and ПК is one of the owner's; PlayStation Store (`playstation_link`): the
+    page of the concept, else a search by the original name. The link of a concept is `checked` for the web: it leads
+    through the check of the page (KI-37)."""
     links = []
     if game.steam_id and Platform.PC in mine:
         links.append(StoreLink("Открыть в Steam", "Steam", steam_url(game.steam_id)))
-    locale = STORE_COUNTRIES[country].playstation_locale
-    if locale and Platform.PS5 in mine and has_platform(game, Platform.PS5):
-        path = f"concept/{game.ps_concept}" if game.ps_concept else f"search/{quote(original_name, safe='')}"
-        links.append(StoreLink("Открыть в PlayStation Store", "PS Store", PLAYSTATION_URL.format(locale=locale, path=path)))
+    if (found := playstation_link(game, mine, country, original_name)) is not None:
+        links.append(StoreLink("Открыть в PlayStation Store", "PS Store", found.url, checked=found.concept is not None))
     return tuple(links)
 
 

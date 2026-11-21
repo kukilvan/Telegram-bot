@@ -120,6 +120,7 @@ class StoreLink:
     label: str  # «Открыть в Steam»
     store: str  # «Steam»
     url: str
+    checked: bool = False  # the address of a concept page: the web leads to it through the check of the page (KI-37)
 
 
 @dataclass(frozen=True)
@@ -148,6 +149,7 @@ class CardPart:
     platforms: tuple[PlatformRow, ...] = ()
     store_links: tuple[StoreLink, ...] = ()
     platform_note: str = ""
+    outside_date: str = ""
     steam: SteamView | None = None
     parent: ParentGame | None = None
     follow_ups: FollowUpsView | None = None
@@ -178,6 +180,7 @@ class TitleCard:
     platforms: tuple[PlatformRow, ...] = ()  # a game: the platforms of «Мои платформы» it is on, in the order of the table
     store_links: tuple[StoreLink, ...] = ()  # a game: Steam and PlayStation Store, where the owner's platforms have them
     platform_note: str = ""  # a game without such platforms: why the list of platforms is empty
+    outside_date: str = ""  # a game: «в Японии — 12 марта 2027», a date outside the country's regions; empty: none
     steam: SteamView | None = None  # a game in «Хочу» that is told about PC: its Steam prices; the poller decides
     parent: ParentGame | None = None  # an expansion: the game it belongs to
     follow_ups: FollowUpsView | None = None  # a game for the follow-up check: its expansions and sequels; for the web
@@ -325,10 +328,12 @@ def movie_date_lines(card: TitleCard) -> list[str]:
 
 def platform_lines(card: TitleCard) -> list[str]:
     """The platforms of a game, an unmarked one «(не отмечена)», or the line that says why there are none; then the
-    price in Steam when the card has its block; then the stores as text: «Steam: https://…»."""
+    date outside the country's regions, if any; then the price in Steam when the card has its block; then the stores as text: «Steam: https://…»."""
     lines = [row.text + ("" if row.playing else " (не отмечена)") for row in card.platforms]
     if not lines:
         lines.append(card.platform_note)
+    if card.outside_date:
+        lines.append(card.outside_date)
     if card.steam is not None:
         lines.append(f"{STEAM_PRICE_LABEL}: {card.steam.bot_line}")
     lines.extend(f"{link.store}: {link.url}" for link in card.store_links)

@@ -6,8 +6,9 @@ whoever needs the dates reads it from the settings. Everything that depends on a
 
 The snapshot of a game holds every record of IGDB for the platforms the tracker knows, of every region (spec 4.3 of
 part 6.1); which of them is the date of the owner is decided here each time the dates are read, so a new country in the
-settings shows its dates at once and gives no messages (spec 5.2). `GameState` also says whether the game is an
-expansion and of which game (spec 3.3 of stage 6.3).
+settings shows its dates at once and gives no messages (spec 5.2). Only the records of the regions of the country are its
+dates: a day only in Japan is none (KI-35, spec 1.1 of stage 9.1b). `GameState` also says whether the game is an expansion
+and of which game (spec 3.3 of stage 6.3).
 """
 
 import calendar
@@ -38,6 +39,7 @@ NOT_ANNOUNCED_LABEL = "дата не объявлена"
 # `date_format` of IGDB: 0 a day, 1 a month, 2 a year, 3–6 the quarters 1–4, 7 «TBD»
 _IGDB_DAY, _IGDB_MONTH, _IGDB_YEAR = 0, 1, 2
 _IGDB_QUARTERS = range(3, 7)
+_IGDB_TBD = 7
 _QUARTER_SHIFT = 2  # quarter = format − 2
 
 _MONTH_TEXT = re.compile(r"(\d{4})-(\d{2})")
@@ -81,9 +83,13 @@ class GameDate:
     def from_igdb(cls, release: Mapping[str, Any]) -> "GameDate":
         """A record of `release_dates` as IGDB sent it. Soft: garbage is «not announced». `y` and `m` are read, and only
         when they are missing — from `date` (UTC): for a date without a day `date` is not the start of the period (a
-        year is its 31 December, a quarter its last day), but its year and the month of a month are right."""
+        year is its 31 December, a quarter its last day), but its year and the month of a month are right. A record
+        whose `date_format` is missing or unknown is a year, never a month or a day (KI-38): in the answers of IGDB a
+        year record carries `m: 12`, so `m` cannot tell a month from them."""
         form = release.get("date_format")
         day = response_day_of_timestamp(release.get("date"))
+        if form == _IGDB_TBD:
+            return NOT_ANNOUNCED
         if form == _IGDB_DAY:
             return cls(year=day.year, month=day.month, day=day.day) if day else NOT_ANNOUNCED
         year = _whole(release.get("y"), 1, 9999) or (day.year if day else None)
@@ -96,7 +102,7 @@ class GameDate:
             return cls(year=year)
         if form in _IGDB_QUARTERS:
             return cls(year=year, quarter=form - _QUARTER_SHIFT)
-        return NOT_ANNOUNCED  # 7 «TBD», nothing or a format IGDB has not had before
+        return cls(year=year)  # no `date_format` or one IGDB has not had before: only the year is sure
 
     @property
     def announced(self) -> bool:
@@ -269,15 +275,15 @@ class GameState:
 
 
 def pick(releases: Iterable[Release], igdb_platform: int, release_type: str, regions: Sequence[int]) -> GameDate | None:
-    """The date of one IGDB platform and one type for a country whose regions are `regions` (spec 5.2): the record of
-    the first region that has one, else the earliest of the others («not announced» last). Two records of one region —
-    the earlier start. None — the platform has no record of this type."""
+    """The date of one IGDB platform and one type for a country whose regions are `regions` (spec 1.1 of stage 9.1b):
+    the record of the first region that has one. A record of another region (Japan, Australia…) is no date of the
+    country (KI-35). Two records of one region — the earlier start. None — the platform has no such record of this type."""
     found = [release for release in releases if release.platform == igdb_platform and release.type == release_type]
     for region in regions:
         of_region = [release.date for release in found if release.region == region]
         if of_region:
             return min(of_region, key=_earliest_first)
-    return min((release.date for release in found), key=_earliest_first) if found else None
+    return None
 
 
 @dataclass(frozen=True)
@@ -303,7 +309,8 @@ class PlatformDates:
     cancelled: bool = False
 
 
-def _igdb_numbers(platform: Platform) -> tuple[int, ...]:
+def igdb_numbers(platform: Platform) -> tuple[int, ...]:
+    """The IGDB numbers of a platform of the tracker: its own and its older one's."""
     info = PLATFORMS[platform]
     return (info.igdb_id, info.older.igdb_id) if info.older else (info.igdb_id,)
 
@@ -312,7 +319,7 @@ def has_platform(game: GameState, platform: Platform) -> bool:
     """The game is on the platform: its IGDB number or the number of its older platform is in `platforms` or in the
     records (spec 5.3)."""
     present = set(game.platforms) | {release.platform for release in game.releases}
-    return any(number in present for number in _igdb_numbers(platform))
+    return any(number in present for number in igdb_numbers(platform))
 
 
 def _better(own: GameDate | None, older: GameDate | None, older_label: str) -> PlatformDate | None:

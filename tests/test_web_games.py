@@ -201,7 +201,7 @@ def test_the_card_of_a_game_has_its_facts_its_platforms_and_its_stores(tracker, 
     ]
     assert re.findall(r'<a class="button-link" href="([^"]+)" target="_blank" rel="noopener">([^<]+)</a>', html) == [
         ("https://store.steampowered.com/app/292030/", "Открыть в Steam"),
-        ("https://store.playstation.com/en-il/concept/204794", "Открыть в PlayStation Store"),
+        (f"/titles/{witcher}/playstation", "Открыть в PlayStation Store"),  # through the check of the page (KI-37)
     ]
     assert "Премьера в кино" not in html and "Цифровой релиз" not in html and "Сезоны" not in html
     assert "Оценка" not in html  # not in the archive
@@ -333,10 +333,11 @@ def test_without_the_platform_of_a_store_its_link_is_not_there(tracker, client, 
 
 
 def test_a_game_without_a_steam_number_has_only_playstation_store(tracker, client):
-    html = client.get(f"/titles/{add(tracker, BLOODBORNE)}").text
+    title = add(tracker, BLOODBORNE)
+    html = client.get(f"/titles/{title}").text
 
     assert "Открыть в Steam" not in html
-    assert 'href="https://store.playstation.com/en-il/concept/200520" target="_blank" rel="noopener"' in html
+    assert f'href="/titles/{title}/playstation" target="_blank" rel="noopener"' in html
 
 
 def test_the_buttons_of_a_game_in_each_status(tracker, client):

@@ -47,6 +47,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/providers/anilist.py` — AniList provider: anime metadata + airing schedule via GraphQL.
 - `app/providers/google_drive.py` — Google client of the Google Drive copy: the OAuth sign-in of a desktop client and the Drive API requests that send an archive.
 - `app/providers/igdb.py` — IGDB client: queries to `/games` in the Apicalypse language of IGDB, with the token of Twitch and the pace of IGDB.
+- `app/providers/playstation.py` — PlayStation Store client: one `HEAD` request that says whether a page of the store is there.
 - `app/providers/shikimori.py` — Shikimori API client: anime search, franchise grouping, season selection.
 - `app/providers/steam.py` — Steam client: the prices of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
 - `app/providers/tmdb.py` — TMDb provider: search + details via async httpx, with Phase 7.5 adaptive throttling.
@@ -78,7 +79,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/feed_rows.py` — The rows of the feed (`Tracker.feed()`): what comes out in the next days, what comes later, and what happened in the last week.
 - `app/tracker/follow_ups.py` — The follow-up check of a game (pure): its stored state, which expansions and games of its series are shown, their dates, what is new and the events.
 - `app/tracker/game_events.py` — Game events: what changed between two snapshots of a game on the platforms the owner is told about, and how the message reads.
-- `app/tracker/game_rows.py` — What the owner reads of a game: the lines of its platforms on the card, the links to the stores, the pieces of the feed.
+- `app/tracker/game_rows.py` — What the owner reads of a game: the lines of its platforms on the card, the date outside the country, the links to the stores, the pieces of the feed.
 - `app/tracker/game_scope.py` — What the owner sees of the games: the country of the stores, «Мои платформы» and the marks «играю здесь».
 - `app/tracker/games.py` — The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
 - `app/tracker/genres.py` — Genres as the owner picks them: the same genre written in two cases or with «е» for «ё» is one genre.
@@ -110,7 +111,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/moment_words.py` — A moment in words for the owner (pure): «сегодня в 07:58», «вчера в 18:32», «4 ноября в 07:58», «4 ноября 2025 в 07:58».
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
 - `app/tracker/offers.py` — Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner sees them, and the text of an offer card (spec 3, 5 and 6.1 of stage 6.4).
-- `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out and whose region its dates are.
+- `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out, whose region its dates are, and the words of the other regions.
+- `app/tracker/playstation.py` — The link of a game in PlayStation Store, checked at a click: the page of its concept when the store has it, else the search.
 - `app/tracker/pollers/anime.py` — An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the source entries behind the seasons and the franchise films are kept beside them.
 - `app/tracker/pollers/base.py` — What every kind of title does when it is added and when it is polled: one object per kind, one set of actions.
 - `app/tracker/pollers/game.py` — A game: the dates of its platforms are compared for the country of the stores, and the owner is told only about the platforms of «Мои платформы» marked «играю здесь».
@@ -160,7 +162,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/archive.py` — The archive: the titles with a final status («Просмотрено», «Пройдено», «Бросил») with a search by name, a filter by kind, by genre and by status, and an order (links, so «Назад» and bookmarks work).
 - `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the lock after wrong tries.
 - `app/web/card.py` — The card of a title: its details, the marks of seasons and platforms, «Следить» at a row of a follow list, the buttons.
-- `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms, the line of an expansion and the follow lists.
+- `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms (with the date outside the country), the line of an expansion and the follow lists.
 - `app/web/devices.py` — The device of a sign-in in words (pure): the `User-Agent` of a request becomes «Android, Chrome» (spec 6.3 of stage 7.2).
 - `app/web/drive_sign_in.py` — The sign-in and the sign-out of the Google Drive copy from Settings: «Подключить Google Drive», Google's return and «Отключить Google Drive».
 - `app/web/feed.py` — The feed, the main page after the sign-in: «Скоро» (the next two weeks, by days), «Позже» (the nearest date of the titles with nothing in those days) and «Недавно» (the events of the last week).

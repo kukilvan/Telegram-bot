@@ -5,19 +5,22 @@ Pure: no database, no network. The previous and the new snapshot are read for th
 (spec 5.2 of part 6.1), so a new country gives no messages. Only an exact day gives a message; an approximate date
 («4 квартал 2026», «2027») changes silently. One event per platform keeps the dedup keys exact; one game is still one
 line of a message: `fold_key` tells `delivery.fold` which events go together, `message` writes the line of all of them.
+A release is told when its day is not earlier than 30 days before the tracker began following the game, and named by its
+day when it is earlier than yesterday (KI-36, spec 1.2 of stage 9.1b).
 """
 
 from collections.abc import Collection, Iterable, Mapping, Sequence
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from app.tracker.cards import format_day_month
+from app.tracker.cards import format_date, format_day_month
 from app.tracker.dedup import moved_key
 from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, PlatformDate, platform_dates, released_by
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent, day_start
 from app.tracker.platforms import PLATFORMS, Platform
+from app.tracker.sources.dates import parse_date
 
 _ICON = KINDS[TitleKind.GAME].icon
 
@@ -27,8 +30,10 @@ DATE_ANNOUNCED = "game_date_announced"
 DATE_MOVED = "game_date_moved"
 TYPES = frozenset({RELEASED, EARLY_ACCESS, DATE_ANNOUNCED, DATE_MOVED})
 
-# A day of release older than this, which the answer tells only now, is IGDB correcting old data, not news (KI-36)
-FRESH = timedelta(days=30)
+# A release is told when its day is not earlier than this long before the tracker began following the game: an older
+# day, which the answer tells only now, is IGDB correcting old data, not news (KI-36)
+BEFORE_FOLLOWING = timedelta(days=30)
+LATE_AFTER = timedelta(days=1)  # a day earlier than yesterday is named in the message
 
 
 def reported(mine: Collection[Platform], playing: Mapping[str, bool]) -> tuple[Platform, ...]:
@@ -44,8 +49,17 @@ def older_tells(platform: Platform, told: Collection[Platform]) -> bool:
     return older is not None and any(PLATFORMS[other].igdb_id == older.igdb_id for other in told)
 
 
-def _fresh(game_date: GameDate, today: date) -> bool:
-    return released_by(game_date, today) and game_date.start >= today - FRESH
+def _news(game_date: GameDate, today: date, since: date) -> bool:
+    """An exact day not later than today and not earlier than 30 days before the tracker began following the game."""
+    return released_by(game_date, today) and game_date.start >= since - BEFORE_FOLLOWING
+
+
+def _late(game_date: GameDate, today: date) -> dict[str, str]:
+    """The payload of a release whose day is earlier than yesterday: `late` the day, `seen` the day it was found (the
+    message names the year when they are of different years); nothing for one on time."""
+    if game_date.start >= today - LATE_AFTER:
+        return {}
+    return {"late": game_date.text, "seen": today.isoformat()}
 
 
 def _date_of(dated: PlatformDate | None) -> GameDate:
@@ -76,14 +90,27 @@ def moved_text(old: GameDate, new: GameDate) -> str:
     return f"{old.label} → {new.label}"
 
 
+def late_words(data: Mapping[str, Any]) -> str:
+    """« 5 октября» after the platforms of a late release (« 5 октября 2025» in another year than the day it was found);
+    empty for one on time."""
+    late = data.get("late")
+    if not late:
+        return ""
+    day = GameDate.parse(late)
+    seen = data.get("seen")
+    if seen and parse_date(seen).year == day.year:
+        return f" {format_day_month(day.start)}"
+    return f" {format_date(day.start)}"
+
+
 def message(event_type: str, name: str, entries: Iterable[tuple[Platform, str]], data: Mapping[str, Any]) -> str:
     """The line of an event (or of several folded): `entries` are the platforms with the older one whose date they took
     (or «»), `data` the payload whose dates the line names."""
     where = platforms_text(entries)
     if event_type == RELEASED:
-        return f"{_ICON} {name} вышла на {where}"
+        return f"{_ICON} {name} вышла на {where}{late_words(data)}"
     if event_type == EARLY_ACCESS:
-        return f"{_ICON} {name} вышла в раннем доступе на {where}"
+        return f"{_ICON} {name} вышла в раннем доступе на {where}{late_words(data)}"
     if event_type == DATE_ANNOUNCED:
         return f"{_ICON} {name}: на {where} объявлена дата — {GameDate.parse(data['date']).label}"
     moved = moved_text(GameDate.parse(data["old"]), GameDate.parse(data["new"]))
@@ -95,8 +122,8 @@ def message(event_type: str, name: str, entries: Iterable[tuple[Platform, str]],
 
 def fold_key(event_type: str, title_id: int | None, data: Mapping[str, Any]) -> tuple[Any, ...] | None:
     """Events of one game, one type and the same dates fold into one line (spec 7.4): the date of an announcement, the
-    old and the new date of a move; a release and an early access fold whatever their days. None: not a game event, or
-    an event without the fields to fold by."""
+    old and the new date of a move; a release and an early access fold when they are both on time or both late the same
+    day (`late`, KI-36). None: not a game event, or an event without the fields to fold by."""
     if event_type not in TYPES or "platform" not in data or "name" not in data:
         return None
     dates: tuple[Any, ...] = ()
@@ -104,6 +131,8 @@ def fold_key(event_type: str, title_id: int | None, data: Mapping[str, Any]) -> 
         dates = (data.get("date"),)
     elif event_type == DATE_MOVED:
         dates = (data.get("old"), data.get("new"))
+    elif event_type in (RELEASED, EARLY_ACCESS):
+        dates = (data.get("late"),)
     return (event_type, title_id, data["name"], *dates)
 
 
@@ -127,9 +156,12 @@ def detect_events(
     told: Collection[Platform],
     observed_at: datetime,
     today: date,
+    since: date,
 ) -> list[DetectedEvent]:
     """Events between the previous snapshot (taken at `observed_at`) and the new one (taken `today`), for the platforms
     the owner is told about (`told`, see `reported`) that the game has in the new snapshot and that are not cancelled.
+    `since` is the day the tracker began following the game (the later of adding and «Вернуть в список»): a release is
+    told when it came out not earlier than 30 days before it, and named by its day when it is earlier than yesterday.
 
     `new` must already keep the dates the source dropped (`games.carry_over`)."""
     observed_on = observed_at.date()
@@ -163,8 +195,9 @@ def detect_events(
         old_early, new_early = _date_of(before.early if before else None), _date_of(now_dates.early)
         full_out_before = released_by(old_full, observed_on)
 
-        if _fresh(new_full, today) and not full_out_before:
-            event(RELEASED, f"{prefix}:released", now_dates.full, {"date": new_full.text}, out=new_full)
+        if _news(new_full, today, since) and not full_out_before:
+            data = {"date": new_full.text, **_late(new_full, today)}
+            event(RELEASED, f"{prefix}:released", now_dates.full, data, out=new_full)
         elif new_full.exact and new_full.start > today and not old_full.exact:
             event(
                 DATE_ANNOUNCED,
@@ -184,8 +217,9 @@ def detect_events(
                 earlier,
             )
 
-        if _fresh(new_early, today) and not released_by(old_early, observed_on) and not released_by(new_full, today):
-            event(EARLY_ACCESS, f"{prefix}:early_access", now_dates.early, {"date": new_early.text}, out=new_early)
+        if _news(new_early, today, since) and not released_by(old_early, observed_on) and not released_by(new_full, today):
+            data = {"date": new_early.text, **_late(new_early, today)}
+            event(EARLY_ACCESS, f"{prefix}:early_access", now_dates.early, data, out=new_early)
     return events
 
 

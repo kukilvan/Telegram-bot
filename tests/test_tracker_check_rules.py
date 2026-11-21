@@ -205,7 +205,7 @@ def game(*releases):
 )
 def test_a_game_release_and_an_early_access_carry_the_day_of_the_platform(kind, text, expected_type):
     [event] = game_events.detect_events(
-        1, "Hades II", game(), game((kind, text)), "il", tuple(Platform), NOW - timedelta(days=5), NOW.date()
+        1, "Hades II", game(), game((kind, text)), "il", tuple(Platform), NOW - timedelta(days=5), NOW.date(), NOW.date()
     )
 
     assert (event.type, event.happened_at) == (expected_type, day_start(date.fromisoformat(text)))
@@ -213,7 +213,7 @@ def test_a_game_release_and_an_early_access_carry_the_day_of_the_platform(kind, 
 
 def test_a_game_date_announced_has_no_moment():
     [event] = game_events.detect_events(
-        1, "Hades II", game(), game(("full", "2027-03-12")), "il", tuple(Platform), NOW - timedelta(days=5), NOW.date()
+        1, "Hades II", game(), game(("full", "2027-03-12")), "il", tuple(Platform), NOW - timedelta(days=5), NOW.date(), NOW.date()
     )
 
     assert event.type == game_events.DATE_ANNOUNCED and event.happened_at is None

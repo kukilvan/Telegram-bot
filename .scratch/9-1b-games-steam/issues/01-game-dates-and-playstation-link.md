@@ -1,6 +1,6 @@
 # 01: Game dates and the PlayStation link — KI-35, KI-36, KI-37, KI-38
 
-Status: open
+Status: in review
 Complexity: medium (dates and events of games, one new route)
 Blocked by: —
 

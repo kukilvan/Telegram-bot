@@ -27,6 +27,7 @@ from app.config import AppUrl, Settings, get_settings, time_zone_of
 from app.providers.anilist import AniListProvider
 from app.providers.google_drive import GoogleDriveApi
 from app.providers.igdb import IGDBProvider
+from app.providers.playstation import PlayStationProvider
 from app.providers.shikimori import ShikimoriClient
 from app.providers.steam import SteamProvider
 from app.providers.tmdb import TMDbProvider
@@ -168,6 +169,7 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
         price_source=SteamPriceSource(steam),
         follow_up_source=IgdbFollowUpSource(igdb),
         imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
+        playstation_source=PlayStationProvider(),  # the page of a concept, asked at a click on the web link
         database_url=TRACKER_DATABASE_URL,  # the copies of this database are made and listed
         drive_settings=DriveSettings(
             settings.google_drive_client_id, settings.google_drive_client_secret, settings.backup_password,

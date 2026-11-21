@@ -1,4 +1,4 @@
-"""The platforms of the tracker and the countries of the stores: where a game comes out and whose region its dates are.
+"""The platforms of the tracker and the countries of the stores: where a game comes out, whose region its dates are, and the words of the other regions.
 
 Pure: no database, no network. Everything that depends on a platform or a country lives in the two tables here and is
 read from them (rule 6 of `docs/coding-standards.md`); the order of the rows is the order everywhere: the settings, the
@@ -61,6 +61,14 @@ IGDB_LABELS: dict[int, str] = _igdb_labels()
 
 # The regions of IGDB, as its `release_region` numbers them
 WORLD, EUROPE, NORTH_AMERICA = 8, 1, 2
+NO_REGION = 0  # a record without a region (or one IGDB has not had before)
+
+# «в Японии»: where a date outside the regions of the country is, as the card says it (spec 1.1 of stage 9.1b). The
+# regions every country has (world, Europe, North America) never need a word
+REGION_WORDS: dict[int, str] = {
+    3: "в Австралии", 4: "в Новой Зеландии", 5: "в Японии", 6: "в Китае", 7: "в Азии", 9: "в Корее", 10: "в Бразилии",
+    NO_REGION: "в другой стране",
+}
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,8 @@
 
 `Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it
 (`settings_store`, `titles`, `statuses`, `listing`, `feed`, `polling` and `pollers/`, `queue`, `delivery_service`,
-`test_samples`, `login_reports`, `backups` and `google_drive`, `inbox` and its `inbox_answers` and `offers`). It holds
+`test_samples`, `login_reports`, `backups` and `google_drive`, `inbox` and its `inbox_answers` and `offers`,
+`playstation`). It holds
 no rules of its own. It may have up to 500 lines, no line longer than 120 characters; the other parts stay at 400.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
@@ -53,6 +54,7 @@ from app.tracker.inbox_answers import InboxAnswers
 from app.tracker.listing import Listing
 from app.tracker.login_reports import WEB_LOGIN, WEB_LOGIN_LOCKED, LoginReports
 from app.tracker.models import InboxReason, InboxState, TitleKind, TitleStatus
+from app.tracker.playstation import PlayStationLinks
 from app.tracker.polling import Pollers, Polling
 from app.tracker.posters import (
     CARD_SIZE,
@@ -128,6 +130,7 @@ class Tracker:
     price_source: Any = None  # the Steam prices of the games (`SteamPriceSource`); None — prices are not checked
     follow_up_source: Any = None  # expansions and sequels of the games (`IgdbFollowUpSource`); None — not checked
     imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
+    playstation_source: Any = None  # PlayStation Store (`PlayStationProvider`), asked at a click; None: no check
     database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies
     drive_settings: DriveSettings = field(default_factory=DriveSettings)  # the Google Drive copy (.env); off by default
     drive_api: Any = None  # the Google client of that copy (`GoogleDriveApi`); None — the copy is off
@@ -146,6 +149,7 @@ class Tracker:
     _drive: GoogleDrive = field(init=False, repr=False)
     _exports: Exports = field(init=False, repr=False)
     _logins: LoginReports = field(init=False, repr=False)
+    _playstation: PlayStationLinks = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"): members from here on
@@ -177,6 +181,7 @@ class Tracker:
         self._backups = Backups(ctx, self._settings, self._queue, self.database_url, self._drive)
         self._exports = Exports(ctx, self._settings)
         self._logins = LoginReports(ctx, self._queue, self._settings)
+        self._playstation = PlayStationLinks(ctx, self._settings, self.playstation_source)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -331,6 +336,12 @@ class Tracker:
 
     async def title_card(self, title_id: int) -> TitleCard | None:
         return await self._listing.title_card(title_id)
+
+    async def playstation_link(self, title_id: int) -> str | None:
+        """«Открыть в PlayStation Store» of the web card: the page of the game's concept when the store has it, else the
+        search by its original name (one `HEAD`, kept a day). None: the card is the place — no such title, no game, or
+        no link (no store in the country, PS5 not among «Мои платформы»)."""
+        return await self._playstation.link(title_id)
 
     async def feed(self) -> Feed:
         """The feed: what comes out from today on («Скоро» by days for two weeks, then «Позже») and the events of the

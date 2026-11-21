@@ -1,4 +1,4 @@
-"""The blocks of the web card that depend on the kind: the platforms, the line of an expansion and the follow lists.
+"""The blocks of the web card that depend on the kind: the platforms (with the date outside the country), the line of an expansion and the follow lists.
 
 The follow lists are the sequels of a watched film and the expansions and the games of the series of a game — one row type
 and one block type for all three. The rest of the card, its routes and its parts every kind has, is in `card`.
@@ -19,6 +19,8 @@ from app.tracker.cards import (
 from app.tracker.kinds import KINDS
 
 PLATFORMS_HINT = "Галочка — «играю здесь»: о выходе на отмеченных платформах придёт сообщение; у ПК — ещё цены и скидки Steam"
+OUTSIDE_SEPARATOR = " — "  # in `outside_date` of a card: «в Японии — 12 марта 2027»
+OUTSIDE_HINT = "Дата только {region} — не выход для вашей страны: сообщения «вышла» по ней не будет."
 SETTINGS_WORD = "Настройках"  # in the line of a game on none of the owner's platforms: a link to the settings
 
 NO_SEQUELS = "Продолжений пока нет. Проверяю раз в неделю"
@@ -57,6 +59,8 @@ class PlatformsBlock(NamedTuple):
     lines: list[PlatformLine]
     note: list[NotePart]  # empty: there are rows
     stores: list[StoreLine]
+    outside: str = ""  # a row after the platforms without a mark: «в Японии — 12 марта 2027»; empty: none
+    outside_hint: str = ""  # «Дата только в Японии — не выход для вашей страны: …»
 
 
 def _note_parts(request: Request, note: str) -> list[NotePart]:
@@ -80,7 +84,12 @@ def platforms(request: Request, card: TitleCard) -> PlatformsBlock | None:
         for row in card.platforms
     ]
     note = [] if lines else _note_parts(request, card.platform_note)
-    return PlatformsBlock(lines, note, [StoreLine(link.label, link.url) for link in card.store_links])
+    stores = [
+        StoreLine(link.label, address(request, "card_playstation", title_id=card.id) if link.checked else link.url)
+        for link in card.store_links
+    ]
+    hint = OUTSIDE_HINT.format(region=card.outside_date.partition(OUTSIDE_SEPARATOR)[0]) if card.outside_date else ""
+    return PlatformsBlock(lines, note, stores, card.outside_date, hint)
 
 
 # --- the line of an expansion ---------------------------------------------------------------------------------------

@@ -62,7 +62,9 @@
             </form>
           </li>
           {% endfor %}
+          {% if platforms.outside %}<li class="season-item outside-date">{{ platforms.outside }}</li>{% endif %}
         </ul>
+        {% if platforms.outside %}<p class="hint">{{ platforms.outside_hint }}</p>{% endif %}
         {% else %}
         <p class="platform-note">{% for part in platforms.note %}{% if part.link %}<a href="{{ part.link }}">{{ part.text }}</a>{% else %}{{ part.text }}{% endif %}{% endfor %}</p>
         {% endif %}

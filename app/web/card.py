@@ -1,6 +1,7 @@
 """The card of a title: its details, the marks of seasons and platforms, «Следить» at a row of a follow list, the buttons.
 
 The blocks that depend on the kind (the platforms, the line of an expansion, the follow lists) are made in `card_blocks`.
+«Открыть в PlayStation Store» of a game with a concept leads through `card_playstation`, which checks the page (KI-37).
 Every press asks the core and answers with the whole card fresh
 (HTMX puts it in the place of the old one; a plain form gets a redirect to the card). The buttons follow the table of
 kinds and the status (table 4.3 of the spec of part 5.2, 9.2 of the spec of part 6.1); what the card holds, its data
@@ -11,6 +12,7 @@ from typing import NamedTuple
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Form, Request, Response
+from fastapi.responses import RedirectResponse
 
 from app.tracker.cards import STATUS_LABELS, TitleCard, movie_date_lines, movie_line, season_row_text
 from app.tracker import scores
@@ -234,6 +236,16 @@ def _of_season(season_id: int, act: Callable[[Tracker], Awaitable[object]]) -> C
         return await act(tracker)
 
     return checked
+
+
+@router.get("/titles/{title_id:int}/playstation", name="card_playstation")
+@refreshing
+async def open_playstation(request: Request, title_id: int) -> Response:
+    """«Открыть в PlayStation Store»: the core checks the page of the game's concept (one `HEAD`, kept a day) and the
+    answer is a redirect to the page, or to the search when the store has no such concept (KI-37). A title that is gone,
+    no game or a game without the link: the card."""
+    link = await pages.tracker_of(request).playstation_link(title_id) if pages.is_id(title_id) else None
+    return RedirectResponse(link or _address(request, "card", title_id=title_id), status_code=302)
 
 
 @router.post("/titles/{title_id:int}/seasons/{season_id:int}", name="card_season")

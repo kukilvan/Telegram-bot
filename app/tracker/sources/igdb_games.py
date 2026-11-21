@@ -17,7 +17,7 @@ from typing import Any
 from app.tracker.errors import SourceNotConfigured
 from app.tracker.games import CANCELLED, EARLY, EXPANSION, FULL, STANDALONE, GameDate, GameState, Parent, Release
 from app.tracker.models import TitleKind
-from app.tracker.platforms import IGDB_LABELS
+from app.tracker.platforms import IGDB_LABELS, NO_REGION
 from app.tracker.sources.dates import response_day_of_timestamp
 from app.tracker.sources.tmdb_movies import Suggestion
 
@@ -170,9 +170,6 @@ def parse_records(results: list[dict[str, Any]]) -> list[Suggestion]:
 def known_platforms(numbers: Any) -> tuple[int, ...]:
     """The `platforms` of an answer the tracker knows, ascending (garbage and the others are left out)."""
     return tuple(sorted({number for number in numbers or () if number in IGDB_LABELS}))
-
-
-NO_REGION = 0  # a record without a region of IGDB: one of «the others» when the region of a country is chosen
 
 
 def _region(value: Any) -> int:

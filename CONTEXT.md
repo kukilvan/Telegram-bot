@@ -154,6 +154,14 @@ A game's release date without a day: month, quarter or year («март 2027», 
 _Avoid_: неточная дата, TBD (that is "date not announced")
 In code: `GameDate` without a day.
 
+**Дата вне страны** (date outside the country):
+A release date of a game in a region that is not the store country's (Japan, Australia…). It is not a release for the owner: no message, no piece of the Feed, no effect on the check interval. The card shows it in a line of its own after the platforms («в Японии — 12 марта 2027») when it ends earlier than the platform's own date.
+In code: `outside date` (`game_rows.outside_date`, `CardPart.outside_date`).
+
+**Поздний выход** (late release):
+A game that came out earlier than yesterday and is told only now («🎮 Hades II вышла на ПК 5 октября»). It is told when its day is not earlier than 30 days before the tracker began following the game (adding or «Вернуть в список», the later one); an older day is IGDB correcting old data, not news.
+In code: `late` (payload of «вышла» and «вышла в раннем доступе»), `since` of `game_events.detect_events`.
+
 **Играю здесь** (playing here):
 A checkmark at a platform in the game card: a message about the release on this platform will come; the checkmark on PC also decides Steam prices and discounts. At adding it stands on all my platforms where the game exists or is announced; a platform of mine that the game gets later receives it by itself.
 In code: `playing` (table `game_platforms`).

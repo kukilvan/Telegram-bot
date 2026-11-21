@@ -89,6 +89,7 @@ class GamePoller(Poller):
             platforms=rows,
             store_links=game_rows.store_links(game, scope.mine, scope.country, title.original_name or title.name),
             platform_note=game_rows.platform_note(game, rows),
+            outside_date=game_rows.outside_date(game, scope.mine, scope.country),
             steam=self.steam.card_block(session, title, game, scope),
             parent=self.follow_ups.parent(session, game),
             follow_ups=self.follow_ups.card_view(session, title, game, scope, tz),
@@ -125,9 +126,14 @@ class GamePoller(Poller):
             # the marks as they are when IGDB has answered: one set while the events are queued counts from the next
             # check (as KI-22); one set while IGDB was answering counts already in this one
             scope = GameScope.read(self.settings, session, [due.id])
-            status = session.get(Title, due.id).status
+            title = session.get(Title, due.id)
+            status = title.status
+            # the tracker follows the game from adding or from «Вернуть в список», the later one (KI-36)
+            since = max(moment for moment in (title.added_at, title.restored_at) if moment is not None).date()
         new = games.carry_over(old, snapshot.game)
-        events = game_events.detect_events(due.id, due.name, old, new, scope.country, scope.told(due.id), observed_at, today)
+        events = game_events.detect_events(
+            due.id, due.name, old, new, scope.country, scope.told(due.id), observed_at, today, since
+        )
         # «появилась страница в Steam» only where prices would be checked: without a source of prices there are none
         steam_id = steam_number(status, new, scope.told(due.id)) if self.price_source is not None else None
         if not old.steam_id and steam_id is not None:
