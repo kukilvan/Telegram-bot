@@ -12,7 +12,7 @@ from datetime import date
 from typing import Any
 
 from app.tracker import text
-from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, PlatformDates, Release, platform_dates
+from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, Parent, PlatformDates, Release, platform_dates
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
@@ -81,12 +81,16 @@ class FollowUp:
 @dataclass(frozen=True)
 class FollowUpsSnapshot:
     """What IGDB says now about a game (spec 3.2): the day of its `first_release_date`, the names of its collections,
-    its expansions and the games of its series (each once, without the game itself and without its expansions)."""
+    its expansions and the games of its series (each once, without the game itself and without its expansions).
+    `own_expansion` and `own_parent` are the game's own kind of expansion and parent (KI-52): written into the own
+    snapshot of a game whose own check does not run, never stored in the state of the check (nor compared)."""
 
     own_date: date | None = None
     collections: tuple[str, ...] = ()
     expansions: tuple[FollowUp, ...] = ()
     games: tuple[FollowUp, ...] = ()
+    own_expansion: str | None = field(default=None, compare=False)
+    own_parent: Parent | None = field(default=None, compare=False)
 
     def state(self) -> dict[str, Any]:
         return {

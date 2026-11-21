@@ -1,20 +1,23 @@
 """The weekly check of games for expansions and sequels at the end of a polling pass: which games, the reconciliation, the due games, the queueing, the store, the failures.
 
-Spec 5 of stage 6.3.
+Spec 5 of stage 6.3; spec 3 and 4 of stage 9.1b.
 
 Each pass (every minute) the snapshots of source `igdb_follow_ups` are first brought in line with the rule «игра для
-проверки» (`for_follow_ups`), in a number of reads that does not grow with the number of games: a game for the check
-without a snapshot gets an empty one (`{}`: not checked yet), due now; the snapshot of a game that is no longer one goes.
-Of the game's own snapshot only the key `expansion` is read; a game whose own snapshot cannot be read is left out of the
-reconciliation with a line in the log, and the other games go on. No button touches these snapshots: the rule lives here.
+проверки» (`for_follow_ups`), in a constant number of reads: a game for the check without a snapshot gets an empty one
+(`{}`: not checked yet), due now; the snapshot of a game that is no longer one goes. Of the own snapshot only the key
+`expansion` is read; an unreadable one leaves the game to its status alone (KI-55: the snapshot made, never dropped, a
+log line a day). The rule lives here; «Бросил» applies its «drop» at once in its write session (`drop_unchecked`,
+KI-53), so «Вернуть в список» gets an empty snapshot at the next pass: a silent reference point. Only the
+reconciliation makes snapshots.
 
-Then at most `FOLLOW_UPS_PER_PASS` due games are asked about, the earliest first; the others wait for the next pass.
-Each game: its stored state is read strictly, IGDB is asked with no database open, and one read session reads what the
-rules need (`follow_ups.check` decides what is new, nothing is decided here twice). A game gone or no longer for the
-check while IGDB answered is skipped: nothing queued, nothing stored. The events are queued first, each in a session of
-its own, then the new state is stored and the next check is in 7 days, so a failed store finds the same facts again and
-their keys drop them. A failure (IGDB, the game gone from IGDB, no keys, a spoiled state) waits 30 minutes and joins
-the «could not check» messages of the pass.
+Then at most `FOLLOW_UPS_PER_PASS` due games are asked about, the earliest first. Each game: its stored state and the
+key `expansion` of its own snapshot are read strictly before IGDB is asked (unreadable — a failure, no request), IGDB is
+asked with no database open, one read session reads what `follow_ups.check` needs. A game gone or no longer checked
+while IGDB answered is skipped. The events are queued first, each in its own session while the snapshot exists
+(`EventQueue.enqueue(…, due=game)`), then the state is stored, next check in 7 days, so a failed store finds the same
+facts again and their keys drop them; that session also gives the own snapshot the game's type and parent when its own
+check does not run (KI-52). A failure (IGDB, the game gone from IGDB, no keys, a spoiled state) waits 30 minutes and
+joins the «could not check» messages of the pass.
 
 What the owner reads (spec 7.1): `card_view` gives the expansions and the games of the series of a card, `parent` the
 game an expansion belongs to; both in a number of reads that does not grow with the lists.
@@ -22,15 +25,16 @@ game an expansion belongs to; both in a number of reads that does not grow with 
 
 import asyncio
 import logging
-from collections.abc import Callable, Iterable, Mapping
-from dataclasses import dataclass, field
+from collections.abc import Callable, Collection, Iterable, Mapping
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta, timezone, tzinfo
 from typing import Any
 
 from sqlalchemy import or_, select
 
-from app.tracker import follow_ups, games, storage
+from app.tracker import failures, follow_ups, games, storage
 from app.tracker.cards import FollowLine, FollowUpsView, ParentGame, local_moment
+from app.tracker.checks import POLLED_STATUSES
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
@@ -64,10 +68,14 @@ def _title_checked(session, title_id: int) -> Title | None:
     return title
 
 
+class _UnreadableOwn(ValueError):
+    """The game's own snapshot cannot be read (`games.expansion_of` raised): its follow-up check fails before IGDB."""
+
+
 @dataclass
 class _Plan:
-    """What the reconciliation found: the games to get a snapshot, the snapshots to go, the games left out because
-    their own snapshot cannot be read (title → the error)."""
+    """What the reconciliation found: the games to get a snapshot, the snapshots to go, the games whose own snapshot
+    cannot be read (title → the error; judged by their status alone)."""
 
     create: list[int] = field(default_factory=list)
     drop: list[SourceSnapshot] = field(default_factory=list)
@@ -86,6 +94,7 @@ class GameFollowUps:
         self.ctx = ctx
         self.settings = settings
         self.known_ids = known_ids
+        self._unreadable_log = failures.DailyLog()  # «its own snapshot cannot be read», once a day per game
 
     async def check(self) -> list[tuple[DueTitle, Exception]]:
         """Reconcile the snapshots, check the due games and store what IGDB answered. Returns the failures of the games
@@ -166,7 +175,10 @@ class GameFollowUps:
         with self.ctx.session_factory() as session:
             plan = self._plan(session)
         for title_id, error in plan.unreadable.items():
-            logging.warning("title %s: its own snapshot cannot be read, left out of the follow-up check: %r", title_id, error)
+            self._unreadable_log.warning(
+                title_id, now, "title %s: its own snapshot cannot be read, checked for follow-ups by its status: %r",
+                title_id, error,
+            )
         if plan.create or plan.drop:
             with self.ctx.write_session() as session:
                 plan = self._plan(session)
@@ -181,33 +193,21 @@ class GameFollowUps:
 
     def _plan(self, session) -> _Plan:
         """The reconciliation in three reads, however many games there are."""
-        of_kind = select(Title.id).where(Title.kind == self.kind)
-        statuses = dict(
-            session.execute(select(Title.id, Title.status).where(Title.kind == self.kind, Title.status.in_(FOLLOW_UP_STATUSES))).all()
-        )
-        states = storage.own_states_of(session, select(Title.id).where(Title.id.in_(list(statuses))))
-        snapshots = {
-            stored.title_id: stored
-            for stored in session.scalars(
-                select(SourceSnapshot).where(SourceSnapshot.source == SOURCE_KEY, SourceSnapshot.title_id.in_(of_kind))
-            )
-        }
-        plan = _Plan()
-        checked: set[int] = set()
-        for title_id, status in sorted(statuses.items()):
-            try:
-                expansion = games.expansion_of(states.get(title_id, {}))
-            except ValueError as error:
-                plan.unreadable[title_id] = error
-                continue
-            if for_follow_ups(status, expansion):
-                checked.add(title_id)
-        plan.create = sorted(checked - snapshots.keys())
-        plan.drop = [
-            stored for title_id, stored in sorted(snapshots.items())
-            if title_id not in checked and title_id not in plan.unreadable
-        ]
-        return plan
+        checked, unreadable = _games_for_check(session, self.kind)
+        snapshots = _snapshots(session, self.kind)
+        return _Plan(sorted(checked - snapshots.keys()), _unchecked(snapshots, checked), unreadable)
+
+    # --- a press (spec 3.1 of stage 9.1b) ---
+
+    def drop_unchecked(self, session, title_ids: Collection[int] | None) -> None:
+        """In the write session of a press: the follow-up snapshots of the games `title_ids` (None — every game of the
+        kind) that are no longer «игра для проверки» go — the reconciliation's own drop, applied at once (KI-53), so a
+        check answering after the press finds no snapshot and queues nothing, and «Вернуть в список» starts anew. A
+        press never makes a snapshot: only the reconciliation does, at the start of a pass."""
+        checked, _ = _games_for_check(session, self.kind, title_ids)
+        for stored in _unchecked(_snapshots(session, self.kind, title_ids), checked):
+            logging.info("title %s: no longer checked for expansions and sequels, the snapshot goes", stored.title_id)
+            session.delete(stored)
 
     def _due(self, session, now: datetime) -> list[DueTitle]:
         """At most `FOLLOW_UPS_PER_PASS` games whose check time has come, the earliest first, then by title (spec 5.3)."""
@@ -234,6 +234,13 @@ class GameFollowUps:
         """Check one due game; returns the failure to tell about, None when it was checked or skipped."""
         try:
             previous = await asyncio.to_thread(self._stored, game)
+        except _UnreadableOwn as unreadable:
+            spoiled = unreadable.__cause__
+            self._unreadable_log.warning(
+                game.id, self.ctx.now(), "title %s: its own snapshot cannot be read, its follow-up check fails: %r",
+                game.id, spoiled,
+            )
+            return spoiled
         except ValueError as spoiled:
             logging.warning("title %s: a spoiled state of the follow-up check: %r", game.id, spoiled)
             return spoiled
@@ -257,14 +264,21 @@ class GameFollowUps:
         found = sum([await asyncio.to_thread(self._queue, game, event, now) for event in result.events])
         if found:
             logging.info("title %s: %s announcements of expansions and sequels", game.id, found)
-        await asyncio.to_thread(self._store, game, result.state, now)
+        await asyncio.to_thread(self._store, game, result.state, snapshot, now)
         return None
 
     def _stored(self, game: DueTitle) -> follow_ups.FollowUps | None:
-        """The stored state, read strictly (a spoiled one raises ValueError); None — the snapshot is gone."""
+        """The stored state, read strictly (a spoiled one raises ValueError); None — the snapshot is gone. The key
+        `expansion` of the own snapshot is read first: unreadable raises `_UnreadableOwn` (KI-55), so IGDB is not asked."""
         with self.ctx.session_factory() as session:
             stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
-            return follow_ups.FollowUps.from_state(stored.state) if stored is not None else None
+            if stored is None:
+                return None
+            try:
+                games.expansion_of(storage.own_state(session, game.id))
+            except ValueError as error:
+                raise _UnreadableOwn(str(error)) from error
+            return follow_ups.FollowUps.from_state(stored.state)
 
     def _decide(
         self, game: DueTitle, previous: follow_ups.FollowUps, snapshot: follow_ups.FollowUpsSnapshot
@@ -283,26 +297,28 @@ class GameFollowUps:
         return follow_ups.check(previous, snapshot, name, scope.mine, scope.country, today, listed.keys())
 
     def _queue(self, game: DueTitle, event: DetectedEvent, now: datetime) -> bool:
-        """Queue an announcement; False — its fact is known already, or the game is no longer checked («Бросил» pressed
-        meanwhile: its undelivered messages are already taken out, this one must not come after them)."""
+        """Queue an announcement while the game's snapshot exists (`checks.still_checked`: «Бросил» drops it at once,
+        so a message never comes after the press took the others out); False — its fact is known already, or the
+        game is no longer checked (no dedup key is spent then)."""
         with self.ctx.write_session() as session:
-            if _title_checked(session, game.id) is None:
-                return False
             payload = {"text": event.text, **event.data}
-            if EventQueue.enqueue(session, event.type, payload, event.dedup_key, game.id, now) is None:
+            if EventQueue.enqueue(session, event.type, payload, event.dedup_key, game.id, now, due=game) is None:
                 return False
             session.commit()
             return True
 
-    def _store(self, game: DueTitle, state: follow_ups.FollowUps, now: datetime) -> None:
+    def _store(
+        self, game: DueTitle, state: follow_ups.FollowUps, snapshot: follow_ups.FollowUpsSnapshot, now: datetime
+    ) -> None:
         with self.ctx.write_session() as session:
             stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
-                logging.info("title %s was deleted while its follow-ups were checked", game.id)
+                logging.info("title %s was deleted or dropped while its follow-ups were checked", game.id)
                 return
             stored.state = state.state()
             stored.observed_at = now
             stored.next_check_at = now + FOLLOW_UP_INTERVAL
+            _learn_own_kind(session, game.id, snapshot)
             session.commit()
 
     def _postpone(self, game: DueTitle) -> bool:
@@ -319,3 +335,66 @@ class GameFollowUps:
                 still_checked = True
             session.commit()
             return still_checked
+
+
+def _games_for_check(
+    session, kind: TitleKind, title_ids: Collection[int] | None = None
+) -> tuple[set[int], dict[int, ValueError]]:
+    """The games of the kind (or of `title_ids` among them) that are «игра для проверки» now, in two reads, and the
+    ones whose own snapshot cannot be read (title → the error): those are judged by their status alone, so they count
+    (KI-55: a snapshot made and never dropped, so the check fails and reports)."""
+    query = select(Title.id, Title.status).where(Title.kind == kind, Title.status.in_(FOLLOW_UP_STATUSES))
+    if title_ids is not None:
+        query = query.where(Title.id.in_(list(title_ids)))
+    statuses = dict(session.execute(query).all())
+    states = storage.own_states_of(session, select(Title.id).where(Title.id.in_(list(statuses))))
+    checked: set[int] = set()
+    unreadable: dict[int, ValueError] = {}
+    for title_id, status in sorted(statuses.items()):
+        try:
+            expansion = games.expansion_of(states.get(title_id, {}))
+        except ValueError as error:
+            unreadable[title_id] = error
+            expansion = None
+        if for_follow_ups(status, expansion):
+            checked.add(title_id)
+    return checked, unreadable
+
+
+def _snapshots(session, kind: TitleKind, title_ids: Collection[int] | None = None) -> dict[int, SourceSnapshot]:
+    """The follow-up snapshots of the games of the kind (or of `title_ids` among them), title → snapshot, in one read."""
+    query = select(SourceSnapshot).where(
+        SourceSnapshot.source == SOURCE_KEY, SourceSnapshot.title_id.in_(select(Title.id).where(Title.kind == kind))
+    )
+    if title_ids is not None:
+        query = query.where(SourceSnapshot.title_id.in_(list(title_ids)))
+    return {stored.title_id: stored for stored in session.scalars(query)}
+
+
+def _unchecked(snapshots: dict[int, SourceSnapshot], checked: Collection[int]) -> list[SourceSnapshot]:
+    """The snapshots of the games that are no longer «игра для проверки» (`checked`: the games that are): they go. The
+    one place of the rule «drop», for the reconciliation and for a press."""
+    return [stored for title_id, stored in sorted(snapshots.items()) if title_id not in checked]
+
+
+def _learn_own_kind(session, title_id: int, snapshot: follow_ups.FollowUpsSnapshot) -> None:
+    """KI-52: when the game's own check does not run (its status is not polled or tracking is off — a game in
+    «Пройдено»), the kind of expansion and the parent IGDB gave now are written into its own snapshot if they differ,
+    so its card and its List mark know it. A game whose own check runs leaves them to it; a spoiled own state is left
+    alone (the check reports it, KI-55)."""
+    title = session.get(Title, title_id)
+    if title is None or (title.status in POLLED_STATUSES and title.tracking_enabled):
+        return
+    own = storage.own_snapshot(session, title_id)
+    if own is None:
+        return
+    try:
+        state = games.GameState.from_state(own.state)
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return
+    if (state.expansion, state.parent) == (snapshot.own_expansion, snapshot.own_parent):
+        return
+    logging.info(
+        "title %s: IGDB gives its own kind of expansion %s, written into its own snapshot", title_id, snapshot.own_expansion
+    )
+    own.state = replace(state, expansion=snapshot.own_expansion, parent=snapshot.own_parent).state()

@@ -1,6 +1,6 @@
 # 03: The follow-up check and withdrawn events — KI-52, 53, 54, 55
 
-Status: open
+Status: in review
 Complexity: complex (the same check files as 02, the queue's `withdraw`, a new reading rule for broken snapshots)
 Blocked by: 02 (the hook `Poller.after_marks`, `enqueue_all`, `DailyLog`)
 

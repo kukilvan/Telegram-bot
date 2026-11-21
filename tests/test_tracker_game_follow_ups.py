@@ -7,7 +7,6 @@ test writes; the follow-ups come from a fake source of `FollowUpsSnapshot`s.
 """
 
 import asyncio
-import logging
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
@@ -475,17 +474,15 @@ def test_dropped_or_deleted_during_the_request_queues_and_stores_nothing(
 
     follow.during = press
     clock.advance(days=7)
-    stored_before = snapshot_of(session_factory, title_id)
     report = run(tracker.poll_due())
 
+    # the press drops the snapshot at once (KI-53): the answer finds nothing to queue or store
     assert announcements(session_factory) == [] and report.failed == 0
-    if change == "dropped":
-        stored = snapshot_of(session_factory, title_id)
-        assert (stored.state, stored.observed_at) == (stored_before.state, stored_before.observed_at)
-        follow.during = None
-        clock.advance(minutes=1)
-        run(tracker.poll_due())
     assert snapshot_of(session_factory, title_id) is None
+    follow.during = None
+    clock.advance(minutes=1)
+    run(tracker.poll_due())
+    assert snapshot_of(session_factory, title_id) is None and follow.calls == ["1", "1"]
 
 
 def test_a_game_dropped_while_igdb_fails_gets_no_notice(tracker, igdb, follow, session_factory, clock):
@@ -585,32 +582,6 @@ def test_a_spoiled_state_fails_only_its_game_and_deleting_the_row_heals_it(
     run(tracker.poll_due())
     assert snapshot_of(session_factory, spoiled).state["known"] == ["9"]  # a new reference point
     assert announcements(session_factory) == []
-
-
-def test_a_spoiled_own_snapshot_leaves_the_game_out_and_fails_its_due_check(
-    tracker, igdb, follow, session_factory, caplog
-):
-    checked = add(tracker, igdb, "1", "Ведьмак 3")
-    run(tracker.poll_due())
-    never_checked = add(tracker, igdb, "2", "Hades II")
-    fine = add(tracker, igdb, "3", "Elden Ring")
-    with session_factory() as session:
-        for own in session.scalars(
-            select(SourceSnapshot).where(SourceSnapshot.source == "igdb", SourceSnapshot.title_id.in_([checked, never_checked]))
-        ):
-            own.state = {**own.state, "expansion": "dlc"}
-        session.commit()
-    set_snapshot(session_factory, checked, next_check_at=None)
-    follow.calls.clear()
-
-    with caplog.at_level(logging.WARNING):
-        report = run(tracker.poll_due())
-
-    assert snapshot_of(session_factory, never_checked) is None  # left out: no snapshot made
-    assert snapshot_of(session_factory, checked) is not None  # left out: its snapshot is not removed either
-    assert snapshot_of(session_factory, fine).state == {"own_date": None, "collections": [], "expansions": [], "games": [], "known": []}
-    assert report.failed == 1  # the game that was due fails, with a notice
-    assert any("cannot be read" in r.getMessage() and f"title {never_checked}" in r.getMessage() for r in caplog.records)
 
 
 # --- the end of the pass ----------------------------------------------------------------------------------------------

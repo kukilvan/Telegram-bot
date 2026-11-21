@@ -255,7 +255,7 @@ def test_marks_of_a_dropped_series_are_kept_and_its_status_stays(tracker, sessio
     assert run(tracker.title_card(ended)).seasons.watched == (1, 2)
 
 
-def test_dropped_takes_the_titles_undelivered_messages_out_of_the_queue_and_keeps_the_events(
+def test_dropped_takes_the_titles_undelivered_messages_and_their_events_out_of_the_queue(
     tracker, session_factory, movies, clock
 ):
     film, other = add(tracker, "movie", "1"), add(tracker, "series", "10")
@@ -275,7 +275,8 @@ def test_dropped_takes_the_titles_undelivered_messages_out_of_the_queue_and_keep
         of_film = set(session.scalars(select(Event.id).where(Event.title_id == film)))
     assert [entry for entry in left if entry[0] in of_film] == [(sent_before, DeliveryStatus.DELIVERED)]
     assert (others, DeliveryStatus.PENDING) in left  # another title's messages stay
-    assert event_types(session_factory, film) == ["x", movie_events.DATE_ANNOUNCED, failures.SOURCE_FAILED]
+    # the undelivered events go with their entries, so their keys are free (KI-54); the delivered one stays
+    assert event_types(session_factory, film) == ["x"]
 
 
 def test_a_fact_whose_message_was_dropped_does_not_come_after_the_return(tracker, session_factory, movies, sender, clock):
@@ -290,11 +291,9 @@ def test_a_fact_whose_message_was_dropped_does_not_come_after_the_return(tracker
     poll(tracker, clock, days=8)
     run(tracker.deliver_pending())
 
+    # the withdrawn event went with its entry (KI-54); the silent first check after the return keeps the fact silent
     assert sender.sent == []
-    assert event_types(session_factory, film) == [movie_events.DATE_ANNOUNCED]  # its key keeps the fact known
-    with session_factory() as session:
-        key = session.scalar(select(Event.dedup_key).where(Event.title_id == film))
-    assert run(tracker.record_event(movie_events.DATE_ANNOUNCED, {"text": "снова"}, key, title_id=film)) is None
+    assert event_types(session_factory, film) == []
 
 
 def test_the_list_still_has_the_dropped_title_with_its_status(tracker):

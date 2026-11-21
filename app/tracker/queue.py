@@ -2,6 +2,7 @@
 
 One event goes in with `enqueue`; the events of all the games of one check go in together with `enqueue_all`, in one
 write session, so the delivery job sees all of them or none (KI-51: two discounts of one check fold into one message).
+`withdraw` takes undelivered events out with their queue entries, so their dedup keys are free again (KI-54).
 """
 
 import asyncio
@@ -139,16 +140,24 @@ class EventQueue:
 
     @staticmethod
     def withdraw(session, title_id: int, types: Collection[str] | None = None) -> None:
-        """Take the title's entries that were not delivered yet out of the queue, in a write session; the caller commits.
+        """Take the title's events that were not delivered yet out of the queue, in a write session; the caller commits.
         `types`: only the events of these types (the events of Steam of a game whose prices are no longer checked);
-        None — all of them, the «could not check» messages too. The events stay: their dedup keys keep the same facts
-        from coming again."""
-        events_of_title = select(Event.id).where(Event.title_id == title_id)
-        if types is not None:
-            events_of_title = events_of_title.where(Event.type.in_(tuple(types)))
-        session.execute(
-            delete(DeliveryItem).where(DeliveryItem.status == DeliveryStatus.PENDING, DeliveryItem.event_id.in_(events_of_title))
+        None — all of them, the «could not check» messages too. The queue entries and their events both go, explicitly
+        (not by cascade), so a withdrawn fact frees its dedup key (KI-54): it can come again from another game of the
+        series, never from the same game (its next check starts with a silent reference point, or a deeper discount
+        moved its stored look past it). A withdrawn event never went out, so it leaves «Недавно» too."""
+        undelivered = (
+            select(Event.id)
+            .join(DeliveryItem, DeliveryItem.event_id == Event.id)
+            .where(Event.title_id == title_id, DeliveryItem.status == DeliveryStatus.PENDING)
         )
+        if types is not None:
+            undelivered = undelivered.where(Event.type.in_(tuple(types)))
+        event_ids = list(session.scalars(undelivered))
+        if not event_ids:
+            return
+        session.execute(delete(DeliveryItem).where(DeliveryItem.event_id.in_(event_ids)))
+        session.execute(delete(Event).where(Event.id.in_(event_ids)))
 
     def queue_failure_notices(self, broken: Sequence[tuple[DueTitle, Exception]]) -> int:
         """Queue the «could not check» events of one pass: one per title and source, none for a title no longer checked

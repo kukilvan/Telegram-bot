@@ -413,9 +413,11 @@ def test_a_deeper_discount_takes_the_undelivered_one_out_of_the_queue(tracker, i
     steam.looks[HADES] = discounted(50, ends_at=LATER_END)
     check(tracker, clock)
 
-    keys = discount_keys(session_factory)
-    assert keys == [f"game:{title_id}:discount:30:2026-11-20T18:00:00", f"game:{title_id}:discount:50:2026-11-20T18:00:00"]
-    assert pending_keys(session_factory) == keys[1:]  # one line about the discount of the game in the summary
+    # the older event goes with its queue entry (KI-54): only its key is freed, one line in the summary
+    deeper = f"game:{title_id}:discount:50:2026-11-20T18:00:00"
+    assert discount_keys(session_factory) == pending_keys(session_factory) == [deeper]
+    check(tracker, clock)  # the same deeper discount again: its key drops it
+    assert discount_keys(session_factory) == [deeper]
 
 
 def test_the_same_percent_again_after_the_end_is_new_and_an_extension_is_silent(tracker, igdb, steam, clock, session_factory):
@@ -424,6 +426,7 @@ def test_the_same_percent_again_after_the_end_is_new_and_an_extension_is_silent(
     first_end = naive(T0) + timedelta(days=2)
     steam.looks[HADES] = discounted(ends_at=first_end)
     check(tracker, clock)
+    run(tracker.deliver_pending())  # an undelivered one would be withdrawn by the next discount, its event too (KI-54)
     steam.looks[HADES] = discounted(ends_at=first_end + timedelta(days=1))  # Steam extended it
     check(tracker, clock)
     clock.advance(days=4)
@@ -439,6 +442,7 @@ def test_a_discount_without_an_end_comes_again_after_a_break(tracker, igdb, stea
     for state in (discounted(ends_at=None), discounted(ends_at=None), look(), discounted(ends_at=None)):
         steam.looks[HADES] = state
         check(tracker, clock)
+        run(tracker.deliver_pending())  # delivered events stay; a withdrawn one would go (KI-54)
     assert len(discount_keys(session_factory)) == 2
 
 
@@ -456,6 +460,7 @@ def test_the_lowest_comes_from_the_history_before_this_check(tracker, igdb, stea
     run(tracker.poll_due())  # ₪279 in the history
     steam.looks[HADES] = discounted(30, ends_at=LATER_END)
     check(tracker, clock)
+    run(tracker.deliver_pending())  # delivered: the next discount does not withdraw it (KI-54)
     steam.looks[HADES] = look()
     check(tracker, clock)
     steam.looks[HADES] = discounted(20, ends_at=naive(clock.now) + timedelta(days=30))  # dearer than −30 %

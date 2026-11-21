@@ -208,7 +208,7 @@ def expansion_type(raw: dict[str, Any]) -> str | None:
     return _EXPANSION_TYPES.get(game_type) if isinstance(game_type, int) else None
 
 
-def _parent(raw: dict[str, Any]) -> Parent | None:
+def parent_of(raw: dict[str, Any]) -> Parent | None:
     """`parent_game` as `{id, name}`; anything else is no parent (soft: an answer of a service)."""
     parent = raw.get("parent_game")
     if not isinstance(parent, dict) or isinstance(parent.get("id"), bool) or not isinstance(parent.get("id"), int):
@@ -217,19 +217,26 @@ def _parent(raw: dict[str, Any]) -> Parent | None:
     return Parent(str(parent["id"]), name) if isinstance(name, str) and name else None
 
 
+def expansion_with_parent(raw: dict[str, Any]) -> tuple[str | None, Parent | None]:
+    """The record's own kind of expansion and its parent, set together or not at all (`GameState`): a remaster, a
+    remake, a port has a parent too, so «expansion» is decided by the type. The one reading of the own snapshot's
+    poll and of the follow-up check (KI-52)."""
+    parent = parent_of(raw)
+    expansion = expansion_type(raw) if parent is not None else None
+    return expansion, parent if expansion is not None else None
+
+
 def parse_state(raw: dict[str, Any]) -> GameState:
     external = raw.get("external_games")
     concept = _store_id(external, PS_STORE_SOURCE)
-    parent = _parent(raw)
-    # a remaster, a remake, a port has a parent too: «expansion» is decided by the type
-    expansion = expansion_type(raw) if parent is not None else None
+    expansion, parent = expansion_with_parent(raw)
     return GameState(
         steam_id=_store_id(external, STEAM_SOURCE),
         ps_concept=concept if concept and concept.isdigit() else None,  # anything else: the link is a search
         platforms=known_platforms(raw.get("platforms")),
         releases=read_releases(raw.get("release_dates")),
         expansion=expansion,
-        parent=parent if expansion is not None else None,
+        parent=parent,
     )
 
 

@@ -66,10 +66,10 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-49 | `.env` holds variables the code does not read | `.env` | open | 9.1 |
 | KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
 | KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_batch.py`) | 9.1b |
-| KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | open | 9.1 |
-| KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | open | 9.1 |
-| KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | open | 9.1 |
-| KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | open | 9.1 |
+| KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
+| KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
+| KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
+| KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-56 | The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | open | 9.1 |
 | KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | open | 9.1 |
 | KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | open | 9.1 |
@@ -577,7 +577,7 @@ Format of a new entry:
 - What's wrong: whether a game is an expansion, and of which game, is stored in its own IGDB snapshot by every own poll. A standalone expansion (IGDB type 4: Miles Morales, The Lost Legacy) added through Search before stage 6.3 and already «Пройдено» is not polled any more, so its card has no line «Дополнение к игре «…»» and its row no mark «дополнение». Its check of expansions and sequels runs as for any game, so nothing is missed.
 - How to reproduce: before the update, add «Uncharted: The Lost Legacy» and press «Прошёл»; after the update its card has no line about Uncharted 4.
 - Likelihood / impact: rare (a standalone expansion in the archive from before 6.3); only the line and the mark are missing. «Вернуть в список» heals it with the next own poll. A fix: the follow-up check could also store the game's own type and parent.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_follow_up_known_issues.py::test_a_completed_standalone_expansion_learns_its_kind_and_parent`, `…::test_a_game_in_want_leaves_its_own_snapshot_to_its_own_poll_unless_tracking_is_off`, `…::test_a_spoiled_own_state_is_left_alone`, `…::test_a_game_that_turns_out_to_need_its_game_is_dropped_by_the_next_reconciliation`), ticket 03 of stage 9.1b. The follow-up request also asks `parent_game.name`; the game's own kind of expansion and parent are read as the own poll reads them (`igdb_games.expansion_with_parent`) and, when the game's own check does not run (not polled or tracking off — «Пройдено»), written into its own snapshot in the store session of the weekly check. A spoiled own state is left alone.
 - Found: 2026-11-04, spec of stage 6.3.
 
 ## KI-53. Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point
@@ -586,7 +586,7 @@ Format of a new entry:
 - What's wrong: «Вернуть в список» from «Бросил» should start the follow-up check anew, the first check being a silent reference point (spec 5.1 of stage 6.3). The snapshot of a dropped game goes only at the next pass; if the owner presses «Бросил» and then «Вернуть в список» before it (within about a minute), the snapshot stays, and the check goes on as if the game was never dropped: the next weekly check compares with the state from before «Бросил», so what was announced since that state comes as messages instead of being the silent reference point.
 - How to reproduce: a game in «Хочу» with a checked snapshot; press «Бросил» and «Вернуть в список» within a minute; when IGDB lists a new game of its series at the next weekly check, a message comes.
 - Likelihood / impact: rare (two buttons within a minute); the messages are true news that would have come without «Бросил» as well. A fix: «Бросил» could remove the snapshot itself, or the reconciliation could compare `Title.restored_at` with the snapshot.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_follow_up_known_issues.py::test_dropping_and_restoring_within_a_minute_starts_with_a_silent_reference_point`, `…::test_a_check_answering_after_dropping_and_restoring_queues_and_stores_nothing`), ticket 03 of stage 9.1b. The press hook (`GamePoller.after_marks` → `GameFollowUps.drop_unchecked`) drops the follow-up snapshot in the write session of «Бросил», by the same rule as the reconciliation; «Вернуть в список» gets an empty snapshot at the next pass, so its first check is the silent reference point.
 - Found: 2026-11-05, ticket 02 of stage 6.3.
 
 ## KI-54. Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series
@@ -595,7 +595,7 @@ Format of a new entry:
 - What's wrong: game A queues «Анонсирована новая игра серии: The Witcher IV», the message waits (quiet hours, the 15:00 summary); the owner presses «Бросил» on A, which takes the message out of the queue but keeps the event, so the key stays taken. When game B of the same series (also in the list) finds The Witcher IV at its weekly check, `enqueue` drops it as a known fact: the owner is never told.
 - How to reproduce: two games of one series in «Хочу», both checked; a new game of the series appears in IGDB; the announcement from A waits for the summary; press «Бросил» on A before it goes; B's check queues nothing.
 - Likelihood / impact: rare (an undelivered announcement, «Бросил» on exactly that game, and another game of the series in the list); one missed announcement, the card of B still shows the game in «Продолжения». A fix: a withdrawn event frees its key (delete the event, or give it a «withdrawn» mark the key check ignores).
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_follow_up_known_issues.py::test_a_withdrawn_announcement_comes_later_from_another_game_of_the_series`, `…::test_the_same_game_cannot_repeat_a_withdrawn_announcement`, `…::test_withdraw_deletes_the_entries_and_the_events_and_they_leave_recent`, `tests/test_tracker_steam_events.py::test_a_deeper_discount_takes_the_undelivered_one_out_of_the_queue`), ticket 03 of stage 9.1b. `EventQueue.withdraw` deletes the undelivered queue entries and their events, explicitly both: the key is free for another game of the series, never for the same game (its next check is a silent reference point; a deeper discount moved the stored look past the older one). A withdrawn event leaves «Недавно» too; delivered events stay.
 - Found: 2026-11-05, review of stage 6.3.
 
 ## KI-55. Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet
@@ -604,7 +604,7 @@ Format of a new entry:
 - What's wrong: spec 5.2 of stage 6.3 leaves such a game out of the reconciliation «with a line in the log». The reconciliation runs every pass, so the warning comes every minute while the snapshot stays spoiled. And the result depends on history: a game that already had a follow-up snapshot stays due, its check fails in `_decide` and the owner gets «could not check» once a day; a game that never had one gets no snapshot and is silently never checked.
 - How to reproduce: spoil the `expansion` key of a game's own snapshot (`source = 'igdb'`) by hand, e.g. `"expansion": "dlc"`; watch `data/logs/bot.log`.
 - Likelihood / impact: very rare (a hand edit or a bug; the own snapshot is rewritten by every own poll, which would also fail and report). Noise in the log; for a never-checked game no expansions or sequels. A fix: log once a day, and treat both cases alike (a snapshot made anyway, so the check fails and reports).
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_follow_up_known_issues.py::test_an_unreadable_own_snapshot_fails_before_igdb_and_reports_once_a_day`, `…::test_an_unreadable_own_snapshot_counts_by_status_alone`), ticket 03 of stage 9.1b. The reconciliation judges such a game by its status alone (in «Хочу», «В процессе», «Пройдено» its snapshot is made and never dropped); the check reads the own snapshot before IGDB: unreadable — a failure at once, no request, 30 minutes, «could not check» once a day by the window. The log line comes once a day per game (`failures.DailyLog`, shared by the reconciliation and the check).
 - Found: 2026-11-05, review of stage 6.3.
 
 ## KI-56. The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406

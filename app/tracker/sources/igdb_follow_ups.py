@@ -5,7 +5,8 @@ network client (`IGDBProvider.games`, paced like every IGDB request) is passed i
 
 The series is IGDB's `collections` (not its franchises, full of editions, bundles and crossovers), with the game's own
 `remakes` and `remasters`; of them only the games themselves count (`igdb_games.is_game`). The expansions are
-`expansions` (type 2) and `standalone_expansions` (type 4): small DLC (`dlcs`) is left out.
+`expansions` (type 2) and `standalone_expansions` (type 4): small DLC (`dlcs`) is left out. The game's own type and
+`parent_game` are read too (KI-52), for the own snapshot of a game whose own check no longer runs.
 """
 
 from collections.abc import Iterable
@@ -16,7 +17,9 @@ from app.tracker.failures import TitleGone
 from app.tracker.follow_ups import FollowUp, FollowUpsSnapshot
 from app.tracker.sources.dates import response_day_of_timestamp
 from app.tracker.games import STANDALONE
-from app.tracker.sources.igdb_games import expansion_type, is_game, known_platforms, read_releases, russian_name
+from app.tracker.sources.igdb_games import (
+    expansion_type, expansion_with_parent, is_game, known_platforms, read_releases, russian_name,
+)
 
 SOURCE_KEY = "igdb_follow_ups"
 
@@ -33,7 +36,7 @@ def _fields(prefix: str) -> str:
 
 
 FOLLOW_UPS_QUERY = (
-    "fields name,game_type,first_release_date,"
+    "fields name,game_type,parent_game.name,first_release_date,"
     f"{_fields('expansions')},{_fields('standalone_expansions')},{_fields('remakes')},{_fields('remasters')},"
     f"collections.name,{_fields('collections.games')}; "
     "where id = {id};"
@@ -78,7 +81,8 @@ def _once(items: Iterable[dict[str, Any]], skip: set[int]) -> list[dict[str, Any
 
 
 def parse_follow_ups(raw: dict[str, Any]) -> FollowUpsSnapshot:
-    """The snapshot of the answer about one game (spec 3.2)."""
+    """The snapshot of the answer about one game (spec 3.2), with the game's own kind of expansion and parent read as
+    its own poll reads them (`igdb_games.expansion_with_parent`, KI-52)."""
     expansions = _once(
         (
             item for item in _records(raw.get("expansions")) + _records(raw.get("standalone_expansions"))
@@ -93,11 +97,14 @@ def parse_follow_ups(raw: dict[str, Any]) -> FollowUpsSnapshot:
     games = _once(
         (item for item in series if is_game(item)), {raw.get("id")} | {item["id"] for item in expansions}
     )
+    own_expansion, own_parent = expansion_with_parent(raw)
     return FollowUpsSnapshot(
         own_date=response_day_of_timestamp(raw.get("first_release_date")),
         collections=tuple(c["name"] for c in collections if isinstance(c.get("name"), str) and c["name"]),
         expansions=tuple(_follow_up(item) for item in expansions),
         games=tuple(_follow_up(item) for item in games),
+        own_expansion=own_expansion,
+        own_parent=own_parent,
     )
 
 

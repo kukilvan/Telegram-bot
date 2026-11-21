@@ -118,9 +118,12 @@ class GamePoller(Poller):
 
     def after_marks(self, session, title_ids: Collection[int] | None) -> None:
         """A press ends the checks of the games at once (spec 3.1 of stage 9.1b). The price part: the price snapshots
-        of the games no longer «игра для цен» go with their undelivered Steam events (`GamePrices.drop_unpriced`)."""
+        of the games no longer «игра для цен» go with their undelivered Steam events (`GamePrices.drop_unpriced`); the
+        follow-up part: the follow-up snapshots of the games no longer «игра для проверки» go
+        (`GameFollowUps.drop_unchecked`, KI-53)."""
         self.prices.drop_unpriced(session, title_ids)
-        # the follow-up part (ticket 9.1b.03) and the Russian part (ticket 9.1b.04) come here
+        self.follow_ups.drop_unchecked(session, title_ids)
+        # the Russian part (ticket 9.1b.04) comes here
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()
