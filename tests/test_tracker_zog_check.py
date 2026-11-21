@@ -252,6 +252,17 @@ def test_the_russian_name_matches_too(tracker, igdb, zog, session_factory):
     assert zog_snapshot(session_factory, title_id).state["page"] == "the_witcher_3_wild_hunt"
 
 
+def test_zog_read_before_the_official_check_keeps_the_not_checked_hint(tracker, igdb, steam, zog, session_factory):
+    zog.pages["grand_theft_auto_6"] = made_up_page("Grand Theft Auto 6", (), 2026)
+    title_id = add(tracker, igdb, "Grand Theft Auto VI", year=2026, steam_id=None, platforms=(167,))
+
+    run(tracker.poll_due())  # IGDB «not asked yet», no Steam page: the official look stays empty
+
+    view = card(tracker, title_id).russian
+    assert view.line == "нет данных"
+    assert view.hints == ("Ещё не проверяли — строка появится через минуту-другую", "ZoG — проверено сегодня в 12:00")
+
+
 # --- the cadence -----------------------------------------------------------------------------------------------------
 
 

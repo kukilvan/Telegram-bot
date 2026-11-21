@@ -289,9 +289,12 @@ class GameRussian:
         line = russian.line(official, pc, fan_look.fan if fan_look else None, played_elsewhere(scope, title.id, game))
         if not active and line.no_data:
             return None
-        checked = [checked_hint(_SOURCE_WORDS[source], stored.observed_at, self.ctx.now(), tz)] if look is not None else []
-        checked += [fan.checked] if fan is not None and fan.checked else []
-        hints: list[str] = [" · ".join(checked)] if checked else ([HINT_NOT_CHECKED] if active else [])
+        fan_checked = [fan.checked] if fan is not None and fan.checked else []
+        if look is not None:  # «Steam — проверено … · ZoG — проверено …»
+            official_checked = checked_hint(_SOURCE_WORDS[source], stored.observed_at, self.ctx.now(), tz)
+            hints: list[str] = [" · ".join([official_checked, *fan_checked])]
+        else:
+            hints = ([HINT_NOT_CHECKED] if active else []) + fan_checked
         if line.pc:
             hints.append(HINT_PC)
         if fan is not None and fan.page_hint:
