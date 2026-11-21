@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-21 — Ticket 9.1b.01
+
+- KI-35: `games.pick` takes only the records of the country's regions (no fallback to «the earliest of the others»); `game_rows.outside_date` gives «в Японии — 12 марта 2027» (`platforms.REGION_WORDS`; shown when it ends earlier than the platform's own date, per platform, then the earliest start of those shown), `CardPart.outside_date`, the web row with the hint, the bot line. KI-36: `game_events.detect_events(…, since)` — a release is told when its day is not earlier than 30 days before the later of `Title.added_at` and `restored_at`; a day earlier than yesterday gets `late` and `seen` in the payload (`seen` lets a folded message decide whether to name the year) and the text names the day; `fold_key` adds `late`. KI-38: a missing or unknown `date_format` reads as a year. KI-37: `PlayStationProvider.head` (`app/providers/playstation.py`), `PlayStationLinks` (`app/tracker/playstation.py`, one `HEAD`, a day in memory per (locale, concept); a failure is not kept), `Tracker.playstation_link`, route `GET /titles/<id>/playstation`; `StoreLink.checked` makes the web link lead through it; the bot's text line keeps the concept.
+- Decisions: the outside line filters per platform before taking the earliest (the spec said earliest first, then the test; the per-platform way never hides a later platform's line behind an earlier one's); any 3xx with `/error` counts as «no concept»; the old tests of the 30-day rule pass `since=today`. Live: `HEAD` Hades II, Bloodborne `200`, a missing number `302 …/error`. 4409 tests pass (two known Windows files not run). Accepted by the owner («ОК»).
+
 ## 2026-11-21 — Slicing 9.1b
 
 - `.scratch/9-1b-games-steam/issues/`: six tickets from section 11 of the spec — 01 game dates and the PlayStation link (medium), 02 the price check and the press hook (complex), 03 the follow-up check and withdrawn events (complex, after 02), 04 Russian, the official part (complex, after 01 and 03), 05 Russian, ZoG (complex, after 04), 06 «Страница на ZoG» (medium, after 05). Each names its spec sections; the live answers of `answers/` go to the tickets that test them (02 the preorder, 04 Steam and IGDB languages, 05 the ZoG pages).
