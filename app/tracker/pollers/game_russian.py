@@ -249,8 +249,10 @@ class GameRussian:
                 self._postpone(item.game.due)
 
     def _store(self, item: _Answered, now: datetime) -> None:
-        """The look becomes the snapshot, next check in 6 hours; no look — the snapshot stays as it was. A snapshot
-        gone meanwhile (a deletion) is no failure: nothing is written."""
+        """The look becomes the snapshot, next check in 6 hours. No look (Steam silent, IGDB «not asked yet») — the
+        snapshot stays as it was: a game with a Steam page waits 6 hours (Steam is not asked every minute), one without
+        stays due, so the first pass after its own poll records the look (no request is made for it). A snapshot gone
+        meanwhile (a deletion) is no failure: nothing is written."""
         with self.ctx.write_session() as session:
             stored = storage.snapshot_of(session, item.game.due.id, SOURCE_KEY)
             if stored is None:
@@ -259,7 +261,8 @@ class GameRussian:
             if item.look is not None:
                 stored.state = item.look.state()
                 stored.observed_at = now
-            stored.next_check_at = now + RUSSIAN_INTERVAL
+            if item.look is not None or item.game.appid is not None:
+                stored.next_check_at = now + RUSSIAN_INTERVAL
             session.commit()
 
     def _postpone(self, game: DueTitle) -> bool:

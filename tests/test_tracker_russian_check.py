@@ -233,14 +233,27 @@ def test_not_asked_yet_stores_nothing_until_igdb_answers_and_then_it_is_the_refe
     run(tracker.poll_due())
     stored = snapshot(session_factory, title_id)
     assert stored.state == {}
-    assert stored.next_check_at == naive(T0) + timedelta(hours=6)
+    assert stored.next_check_at is None  # no Steam page: it stays due, no request is made for it
 
     igdb_says(session_factory, igdb, game(steam_id=None, russian=BOTH))
-    check(tracker, clock)
+    check(tracker, clock, hours=0)  # the first pass after its own poll
 
     assert snapshot(session_factory, title_id).state == {"source": "igdb", "appid": None, "text": True, "voice": True}
     assert russian_texts(session_factory) == []
     assert steam.calls == []  # no Steam page: IGDB only, no request
+
+
+def test_a_game_with_a_steam_page_not_asked_yet_waits_six_hours_so_steam_is_not_asked_every_minute(
+    tracker, igdb, steam, session_factory, clock
+):
+    title_id = add(tracker, igdb, game(russian=NOT_ASKED))
+    run(tracker.poll_due())
+    clock.advance(minutes=1)
+    run(tracker.poll_due())
+
+    assert snapshot(session_factory, title_id).state == {}
+    assert snapshot(session_factory, title_id).next_check_at == naive(T0) + timedelta(hours=6)
+    assert steam.calls == [[STRAY]]
 
 
 def test_no_data_keeps_the_previous_look_and_says_nothing(tracker, igdb, steam, session_factory, clock):

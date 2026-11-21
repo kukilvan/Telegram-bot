@@ -93,6 +93,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | 9.1 |
 | KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | open | 9.1c |
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
+| KI-79 | Russian: a game with a Steam page but no languages there, and IGDB not asked yet, says «Ещё не проверяли» up to 6 hours | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
 
 ## Entries
 
@@ -815,3 +816,13 @@ Format of a new entry:
 - Likelihood / impact: very rare. One repeated message, no loss.
 - Status: open. Fix in 9.2 only if met in real use (e.g. a longer grace).
 - Found: 2026-11-20, spec 9.1a.
+
+
+## KI-79. Russian: a game with a Steam page but no languages there, and IGDB not asked yet, says «Ещё не проверяли» up to 6 hours
+
+- Where: `GameRussian._store` (spec 9.1b, section 5.5: «while Steam has none and IGDB is «not asked yet», nothing is stored»).
+- What's wrong: a game added before stage 9.1b has an own snapshot without the languages of IGDB until its own poll (up to a day). If it has a Steam page and Steam lists no languages for it, the check stores nothing (the first look with data must be a reference point) and waits 6 hours, so Steam is not asked every minute. Meanwhile the card says «Ещё не проверяли — строка появится через минуту-другую»; after the own poll the line already reads by IGDB, but the hint stays until the next check. A game without a Steam page is not affected: it stays due and gets its look in the first pass after its own poll.
+- How to reproduce: a game in «Хочу» added before the update, with a Steam page of an announced game (no languages in Steam); open its card after the first pass.
+- Likelihood / impact: rare (old announced games with a Steam page), once per game. A hint that is wrong for at most 6 hours; no message lost or false.
+- Status: open. Fix in 9.2 only if met in real use (e.g. a hint of its own for «Steam silent, IGDB not asked»).
+- Found: 2026-11-21, ticket 9.1b.04 (self-check on the owner's PC).
