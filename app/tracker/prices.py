@@ -30,6 +30,7 @@ MINUS = "−"
 FREE_TEXT = "бесплатно"
 SLOT = "{}"  # where the amount stands in a currency
 FREE_PCT = 100  # a discount of 100 % is a giveaway: «раздают бесплатно»
+WHOLE_SET = "цена набора целиком"  # after the price of a bundle: the price of the set, not of what is missing (KI-43)
 
 _NUMBER_INSIDE = re.compile(r"[\d\s.,]*")
 _COUNTRY = re.compile(r"[a-z]{2}")

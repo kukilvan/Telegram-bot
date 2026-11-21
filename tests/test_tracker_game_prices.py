@@ -252,7 +252,11 @@ def test_a_game_no_longer_for_prices_loses_its_snapshot_and_its_steam_messages_k
         igdb_says(session_factory, igdb, game(platforms=(PS5,)))
     else:
         igdb_says(session_factory, igdb, game(steam_id=None))
-    assert price_snapshot(session_factory, title_id) is not None or why == "dropped"  # buttons leave the snapshot
+    # a press drops the snapshot in its own session (spec 3.1 of stage 9.1b); the rest waits for the reconciliation
+    pressed = why in ("started", "completed", "dropped", "mark off")
+    assert (price_snapshot(session_factory, title_id) is None) == pressed
+    if pressed:
+        assert pending_types(session_factory, title_id) == ([] if why == "dropped" else ["game_release"])
     run(tracker.poll_due())
 
     assert price_snapshot(session_factory, title_id) is None
@@ -262,15 +266,17 @@ def test_a_game_no_longer_for_prices_loses_its_snapshot_and_its_steam_messages_k
     assert len(prices.calls) == 1
 
 
-def test_the_buttons_and_the_settings_do_not_touch_the_price_snapshot_by_themselves(tracker, igdb, session_factory):
+def test_a_settings_value_written_by_hand_waits_for_the_reconciliation(tracker, igdb, session_factory):
+    """Only a press runs the hook: a value put into the table by hand (a restore, a migration) is applied by the
+    reconciliation of the next pass."""
     title_id = add(tracker, igdb)
     run(tracker.poll_due())
 
-    run(tracker.mark_started(title_id))
-    run(tracker.set_platform_playing(title_id, "pc", False))
     put_setting(session_factory, MY_PLATFORMS_SETTING, ["ps5"])
 
     assert price_snapshot(session_factory, title_id).state == price_look(HADES).state()
+    run(tracker.poll_due())
+    assert price_snapshot(session_factory, title_id) is None
 
 
 @pytest.mark.parametrize("change", ["started", "completed", "dropped", "mark off"])
@@ -300,18 +306,25 @@ def test_a_game_without_pc_or_without_a_steam_number_has_no_prices(tracker, igdb
     assert price_snapshot(session_factory, console) is None and price_snapshot(session_factory, no_page) is None
 
 
-def test_the_mark_taken_off_and_set_again_within_a_minute_leaves_the_snapshot(tracker, igdb, prices, session_factory):
+def test_the_mark_taken_off_and_set_again_within_a_minute_starts_anew_with_the_baseline(
+    tracker, igdb, prices, session_factory, caplog
+):
+    """The mark taken off drops the snapshot at once; set again, the game gets a new one only from the reconciliation
+    of the next pass, and its first check is the reference point (spec 3.1 of stage 9.1b)."""
+    caplog.set_level(logging.INFO)
     title_id = add(tracker, igdb)
     run(tracker.poll_due())
     before = price_snapshot(session_factory, title_id)
 
     run(tracker.set_platform_playing(title_id, "pc", False))
     run(tracker.set_platform_playing(title_id, "pc", True))
+    assert price_snapshot(session_factory, title_id) is None  # a press never makes a snapshot
+    caplog.clear()
     run(tracker.poll_due())
 
     after = price_snapshot(session_factory, title_id)
-    assert (after.id, after.state, after.next_check_at) == (before.id, before.state, before.next_check_at)
-    assert len(prices.calls) == 1
+    assert after.state == before.state
+    assert len(prices.calls) == 2 and len(baselines(caplog)) == 1
 
 
 def test_deleting_the_title_deletes_its_snapshot_and_its_history(tracker, igdb, session_factory):

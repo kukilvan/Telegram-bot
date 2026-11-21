@@ -1,11 +1,13 @@
 """Source failure notices: why a title could not be checked, and how the message to the owner reads.
 
 Pure functions, no database and no network. Keys, addresses and the text of the exception never reach the message:
-the exception is only sorted into a reason (what the owner can do about it); the details stay in the log.
+the exception is only sorted into a reason (what the owner can do about it); the details stay in the log. A failure
+that repeats every 30 minutes for days (a spoiled snapshot) writes its log line once a day (`DailyLog`).
 """
 
-from collections.abc import Sequence
-from datetime import timedelta
+import logging
+from collections.abc import Hashable, Sequence
+from datetime import datetime, timedelta
 from typing import Any
 
 import httpx
@@ -39,6 +41,26 @@ _REASONS = {
     GONE: "{source} больше не знает этого тайтла",
     UNKNOWN: "у {source} неизвестная ошибка, подробности в журнале",
 }
+
+
+LOG_EVERY = timedelta(days=1)  # `DailyLog`: one line per key in this time
+
+
+class DailyLog:
+    """A log line per key at most once a day, kept in memory: a restart may repeat one (spec 6 of stage 9.1b). The
+    moments are the caller's clock (naive UTC), so a test moves them."""
+
+    def __init__(self) -> None:
+        self._last: dict[Hashable, datetime] = {}
+
+    def warning(self, key: Hashable, now: datetime, message: str, *args: Any) -> bool:
+        """Write the warning unless the same key wrote one in the last day; True — it was written."""
+        last = self._last.get(key)
+        if last is not None and now - last < LOG_EVERY:
+            return False
+        self._last[key] = now
+        logging.warning(message, *args)
+        return True
 
 
 class TitleGone(LookupError):

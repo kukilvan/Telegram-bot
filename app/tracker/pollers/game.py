@@ -15,7 +15,7 @@ name of an expansion in the List is `list_tags` (spec 7.4 of stage 6.3).
 """
 
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
@@ -115,6 +115,12 @@ class GamePoller(Poller):
     @property
     def offers_follow_ups(self) -> bool:
         return self.follow_ups.source is not None
+
+    def after_marks(self, session, title_ids: Collection[int] | None) -> None:
+        """A press ends the checks of the games at once (spec 3.1 of stage 9.1b). The price part: the price snapshots
+        of the games no longer «игра для цен» go with their undelivered Steam events (`GamePrices.drop_unpriced`)."""
+        self.prices.drop_unpriced(session, title_ids)
+        # the follow-up part (ticket 9.1b.03) and the Russian part (ticket 9.1b.04) come here
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()

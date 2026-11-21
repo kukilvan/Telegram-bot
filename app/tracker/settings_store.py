@@ -4,6 +4,8 @@ once. The settings page reads them all (`settings`) and stores all of them at on
 
 Each field has one check (`check_…`), shared by the form, by the older methods and by the reading of what is stored: a
 value that fails it is a `ValueError` whose text is the phrase for the owner; the form turns it into `SettingsRefused`.
+A save of the form runs the press hook the core gives (`after_save`) in its write session: «Мои платформы» without PC
+ends every price check at once (spec 3.1 of stage 9.1b).
 """
 
 import asyncio
@@ -124,6 +126,8 @@ def _refusing(field: SettingsField) -> Iterator[None]:
 class SettingsStore:
     def __init__(self, ctx: CoreContext) -> None:
         self.ctx = ctx
+        # the press hook of the core (`Pollers.after_marks`), run in the write session of a save of the form
+        self.after_save: Callable[[Any], None] = lambda session: None
         self._spoiled: set[tuple[str, str]] = set()  # stored values that are not valid, as the log has told: once each
 
     def _spoiled_once(self, key: str, value: Any, works: str) -> None:
@@ -318,6 +322,7 @@ class SettingsStore:
         values = self._checked(change)
         with self.ctx.write_session() as session:  # one transaction: two forms at once never leave half of each
             self._put(session, values)
+            self.after_save(session)
             session.commit()
 
     @staticmethod

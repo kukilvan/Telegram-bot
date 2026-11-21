@@ -2,7 +2,8 @@
 
 `snapshot_to_add`, `first_seasons` and `first_check` say what a new title starts with, `store_extras` keeps what only this kind has,
 `known_ids` and `snapshot_ids` tell a title already in the list by the ids of the source, and `apply` compares a fresh
-snapshot with the stored one, queues the events and stores the new state; `end_of_pass` checks what is looked at for all
+snapshot with the stored one, queues the events and stores the new state; `after_marks` applies, in the write session
+of a press of the owner, what the press ends of the checks of the kind (a game: its price check); `end_of_pass` checks what is looked at for all
 the titles of the kind at once, after the pass over the titles (the Steam prices of the games and their expansions and sequels). What the owner reads is
 asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `card_part` gives what a card
 holds that depends on the kind, `list_marks` the marks of the rows of the list and `list_tags` the words after their
@@ -10,7 +11,7 @@ names; `offers_follow_ups` says whether the kind announces titles to follow. The
 """
 
 import logging
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -136,6 +137,13 @@ class Poller:
         """Whether titles of this kind announce titles to follow (a game: its expansions and the games of its series,
         while the core has the source of that check). A kind with a sequel source offers them too, by `Pollers.follows`."""
         return False
+
+    # --- a press of the owner ---
+
+    def after_marks(self, session, title_ids: Collection[int] | None) -> None:
+        """In the write session of a press that can end a check of the titles `title_ids` (None — every title of the
+        kind: a save of Settings): what the press ends goes at once, by the same rule the check reconciles by (a game:
+        the price snapshots of the games no longer for prices, spec 3.1 of stage 9.1b). Nothing for most kinds."""
 
     # --- polling a title ---
 

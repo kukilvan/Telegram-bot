@@ -22,7 +22,7 @@ from app.tracker.dedup import moved_key
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
-from app.tracker.prices import FREE_PCT, Bundle, Lowest, Money, Price, PriceLook, edition_note, percent, until
+from app.tracker.prices import FREE_PCT, WHOLE_SET, Bundle, Lowest, Money, Price, PriceLook, edition_note, percent, until
 
 _ICON = KINDS[TitleKind.GAME].icon
 
@@ -71,8 +71,10 @@ def discount_line(name: str, price: Price, currency: str, ends_on: date | None, 
 
 
 def bundle_text(name: str, bundle: Bundle, currency: str) -> str:
-    """«🎮 Hades II продаётся в бандле «Hades + Hades II» (2 игры) — ₪250»."""
-    return f"{_ICON} {name} продаётся в бандле «{bundle.name}» ({games_word(bundle.games)}) — {Money(bundle.final, currency)}"
+    """«🎮 Hades II продаётся в бандле «Hades + Hades II» (2 игры) — ₪250, цена набора целиком» (KI-43: the price of the
+    whole set, whatever the owner already has)."""
+    money = Money(bundle.final, currency)
+    return f"{_ICON} {name} продаётся в бандле «{bundle.name}» ({games_word(bundle.games)}) — {money}, {WHOLE_SET}"
 
 
 def steam_page_text(name: str) -> str:

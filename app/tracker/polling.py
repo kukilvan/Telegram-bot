@@ -7,7 +7,7 @@ of the pass. Database work runs in a worker thread, so a slow disk never freezes
 
 import asyncio
 import logging
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from datetime import timedelta
 from typing import Any
 
@@ -96,6 +96,13 @@ class Pollers:
     def sequel_keys(self) -> list[tuple[TitleKind, str]]:
         """Every (kind, key of its sequel snapshot)."""
         return [(kind, poller.source.source_key) for kind, poller in self._sequels.items()]
+
+    def after_marks(self, session, kind: TitleKind | None = None, title_ids: Collection[int] | None = None) -> None:
+        """The press hook, in the write session of the press: the poller of `kind` applies what the press ends of its
+        checks of `title_ids` (`Poller.after_marks`); `kind` None — the poller of every kind, for all their titles (the
+        save of Settings: «Мои платформы» without PC ends every price check at once)."""
+        for poller in self.every() if kind is None else [self._every[kind]]:
+            poller.after_marks(session, None if kind is None else title_ids)
 
     def for_due(self, due: DueTitle) -> Poller:
         return self._sequels[due.kind] if due.sequels else self._release[due.kind]

@@ -704,16 +704,18 @@ def test_a_snapshot_of_another_source_is_no_sequel_check(tracker, session_factor
 
 
 @pytest.mark.parametrize("finish", ["dropped", "restored"])
-def test_dropping_and_returning_a_game_keep_its_snapshot_of_another_source(
+def test_dropping_a_game_drops_its_price_snapshot_at_once_and_returning_brings_none_back(
     tracker, session_factory, made_up, clock, finish
 ):
+    """«Бросил» ends the price check in its own write session (spec 3.1 of stage 9.1b); «Вернуть в список» makes no
+    snapshot: only the reconciliation of a pass does."""
     title_id = add(tracker, made_up, state((PC, "full", "2027")))
     add_snapshot(session_factory, title_id, "steam", clock)
     run(tracker.mark_dropped(title_id))
     if finish == "restored":
         run(tracker.restore_title(title_id))
 
-    assert sources_of(session_factory, title_id) == ["igdb", "steam"]
+    assert sources_of(session_factory, title_id) == ["igdb"]
 
 
 def test_the_pass_over_the_titles_does_not_take_a_snapshot_of_another_source_for_a_sequel_check(

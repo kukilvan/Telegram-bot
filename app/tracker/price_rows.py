@@ -12,8 +12,8 @@ from typing import Any
 from app.tracker.cards import SteamView, format_date, format_past_moment, games_word, local_moment
 from app.tracker.platforms import STORE_COUNTRIES
 from app.tracker.prices import (
-    BUNDLES_ONLY, COMING_SOON, FREE, FREE_PCT, NOT_IN_COUNTRY, NOT_SOLD, UNKNOWN_APP, Money, Price, PriceLook,
-    PricedRecord, comparable, edition_note, lowest, percent, until,
+    BUNDLES_ONLY, COMING_SOON, FREE, FREE_PCT, NOT_IN_COUNTRY, NOT_SOLD, UNKNOWN_APP, WHOLE_SET, Money, Price,
+    PriceLook, PricedRecord, comparable, edition_note, lowest, percent, until,
 )
 
 BUNDLES_SHOWN = 5  # the card lists the first ones; the rest is «и ещё 3»
@@ -96,7 +96,8 @@ def _lowest_line(records: Collection[PricedRecord], look: PriceLook, price: Pric
 
 def _bundle_lines(look: PriceLook) -> tuple[tuple[str, ...], str]:
     lines = tuple(
-        f"«{bundle.name}» ({games_word(bundle.games)}) — {look.money(bundle.final)}" for bundle in look.bundles[:BUNDLES_SHOWN]
+        f"«{bundle.name}» ({games_word(bundle.games)}) — {look.money(bundle.final)}, {WHOLE_SET}"
+        for bundle in look.bundles[:BUNDLES_SHOWN]
     )
     rest = len(look.bundles) - BUNDLES_SHOWN
     return lines, f"и ещё {rest}" if rest > 0 else ""

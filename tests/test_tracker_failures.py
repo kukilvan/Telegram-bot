@@ -6,6 +6,7 @@ fail on demand, fake sender, in-memory SQLite.
 """
 
 import asyncio
+import logging
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
@@ -783,3 +784,19 @@ def test_a_notice_of_a_title_no_longer_checked_is_not_queued(session_factory, cl
 
     assert queue.queue_failure_notices([(due(title_id, "igdb"), ConnectionError("down"))]) == 0
     assert failure_keys(session_factory) == []
+
+
+# --- the daily log line (spec 6 of stage 9.1b) --------------------------------------------------------------------
+
+
+def test_the_daily_log_writes_a_key_once_a_day(caplog):
+    caplog.set_level(logging.WARNING)
+    log = failures.DailyLog()
+    morning = datetime(2026, 11, 21, 8, 0)
+
+    assert log.warning(7, morning, "title %s: spoiled", 7)
+    assert not log.warning(7, morning + timedelta(hours=23, minutes=59), "title %s: spoiled", 7)  # the same day
+    assert log.warning(8, morning, "title %s: spoiled", 8)  # another key
+    assert log.warning(7, morning + timedelta(days=1), "title %s: spoiled", 7)  # the next day
+
+    assert [r.getMessage() for r in caplog.records] == ["title 7: spoiled", "title 8: spoiled", "title 7: spoiled"]

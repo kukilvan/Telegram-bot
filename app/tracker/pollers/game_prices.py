@@ -1,17 +1,22 @@
 """The price check at the end of a polling pass: which games have their Steam prices checked, the requests in packs of
 100, the reference point, the price history and the failures (spec 4 of part 6.2).
 
+Stage 9.1b (spec 2) added a spoiled snapshot as a failure, the three phases of a check and the press's «drop».
+
 Each pass (every minute) the price snapshots (source `steam`) are first brought in line with the rule «игра для цен»
 (`steam_number`), in a number of reads that does not grow with the number of games: a game for prices without a
 snapshot gets an empty one, due now; a snapshot that looked at another Steam number or store country becomes empty,
 due now (a failure of that check waits 30 minutes, as any); the snapshot of a game that is no longer one goes, and with
-it the undelivered events of Steam of that game (the price history stays). No button touches the price snapshots: the
-rule lives here.
-Then the due games are asked about, all in the country of the stores of now; the request holds no database, and each
-game is written in a write session of its own (rule 9). Unless the check is the reference point, the previous look and
-the new one are compared (`price_events`) and the events are queued first, each in a session of its own (a new
-discount takes the undelivered one of the game out of the queue); then the look and the history are stored, so a
-failed store finds the same facts again and their keys drop them.
+it the undelivered events of Steam of that game (the price history stays). A snapshot that cannot be read is left
+alone while its game is for prices: each time it is due it is a failure of the check (KI-50). The rule lives here; a
+press that can end a price check («Прошёл», «Начал играть», «Бросил», the mark «играю здесь», a save of Settings)
+applies its «drop» at once in its own write session (`drop_unpriced`, KI-47); only the reconciliation makes snapshots.
+Then the due games are asked about, all in the country of the stores of now; the request holds no database. The check
+works in three phases (KI-51): every pack asked and the events of every game found in a read session; the events of
+all the games queued in one write session (`EventQueue.enqueue_all`: a game whose snapshot went meanwhile queues
+nothing, a new discount takes the undelivered one of the game out only when it is queued itself); then each look and
+its history stored in a write session of its own, so a failed store finds the same facts again and their keys drop
+them.
 """
 
 import asyncio
@@ -24,7 +29,7 @@ from typing import Any
 from sqlalchemy import select
 
 from app.providers.steam import MAX_ITEMS
-from app.tracker import games, price_events, storage
+from app.tracker import failures, games, price_events, storage
 from app.tracker.context import CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import PriceRecord, SourceSnapshot, Title, TitleKind, TitleStatus
@@ -32,7 +37,7 @@ from app.tracker.movie_events import RETRY_AFTER_FAILURE, DetectedEvent
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle
 from app.tracker.prices import Lowest, PriceLook, lowest
-from app.tracker.queue import EventQueue
+from app.tracker.queue import EventQueue, Queued
 from app.tracker.settings_store import SettingsStore
 from app.tracker.sources.steam_prices import SOURCE_KEY, UnreadAnswer
 
@@ -114,13 +119,24 @@ def _add_to_history(session, title_id: int, look: PriceLook, now: datetime) -> N
 @dataclass
 class _Plan:
     """What the reconciliation found: the games to get a snapshot, the snapshots to go, the snapshots whose look is of
-    another Steam number or country (they become empty, so the next check is the reference point), the games to ask now."""
+    another Steam number or country (they become empty, so the next check is the reference point), the games to ask
+    now, and the due games whose snapshot cannot be read (a failure of their check, not asked)."""
 
     country: str
     create: list[int] = field(default_factory=list)
     drop: list[SourceSnapshot] = field(default_factory=list)
     reset: list[SourceSnapshot] = field(default_factory=list)
     due: list[DueTitle] = field(default_factory=list)
+    spoiled: list[tuple[DueTitle, Exception]] = field(default_factory=list)
+
+
+@dataclass
+class _Answered:
+    """A game Steam answered about: its look and the events found by it (none for the reference point)."""
+
+    game: DueTitle
+    look: PriceLook
+    events: list[DetectedEvent]
 
 
 class GamePrices:
@@ -131,24 +147,34 @@ class GamePrices:
         self.source = source
         self.ctx = ctx
         self.settings = settings
+        self._spoiled_log = failures.DailyLog()  # «its price snapshot cannot be read», once a day per game
 
     async def check(self) -> list[tuple[DueTitle, Exception]]:
-        """Reconcile the snapshots, ask Steam about the due games and store what it answered. Returns the failures of
-        the games (for the «could not check» messages); each of them is looked at again in 30 minutes."""
+        """Reconcile the snapshots, ask Steam about the due games, queue the events of all of them in one write
+        session, then store each look (spec 2.5 of stage 9.1b). Returns the failures of the games (for the «could not
+        check» messages); each of them is looked at again in 30 minutes."""
         if self.source is None:
             return []
-        country, due = await asyncio.to_thread(self._reconcile)
-        if not due:
-            return []
-        broken: list[tuple[DueTitle, Exception]] = []
+        plan = await asyncio.to_thread(self._reconcile)
+        broken: list[tuple[DueTitle, Exception]] = list(plan.spoiled)
+        if plan.due:
+            answered = await self._ask(plan, broken)
+            await asyncio.to_thread(self._queue_and_store, answered)
+            logging.info("price check: %s games, %s failed", len(plan.due), len(broken))
+        return [(game, exc) for game, exc in broken if await asyncio.to_thread(self._postpone, game)]
+
+    async def _ask(self, plan: _Plan, broken: list[tuple[DueTitle, Exception]]) -> list[_Answered]:
+        """Phase 1: every pack asked; for every game answered the events are found in a read session. The failures of
+        the games join `broken`."""
+        answered: list[_Answered] = []
         # the same number of two games (two records of IGDB for one game) is asked about once and serves both
-        appids = list(dict.fromkeys(game.external_id for game in due))
+        appids = list(dict.fromkeys(game.external_id for game in plan.due))
         for start in range(0, len(appids), MAX_ITEMS):
             pack = appids[start:start + MAX_ITEMS]
             asked = set(pack)
-            games_of_pack = [game for game in due if game.external_id in asked]
+            games_of_pack = [game for game in plan.due if game.external_id in asked]
             try:
-                looks = await self.source.price_looks(pack, country)
+                looks = await self.source.price_looks(pack, plan.country)
             except Exception as exc:  # the whole request failed: a failure of every game of the pack
                 logging.warning("price check of %s Steam apps failed: %r", len(pack), exc)
                 broken += [(game, exc) for game in games_of_pack]
@@ -160,29 +186,58 @@ class GamePrices:
                     broken.append((game, answer))
                     continue
                 try:
-                    await asyncio.to_thread(self._store, game, answer)
-                except Exception:  # a bug in storing one game leaves the others to the check
-                    logging.exception("storing the prices of title %s failed", game.id)
+                    found = await asyncio.to_thread(self._detect, game, answer)
+                except Exception:  # a bug in one game leaves the others to the check
+                    logging.exception("finding the Steam events of title %s failed", game.id)
                     await asyncio.to_thread(self._postpone, game)
-        logging.info("price check: %s games, %s Steam apps, %s failed", len(due), len(appids), len(broken))
-        return [(game, exc) for game, exc in broken if await asyncio.to_thread(self._postpone, game)]
+                    continue
+                if found is not None:
+                    answered.append(found)
+        return answered
+
+    def _queue_and_store(self, answered: list[_Answered]) -> None:
+        """Phase 2: the events of every game in one write session (`EventQueue.enqueue_all`); phase 3: each look in a
+        write session of its own. A failed queueing stores no look: the games are asked again in 30 minutes and find
+        the same facts; a failed store finds them again next time, and their keys drop them."""
+        now = self.ctx.now()
+        batch = [
+            Queued(item.game, event, (price_events.DISCOUNT,) if event.type == price_events.DISCOUNT else ())
+            for item in answered for event in item.events
+        ]
+        if batch:
+            try:
+                with self.ctx.write_session() as session:
+                    queued = EventQueue.enqueue_all(session, batch, now)
+                    session.commit()
+            except Exception:
+                logging.exception("queueing the Steam events of %s games failed", len(answered))
+                for item in answered:
+                    self._postpone(item.game)
+                return
+            if queued:
+                logging.info("price check: %s events of Steam queued", len(queued))
+        for item in answered:
+            try:
+                self._store(item.game, item.look, now)
+            except Exception:  # a bug in storing one game leaves the others
+                logging.exception("storing the prices of title %s failed", item.game.id)
+                self._postpone(item.game)
 
     # --- the reconciliation (spec 4.1) ---
 
-    def _reconcile(self) -> tuple[str, list[DueTitle]]:
-        """Bring the price snapshots in line with the rule; returns the country of the stores and the games to ask.
-        A change is decided again in the write session that makes it, so a button pressed meanwhile is not undone."""
+    def _reconcile(self) -> _Plan:
+        """Bring the price snapshots in line with the rule; returns the plan of the check (the country of the stores,
+        the games to ask, the spoiled ones). A change is decided again in the write session that makes it, so a button
+        pressed meanwhile is not undone."""
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
             plan = self._plan(session, now)
         if not (plan.create or plan.drop or plan.reset):
-            return plan.country, plan.due
+            return plan
         with self.ctx.write_session() as session:
             plan = self._plan(session, now)
             for stored in plan.drop:
-                logging.info("title %s: its prices are no longer checked, the price snapshot goes", stored.title_id)
-                session.delete(stored)
-                EventQueue.withdraw(session, stored.title_id, price_events.TYPES)
+                _drop(session, stored)
             for stored in plan.reset:
                 # a look of another number or country says nothing of now: checked at once, then as any snapshot
                 logging.info("title %s: another Steam number or store country, prices looked at anew", stored.title_id)
@@ -191,60 +246,77 @@ class GamePrices:
             for title_id in plan.create:
                 session.add(SourceSnapshot(title_id=title_id, source=SOURCE_KEY, state={}, observed_at=now, next_check_at=None))
             session.commit()
-        return plan.country, plan.due
+        return plan
 
     def _plan(self, session, now: datetime) -> _Plan:
-        """The reconciliation in six reads, however many games there are."""
+        """The reconciliation in six reads, however many games there are. Each snapshot is read on its own: one that
+        cannot be read is neither reset nor asked (KI-50); while its game is for prices it is a failure each time it
+        is due, else it goes as any."""
         scope, priced = priced_games(session, self.kind, self.settings)
         names = dict(session.execute(select(Title.id, Title.name).where(Title.id.in_(list(priced)))).all())
-        of_kind = select(Title.id).where(Title.kind == self.kind)
-        snapshots = {
-            stored.title_id: stored
-            for stored in session.scalars(
-                select(SourceSnapshot).where(SourceSnapshot.source == SOURCE_KEY, SourceSnapshot.title_id.in_(of_kind))
-            )
-        }
+        snapshots = _snapshots(session, self.kind)
         plan = _Plan(scope.country)
-        plan.drop = [stored for title_id, stored in snapshots.items() if title_id not in priced]
+        plan.drop = _unpriced(snapshots, priced)
         for title_id, appid in priced.items():
             stored = snapshots.get(title_id)
-            another = stored is not None and _of_another(stored, appid, scope.country)
+            game = DueTitle(title_id, self.kind, names[title_id], appid, SOURCE_KEY, sequels=False)
+            try:
+                another = stored is not None and _of_another(stored, appid, scope.country)
+            except ValueError as spoiled:
+                self._spoiled_log.warning(
+                    title_id, now, "title %s: its price snapshot cannot be read: %r", title_id, spoiled
+                )
+                if _due(stored, now):
+                    plan.spoiled.append((game, spoiled))
+                continue
             if stored is None:
                 plan.create.append(title_id)
             elif another:
                 plan.reset.append(stored)
             if stored is None or another or _due(stored, now):
-                plan.due.append(DueTitle(title_id, self.kind, names[title_id], appid, SOURCE_KEY, sequels=False))
+                plan.due.append(game)
         return plan
+
+    # --- a press (spec 3.1 of stage 9.1b) ---
+
+    def drop_unpriced(self, session, title_ids: Collection[int] | None) -> None:
+        """In the write session of a press: the price snapshots of the games `title_ids` (None — every game of the
+        kind) that are no longer «игра для цен» go with their undelivered Steam events — the reconciliation's own drop,
+        applied at once, so a check answering after the press finds no snapshot and queues nothing (KI-47). A press
+        never makes a snapshot: only the reconciliation does, at the start of a pass."""
+        _, priced = priced_games(session, self.kind, self.settings)
+        for stored in _unpriced(_snapshots(session, self.kind, title_ids), priced):
+            _drop(session, stored)
 
     # --- storing (spec 4.3–4.5) ---
 
-    def _store(self, game: DueTitle, look: PriceLook) -> None:
-        """The events of the look, then the look becomes the snapshot, a changed price a record of the history. A
-        snapshot gone while Steam was answering (the game was deleted) is no failure: nothing is written."""
+    def _detect(self, game: DueTitle, look: PriceLook) -> _Answered | None:
+        """The events of the look, read against the stored one (none for the reference point). None — the snapshot is
+        gone while Steam was answering (a press or a deletion): nothing to queue or store, and no failure."""
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
             stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
-                logging.info("title %s was deleted while its prices were checked", game.id)
-                return
+                logging.info("title %s: its price snapshot went while Steam was answering", game.id)
+                return None
             old = PriceLook.from_state(stored.state)
             if is_baseline(old, look):
                 logging.info("title %s: first price check of Steam app %s in %s, the baseline", game.id, look.appid, look.country)
-                events = []
-            else:
-                # «самая низкая» by the history before this check; the end of a discount on the owner's clock
-                events = price_events.detect_events(
-                    game.id, game.name, old, look, now, self.settings.time_zone(session),
-                    lowest_seen(session, game.id, look), stored.observed_at,
-                )
-        found = sum(self._queue(game.id, event, now) for event in events)
-        if found:
-            logging.info("title %s: %s events of Steam", game.id, found)
+                return _Answered(game, look, [])
+            # «самая низкая» by the history before this check; the end of a discount on the owner's clock
+            events = price_events.detect_events(
+                game.id, game.name, old, look, now, self.settings.time_zone(session),
+                lowest_seen(session, game.id, look), stored.observed_at,
+            )
+        return _Answered(game, look, events)
+
+    def _store(self, game: DueTitle, look: PriceLook, now: datetime) -> None:
+        """The look becomes the snapshot, a changed price a record of the history. A snapshot gone meanwhile (a press,
+        a deletion) is no failure: nothing is written."""
         with self.ctx.write_session() as session:
             stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
-                logging.info("title %s was deleted while its prices were checked", game.id)
+                logging.info("title %s: its price snapshot went while its prices were checked", game.id)
                 return
             _add_to_history(session, game.id, look, now)
             stored.state = look.state()
@@ -252,23 +324,9 @@ class GamePrices:
             stored.next_check_at = now + PRICE_INTERVAL
             session.commit()
 
-    def _queue(self, title_id: int, event: DetectedEvent, now: datetime) -> bool:
-        """Queue an event of Steam; False — its fact is known already, or the game's prices are no longer checked. A
-        new discount takes the undelivered one of the game out of the queue: one line about it in a summary."""
-        with self.ctx.write_session() as session:
-            if storage.snapshot_of(session, title_id, SOURCE_KEY) is None:
-                return False
-            if event.type == price_events.DISCOUNT:
-                EventQueue.withdraw(session, title_id, (price_events.DISCOUNT,))
-            payload = {"text": event.text, **event.data}
-            if EventQueue.enqueue(session, event.type, payload, event.dedup_key, title_id, now) is None:
-                return False  # rolled back: the undelivered discount stays too
-            session.commit()
-            return True
-
     def _postpone(self, game: DueTitle) -> bool:
-        """The next price check of the game in 30 minutes. False — its snapshot is gone (the game was deleted while
-        Steam was answering): nothing failed then."""
+        """The next price check of the game in 30 minutes. False — its snapshot is gone (a press, or the game was
+        deleted while Steam was answering): nothing failed then."""
         with self.ctx.write_session() as session:
             stored = storage.snapshot_of(session, game.id, SOURCE_KEY)
             if stored is None:
@@ -276,6 +334,29 @@ class GamePrices:
             stored.next_check_at = self.ctx.now() + RETRY_AFTER_FAILURE
             session.commit()
             return True
+
+
+def _snapshots(session, kind: TitleKind, title_ids: Collection[int] | None = None) -> dict[int, SourceSnapshot]:
+    """The price snapshots of the games of the kind (or of `title_ids` among them), title → snapshot, in one read."""
+    query = select(SourceSnapshot).where(
+        SourceSnapshot.source == SOURCE_KEY, SourceSnapshot.title_id.in_(select(Title.id).where(Title.kind == kind))
+    )
+    if title_ids is not None:
+        query = query.where(SourceSnapshot.title_id.in_(list(title_ids)))
+    return {stored.title_id: stored for stored in session.scalars(query)}
+
+
+def _unpriced(snapshots: dict[int, SourceSnapshot], priced: Collection[int]) -> list[SourceSnapshot]:
+    """The snapshots of the games that are no longer «игра для цен» (`priced`: the games that are): they go. The one
+    place of the rule «drop», for the reconciliation and for a press."""
+    return [stored for title_id, stored in snapshots.items() if title_id not in priced]
+
+
+def _drop(session, stored: SourceSnapshot) -> None:
+    """A price snapshot goes, and with it the undelivered events of Steam of its game (the price history stays)."""
+    logging.info("title %s: its prices are no longer checked, the price snapshot goes", stored.title_id)
+    session.delete(stored)
+    EventQueue.withdraw(session, stored.title_id, price_events.TYPES)
 
 
 def _due(stored: SourceSnapshot, now: datetime) -> bool:

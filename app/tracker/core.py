@@ -167,6 +167,7 @@ class Tracker:
             self.price_source,
             self.follow_up_source,
         )
+        self._settings.after_save = pollers.after_marks  # a save of Settings ends the checks it stops at once
         self._polling = Polling(ctx, self._queue, pollers)
         self._titles = Titles(ctx, pollers)
         self._statuses = Statuses(ctx, pollers)

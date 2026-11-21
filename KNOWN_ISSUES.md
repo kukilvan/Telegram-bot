@@ -5,6 +5,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 - Recorded in the same session it was found, never only in chat.
 - IDs `KI-<n>` go in order and are never reused.
 - Fixed: the entry stays, its status becomes `fixed (test: …)`, and the index row changes too.
+- `won't fix (test: …)` — the app cannot fix it; the entry says why and what the owner decided; the test pins the behaviour.
 - Each stage description pulls in the open entries that fit its stage.
 - Before final polishing, every open entry gets a test.
 - Sessions read the index; a full entry is found by its `## KI-<n>` heading (Grep), never by reading the whole file.
@@ -56,15 +57,15 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-40 | Игры: галочка «играю здесь» меняется у платформы, которой у игры больше нет | `app/tracker/statuses.py` | fixed | — |
 | KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | fixed (test: `tests/test_tracker_rare_input.py`) | 9.1a |
 | KI-42 | Ручной запрос «Добавить» с номером не из цифр отвечает «Не удалось связаться» | `app/tracker/titles.py` | fixed (test: `tests/test_tracker_rare_input.py`) | 9.1a |
-| KI-43 | Цены Steam: цена бандла — для покупателя без игр набора | `app/tracker/sources/steam_prices.py` | open | 9.1 |
-| KI-44 | Цены Steam: предзаказ проверен только на собранном ответе | `app/tracker/sources/steam_prices.py` | open | 9.1 |
+| KI-43 | Цены Steam: цена бандла — для покупателя без игр набора | `app/tracker/sources/steam_prices.py` | won't fix (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
+| KI-44 | Цены Steam: предзаказ проверен только на собранном ответе | `app/tracker/sources/steam_prices.py` | fixed (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
 | KI-45 | Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_failures.py`) | 9.1a |
-| KI-46 | Цены Steam: короткая скидка может пройти без сообщения или с неверным «до» | `app/tracker/pollers/game_prices.py` | open | 9.1 |
-| KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | open | 9.1 |
+| KI-46 | Цены Steam: короткая скидка может пройти без сообщения или с неверным «до» | `app/tracker/pollers/game_prices.py` | won't fix (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
+| KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_press.py`) | 9.1b |
 | KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | open | 9.1 |
 | KI-49 | `.env` holds variables the code does not read | `.env` | open | 9.1 |
-| KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | open | 9.1 |
-| KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | open | 9.1 |
+| KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
+| KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_batch.py`) | 9.1b |
 | KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | open | 9.1 |
 | KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | open | 9.1 |
 | KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | open | 9.1 |
@@ -495,7 +496,7 @@ Format of a new entry:
 - **Что не так:** трекер спрашивает Steam без входа в аккаунт владельца. Steam не знает, какие игры набора у владельца уже есть, и отдаёт полную цену бандла. В магазине владелец увидит меньшую цену «докупить набор» (Steam вычитает купленное).
 - **Как воспроизвести:** у владельца в Steam куплена Hades; карточка Hades II показывает бандл «Hades + Hades II» (2 игры) — ₪250, а в магазине для владельца набор стоит меньше.
 - **Насколько вероятно / чем грозит:** часто, если владелец покупает игры одной серии. Вред — цена бандла в карточке и в сообщении выше настоящей; сообщения о новом бандле от этого не меняются. Чинить можно только входом в аккаунт Steam — этого в задачах трекера нет.
-- **Статус:** Открыто.
+- **Статус:** won't fix (test: `tests/test_tracker_price_known_issues.py::test_the_bundle_sample_says_the_price_is_of_the_whole_set`, `tests/test_tracker_price_rows.py`, `tests/test_tracker_steam_events.py`), тикет 02 части 9.1b. Без входа в аккаунт Steam цену «докупить набор» не узнать; владелец решил оставить полную цену и сказать об этом: строка бандла в карточке и сообщение о бандле кончаются словами «, цена набора целиком».
 - **Найдено:** 2026-10-31, спека части 6.2.
 
 ## KI-44. Цены Steam: предзаказ проверен только на собранном ответе
@@ -504,7 +505,7 @@ Format of a new entry:
 - **Что не так:** в день спеки в Steam не нашлось игры с открытым предзаказом, поэтому разбор предзаказа («скоро выйдет» и строка цены вместе) проверяется на ответе, собранном из настоящего, а не на живом. Steam может отдавать предзаказ иначе (например, без `is_coming_soon` или с особой пометкой строки).
 - **Как воспроизвести:** добавить игру с открытым предзаказом в Steam, поставить галочку ПК и сравнить блок «Steam» карточки со страницей магазина.
 - **Насколько вероятно / чем грозит:** предзаказы бывают у крупных игр. Вред — в карточке нет пометки «Предзаказ» или игра показана как «Ещё не продаётся — скоро выйдет», хотя её можно заказать. Цены и скидки от этого не теряются, если строка цены в ответе есть. Проверить при первом живом предзаказе и сохранить ответ в фикстуры.
-- **Статус:** Открыто.
+- **Статус:** fixed (test: `tests/test_tracker_price_known_issues.py::test_the_live_preorders_read_on_the_card`), тикет 02 части 9.1b. Живой ответ Steam 2026-11-21 (`tests/fixtures/steam/getitems_preorder_il_live.json`, три игры, Израиль): предзаказ — `is_coming_soon: true` и варианты покупки одной игры, как и предполагалось; разбор не менялся. Карточка: «Предзаказ со скидкой −10 %: ₪238 → ₪214,20, до 3 декабря», «Предзаказ: ₪209».
 - **Найдено:** 2026-10-31, спека части 6.2.
 
 ## KI-45. Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение
@@ -522,7 +523,7 @@ Format of a new entry:
 - **Что не так:** (1) скидка, которая короче промежутка между проверками или кончается до сводки, может не прийти: проверка нашла её поздно, а к отправке она уже кончилась — сообщение убрано. (2) Если Steam отменил скидку раньше объявленного дня, ждущее сообщение уйдёт с прежним «до 3 ноября».
 - **Как воспроизвести:** (1) суточная скидка с 20:00 до 20:00 следующего дня, найденная в 22:00 в рабочий день: сообщение ждёт сводки в 15:00 и уходит (успевает); а скидка на 12 часов, найденная в 22:00, к утру кончится — сообщения нет. (2) Steam снял скидку 2 ноября, объявив её до 3-го, а сообщение ждало сводки.
 - **Насколько вероятно / чем грозит:** короткие скидки Steam бывают (суточные, «на выходные»), но большинство распродаж длится от нескольких дней. Вред — пропущенная короткая скидка; неверное «до» — очень редко. Скидка всё равно видна в карточке и в Списке, пока идёт.
-- **Статус:** Открыто.
+- **Статус:** won't fix (test: `tests/test_tracker_price_known_issues.py::test_a_discount_found_at_22_on_a_work_day_goes_in_the_summary_only_if_it_is_not_over_by_15`), тикет 02 части 9.1b. Владелец решил (решение 3 описания 9.1): проверка цен остаётся раз в 6 часов, сообщения идут по правилам доставки. Тест закрепляет: `PRICE_INTERVAL` — 6 часов; скидка, найденная в рабочий день в 22:00 и кончающаяся в 08:00, к сводке в 15:00 устарела и не уходит; кончающаяся после 15:00 уходит в сводке.
 - **Найдено:** 2026-10-31, спека части 6.2.
 
 ## KI-47. Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу»
@@ -531,7 +532,7 @@ Format of a new entry:
 - **Что не так:** «Начал играть», «Прошёл», снятая галочка ПК или ПК, убранный из «Моих платформ», не убирают ждущие сообщения Steam сразу: это делает следующая проверка цен, в течение минуты. Если доставка сработает в эту минуту раньше опроса, сообщение уйдёт.
 - **Как воспроизвести:** в 14:59:50 нажать «Начал играть» у игры, о скидке которой сообщение ждёт сводки в 15:00; доставка идёт в 15:00:00, опрос — в 15:00:05: сообщение о скидке приходит в сводке.
 - **Насколько вероятно / чем грозит:** очень редко: нужно нажать в последнюю минуту перед отправкой. Вред — одно лишнее сообщение о скидке. «Бросил» убирает сообщения сразу, как раньше.
-- **Статус:** Открыто.
+- **Статус:** fixed (test: `tests/test_tracker_price_press.py`), тикет 02 части 9.1b. Нажатие («Начал играть», «Прошёл», «Бросил», галочка «играю здесь», сохранение Настроек) само убирает снимок цен игры, которая больше не «игра для цен», и её недоставленные события Steam — в своей сессии записи (`Poller.after_marks`, `GamePrices.drop_unpriced`); проверка, ответившая после нажатия, ничего не ставит в очередь. Новые снимки делает только сверка в начале прохода.
 - **Найдено:** 2026-10-31, спека части 6.2.
 
 ## KI-48. Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen)
@@ -558,7 +559,7 @@ Format of a new entry:
 - What's wrong: a price snapshot whose state the code cannot read (edited by hand in the database, or written by a bug) raises `ValueError` in the reconciliation, so the whole price check fails: no game gets its prices until the snapshot is fixed or deleted. The log has the traceback every minute; the owner gets no message.
 - How to reproduce: put `{"appid": 1}` into the `state` of a `source_snapshots` row with `source = 'steam'` and wait a minute: «the check at the end of the pass of the game titles failed» with a `ValueError` in the log.
 - Likelihood / impact: only after a hand edit or a bug (rule 9: what we wrote is read strictly); prices stop updating, nothing else breaks — dates of games and other kinds are checked as usual. Deleting the row heals it: the reconciliation makes a new one.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_price_known_issues.py::test_a_spoiled_snapshot_is_a_failure_of_its_game_and_the_others_are_checked`, `…_fails_each_time_it_is_due_but_logs_and_tells_once_a_day`, `…_of_a_game_no_longer_for_prices_is_dropped`), ticket 02 of stage 9.1b. The reconciliation reads each snapshot on its own: one it cannot read is neither reset nor asked; each time it is due it is a failure of its check («неизвестная ошибка», 30 minutes, «could not check» once a day by the usual window), the log line once a day (`failures.DailyLog`); the other games are checked as usual. A game no longer for prices loses such a snapshot as any.
 - Found: 2026-11-01, ticket 03 of part 6.2.
 
 ## KI-51. Steam prices: the discounts of one check can come as separate messages
@@ -567,7 +568,7 @@ Format of a new entry:
 - What's wrong: two discounts or more found by one price check should go out as one message «🎮 Скидки в Steam:» (spec 5.4 of part 6.2). The check queues them one game after another, and the delivery job does not wait for the check: if its minute comes while the check is between two games, the first discount goes out alone and the others a minute later, folded or alone.
 - How to reproduce: hard by hand. A titles pass that takes about a minute (many TMDb titles due, 1.5 s apart) moves the price check onto the next tick of delivery; two discounts found then can come as two messages.
 - Likelihood / impact: rare (the queueing of one check takes milliseconds); harm — two or three messages instead of one. A fix: queue the events of one check in one write session, or take `delivery_lock` while queueing them.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_price_batch.py`), ticket 02 of stage 9.1b. The check works in three phases: all packs asked and the events found; the events of every game queued in one write session (`EventQueue.enqueue_all`); then each look stored. The delivery sees all the events of a check or none, so two discounts fold into «🎮 Скидки в Steam:».
 - Found: 2026-11-04, review of part 6.2.
 
 ## KI-52. Expansions: a standalone expansion completed before 6.3 never learns it is one

@@ -78,7 +78,7 @@ def test_the_texts_of_a_discount():
 
 def test_the_texts_of_a_bundle_and_of_the_page():
     assert price_events.bundle_text("Hades II", HADES_BUNDLE, SHEKEL) == (
-        "🎮 Hades II продаётся в бандле «Hades + Hades II» (2 игры) — ₪250"
+        "🎮 Hades II продаётся в бандле «Hades + Hades II» (2 игры) — ₪250, цена набора целиком"
     )
     assert price_events.steam_page_text("Ведьмак 4") == "🎮 Ведьмак 4: появилась страница в Steam"
 
@@ -183,7 +183,7 @@ def test_a_new_bundle_is_told_once_a_bundle_each():
     other = Bundle("package:9", "Supergiant Pack", 5, 50000)
     events = detect(look(bundles=[HADES_BUNDLE]), look(bundles=[HADES_BUNDLE, other]))
     assert [(e.type, e.dedup_key) for e in events] == [(price_events.BUNDLE, "game:7:bundle:package:9")]
-    assert events[0].text == "🎮 Hades II продаётся в бандле «Supergiant Pack» (5 игр) — ₪500"
+    assert events[0].text == "🎮 Hades II продаётся в бандле «Supergiant Pack» (5 игр) — ₪500, цена набора целиком"
     assert events[0].data == {
         "name": "Hades II", "steam_id": HADES, "bundle": "Supergiant Pack", "games": 5, "final": 50000, "currency": SHEKEL,
     }
@@ -558,7 +558,7 @@ def test_recent_shows_each_event_of_steam_on_its_row_without_buttons(tracker, ig
     [day] = feed.recent
     assert sorted(row.headline for row in day.rows) == sorted([
         "🎮 Hades II: скидка −30 % в Steam — ₪279 → ₪195,30, до 20 ноября",
-        "🎮 Hades II продаётся в бандле «Hades + Hades II» (2 игры) — ₪250",
+        "🎮 Hades II продаётся в бандле «Hades + Hades II» (2 игры) — ₪250, цена набора целиком",
         "🎮 Elden Ring: скидка −30 % в Steam — ₪279 → ₪195,30, до 20 ноября",
     ])
     assert all(not row.watched and row.follow is None for row in day.rows)

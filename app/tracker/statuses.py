@@ -4,7 +4,9 @@ follows from them.
 The marks are «Посмотрел» («Прошёл» of a game), «Начал играть», «Бросил», «Вернуть в список», the season marks,
 «Отметить все вышедшие» and the mark «играю здесь» on a platform of a game; and the owner's scores, which only what is
 watched gets. What differs by kind (the sequel check that starts after «Посмотрел») is asked of the title's poller;
-whether a title has seasons, its final status and whether it can be started, of the table of kinds.
+whether a title has seasons, its final status and whether it can be started, of the table of kinds. A press that can
+end a check of the title («Прошёл», «Начал играть», «играю здесь», «Бросил») asks the poller to apply that in its own
+write session (`Pollers.after_marks`): a check answering after the press finds nothing to queue (KI-47).
 
 A season is known by its record (`SeasonRecord.id`), not by its number: the seasons of an anime are renumbered when the
 source changes its chain, and a mark sent from a card opened before that must reach the season the owner saw."""
@@ -155,6 +157,7 @@ class Statuses:
             if title.status == finished:
                 return ChangeResult(changed=False)
             _move(title, finished, now, tracking=False)  # its own release is no longer followed
+            self.pollers.after_marks(session, title.kind, [title.id])
             sequels = self.pollers.sequels_of(title.kind)
             if sequels is not None:
                 # an empty state means "not looked at yet": the first check records the collection as it is,
@@ -181,6 +184,7 @@ class Statuses:
             if not KINDS[title.kind].start_press or title.status != TitleStatus.WANT:
                 return ChangeResult(changed=False)
             _move(title, TitleStatus.IN_PROGRESS, now, tracking=True)
+            self.pollers.after_marks(session, title.kind, [title.id])
             session.commit()
             return ChangeResult(changed=True)
 
@@ -196,7 +200,7 @@ class Statuses:
 
     def _set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
         with self.ctx.write_session() as session:
-            _title(session, title_id)
+            title = _title(session, title_id)
             record = session.scalar(
                 select(GamePlatformRecord).where(
                     GamePlatformRecord.title_id == title_id, GamePlatformRecord.platform == platform
@@ -209,6 +213,7 @@ class Statuses:
             if record.playing == playing:
                 return ChangeResult(changed=False)
             record.playing = playing
+            self.pollers.after_marks(session, title.kind, [title.id])
             session.commit()
             return ChangeResult(changed=True)
 
@@ -229,6 +234,7 @@ class Statuses:
             # a watched movie dropped in a second tab
             storage.drop_sequel_check(session, title_id, self.pollers.sequel_key_of(title.kind))
             EventQueue.withdraw(session, title_id)
+            self.pollers.after_marks(session, title.kind, [title.id])
             session.commit()
             return ChangeResult(changed=True)
 

@@ -109,7 +109,7 @@ def test_the_answers_of_steam_with_no_price(answer, web, bot):
 def test_a_game_sold_only_in_bundles_says_so_and_lists_them():
     got = view(look(BUNDLES_ONLY, bundles=[Bundle("bundle:1", "Hades + Hades II", 2, 25000)]))
     assert lines(got) == ("Отдельно не продаётся — только в бандлах", "только в бандлах")
-    assert got.bundles == ("«Hades + Hades II» (2 игры) — ₪250",)
+    assert got.bundles == ("«Hades + Hades II» (2 игры) — ₪250, цена набора целиком",)
 
 
 def test_a_discount_whose_end_has_come_is_the_old_full_price_until_the_next_check():
@@ -208,7 +208,8 @@ def test_the_card_lists_five_bundles_and_counts_the_rest():
     many = [bundle(n, games=n + 1) for n in range(1, 9)]  # 2 … 9 games
     got = view(look(bundles=many))
     assert len(got.bundles) == 5 and got.more_bundles == "и ещё 3"
-    assert got.bundles[0] == "«Pack 1» (2 игры) — ₪250" and got.bundles[4] == "«Pack 5» (6 игр) — ₪250"
+    assert got.bundles[0] == "«Pack 1» (2 игры) — ₪250, цена набора целиком"
+    assert got.bundles[4] == "«Pack 5» (6 игр) — ₪250, цена набора целиком"
 
 
 def test_five_bundles_or_fewer_have_no_rest():
@@ -219,12 +220,12 @@ def test_five_bundles_or_fewer_have_no_rest():
 
 @pytest.mark.parametrize(("games", "text"), [(2, "2 игры"), (5, "5 игр"), (21, "21 игра"), (11, "11 игр"), (22, "22 игры")])
 def test_the_games_of_a_bundle_are_declined(games, text):
-    assert view(look(bundles=[bundle(1, games)])).bundles == (f"«Pack 1» ({text}) — ₪250",)
+    assert view(look(bundles=[bundle(1, games)])).bundles == (f"«Pack 1» ({text}) — ₪250, цена набора целиком",)
 
 
 def test_bundles_come_with_any_answer_that_has_them():
     got = view(look(price=Price(11095), bundles=[bundle(1)]))
-    assert got.line == "Цена: ₪110,95" and got.bundles == ("«Pack 1» (2 игры) — ₪250",)
+    assert got.line == "Цена: ₪110,95" and got.bundles == ("«Pack 1» (2 игры) — ₪250, цена набора целиком",)
 
 
 # --- the caption ------------------------------------------------------------------------------------------------------

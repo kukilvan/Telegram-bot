@@ -100,7 +100,8 @@ def test_the_block_lists_the_bundles_under_their_own_heading(tracker, igdb, pric
     section = steam_section(client.get(f"/titles/{title_id}").text)
 
     assert "<h3>Бандлы</h3>" in section
-    assert re.findall(r"<li[^>]*>([^<]+)</li>", section) == [f"«Pack {n}» (2 игры) — ₪250" for n in range(1, 6)] + ["и ещё 2"]
+    rows = [f"«Pack {n}» (2 игры) — ₪250, цена набора целиком" for n in range(1, 6)]
+    assert re.findall(r"<li[^>]*>([^<]+)</li>", section) == rows + ["и ещё 2"]
 
 
 def test_a_game_that_prices_are_not_told_about_has_no_block_and_no_stale_one(tracker, igdb, prices, client):

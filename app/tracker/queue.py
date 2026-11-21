@@ -1,7 +1,12 @@
-"""Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages."""
+"""Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages.
+
+One event goes in with `enqueue`; the events of all the games of one check go in together with `enqueue_all`, in one
+write session, so the delivery job sees all of them or none (KI-51: two discounts of one check fold into one message).
+"""
 
 import asyncio
 from collections.abc import Collection, Sequence
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
@@ -13,6 +18,17 @@ from app.tracker.checks import still_checked
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, Title
 from app.tracker.pollers.base import DueTitle
+
+
+@dataclass(frozen=True)
+class Queued:
+    """An event of a batch (`EventQueue.enqueue_all`): the check of the title that found it, the event (`type`,
+    `dedup_key`, `text`, `data`, as `DetectedEvent`), and the types of the title's undelivered events it takes out of
+    the queue when it is queued itself (a new discount: the older undelivered discount of the game)."""
+
+    due: DueTitle
+    event: Any
+    withdraws: tuple[str, ...] = ()
 
 
 class EventQueue:
@@ -88,6 +104,38 @@ class EventQueue:
             return None
         session.add(DeliveryItem(event_id=event.id, status=DeliveryStatus.PENDING, attempts=0, created_at=now))
         return event.id
+
+    @staticmethod
+    def enqueue_all(session, batch: Sequence[Queued], now: datetime) -> list[int]:
+        """Add the events of a batch and their queue entries to one write session; the caller commits once. The keys of
+        the batch are read first (the write session holds the database): a fact already known is skipped, and so is
+        every event of a title no longer checked by its check (`checks.still_checked`) — without a rollback, so the
+        rest of the batch stays. An event's `withdraws` go only when the event itself is queued. Returns the ids of the
+        events queued."""
+        keys = {item.event.dedup_key for item in batch}
+        known = set(session.scalars(select(Event.dedup_key).where(Event.dedup_key.in_(keys)))) if keys else set()
+        checked: dict[DueTitle, bool] = {}
+        queued: list[int] = []
+        for item in batch:
+            event = item.event
+            if event.dedup_key in known:
+                continue
+            if item.due not in checked:
+                checked[item.due] = still_checked(session, item.due)
+            if not checked[item.due]:
+                continue
+            if item.withdraws:  # before the new entry is added, so the new one stays
+                EventQueue.withdraw(session, item.due.id, item.withdraws)
+            record = Event(
+                type=event.type, title_id=item.due.id, payload={"text": event.text, **event.data},
+                dedup_key=event.dedup_key, detected_at=now,
+            )
+            session.add(record)
+            session.flush()
+            session.add(DeliveryItem(event_id=record.id, status=DeliveryStatus.PENDING, attempts=0, created_at=now))
+            known.add(event.dedup_key)  # the same key twice in a batch is one fact
+            queued.append(record.id)
+        return queued
 
     @staticmethod
     def withdraw(session, title_id: int, types: Collection[str] | None = None) -> None:

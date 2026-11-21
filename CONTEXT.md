@@ -91,8 +91,8 @@ In code: `genre` (merging — `genres`: `key_of`, `merge`).
 ## Games
 
 **Бандл** (bundle):
-A set of a tracked game and at least one other separate game sold together («Hades + Hades II», «The Witcher Trilogy»). In Steam — a purchase option with two games or more, whatever Steam calls it. A message comes about a new bundle of a game; about a discount on a bundle — no.
-_Avoid_: набор (in messages), комплект
+A set of a tracked game and at least one other separate game sold together («Hades + Hades II», «The Witcher Trilogy»). In Steam — a purchase option with two games or more, whatever Steam calls it. A message comes about a new bundle of a game; about a discount on a bundle — no. The price is of the whole set: Steam is asked without the owner's account, so what the owner already has is not taken off (KI-43); the card row and the message say «, цена набора целиком».
+_Avoid_: набор (in messages, except the fixed words «цена набора целиком»), комплект
 In code: `bundle`.
 
 **Издание** (edition):
@@ -118,7 +118,7 @@ A game's page in the Steam store; its number (`steam_id`) comes from IGDB. When 
 In code: `steam page`. The number is `steam_id`; where the core keeps what Steam was asked about — the price look and the price history — it is `appid`, the name Steam answers by (a key of stored snapshots and a column, so it stays, rule 5).
 
 **Проверка цен** (price check):
-Every 6 hours the tracker asks Steam about the prices of games in «Хочу» that have a Steam page and the checkmark «играю здесь» on PC (and PC among «Мои платформы») — all in one request. The first check after a game became such (added, checkmark set, restored to the list) and after the store country changed is a reference point, without messages.
+Every 6 hours the tracker asks Steam about the prices of games in «Хочу» that have a Steam page and the checkmark «играю здесь» on PC (and PC among «Мои платформы») — all in one request. The first check after a game became such (added, checkmark set, restored to the list) and after the store country changed is a reference point, without messages. A press that makes a game no longer such («Начал играть», «Прошёл», «Бросил», the checkmark taken off, PC taken out of «Мои платформы») ends its price check at once: its snapshot and its undelivered Steam messages go in the press itself. The events of one check are queued together, so two discounts come as one message.
 In code: `price check` (the snapshot of source `steam`; what one check saw of a game — `PriceLook`, what Steam answered — its `answer`). The rule «игра для цен» — which games have their prices checked and by which number — is `steam_number`; without the number (the card shows its block even before the page in Steam) it is `reports_prices`.
 
 **Дополнение** (expansion):
