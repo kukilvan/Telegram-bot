@@ -1,6 +1,6 @@
 # 06: Russian in games — «Страница на ZoG», the owner's page
 
-Status: in review
+Status: accepted
 Complexity: medium (two presses that go to the network, a form, error texts)
 Blocked by: 05 (`page_of`, the client, the page parse, the state of `zog`, the hints)
 
