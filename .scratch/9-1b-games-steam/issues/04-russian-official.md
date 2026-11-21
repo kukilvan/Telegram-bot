@@ -1,6 +1,6 @@
 # 04: Russian in games, the official part — Steam languages and IGDB, the line, the messages
 
-Status: in review
+Status: accepted
 Complexity: complex (a new check, a new pure module, a new event family, two cards, the press hook)
 Blocked by: 01 (`games.py`), 03 (`withdraw` that deletes events, the hook `after_marks` with its price and follow-up parts)
 

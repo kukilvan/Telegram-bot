@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-21 — Ticket 9.1b.04
+
+- Russian in games, the official part (idea 002, spec 5.1–5.5, 5.8, 5.9): the pure `russian` (`Support`, «нет данных» is None; `NOT_ASKED` for an own snapshot from before the stage; `Look` of the snapshot `russian_official`; `next_look`, `is_reference`, `appeared`, `line` with «(ПК)»), `russian_events` (`game_russian_official`, key `moved_key("game:<id>:russian:official:<parts>", …)`, sample «Игра: появился русский язык»), `sources/steam_languages` (`GetItems` with `include_supported_languages`, always `US`, `elanguage` 8, read strictly), `pollers/game_russian` (the check at the end of a pass after the follow-ups, three phases as the prices, `withdraw_left` in `after_marks`, the card's `RussianView`).
+- IGDB: `GAME_QUERY` asks `language_supports`; `GameState.russian` (language 22; `carry_over` keeps it). `SteamProvider.store_items(…, languages=True)`. `DueTitle.statuses` and `still_checked`. `failures.source_name("russian_official")` → «Steam». Web block «Русский язык» between «Платформы» and «Steam»; the bot line after the price line.
+- Decisions: a look keeps the Steam number in every form (`appid`, null without a page) — the reference point is «the number changed», so an announced game whose languages Steam lists for the first time is told, while a Steam page appearing is silent (the spec's `{"source": "igdb", …}` gained `appid`). «(ПК)» counts only the game's own platforms (`GameScope.told` counts a platform without a row as marked). The hint time is `moment_in_words` («сегодня в 12:00», as the mockup). A game without a Steam page and IGDB «not asked yet» stays due (no request) so it gets its line in the first pass after its own poll; with a Steam page it waits 6 hours — KI-79. Tests: 4647 passed, 3 skipped, the two known Windows failures. Accepted by the owner («ОК»).
+
 ## 2026-11-21 — Ticket 9.1b.03
 
 - KI-53: `GamePoller.after_marks` also calls `GameFollowUps.drop_unchecked` (the same `_games_for_check`/`_unchecked` as the reconciliation): «Бросил» drops the follow-up snapshot in its write session, «Вернуть в список» gets an empty one at the next pass (a silent reference point). The check queues through `EventQueue.enqueue(…, due=game)` («the snapshot exists»); `_decide` keeps `_title_checked`.
