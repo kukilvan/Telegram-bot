@@ -82,6 +82,21 @@
         <p class="russian-line"><b>Русский:</b> {{ russian.line }}</p>
         {% for hint in russian.hints %}<p class="hint">{{ hint }}</p>{% endfor %}
         {% if russian.zog_link %}<p class="russian-link"><a href="{{ russian.zog_link }}" target="_blank" rel="noopener">Страница перевода</a></p>{% endif %}
+        {% if zog %}
+        <form class="zog-form" method="post" action="{{ zog.address }}" hx-post="{{ zog.address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button, find input">
+          <label for="zog-link">Страница на ZoG</label>
+          <div class="zog-line">
+            <input id="zog-link" name="link" type="text" inputmode="url" value="{{ zog.value }}" placeholder="{{ zog.placeholder }}" maxlength="500" autocomplete="off"{% if zog.error %} aria-invalid="true" aria-describedby="zog-error"{% endif %}>
+            {{ busy_button("Сохранить", "Проверяю…") }}
+          </div>
+          {% if zog.error %}<p id="zog-error" class="error" role="alert">{{ zog.error }}</p>{% endif %}
+        </form>
+        {% if zog.can_reject %}
+        <form class="zog-reject" method="post" action="{{ zog.reject_address }}" hx-post="{{ zog.reject_address }}" hx-target="#card" hx-swap="outerHTML" hx-disabled-elt="find button">
+          {{ busy_button("Не та игра", "Сохраняю…") }}
+        </form>
+        {% endif %}
+        {% endif %}
       </section>
       {% endif %}
 

@@ -21,6 +21,7 @@ from app.tracker.kinds import KINDS
 PLATFORMS_HINT = "Галочка — «играю здесь»: о выходе на отмеченных платформах придёт сообщение; у ПК — ещё цены и скидки Steam"
 OUTSIDE_SEPARATOR = " — "  # in `outside_date` of a card: «в Японии — 12 марта 2027»
 OUTSIDE_HINT = "Дата только {region} — не выход для вашей страны: сообщения «вышла» по ней не будет."
+ZOG_PLACEHOLDER = "https://www.zoneofgames.ru/games/…/"  # in the empty field of «Страница на ZoG» (a template has no address)
 SETTINGS_WORD = "Настройках"  # in the line of a game on none of the owner's platforms: a link to the settings
 
 NO_SEQUELS = "Продолжений пока нет. Проверяю раз в неделю"
@@ -196,3 +197,36 @@ def follow_blocks(request: Request, card: TitleCard, now: datetime, error: Follo
         index = next((i for i, block in enumerate(blocks) if block.key == error.block), 0)
         blocks[index] = blocks[index]._replace(error=error.text)
     return blocks
+
+
+# --- «Страница на ZoG» of a game --------------------------------------------------------------------------------------
+
+
+class ZogError(NamedTuple):
+    """The refusal of the form «Страница на ZoG»: what the core said (`text`, empty — none) and what the owner typed, which
+    stays in the field."""
+
+    typed: str = ""
+    text: str = ""
+
+
+class ZogForm(NamedTuple):
+    """The form «Страница на ZoG» of a game in «Хочу» or «В процессе»: the field, «Сохранить» and «Не та игра»."""
+
+    address: str  # where «Сохранить» sends the link
+    reject_address: str  # where «Не та игра» goes
+    placeholder: str  # in the empty field
+    value: str  # in the field: the typed text after a refusal, else the page of the game; empty — none
+    error: str  # under the field; empty — none
+    can_reject: bool  # a page is set
+
+
+def zog_form(request: Request, card: TitleCard, error: ZogError) -> ZogForm | None:
+    """The form of the card as the core says it (`RussianView.form`); None — the card has none."""
+    view = card.russian
+    if view is None or not view.form:
+        return None
+    return ZogForm(
+        address(request, "card_zog", title_id=card.id), address(request, "card_zog_reject", title_id=card.id),
+        ZOG_PLACEHOLDER, error.typed if error.text else view.zog_value, error.text, view.can_reject,
+    )

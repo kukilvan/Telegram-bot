@@ -303,8 +303,9 @@ class GameRussian:
             hints.append(HINT_NO_DATA_STEAM if game.steam_id else HINT_NO_DATA_IGDB)
         if not active:
             hints.append(HINT_OTHER_STATUS)
-        link = zog_pages.page_url(fan_look.page) if line.fan and fan_look and fan_look.page else ""
-        return RussianView(line.text, tuple(hints), link)
+        page = zog_pages.page_url(fan_look.page) if fan_look and fan_look.page else ""
+        form = active and fan is not None  # the owner pastes a page of ZoG only where it is checked and the game is followed
+        return RussianView(line.text, tuple(hints), page if line.fan else "", form, page if form else "", form and bool(page))
 
 
 @dataclass(frozen=True)

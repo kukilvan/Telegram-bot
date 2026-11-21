@@ -15,6 +15,9 @@ year match the game (`zog_pages.matches`), else refused; nothing taken — «not
 failure six hours and a log line, no message to the owner (ZoG is a small community site, the card shows when it was
 read).
 
+The owner's page (a link pasted, «Не та игра») is `zog_page`; a state it saved while ZoG was being asked stays: the
+look that was asked is dropped with its events (`_moved`).
+
 The events of a game queue in one write session that also reads the official part now (decision 1: a fan part the
 official has is not told) and asks `still_checked` with `DueTitle.statuses`; then the state is stored. The first read
 of a page and the first check after «Вернуть в список» are the reference point (`russian.fan_news`).
@@ -64,6 +67,7 @@ class _Game:
     names: tuple[str, ...]  # the original name first (the addresses are made of it), then the Russian one
     year: int | None
     elsewhere: bool
+    stored: dict  # the state as it was read: another one at the end means the owner saved a page meanwhile
 
 
 class _Keep(Exception):
@@ -142,7 +146,7 @@ class GameZog:
         except (ValueError, TypeError, KeyError, AttributeError):  # its own poll reports it; ZoG's data is about PC
             elsewhere = False
         restored = restored_at is not None and observed_at < restored_at
-        return _Game(due, previous, observed_at, restored, names, year, elsewhere)
+        return _Game(due, previous, observed_at, restored, names, year, elsewhere, state)
 
     async def _get(self, page: str) -> zog_pages.GamePage | None:
         """One page of ZoG, read; the second request of a pass and later ones wait a second first."""
@@ -205,6 +209,8 @@ class GameZog:
         now = self.ctx.now()
         try:
             with self.ctx.write_session() as session:
+                if self._moved(session, game):
+                    return
                 parts = russian.fan_news(game.previous, new, self._official(session, game.due.id), game.restored)
                 if parts is None:
                     logging.info("title %s: ZoG check, nothing to tell (%s)", game.due.id, new.page or new.by)
@@ -223,10 +229,23 @@ class GameZog:
             if stored is None:
                 logging.info("title %s: its ZoG snapshot went while it was checked", game.due.id)
                 return
+            if stored.state != game.stored:
+                logging.info("title %s: its ZoG page was changed by the owner while it was checked", game.due.id)
+                return
             stored.state = new.state()
             stored.observed_at = now
             stored.next_check_at = now + ZOG_INTERVAL
             session.commit()
+
+    @staticmethod
+    def _moved(session, game: _Game) -> bool:
+        """The owner saved a page or said «Не та игра» while ZoG was asked (`zog_page`): his state stays, this look
+        is dropped with its events (they would be about the other page)."""
+        stored = storage.snapshot_of(session, game.due.id, SOURCE_KEY)
+        if stored is not None and stored.state == game.stored:
+            return False
+        logging.info("title %s: its ZoG page was changed by the owner while it was checked", game.due.id)
+        return True
 
     @staticmethod
     def _official(session, title_id: int) -> russian.Support | None:

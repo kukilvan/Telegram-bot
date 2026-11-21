@@ -217,6 +217,19 @@ button:disabled { opacity: 0.6; cursor: progress; }
 
 .russian .russian-link { margin: 0.25rem 0 0; }
 
+/* «Страница на ZoG»: the field and «Сохранить» on one line, the error under them, «Не та игра» in its own form */
+.zog-form { margin: 0.75rem 0 0.5rem; }
+
+.zog-form label { display: block; margin-bottom: 0.25rem; color: var(--muted); }
+
+.zog-line { display: flex; gap: 0.5rem; }
+
+.zog-line input { flex: 1 1 auto; min-width: 0; }
+
+.zog-form .error { margin: 0.25rem 0 0; }
+
+.zog-reject { margin: 0 0 0.5rem; }
+
 /* «Steam» of a game: the line of the country and of the check is small, the price stands out, the bundles are a short list */
 .steam .steam-caption { margin: 0 0 0.5rem; font-size: 0.85rem; }
 

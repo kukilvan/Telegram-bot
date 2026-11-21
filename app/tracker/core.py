@@ -3,8 +3,8 @@
 `Tracker` builds the parts of the core around one shared context and passes every call on to the part that owns it
 (`settings_store`, `titles`, `statuses`, `listing`, `feed`, `polling` and `pollers/`, `queue`, `delivery_service`,
 `test_samples`, `login_reports`, `backups` and `google_drive`, `inbox` and its `inbox_answers` and `offers`,
-`playstation`). It holds
-no rules of its own. It may have up to 500 lines, no line longer than 120 characters; the other parts stay at 400.
+`playstation`, `zog_page`). It holds no rules of its own. It may have up to 500 lines, no line longer than 120
+characters; the other parts stay at 400.
 
 Clock, sender and sources come from outside, so tests can replace all three. An event is marked delivered only after
 the sender succeeded, and the dedup key guarantees one event per fact. Where new code goes: docs/coding-standards.md.
@@ -26,21 +26,9 @@ from app.tracker.db import database_file
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.drive_rows import DriveButton, DrivePart, DriveSetup
 from app.tracker.errors import (
-    BadExternalId,
-    CannotScore,
-    SettingsField,
-    SettingsRefused,
-    SourceFailed,
-    SourceNotConfigured,
-    TitleNotFound,
-    UnknownCheck,
-    UnknownEvent,
-    UnknownInboxItem,
-    UnknownKind,
-    UnknownPlatform,
-    UnknownSample,
-    UnknownSeason,
-    UnknownTitle,
+    BadExternalId, CannotScore, SettingsField, SettingsRefused, SourceFailed, SourceNotConfigured, TitleNotFound,
+    UnknownCheck, UnknownEvent, UnknownInboxItem, UnknownKind, UnknownPlatform, UnknownSample, UnknownSeason,
+    UnknownTitle, ZogPageRefused,
 )
 from app.tracker.export_rows import ExportFile
 from app.tracker.exports import Exports
@@ -102,6 +90,7 @@ from app.tracker.test_samples import (
     TestSamples,
 )
 from app.tracker.titles import Titles
+from app.tracker.zog_page import ZogPages
 
 __all__ = [
     "DRIVE_CALLBACK_PATH", "DRIVE_REDIRECT", "DriveButton", "DrivePart", "DriveSettings", "DriveSetup", "Redirect",
@@ -115,7 +104,7 @@ __all__ = [
     "SourceFailed", "SourceNotConfigured", "SummaryResult", "TakeIn", "TestEventResult", "TestSample", "TitleCard",
     "TitleNotFound", "TitleSummary", "Tracker", "UnknownCheck", "UnknownEvent", "UnknownInboxItem", "UnknownKind",
     "UnknownPlatform", "UnknownSample", "UnknownSeason", "UnknownTitle", "UpcomingRow", "WatchableSeason",
-    "ZoneOption", "WEB_LOGIN", "WEB_LOGIN_LOCKED",
+    "ZoneOption", "WEB_LOGIN", "WEB_LOGIN_LOCKED", "ZogPageRefused",
 ]
 
 
@@ -152,6 +141,7 @@ class Tracker:
     _exports: Exports = field(init=False, repr=False)
     _logins: LoginReports = field(init=False, repr=False)
     _playstation: PlayStationLinks = field(init=False, repr=False)
+    _zog_page: ZogPages = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         # the core works with TitleKind keys; a caller may hand over plain text keys ("movie"): members from here on
@@ -187,6 +177,7 @@ class Tracker:
         self._exports = Exports(ctx, self._settings)
         self._logins = LoginReports(ctx, self._queue, self._settings)
         self._playstation = PlayStationLinks(ctx, self._settings, self.playstation_source)
+        self._zog_page = ZogPages(ctx, self.zog_source)
 
     # --- events ---------------------------------------------------------------------------------
 
@@ -347,6 +338,15 @@ class Tracker:
         search by its original name (one `HEAD`, kept a day). None: the card is the place — no such title, no game, or
         no link (no store in the country, PS5 not among «Мои платформы»)."""
         return await self._playstation.link(title_id)
+
+    async def set_zog_page(self, title_id: int, link: str) -> ChangeResult:
+        """«Страница на ZoG»: the owner's link, its page asked once, saved silently. ZogPageRefused (`text`): a bad
+        link, nothing saved; UnknownTitle; no change for a title that is no game in «Хочу» or «В процессе»."""
+        return await self._zog_page.set(title_id, link)
+
+    async def reject_zog_page(self, title_id: int) -> ChangeResult:
+        """«Не та игра»: no page on ZoG for the game until a link is saved (ZoG is not asked). Twice — the same."""
+        return await self._zog_page.reject(title_id)
 
     async def feed(self) -> Feed:
         """The feed: what comes out from today on («Скоро» by days for two weeks, then «Позже») and the events of the

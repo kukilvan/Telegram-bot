@@ -44,6 +44,15 @@ class UnknownPlatform(Exception):
     that is no game."""
 
 
+class ZogPageRefused(Exception):
+    """The link the owner pasted for «Страница на ZoG» is no good: `text` is what the page says under the field (nothing
+    was saved)."""
+
+    def __init__(self, text: str) -> None:
+        super().__init__(text)
+        self.text = text
+
+
 class CannotScore(Exception):
     """Only what is watched gets a score: a film in the archive, a season with its mark, a series with a marked season
     or in the archive. `title_id` is the title; `season_id` the record of the season when the score was a season's."""

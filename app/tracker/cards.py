@@ -140,13 +140,15 @@ class SteamView:
 class RussianView:
     """Russian in a game as its card reads it (spec 5.3–5.4 of stage 9.1b): the line after «Русский: » for the web and
     the bot, the small hints under it on the web, the game's page on ZoG when a fan segment is shown (the link
-    «Страница перевода» on the web, «🌐 Страница перевода» under the bot card), and whether the form «Страница на ZoG»
-    is shown (ticket 9.1b.06)."""
+    «Страница перевода» on the web, «🌐 Страница перевода» under the bot card), and the form «Страница на ZoG» of the web
+    (spec 5.3 item 4, ticket 9.1b.06): whether it is shown, the address in its field and whether «Не та игра» is."""
 
     line: str  # «текст — официально; озвучка — народная (ПК)»
     hints: tuple[str, ...] = ()
     zog_link: str = ""  # «https://www.zoneofgames.ru/games/baldurs_gate_3/»; empty — no fan segment shown
-    form: bool = False
+    form: bool = False  # the game is in «Хочу» or «В процессе» and the core checks ZoG: the owner can paste a page
+    zog_value: str = ""  # the field: «https://www.zoneofgames.ru/games/baldurs_gate_3/»; empty — no page is set
+    can_reject: bool = False  # a page is set: «Не та игра» is shown
 
 
 @dataclass(frozen=True)

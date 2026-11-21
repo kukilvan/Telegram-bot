@@ -17,12 +17,12 @@ from fastapi.responses import RedirectResponse
 from app.tracker.cards import STATUS_LABELS, TitleCard, movie_date_lines, movie_line, season_row_text
 from app.tracker import scores
 from app.tracker.core import (
-    CARD_SIZE, CannotScore, ScoreView, Tracker, UnknownPlatform, UnknownSeason, UnknownTitle,
+    CARD_SIZE, CannotScore, ScoreView, Tracker, UnknownPlatform, UnknownSeason, UnknownTitle, ZogPageRefused,
 )
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import ARCHIVE_STATUSES, TitleStatus
 from app.web import card_blocks, pages
-from app.web.card_blocks import FollowError
+from app.web.card_blocks import FollowError, ZogError
 from app.web.card_blocks import address as _address
 from app.web.menu import SECTIONS
 
@@ -115,7 +115,10 @@ def _back_link(request: Request, card: TitleCard) -> BackLink:
     return BackLink(_address(request, "list"), "← Список")
 
 
-def _view(request: Request, card: TitleCard, notice: str = "", follow_error: FollowError = FollowError()) -> dict[str, object]:
+def _view(
+    request: Request, card: TitleCard, notice: str = "", follow_error: FollowError = FollowError(),
+    zog_error: ZogError = ZogError(),
+) -> dict[str, object]:
     """What the card template shows, in the words of the page. The buttons follow the table of kinds and the status
     (9.2 of the spec of part 6.1): «Начал играть» from «Хочу»; the button of the final status from «Хочу» and
     «В процессе»; «Бросил» out of the archive; «Вернуть в список» from «Бросил» and from the final status of a kind with
@@ -149,6 +152,7 @@ def _view(request: Request, card: TitleCard, notice: str = "", follow_error: Fol
         "platforms": platforms,
         "platforms_hint": card_blocks.PLATFORMS_HINT,
         "russian": card.russian,  # the block «Русский язык» as the core gave it: the line and the hints of a game
+        "zog": card_blocks.zog_form(request, card, zog_error),  # its form «Страница на ZoG»; None — the game has none
         "steam": card.steam,  # the block «Steam» as the core gave it: only a game that prices are told about has one
         "dates": [] if seasonal or platforms is not None else movie_date_lines(card),
         "start_press": kind.start_press if card.status == TitleStatus.WANT else "",
@@ -171,24 +175,27 @@ def _view(request: Request, card: TitleCard, notice: str = "", follow_error: Fol
 
 
 async def _fresh_card(
-    request: Request, title_id: int, notice: str = "", follow_error: FollowError = FollowError()
+    request: Request, title_id: int, notice: str = "", follow_error: FollowError = FollowError(),
+    zog_error: ZogError = ZogError(),
 ) -> Response:
     """The block of the card as it is in the database now; the title may be gone meanwhile."""
     card = await pages.tracker_of(request).title_card(title_id) if pages.is_id(title_id) else None
     if card is None:
         return await pages.title_gone(request)
-    return pages.fragment(request, "card_body.html", **_view(request, card, notice, follow_error))
+    return pages.fragment(request, "card_body.html", **_view(request, card, notice, follow_error, zog_error))
 
 
 async def _press(
-    request: Request, title_id: int, act: Callable[[Tracker], Awaitable[object]], *, refused: str = ""
+    request: Request, title_id: int, act: Callable[[Tracker], Awaitable[object]], *, refused: str = "", typed: str = ""
 ) -> Response:
     """A press on the card: `act` asks the core. The title gone is the fragment of 1.4; a season or a platform that is
     gone, a score nobody can set now or one off the scale (`refused`: the core is not asked) is the fresh card with a
-    line about it."""
+    line about it. A link of the form «Страница на ZoG» the core refuses (`typed`: what the owner typed) is the error
+    under its field, the text staying in it."""
     if not pages.is_id(title_id):
         return await pages.title_gone(request)
     notice = refused
+    zog_error = ZogError()
     if not refused:
         try:
             await act(pages.tracker_of(request))
@@ -200,10 +207,12 @@ async def _press(
             notice = PLATFORM_GONE
         except CannotScore:
             notice = CANNOT_SCORE
-    if notice and not pages.is_htmx(request):
-        pages.notify(request, notice)
+        except ZogPageRefused as no_good:
+            zog_error = ZogError(typed, no_good.text)
+    if (notice or zog_error.text) and not pages.is_htmx(request):
+        pages.notify(request, notice or zog_error.text)
     address = _address(request, "card", title_id=title_id)
-    return await pages.answer(request, address, lambda: _fresh_card(request, title_id, notice))
+    return await pages.answer(request, address, lambda: _fresh_card(request, title_id, notice, zog_error=zog_error))
 
 
 def _score_of(raw: str) -> int | None:
@@ -342,6 +351,22 @@ async def follow(
         pages.notify(request, error)
     address = _address(request, "card", title_id=title_id)
     return await pages.answer(request, address, lambda: _fresh_card(request, title_id, follow_error=FollowError(block, error)))
+
+
+@router.post("/titles/{title_id:int}/zog", name="card_zog")
+@refreshing
+async def save_zog_page(request: Request, title_id: int, link: str = Form("")) -> Response:
+    """«Сохранить» of «Страница на ZoG»: the core reads the link and asks the page once (up to 10 s). A link that is no
+    good is the error under the field with the typed text in it; a game that left «Хочу» and «В процессе» gets the card
+    without the form."""
+    return await _press(request, title_id, lambda tracker: tracker.set_zog_page(title_id, link), typed=link)
+
+
+@router.post("/titles/{title_id:int}/zog/reject", name="card_zog_reject")
+@refreshing
+async def reject_zog_page(request: Request, title_id: int) -> Response:
+    """«Не та игра»: the game has no page on ZoG until the owner saves a link."""
+    return await _press(request, title_id, lambda tracker: tracker.reject_zog_page(title_id))
 
 
 @router.post("/titles/{title_id:int}/delete", name="card_delete")

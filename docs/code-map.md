@@ -158,6 +158,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/test_samples.py` — «Тестовое событие»: samples of the messages the owner can ask for, and the check of the delivery rules.
 - `app/tracker/text.py` — How the owner's text is compared: one function for the order «по названию», the search by name and the merging of genres.
 - `app/tracker/titles.py` — The owner's list: searching, adding and deleting titles and «Следить».
+- `app/tracker/zog_page.py` — The owner's page on ZoG for a game: «Страница на ZoG» saved from a pasted link, and «Не та игра».
 - `app/tracker/zones.py` — The time zones the owner can choose from, and how each one reads in the list.
 - `app/utils/archive.py` — The encrypted archive of a copy of the database: one file in a `.7z`, LZMA2 with AES-256 and the names hidden, that 7-Zip opens by the password.
 - `app/utils/backup.py` — Backups of the tracker database: the daily copy when the last one is over a day old, the manual copy, the reading of the folder as a list of copies, and the rotation of the old ones.
