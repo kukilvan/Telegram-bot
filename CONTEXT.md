@@ -169,7 +169,11 @@ In code: `playing` (table `game_platforms`).
 **Русский язык** (Russian support):
 Whether a game can be played in Russian: «текст» (Russian interface or subtitles), «озвучка» (full Russian voice), both, «нет», or «нет данных» when no source has said anything yet (never shown as «нет»). Official Russian comes from Steam, for a game with no Steam page from IGDB; fan Russian (народный перевод) from ZoG. The card shows both apart in the line «Русский: …», the fan part only for what the official lacks (fan voice beside official text, never fan text beside official text); «(ПК)» when the data is about the PC version only and the owner plays the game elsewhere too. Idea 002, stage 9.1b.
 _Avoid_: локализация (in messages), русификатор, фанатский перевод
-In code: not in code yet.
+In code: `russian` (what one source says — `Support` with `text` and `voice`, «нет данных» is None; the line — `russian.line`; what IGDB says in the own snapshot — `GameState.russian`; the card — `RussianView`).
+
+**Проверка русского языка** (Russian check):
+Every 6 hours the tracker asks Steam which languages the games in «Хочу» and «В процессе» have (on any platforms), all in one request, in the US store (a game not sold in a country lists no languages there); a game with no Steam page takes what IGDB said with its dates. The first check of a game, the check after a Steam page appeared or changed, and the first check after «Вернуть в список» only record what exists, without messages; later each Russian part that appears (text, voice) comes as a message («🎮 В «Stray» появился русский текст»), Russian that disappears gives none, and a source that says nothing keeps what it said before. «Прошёл» and «Бросил» stop the check and take its undelivered messages out; the card keeps the last line.
+In code: `Russian check` (`pollers/game_russian`; the snapshot of source `russian_official`, what one check saw — `russian.Look`; which games are checked — `for_russian`; the event — `game_russian_official`).
 
 **Народный перевод** (fan translation):
 A Russian translation made by fans, not by the game's makers, as listed on the game's page on Zone of Games (ZoG): text, voice or both. Its page — «Страница на ZoG» — is found by the game's name (a few address variants, taken only when ZoG's name of the page matches the game); the owner can paste the right one or reject a wrong one («Не та игра»).

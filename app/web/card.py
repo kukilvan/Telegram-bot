@@ -148,6 +148,7 @@ def _view(request: Request, card: TitleCard, notice: str = "", follow_error: Fol
         "movies": [movie_line(m) for m in card.franchise_movies],
         "platforms": platforms,
         "platforms_hint": card_blocks.PLATFORMS_HINT,
+        "russian": card.russian,  # the block «Русский язык» as the core gave it: the line and the hints of a game
         "steam": card.steam,  # the block «Steam» as the core gave it: only a game that prices are told about has one
         "dates": [] if seasonal or platforms is not None else movie_date_lines(card),
         "start_press": kind.start_press if card.status == TitleStatus.WANT else "",

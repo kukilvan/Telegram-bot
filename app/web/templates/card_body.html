@@ -76,6 +76,14 @@
       </section>
       {% endif %}
 
+      {% if russian %}
+      <section class="russian" aria-labelledby="russian-heading">
+        <h2 id="russian-heading">Русский язык</h2>
+        <p class="russian-line"><b>Русский:</b> {{ russian.line }}</p>
+        {% for hint in russian.hints %}<p class="hint">{{ hint }}</p>{% endfor %}
+      </section>
+      {% endif %}
+
       {% if steam %}
       <section class="steam" aria-labelledby="steam-heading">
         <h2 id="steam-heading">Steam</h2>

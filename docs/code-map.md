@@ -49,7 +49,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/providers/igdb.py` — IGDB client: queries to `/games` in the Apicalypse language of IGDB, with the token of Twitch and the pace of IGDB.
 - `app/providers/playstation.py` — PlayStation Store client: one `HEAD` request that says whether a page of the store is there.
 - `app/providers/shikimori.py` — Shikimori API client: anime search, franchise grouping, season selection.
-- `app/providers/steam.py` — Steam client: the prices of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
+- `app/providers/steam.py` — Steam client: the prices and the languages of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
 - `app/providers/tmdb.py` — TMDb provider: search + details via async httpx, with Phase 7.5 adaptive throttling.
 - `app/runtime.py` — One process: the web server, the scheduler and the bot run in one event loop (ADR 0007).
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
@@ -118,6 +118,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/game.py` — A game: the dates of its platforms are compared for the country of the stores, and the owner is told only about the platforms of «Мои платформы» marked «играю здесь».
 - `app/tracker/pollers/game_follow_ups.py` — The weekly check of games for expansions and sequels at the end of a polling pass: which games, the reconciliation, the due games, the queueing, the store, the failures.
 - `app/tracker/pollers/game_prices.py` — The price check at the end of a polling pass: which games have their Steam prices checked, the requests in packs of 100, the reference point, the price history and the failures (spec 4 of part 6.2).
+- `app/tracker/pollers/game_russian.py` — The official Russian check at the end of a polling pass: which games, the reconciliation, the due games, Steam in packs of 100, the reference point, the events, the store and the card's view.
 - `app/tracker/pollers/game_steam.py` — What the owner reads of the Steam prices of games: the block of a card and the marks of the rows of the list.
 - `app/tracker/pollers/movie.py` — A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show the same two dates.
 - `app/tracker/pollers/seasonal.py` — What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card lists.
@@ -131,6 +132,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/progress.py` — The status a series takes by itself from the owner's season marks and the state of the show.
 - `app/tracker/queue.py` — Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages.
 - `app/tracker/results.py` — What the tracker core hands back to its callers.
+- `app/tracker/russian.py` — Russian in a game (pure): what a source says (`Support`), the official look and its strict reading, the line «Русский: …», what appeared and «(ПК)».
+- `app/tracker/russian_events.py` — The events of Russian in games (pure): the texts, the keys, the payloads, the samples of «Тестовое событие» and `TYPES`.
 - `app/tracker/scores.py` — The owner's score: ten points with «+» and «−».
 - `app/tracker/seasons.py` — Seasons of a series: what the source says about them and how far each one has got.
 - `app/tracker/sequel_events.py` — Sequel announcements for an archived movie: what is new in its collection, how the message reads.
@@ -141,6 +144,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/sources/igdb_follow_ups.py` — IGDB adapter of the follow-up check: one request a game for its expansions and the games of its series, parsed into a `FollowUpsSnapshot`.
 - `app/tracker/sources/igdb_games.py` — IGDB adapter for games: search suggestions and the game snapshot, with the Russian texts of Steam when a game is added.
 - `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the franchise built from the chain of sequels.
+- `app/tracker/sources/steam_languages.py` — Steam adapter for languages: what Steam answered about each game becomes what it says about Russian (`russian.Support` or «no data»).
 - `app/tracker/sources/steam_prices.py` — Steam adapter for prices: what Steam answered about each game becomes its price look (`PriceLook`), source `steam`.
 - `app/tracker/sources/tmdb_find.py` — TMDb adapter for the IMDb links of «Входящие»: `/find` by an IMDb id gives the movie or the series it names.
 - `app/tracker/sources/tmdb_movies.py` — TMDb adapter for movies: search suggestions and the movie snapshot.

@@ -1,9 +1,9 @@
-"""Steam client: the prices of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
+"""Steam client: the prices and the languages of games from `IStoreBrowseService/GetItems` and the Russian name and description from `appdetails`.
 
 Public endpoints — no API key required.
 - Store items: GET https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json=… — the purchase options
-  of up to 100 apps in one request (spec 3.1 of part 6.2); a failure raises `SteamError`, so «Steam is down» is never
-  mistaken for «no price».
+  of up to 100 apps in one request (spec 3.1 of part 6.2), or their supported languages (`languages=True`, spec 5.5 of
+  stage 9.1b); a failure raises `SteamError`, so «Steam is down» is never mistaken for «no price» or «no languages».
 - App details: GET /api/appdetails?appids={appid}&l=russian&filters=basic — only a help when a game is added.
 
 What an answer means is the adapter's business (`app/tracker/sources/steam_prices.py`).
@@ -42,9 +42,10 @@ class SteamProvider:
         self._client = httpx.AsyncClient(timeout=15.0)
         self.call_count = 0
 
-    async def store_items(self, appids: Sequence[str], country: str) -> list[dict[str, Any]]:
+    async def store_items(self, appids: Sequence[str], country: str, *, languages: bool = False) -> list[dict[str, Any]]:
         """The `store_items` of `GetItems` for the apps `appids` (numbers of digits) in the store of `country`, in
-        Russian, with every purchase option: as Steam sent them, one request, no repeats. No apps — no request."""
+        Russian, with every purchase option — or, with `languages`, with their supported languages only: as Steam sent
+        them, one request, no repeats. No apps — no request."""
         if len(appids) > MAX_ITEMS:
             raise ValueError(f"at most {MAX_ITEMS} apps in one GetItems request, not {len(appids)}")
         if not appids:
@@ -52,7 +53,7 @@ class SteamProvider:
         query = {
             "ids": [{"appid": int(appid)} for appid in appids],
             "context": {"language": "russian", "country_code": country.upper()},
-            "data_request": {"include_all_purchase_options": True},
+            "data_request": {"include_supported_languages": True} if languages else {"include_all_purchase_options": True},
         }
         try:
             self.call_count += 1

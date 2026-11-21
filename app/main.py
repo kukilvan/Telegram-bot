@@ -40,6 +40,7 @@ from app.tracker.models import TitleKind
 from app.tracker.sources.igdb_follow_ups import IgdbFollowUpSource
 from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
+from app.tracker.sources.steam_languages import SteamLanguageSource
 from app.tracker.sources.steam_prices import SteamPriceSource
 from app.tracker.sources.tmdb_find import TmdbFindSource
 from app.tracker.sources.tmdb_movies import TmdbMovieSource
@@ -167,6 +168,7 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
         sequel_sources={TitleKind.MOVIE: TmdbSequelSource(tmdb)},
         default_tz=time_zone_of(settings),
         price_source=SteamPriceSource(steam),
+        language_source=SteamLanguageSource(steam),  # Russian in the games: the languages in Steam
         follow_up_source=IgdbFollowUpSource(igdb),
         imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
         playstation_source=PlayStationProvider(),  # the page of a concept, asked at a click on the web link

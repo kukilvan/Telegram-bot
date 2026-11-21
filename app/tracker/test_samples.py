@@ -14,8 +14,8 @@ from enum import StrEnum
 from typing import Any
 
 from app.tracker import (
-    anime_events, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, sequel_events,
-    series_events,
+    anime_events, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, russian_events,
+    sequel_events, series_events,
 )
 from app.tracker.cards import format_when
 from app.tracker.context import CoreContext, naive_utc
@@ -137,7 +137,8 @@ class TestSamples:
                 game_events.sample_two_platforms_events,
             )
         )
-        for sample_id, label, events in price_events.TEST_SAMPLES:  # real types: their buttons open Steam
+        # events of the real types (Steam, Russian): their buttons open Steam as the real ones do
+        for sample_id, label, events in price_events.TEST_SAMPLES + russian_events.TEST_SAMPLES:
             self.register(TestSample(sample_id, label, lambda events=events: events()[0][1], events))
         self.register(
             TestSample(

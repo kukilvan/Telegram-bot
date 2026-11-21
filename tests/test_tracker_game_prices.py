@@ -773,6 +773,7 @@ def test_build_tracker_gives_both_sources_one_steam_client(monkeypatch):
 
     assert isinstance(tracker.price_source, SteamPriceSource)
     assert tracker.price_source.steam is tracker.sources[TitleKind.GAME]._steam
+    assert tracker.language_source.steam is tracker.price_source.steam  # Russian in the games (stage 9.1b)
 
 
 def test_the_steam_events_are_listed_in_one_place():

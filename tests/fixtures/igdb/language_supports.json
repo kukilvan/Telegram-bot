@@ -1,0 +1,1260 @@
+{
+ "languages": [
+  {
+   "id": 7,
+   "name": "English",
+   "native_name": "English (US)",
+   "locale": "en-US"
+  },
+  {
+   "id": 22,
+   "name": "Russian",
+   "native_name": "Русский",
+   "locale": "ru-RU"
+  },
+  {
+   "id": 28,
+   "name": "Ukrainian",
+   "native_name": "українська",
+   "locale": "uk-UA"
+  }
+ ],
+ "language_support_types": [
+  {
+   "id": 1,
+   "name": "Audio"
+  },
+  {
+   "id": 2,
+   "name": "Subtitles"
+  },
+  {
+   "id": 3,
+   "name": "Interface"
+  }
+ ],
+ "games": [
+  {
+   "id": 1877,
+   "name": "Cyberpunk 2077",
+   "language_supports": [
+    {
+     "id": 165511,
+     "language": 25,
+     "language_support_type": 3
+    },
+    {
+     "id": 165512,
+     "language": 25,
+     "language_support_type": 2
+    },
+    {
+     "id": 157397,
+     "language": 1,
+     "language_support_type": 3
+    },
+    {
+     "id": 157398,
+     "language": 1,
+     "language_support_type": 2
+    },
+    {
+     "id": 157400,
+     "language": 4,
+     "language_support_type": 2
+    },
+    {
+     "id": 157399,
+     "language": 4,
+     "language_support_type": 3
+    },
+    {
+     "id": 157402,
+     "language": 27,
+     "language_support_type": 1
+    },
+    {
+     "id": 157401,
+     "language": 27,
+     "language_support_type": 3
+    },
+    {
+     "id": 157403,
+     "language": 27,
+     "language_support_type": 2
+    },
+    {
+     "id": 157405,
+     "language": 7,
+     "language_support_type": 1
+    },
+    {
+     "id": 157404,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 157406,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 157407,
+     "language": 8,
+     "language_support_type": 3
+    },
+    {
+     "id": 157409,
+     "language": 8,
+     "language_support_type": 2
+    },
+    {
+     "id": 157408,
+     "language": 8,
+     "language_support_type": 1
+    },
+    {
+     "id": 157411,
+     "language": 9,
+     "language_support_type": 1
+    },
+    {
+     "id": 157418,
+     "language": 14,
+     "language_support_type": 3
+    },
+    {
+     "id": 157425,
+     "language": 16,
+     "language_support_type": 2
+    },
+    {
+     "id": 157432,
+     "language": 21,
+     "language_support_type": 3
+    },
+    {
+     "id": 157438,
+     "language": 2,
+     "language_support_type": 3
+    },
+    {
+     "id": 157444,
+     "language": 24,
+     "language_support_type": 2
+    },
+    {
+     "id": 157410,
+     "language": 9,
+     "language_support_type": 3
+    },
+    {
+     "id": 157413,
+     "language": 10,
+     "language_support_type": 3
+    },
+    {
+     "id": 157415,
+     "language": 12,
+     "language_support_type": 3
+    },
+    {
+     "id": 157416,
+     "language": 12,
+     "language_support_type": 1
+    },
+    {
+     "id": 157419,
+     "language": 14,
+     "language_support_type": 2
+    },
+    {
+     "id": 157422,
+     "language": 15,
+     "language_support_type": 2
+    },
+    {
+     "id": 157423,
+     "language": 16,
+     "language_support_type": 3
+    },
+    {
+     "id": 157428,
+     "language": 17,
+     "language_support_type": 2
+    },
+    {
+     "id": 157431,
+     "language": 19,
+     "language_support_type": 2
+    },
+    {
+     "id": 157434,
+     "language": 21,
+     "language_support_type": 2
+    },
+    {
+     "id": 157439,
+     "language": 2,
+     "language_support_type": 1
+    },
+    {
+     "id": 157442,
+     "language": 3,
+     "language_support_type": 2
+    },
+    {
+     "id": 157412,
+     "language": 9,
+     "language_support_type": 2
+    },
+    {
+     "id": 157414,
+     "language": 10,
+     "language_support_type": 2
+    },
+    {
+     "id": 157417,
+     "language": 12,
+     "language_support_type": 2
+    },
+    {
+     "id": 157420,
+     "language": 15,
+     "language_support_type": 3
+    },
+    {
+     "id": 157421,
+     "language": 15,
+     "language_support_type": 1
+    },
+    {
+     "id": 157424,
+     "language": 16,
+     "language_support_type": 1
+    },
+    {
+     "id": 157426,
+     "language": 17,
+     "language_support_type": 3
+    },
+    {
+     "id": 157427,
+     "language": 17,
+     "language_support_type": 1
+    },
+    {
+     "id": 157430,
+     "language": 19,
+     "language_support_type": 1
+    },
+    {
+     "id": 157429,
+     "language": 19,
+     "language_support_type": 3
+    },
+    {
+     "id": 157433,
+     "language": 21,
+     "language_support_type": 1
+    },
+    {
+     "id": 157436,
+     "language": 22,
+     "language_support_type": 1
+    },
+    {
+     "id": 157435,
+     "language": 22,
+     "language_support_type": 3
+    },
+    {
+     "id": 157440,
+     "language": 2,
+     "language_support_type": 2
+    },
+    {
+     "id": 157441,
+     "language": 3,
+     "language_support_type": 3
+    },
+    {
+     "id": 157443,
+     "language": 24,
+     "language_support_type": 3
+    },
+    {
+     "id": 157437,
+     "language": 22,
+     "language_support_type": 2
+    },
+    {
+     "id": 804143,
+     "language": 28,
+     "language_support_type": 3
+    }
+   ]
+  },
+  {
+   "id": 1942,
+   "name": "The Witcher 3: Wild Hunt",
+   "language_supports": [
+    {
+     "id": 30,
+     "language": 19,
+     "language_support_type": 1
+    },
+    {
+     "id": 52,
+     "language": 27,
+     "language_support_type": 2
+    },
+    {
+     "id": 25,
+     "language": 7,
+     "language_support_type": 1
+    },
+    {
+     "id": 27,
+     "language": 12,
+     "language_support_type": 1
+    },
+    {
+     "id": 107,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 108,
+     "language": 12,
+     "language_support_type": 3
+    },
+    {
+     "id": 109,
+     "language": 15,
+     "language_support_type": 3
+    },
+    {
+     "id": 110,
+     "language": 27,
+     "language_support_type": 3
+    },
+    {
+     "id": 111,
+     "language": 9,
+     "language_support_type": 3
+    },
+    {
+     "id": 112,
+     "language": 1,
+     "language_support_type": 3
+    },
+    {
+     "id": 113,
+     "language": 4,
+     "language_support_type": 3
+    },
+    {
+     "id": 114,
+     "language": 14,
+     "language_support_type": 3
+    },
+    {
+     "id": 115,
+     "language": 16,
+     "language_support_type": 3
+    },
+    {
+     "id": 116,
+     "language": 17,
+     "language_support_type": 3
+    },
+    {
+     "id": 117,
+     "language": 19,
+     "language_support_type": 3
+    },
+    {
+     "id": 118,
+     "language": 21,
+     "language_support_type": 3
+    },
+    {
+     "id": 119,
+     "language": 22,
+     "language_support_type": 3
+    },
+    {
+     "id": 120,
+     "language": 3,
+     "language_support_type": 3
+    },
+    {
+     "id": 121,
+     "language": 2,
+     "language_support_type": 3
+    },
+    {
+     "id": 122,
+     "language": 24,
+     "language_support_type": 3
+    },
+    {
+     "id": 32,
+     "language": 22,
+     "language_support_type": 1
+    },
+    {
+     "id": 33,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 34,
+     "language": 9,
+     "language_support_type": 2
+    },
+    {
+     "id": 36,
+     "language": 15,
+     "language_support_type": 2
+    },
+    {
+     "id": 35,
+     "language": 12,
+     "language_support_type": 2
+    },
+    {
+     "id": 37,
+     "language": 14,
+     "language_support_type": 2
+    },
+    {
+     "id": 38,
+     "language": 19,
+     "language_support_type": 2
+    },
+    {
+     "id": 39,
+     "language": 4,
+     "language_support_type": 2
+    },
+    {
+     "id": 40,
+     "language": 22,
+     "language_support_type": 2
+    },
+    {
+     "id": 41,
+     "language": 3,
+     "language_support_type": 2
+    },
+    {
+     "id": 42,
+     "language": 21,
+     "language_support_type": 1
+    },
+    {
+     "id": 43,
+     "language": 16,
+     "language_support_type": 1
+    },
+    {
+     "id": 44,
+     "language": 10,
+     "language_support_type": 2
+    },
+    {
+     "id": 45,
+     "language": 21,
+     "language_support_type": 2
+    },
+    {
+     "id": 46,
+     "language": 24,
+     "language_support_type": 2
+    },
+    {
+     "id": 47,
+     "language": 1,
+     "language_support_type": 2
+    },
+    {
+     "id": 48,
+     "language": 2,
+     "language_support_type": 2
+    },
+    {
+     "id": 49,
+     "language": 16,
+     "language_support_type": 2
+    },
+    {
+     "id": 50,
+     "language": 17,
+     "language_support_type": 2
+    },
+    {
+     "id": 51,
+     "language": 27,
+     "language_support_type": 1
+    },
+    {
+     "id": 157788,
+     "language": 8,
+     "language_support_type": 3
+    },
+    {
+     "id": 157790,
+     "language": 8,
+     "language_support_type": 2
+    },
+    {
+     "id": 157789,
+     "language": 8,
+     "language_support_type": 1
+    },
+    {
+     "id": 157793,
+     "language": 10,
+     "language_support_type": 3
+    },
+    {
+     "id": 809055,
+     "language": 2,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236427,
+     "language": 17,
+     "language_support_type": 1
+    },
+    {
+     "id": 1785321,
+     "language": 28,
+     "language_support_type": 3
+    },
+    {
+     "id": 1785322,
+     "language": 28,
+     "language_support_type": 2
+    }
+   ]
+  },
+  {
+   "id": 7334,
+   "name": "Bloodborne",
+   "language_supports": [
+    {
+     "id": 686430,
+     "language": 7,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236285,
+     "language": 21,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236286,
+     "language": 27,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236287,
+     "language": 9,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236288,
+     "language": 10,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236289,
+     "language": 12,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236290,
+     "language": 15,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236291,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236292,
+     "language": 5,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236293,
+     "language": 6,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236294,
+     "language": 11,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236295,
+     "language": 12,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236296,
+     "language": 27,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236302,
+     "language": 22,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236303,
+     "language": 9,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236304,
+     "language": 10,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236305,
+     "language": 23,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236306,
+     "language": 24,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236307,
+     "language": 5,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236308,
+     "language": 6,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236309,
+     "language": 11,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236310,
+     "language": 12,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236311,
+     "language": 27,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236312,
+     "language": 15,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236313,
+     "language": 18,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236314,
+     "language": 19,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236315,
+     "language": 20,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236316,
+     "language": 21,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236317,
+     "language": 22,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236318,
+     "language": 9,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236329,
+     "language": 16,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236330,
+     "language": 16,
+     "language_support_type": 1
+    },
+    {
+     "id": 1236331,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236297,
+     "language": 15,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236298,
+     "language": 18,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236299,
+     "language": 19,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236300,
+     "language": 20,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236301,
+     "language": 21,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236319,
+     "language": 10,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236320,
+     "language": 23,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236321,
+     "language": 24,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236322,
+     "language": 2,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236323,
+     "language": 3,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236324,
+     "language": 2,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236325,
+     "language": 3,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236326,
+     "language": 17,
+     "language_support_type": 2
+    },
+    {
+     "id": 1236327,
+     "language": 17,
+     "language_support_type": 3
+    },
+    {
+     "id": 1236328,
+     "language": 16,
+     "language_support_type": 2
+    }
+   ]
+  },
+  {
+   "id": 11589,
+   "name": "Yomawari: Night Alone",
+   "language_supports": [
+    {
+     "id": 310241,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 310243,
+     "language": 16,
+     "language_support_type": 2
+    },
+    {
+     "id": 310240,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 310242,
+     "language": 16,
+     "language_support_type": 3
+    }
+   ]
+  },
+  {
+   "id": 52189,
+   "name": "Grand Theft Auto VI",
+   "language_supports": [
+    {
+     "id": 861846,
+     "language": 7,
+     "language_support_type": 1
+    },
+    {
+     "id": 861847,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 861848,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692049,
+     "language": 27,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692051,
+     "language": 9,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692053,
+     "language": 9,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692056,
+     "language": 15,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692059,
+     "language": 17,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692061,
+     "language": 19,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692063,
+     "language": 22,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692064,
+     "language": 22,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692065,
+     "language": 2,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692066,
+     "language": 2,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692067,
+     "language": 3,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692068,
+     "language": 3,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692047,
+     "language": 21,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692058,
+     "language": 16,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692060,
+     "language": 17,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692062,
+     "language": 19,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692048,
+     "language": 21,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692052,
+     "language": 10,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692050,
+     "language": 27,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692054,
+     "language": 10,
+     "language_support_type": 3
+    },
+    {
+     "id": 1692055,
+     "language": 12,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692057,
+     "language": 16,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692098,
+     "language": 15,
+     "language_support_type": 2
+    },
+    {
+     "id": 1692099,
+     "language": 12,
+     "language_support_type": 3
+    }
+   ]
+  },
+  {
+   "id": 119171,
+   "name": "Baldur's Gate III",
+   "language_supports": [
+    {
+     "id": 233666,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 233668,
+     "language": 7,
+     "language_support_type": 1
+    },
+    {
+     "id": 233670,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 233672,
+     "language": 12,
+     "language_support_type": 3
+    },
+    {
+     "id": 233674,
+     "language": 12,
+     "language_support_type": 2
+    },
+    {
+     "id": 233676,
+     "language": 27,
+     "language_support_type": 3
+    },
+    {
+     "id": 233678,
+     "language": 27,
+     "language_support_type": 2
+    },
+    {
+     "id": 233680,
+     "language": 9,
+     "language_support_type": 3
+    },
+    {
+     "id": 233682,
+     "language": 9,
+     "language_support_type": 2
+    },
+    {
+     "id": 233686,
+     "language": 22,
+     "language_support_type": 3
+    },
+    {
+     "id": 233684,
+     "language": 19,
+     "language_support_type": 3
+    },
+    {
+     "id": 233685,
+     "language": 19,
+     "language_support_type": 2
+    },
+    {
+     "id": 233687,
+     "language": 22,
+     "language_support_type": 2
+    },
+    {
+     "id": 233688,
+     "language": 2,
+     "language_support_type": 3
+    },
+    {
+     "id": 233689,
+     "language": 2,
+     "language_support_type": 2
+    },
+    {
+     "id": 233690,
+     "language": 24,
+     "language_support_type": 3
+    },
+    {
+     "id": 233691,
+     "language": 24,
+     "language_support_type": 2
+    },
+    {
+     "id": 233692,
+     "language": 21,
+     "language_support_type": 3
+    },
+    {
+     "id": 233693,
+     "language": 21,
+     "language_support_type": 2
+    },
+    {
+     "id": 793408,
+     "language": 10,
+     "language_support_type": 3
+    },
+    {
+     "id": 744315,
+     "language": 15,
+     "language_support_type": 3
+    },
+    {
+     "id": 744316,
+     "language": 28,
+     "language_support_type": 3
+    },
+    {
+     "id": 744317,
+     "language": 3,
+     "language_support_type": 3
+    },
+    {
+     "id": 863445,
+     "language": 10,
+     "language_support_type": 2
+    },
+    {
+     "id": 863446,
+     "language": 15,
+     "language_support_type": 2
+    },
+    {
+     "id": 863447,
+     "language": 17,
+     "language_support_type": 3
+    },
+    {
+     "id": 863448,
+     "language": 17,
+     "language_support_type": 2
+    },
+    {
+     "id": 863449,
+     "language": 3,
+     "language_support_type": 2
+    },
+    {
+     "id": 1284199,
+     "language": 16,
+     "language_support_type": 3
+    }
+   ]
+  },
+  {
+   "id": 228525,
+   "name": "Hades II",
+   "language_supports": [
+    {
+     "id": 468954,
+     "language": 7,
+     "language_support_type": 1
+    },
+    {
+     "id": 468955,
+     "language": 7,
+     "language_support_type": 2
+    },
+    {
+     "id": 468956,
+     "language": 7,
+     "language_support_type": 3
+    },
+    {
+     "id": 657401,
+     "language": 12,
+     "language_support_type": 3
+    },
+    {
+     "id": 657402,
+     "language": 12,
+     "language_support_type": 2
+    },
+    {
+     "id": 657403,
+     "language": 15,
+     "language_support_type": 3
+    },
+    {
+     "id": 657404,
+     "language": 15,
+     "language_support_type": 2
+    },
+    {
+     "id": 657405,
+     "language": 27,
+     "language_support_type": 3
+    },
+    {
+     "id": 657406,
+     "language": 27,
+     "language_support_type": 2
+    },
+    {
+     "id": 657407,
+     "language": 9,
+     "language_support_type": 3
+    },
+    {
+     "id": 657408,
+     "language": 9,
+     "language_support_type": 2
+    },
+    {
+     "id": 657409,
+     "language": 16,
+     "language_support_type": 3
+    },
+    {
+     "id": 657410,
+     "language": 16,
+     "language_support_type": 2
+    },
+    {
+     "id": 657411,
+     "language": 17,
+     "language_support_type": 3
+    },
+    {
+     "id": 657412,
+     "language": 17,
+     "language_support_type": 2
+    },
+    {
+     "id": 657413,
+     "language": 19,
+     "language_support_type": 3
+    },
+    {
+     "id": 657414,
+     "language": 19,
+     "language_support_type": 2
+    },
+    {
+     "id": 657415,
+     "language": 21,
+     "language_support_type": 3
+    },
+    {
+     "id": 657416,
+     "language": 21,
+     "language_support_type": 2
+    },
+    {
+     "id": 657417,
+     "language": 22,
+     "language_support_type": 3
+    },
+    {
+     "id": 657418,
+     "language": 22,
+     "language_support_type": 2
+    },
+    {
+     "id": 657419,
+     "language": 2,
+     "language_support_type": 3
+    },
+    {
+     "id": 657420,
+     "language": 2,
+     "language_support_type": 2
+    },
+    {
+     "id": 657421,
+     "language": 3,
+     "language_support_type": 3
+    },
+    {
+     "id": 657422,
+     "language": 3,
+     "language_support_type": 2
+    },
+    {
+     "id": 657423,
+     "language": 24,
+     "language_support_type": 3
+    },
+    {
+     "id": 657424,
+     "language": 24,
+     "language_support_type": 2
+    },
+    {
+     "id": 657425,
+     "language": 28,
+     "language_support_type": 3
+    },
+    {
+     "id": 657426,
+     "language": 28,
+     "language_support_type": 2
+    }
+   ]
+  }
+ ]
+}

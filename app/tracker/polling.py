@@ -39,7 +39,7 @@ POLLER_CLASSES: Mapping[TitleKind, type[Poller]] = {
 
 class Pollers:
     """The pollers of the kinds the core has a source for, and the sequel pollers of the kinds that have a sequel source.
-    The source of the Steam prices and the source of the follow-up check go to the game poller only.
+    The sources of the Steam prices, of the follow-up check and of the Steam languages go to the game poller only.
     What the owner reads (the feed, the card) is asked of the poller of any kind, with a source or without: it reads
     only the database."""
 
@@ -52,10 +52,13 @@ class Pollers:
         sequel_sources: Mapping[TitleKind, Any],
         price_source: Any = None,
         follow_up_source: Any = None,
+        language_source: Any = None,
     ) -> None:
         # the sources only one kind has go to the poller of that kind alone
         own_sources: Mapping[TitleKind, Mapping[str, Any]] = {
-            TitleKind.GAME: {"price_source": price_source, "follow_up_source": follow_up_source},
+            TitleKind.GAME: {
+                "price_source": price_source, "follow_up_source": follow_up_source, "language_source": language_source,
+            },
         }
         self._every = {
             kind: poller_class(kind, sources.get(kind), ctx, settings, queue, **own_sources.get(kind, {}))

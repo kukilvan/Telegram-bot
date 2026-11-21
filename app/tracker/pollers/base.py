@@ -4,7 +4,8 @@
 `known_ids` and `snapshot_ids` tell a title already in the list by the ids of the source, and `apply` compares a fresh
 snapshot with the stored one, queues the events and stores the new state; `after_marks` applies, in the write session
 of a press of the owner, what the press ends of the checks of the kind (a game: its price check); `end_of_pass` checks what is looked at for all
-the titles of the kind at once, after the pass over the titles (the Steam prices of the games and their expansions and sequels). What the owner reads is
+the titles of the kind at once, after the pass over the titles (the Steam prices of the games, their expansions and sequels and
+Russian in them). What the owner reads is
 asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `card_part` gives what a card
 holds that depends on the kind, `list_marks` the marks of the rows of the list and `list_tags` the words after their
 names; `offers_follow_ups` says whether the kind announces titles to follow. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
@@ -22,7 +23,7 @@ from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
-from app.tracker.models import ARCHIVE_STATUSES, ExternalId, SeasonRecord, Title, TitleKind
+from app.tracker.models import ARCHIVE_STATUSES, ExternalId, SeasonRecord, Title, TitleKind, TitleStatus
 
 if TYPE_CHECKING:
     from app.tracker.queue import EventQueue
@@ -41,6 +42,9 @@ class DueTitle:
     # that happened after `restored_at` (KI-23)
     baseline: bool = False
     restored_at: datetime | None = None  # naive UTC: when the owner last brought the title back from the archive
+    # set: the check runs only while the title's status is one of these (the Russian checks: «Хочу», «В процессе»;
+    # their snapshots stay after the game leaves them, spec 3.2 of stage 9.1b)
+    statuses: tuple[TitleStatus, ...] | None = None
 
 
 class Poller:

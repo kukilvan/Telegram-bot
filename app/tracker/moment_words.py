@@ -1,7 +1,7 @@
 """A moment in words for the owner (pure): «сегодня в 07:58», «вчера в 18:32», «4 ноября в 07:58», «4 ноября 2025 в 07:58».
 
-One function for everything that names the time of a copy: the Settings block, its notices, the failure text and the
-restore list. It lives in a module of its own (rule 7) so that all of them reach it without the database.
+One function for everything that names the time of a copy — the Settings block, its notices, the failure text and the
+restore list — and the last Russian check of a game on its card. It lives in a module of its own (rule 7) so that all of them reach it without the database.
 """
 
 from datetime import datetime, timedelta

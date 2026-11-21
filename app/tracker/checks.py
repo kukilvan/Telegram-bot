@@ -20,9 +20,10 @@ POLLED_STATUSES = (TitleStatus.WANT, TitleStatus.IN_PROGRESS, TitleStatus.WAITIN
 
 
 def still_checked(session, due: "DueTitle") -> bool:
-    """The title exists and the snapshot of `due.snapshot_source` exists; a sequel check — the title is «Просмотрено»;
-    an own-release check (the snapshot of the title's primary source) — its status is polled and tracking is on; a
-    check at the end of a pass (the Steam prices, the follow-ups of a game) — the snapshot is enough."""
+    """The title exists and the snapshot of `due.snapshot_source` exists; with `due.statuses` the title's status is
+    one of them (the Russian checks); a sequel check — the title is «Просмотрено»; an own-release check (the snapshot of
+    the title's primary source) — its status is polled and tracking is on; a check at the end of a pass (the Steam
+    prices, the follow-ups of a game) — the snapshot is enough."""
     title = session.get(Title, due.id)
     if title is None:
         return False
@@ -30,6 +31,8 @@ def still_checked(session, due: "DueTitle") -> bool:
         select(SourceSnapshot.id).where(SourceSnapshot.title_id == due.id, SourceSnapshot.source == due.snapshot_source)
     )
     if snapshot is None:
+        return False
+    if due.statuses is not None and title.status not in due.statuses:
         return False
     if due.sequels:
         return title.status == TitleStatus.WATCHED

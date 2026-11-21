@@ -34,6 +34,7 @@ _MONTHS = (
 _SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
 NOT_ANNOUNCED = "не объявлена"
 STEAM_PRICE_LABEL = "Цена в Steam"
+RUSSIAN_LABEL = "Русский"  # «Русский: текст — официально» on both cards
 PARENT_LINE_START = "Дополнение к игре «"  # the web card links the name between the start and the end
 PARENT_LINE_END = "»"
 
@@ -136,6 +137,16 @@ class SteamView:
 
 
 @dataclass(frozen=True)
+class RussianView:
+    """Russian in a game as its card reads it (spec 5.3–5.4 of stage 9.1b): the line after «Русский: » for the web and
+    the bot, the small hints under it on the web, and whether the form «Страница на ZoG» is shown (ticket 9.1b.05)."""
+
+    line: str  # «текст — официально; озвучка — народная (ПК)»
+    hints: tuple[str, ...] = ()
+    form: bool = False
+
+
+@dataclass(frozen=True)
 class CardPart:
     """What a card holds that depends on the kind of the title: the poller of the kind gives it, so neither the card
     nor the list asks which kind it is. The names are the ones of `TitleCard`."""
@@ -151,6 +162,7 @@ class CardPart:
     platform_note: str = ""
     outside_date: str = ""
     steam: SteamView | None = None
+    russian: RussianView | None = None
     parent: ParentGame | None = None
     follow_ups: FollowUpsView | None = None
 
@@ -182,6 +194,7 @@ class TitleCard:
     platform_note: str = ""  # a game without such platforms: why the list of platforms is empty
     outside_date: str = ""  # a game: «в Японии — 12 марта 2027», a date outside the country's regions; empty: none
     steam: SteamView | None = None  # a game in «Хочу» that is told about PC: its Steam prices; the poller decides
+    russian: RussianView | None = None  # a game: Russian in it (the line and the hints); the poller decides
     parent: ParentGame | None = None  # an expansion: the game it belongs to
     follow_ups: FollowUpsView | None = None  # a game for the follow-up check: its expansions and sequels; for the web
 
@@ -328,7 +341,8 @@ def movie_date_lines(card: TitleCard) -> list[str]:
 
 def platform_lines(card: TitleCard) -> list[str]:
     """The platforms of a game, an unmarked one «(не отмечена)», or the line that says why there are none; then the
-    date outside the country's regions, if any; then the price in Steam when the card has its block; then the stores as text: «Steam: https://…»."""
+    date outside the country's regions, if any; then the price in Steam when the card has its block; then «Русский: …»
+    when the card has it; then the stores as text: «Steam: https://…»."""
     lines = [row.text + ("" if row.playing else " (не отмечена)") for row in card.platforms]
     if not lines:
         lines.append(card.platform_note)
@@ -336,6 +350,8 @@ def platform_lines(card: TitleCard) -> list[str]:
         lines.append(card.outside_date)
     if card.steam is not None:
         lines.append(f"{STEAM_PRICE_LABEL}: {card.steam.bot_line}")
+    if card.russian is not None:
+        lines.append(f"{RUSSIAN_LABEL}: {card.russian.line}")
     lines.extend(f"{link.store}: {link.url}" for link in card.store_links)
     return lines
 

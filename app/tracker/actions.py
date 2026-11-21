@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from app.tracker import follow_ups, movie_events, price_events, sequel_events
+from app.tracker import follow_ups, movie_events, price_events, russian_events, sequel_events
 from app.tracker.cards import TitleCard
 from app.tracker.kinds import KINDS, is_seasonal
 from app.tracker.models import TitleStatus
@@ -57,16 +57,17 @@ def event_actions(
     a movie sequel alone (its title is the film already watched, whose card says nothing new), an expansion or a game
     of the series with «Карточка» of the checked game. The button names the announced title itself, so it works whether
     or not the announcement (or the game it came from) is still in the database; an event that does not say which
-    title it is about falls back to its own number. An event of Steam has «Карточка» and «🛒 Открыть в Steam»; its
-    sample, only the link."""
+    title it is about falls back to its own number. An event of Steam (`price_events.TYPES`) and an event of Russian
+    (`russian_events.TYPES`) have «Карточка» and «🛒 Открыть в Steam» when the payload names the Steam number; a sample,
+    only the link."""
     if event_type in FOLLOW_TYPES:
         data = data or {}
         kind, external_id = data.get("kind"), data.get("sequel_id")  # the keys of a stored announcement keep their names
         follow = Action(_FOLLOW_LABEL, FOLLOW, f"{kind}:{external_id}" if kind and external_id else event_id)
         card = [Action(_CARD_LABEL, CARD, title_id)] if event_type in follow_ups.TYPES and title_id is not None else []
         return [follow, *card]
-    if event_type in price_events.TYPES:
-        # an event of Steam: the card and the page in Steam; a sample has no title, only the page
+    if event_type in price_events.TYPES or event_type in russian_events.TYPES:
+        # an event of Steam or of Russian: the card and the page in Steam; a sample has no title, only the page
         steam_id = (data or {}).get("steam_id")
         card = [Action(_CARD_LABEL, CARD, title_id)] if title_id is not None else []
         return card + ([steam_action(str(steam_id))] if steam_id else [])

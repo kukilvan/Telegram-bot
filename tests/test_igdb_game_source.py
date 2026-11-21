@@ -239,7 +239,8 @@ EXPECTED_STATES = {
 def test_every_saved_game_becomes_its_state(name):
     snapshot = parse_game(game(name))
 
-    assert snapshot.state() == EXPECTED_STATES[name]
+    # the saved answers were taken before the query asked the languages (stage 9.1b): no list — `russian` is null
+    assert snapshot.state() == {**EXPECTED_STATES[name], "russian": None}
     assert snapshot.external_id == str(GAMES[name])
 
 

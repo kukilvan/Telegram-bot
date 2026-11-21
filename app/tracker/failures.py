@@ -29,7 +29,10 @@ SOURCE_DOWN = "source_down"
 GONE = "gone"
 UNKNOWN = "unknown"
 
-_SOURCE_NAMES = (("tmdb", "TMDb"), ("shikimori", "Shikimori"), ("anilist", "AniList"), ("igdb", "IGDB"), ("steam", "Steam"))
+_SOURCE_NAMES = (
+    ("tmdb", "TMDb"), ("shikimori", "Shikimori"), ("anilist", "AniList"), ("igdb", "IGDB"), ("steam", "Steam"),
+    ("russian_official", "Steam"),  # the official Russian check fails only when Steam does
+)
 
 # {source} is the name of the source; each reason reads after «Не удалось проверить «…»: »
 _REASONS = {
@@ -68,8 +71,8 @@ class TitleGone(LookupError):
 
 
 def source_name(source_key: str) -> str:
-    """«tmdb_movie», «tmdb_tv», «tmdb_sequels» → TMDb; «shikimori» → Shikimori; «igdb» → IGDB; «steam» → Steam; an
-    unknown key stands for itself."""
+    """«tmdb_movie», «tmdb_tv», «tmdb_sequels» → TMDb; «shikimori» → Shikimori; «igdb» → IGDB; «steam» and
+    «russian_official» → Steam; an unknown key stands for itself."""
     for prefix, name in _SOURCE_NAMES:
         if source_key.startswith(prefix):
             return name

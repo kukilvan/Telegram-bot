@@ -7,6 +7,10 @@ Only the games themselves count (spec 4.2 of part 6.1): a main game, a standalon
 expanded game and a port, and a record that is no edition of another game (`version_parent`). DLC, bundles, mods,
 updates, episodes and every edition are left out. A link sent to the bot is looked up by its record itself (its number
 in IGDB or the number of its app in Steam, `external_games`): any type of record counts there.
+
+The own query also asks the languages of the game (`language_supports`, spec 5.5 of stage 9.1b): Russian is language
+22, its text the support types 2 (subtitles) and 3 (interface), its voice type 1 (audio); a list of languages without
+Russian says «no Russian», no list says nothing (`russian_support`).
 """
 
 import html
@@ -18,6 +22,7 @@ from app.tracker.errors import SourceNotConfigured
 from app.tracker.games import CANCELLED, EARLY, EXPANSION, FULL, STANDALONE, GameDate, GameState, Parent, Release
 from app.tracker.models import TitleKind
 from app.tracker.platforms import IGDB_LABELS, NO_REGION
+from app.tracker.russian import Support
 from app.tracker.sources.dates import response_day_of_timestamp
 from app.tracker.sources.tmdb_movies import Suggestion
 
@@ -41,7 +46,8 @@ GAME_QUERY = (
     "fields name,game_type,version_parent,parent_game.name,first_release_date,summary,genres.name,cover.image_id,platforms,"
     "alternative_names.name,alternative_names.comment,release_dates.date,release_dates.date_format,release_dates.y,"
     "release_dates.m,release_dates.platform,release_dates.release_region,release_dates.status,external_games.uid,"
-    "external_games.external_game_source,external_games.url; "
+    "external_games.external_game_source,external_games.url,language_supports.language,"
+    "language_supports.language_support_type; "
     "where id = {id};"
 )
 
@@ -53,6 +59,10 @@ STEAM_SOURCE = 1  # `external_game_source`: the number of the app in Steam
 PS_STORE_SOURCE = 36  # «Playstation Store US»: the number of the concept
 
 COVER_URL = "https://images.igdb.com/igdb/image/upload/t_cover_big/{}.jpg"
+
+RUSSIAN_LANGUAGE = 22  # `language` of IGDB: Russian (`ru-RU`)
+_VOICE_TYPES = {1}  # `language_support_type`: 1 audio
+_TEXT_TYPES = {2, 3}  # 2 subtitles, 3 interface
 
 # Our own Russian for the genres of IGDB (KI-30: no mix of languages in the archive); an unknown one stays as it is
 GENRES = {
@@ -226,6 +236,19 @@ def expansion_with_parent(raw: dict[str, Any]) -> tuple[str | None, Parent | Non
     return expansion, parent if expansion is not None else None
 
 
+def russian_support(raw: dict[str, Any]) -> Support | None:
+    """What `language_supports` says about Russian (soft: an answer of a service): None — IGDB lists no languages; a
+    list without Russian — both no."""
+    entries = raw.get("language_supports")
+    if not isinstance(entries, list) or not entries:
+        return None
+    types = {
+        entry.get("language_support_type") for entry in entries
+        if isinstance(entry, dict) and entry.get("language") == RUSSIAN_LANGUAGE
+    }
+    return Support(text=bool(types & _TEXT_TYPES), voice=bool(types & _VOICE_TYPES))
+
+
 def parse_state(raw: dict[str, Any]) -> GameState:
     external = raw.get("external_games")
     concept = _store_id(external, PS_STORE_SOURCE)
@@ -237,6 +260,7 @@ def parse_state(raw: dict[str, Any]) -> GameState:
         releases=read_releases(raw.get("release_dates")),
         expansion=expansion,
         parent=parent,
+        russian=russian_support(raw),
     )
 
 

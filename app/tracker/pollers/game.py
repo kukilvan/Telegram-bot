@@ -7,7 +7,8 @@ mark is set where the platform is one of «Мои платформы» at that m
 show the dates of the country of the stores as it is now: the feed only the platforms the owner is told about, the
 card every platform of «Мои платформы» the game is on, with its mark (spec 8 and 9.1). At the end of each polling pass
 the Steam prices of the games are checked (`pollers/game_prices`, part 6.2), then their expansions and the new games of
-their series (`pollers/game_follow_ups`, stage 6.3); the page in Steam is told here, by IGDB:
+their series (`pollers/game_follow_ups`, stage 6.3), then Russian in them (`pollers/game_russian`, stage 9.1b — also the
+line of the card); the page in Steam is told here, by IGDB:
 its previous snapshot had no Steam number, the new one has, and the game is one for prices by the new snapshot. What
 the owner reads of the prices (the block of the card, the mark of the list) is `pollers/game_steam`; of the expansions
 and sequels (the blocks of the card, the line of the parent) `pollers/game_follow_ups`, and the word «дополнение» after the
@@ -31,6 +32,7 @@ from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
 from app.tracker.pollers.game_follow_ups import GameFollowUps
 from app.tracker.pollers.game_prices import GamePrices, steam_number
+from app.tracker.pollers.game_russian import GameRussian
 from app.tracker.pollers.game_steam import GameSteam
 
 
@@ -48,14 +50,18 @@ def _new_rows(session, title_id: int, game: games.GameState, mine: Sequence[Plat
 
 class GamePoller(Poller):
     """`price_source`: the source of the Steam prices (`SteamPriceSource`), None — prices are not checked;
-    `follow_up_source`: the source of the follow-up check (`IgdbFollowUpSource`), None — no check."""
+    `follow_up_source`: the source of the follow-up check (`IgdbFollowUpSource`), None — no check;
+    `language_source`: the source of Steam's languages (`SteamLanguageSource`), None — no Russian check."""
 
-    def __init__(self, *args: Any, price_source: Any = None, follow_up_source: Any = None) -> None:
+    def __init__(
+        self, *args: Any, price_source: Any = None, follow_up_source: Any = None, language_source: Any = None
+    ) -> None:
         super().__init__(*args)
         self.price_source = price_source
         self.prices = GamePrices(self.kind, price_source, self.ctx, self.settings)
         self.steam = GameSteam(self.kind, price_source, self.ctx, self.settings)
         self.follow_ups = GameFollowUps(self.kind, follow_up_source, self.ctx, self.settings, self.known_ids)
+        self.russian = GameRussian(self.kind, language_source, self.ctx, self.settings)
 
     async def snapshot_to_add(self, external_id: str) -> Any:
         return await self.source.snapshot_to_add(external_id)
@@ -91,6 +97,7 @@ class GamePoller(Poller):
             platform_note=game_rows.platform_note(game, rows),
             outside_date=game_rows.outside_date(game, scope.mine, scope.country),
             steam=self.steam.card_block(session, title, game, scope),
+            russian=self.russian.card_view(session, title, game, scope, tz),
             parent=self.follow_ups.parent(session, game),
             follow_ups=self.follow_ups.card_view(session, title, game, scope, tz),
         )
@@ -120,10 +127,11 @@ class GamePoller(Poller):
         """A press ends the checks of the games at once (spec 3.1 of stage 9.1b). The price part: the price snapshots
         of the games no longer «игра для цен» go with their undelivered Steam events (`GamePrices.drop_unpriced`); the
         follow-up part: the follow-up snapshots of the games no longer «игра для проверки» go
-        (`GameFollowUps.drop_unchecked`, KI-53)."""
+        (`GameFollowUps.drop_unchecked`, KI-53); the Russian part: the undelivered Russian events of the games no longer
+        in «Хочу» or «В процессе» are withdrawn, their snapshots stay (`GameRussian.withdraw_left`)."""
         self.prices.drop_unpriced(session, title_ids)
         self.follow_ups.drop_unchecked(session, title_ids)
-        # the Russian part (ticket 9.1b.04) comes here
+        self.russian.withdraw_left(session, title_ids)
 
     def apply(self, due: DueTitle, snapshot: Any) -> int:
         now = self.ctx.now()
@@ -161,9 +169,11 @@ class GamePoller(Poller):
 
     async def end_of_pass(self) -> list[tuple[DueTitle, Exception]]:
         """The Steam prices of the games (`pollers/game_prices`), then their expansions and sequels
-        (`pollers/game_follow_ups`). A bug in one check goes to the log with its traceback and leaves the other."""
+        (`pollers/game_follow_ups`), then Russian in them (`pollers/game_russian`). A bug in one check goes to the log
+        with its traceback and leaves the others."""
         broken: list[tuple[DueTitle, Exception]] = []
-        for name, check in (("price", self.prices.check), ("follow-up", self.follow_ups.check)):
+        checks = (("price", self.prices.check), ("follow-up", self.follow_ups.check), ("Russian", self.russian.check))
+        for name, check in checks:
             try:
                 broken += await check()
             except Exception:

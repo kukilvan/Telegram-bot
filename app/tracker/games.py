@@ -8,7 +8,7 @@ The snapshot of a game holds every record of IGDB for the platforms the tracker 
 part 6.1); which of them is the date of the owner is decided here each time the dates are read, so a new country in the
 settings shows its dates at once and gives no messages (spec 5.2). Only the records of the regions of the country are its
 dates: a day only in Japan is none (KI-35, spec 1.1 of stage 9.1b). `GameState` also says whether the game is an expansion
-and of which game (spec 3.3 of stage 6.3).
+and of which game (spec 3.3 of stage 6.3), and what IGDB says about Russian in it (`russian`, spec 5.5 of stage 9.1b).
 """
 
 import calendar
@@ -21,6 +21,7 @@ from typing import Any
 from app.tracker.cards import format_date
 from app.tracker.movie_events import INTERVAL_NEAR, INTERVAL_QUIET, INTERVAL_SOON, INTERVAL_WAITING, NEAR, SOON
 from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform
+from app.tracker.russian import NOT_ASKED, IgdbRussian, Support, igdb_from_state, igdb_state
 from app.tracker.sources.dates import parse_date, response_day_of_timestamp
 
 # The types of a release record (`type` in the snapshot); other statuses of IGDB (alpha, beta, offline…) are not taken
@@ -239,7 +240,9 @@ class Parent:
 @dataclass(frozen=True)
 class GameState:
     """The part of a game that changes over time, as the snapshot stores it (`source_snapshots.state`, source `igdb`).
-    `expansion` and `parent` are set together, only for an expansion (spec 3.3 of stage 6.3), and stored only then."""
+    `expansion` and `parent` are set together, only for an expansion (spec 3.3 of stage 6.3), and stored only then.
+    `russian` — what IGDB says about Russian (`russian.Support`), None — IGDB has no languages, `NOT_ASKED` — a
+    snapshot from before stage 9.1b (no key)."""
 
     steam_id: str | None = None
     ps_concept: str | None = None  # the number of the concept in PlayStation Store; None — a search is the link
@@ -247,6 +250,7 @@ class GameState:
     releases: tuple[Release, ...] = ()
     expansion: str | None = None  # `EXPANSION`, `STANDALONE` or None: not an expansion
     parent: Parent | None = None
+    russian: IgdbRussian = NOT_ASKED
 
     def state(self) -> dict[str, Any]:
         state = {"steam_id": self.steam_id, "ps_concept": self.ps_concept, "platforms": list(self.platforms)}
@@ -254,12 +258,13 @@ class GameState:
         if self.expansion is not None:
             state["expansion"] = self.expansion
             state["parent"] = self.parent.state() if self.parent is not None else None
+        state.update(igdb_state(self.russian))
         return state
 
     @classmethod
     def from_state(cls, data: Mapping[str, Any]) -> "GameState":
         """Strict: what the tracker stored; garbage raises. An unknown `expansion`, or a `parent` without `id` or `name`
-        (or one without the other), raises ValueError."""
+        (or one without the other), or a `russian` that is no support raises ValueError."""
         expansion = expansion_of(data)
         raw_parent = data.get("parent")
         if (expansion is None) != (raw_parent is None):
@@ -271,6 +276,7 @@ class GameState:
             releases=tuple(Release.from_state(release) for release in data.get("releases") or ()),
             expansion=expansion,
             parent=Parent.from_state(raw_parent) if raw_parent is not None else None,
+            russian=igdb_from_state(data),
         )
 
 
@@ -366,7 +372,10 @@ def carry_over(previous: GameState, current: GameState) -> GameState:
     """A date the source stopped sending is not wiped out (spec 5.4): when an IGDB platform has no record of a type
     (`full`, `early`) in the new answer and had some in the previous snapshot, the previous records of that type move
     into the new one — unless the platform has records `cancelled` now. A «TBD» record is a record: it replaces the
-    previous ones. A platform gone from `platforms` comes back too when it still has records."""
+    previous ones. A platform gone from `platforms` comes back too when it still has records. Russian that IGDB stopped
+    sending stays as it was (spec 5.1 of stage 9.1b)."""
+    if not isinstance(current.russian, Support) and isinstance(previous.russian, Support):
+        current = replace(current, russian=previous.russian)
     carried: list[Release] = []
     for release in previous.releases:
         if release.type not in DATED_TYPES:
