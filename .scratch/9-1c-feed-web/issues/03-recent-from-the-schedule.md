@@ -1,6 +1,6 @@
 # 03: «Недавно» from the schedule — KI-29
 
-Status: in review
+Status: accepted
 Complexity: complex (a new read in three pollers, pure row-building with a matching against the event log, the template, the number of reads held)
 Blocked by: 01
 
