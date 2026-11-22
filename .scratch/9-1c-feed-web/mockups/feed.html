@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет 9.1c — Лента</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0 auto; max-width: 46rem; padding: 1rem; color: #1d1d1f; background: #fff; }
+  h1 { font-size: 1.4rem; } h2 { font-size: 1.15rem; margin: 1.5rem 0 0.25rem; } h3 { font-size: 0.95rem; color: #666; margin: 0.75rem 0 0.25rem; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid #eee; }
+  .poster { width: 32px; height: 46px; background: #ddd; border-radius: 4px; flex: none; }
+  .main { flex: 1; min-width: 12rem; } .name { font-weight: 600; } .small { color: #666; font-size: 0.9rem; display: block; }
+  .time { color: #444; white-space: nowrap; }
+  .note { background: #fff7d6; border: 1px dashed #c9a400; padding: 0.5rem 0.75rem; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+  .new { outline: 2px solid #2a7de1; outline-offset: 2px; border-radius: 4px; }
+  .was { text-decoration: line-through; color: #b00; }
+</style>
+</head>
+<body>
+<h1>Лента</h1>
+<p class="note">Черновой макет этапа 9.1c. Синей рамкой — что меняется. Остальное как сейчас.</p>
+
+<h2>Скоро</h2>
+<h3>Сегодня, 22 ноября</h3>
+<ul>
+  <li><span class="poster"></span><span class="main"><span class="name">Ван-Пис</span> Серия 1185</span><span class="time">в 17:30</span></li>
+  <li class="new"><span class="poster"></span><span class="main"><span class="name">Фрирен</span> Сезон 2, серия 7</span><span class="time"></span>
+    <span class="small" style="flex-basis:100%">Сейчас: <span class="was">в 14:42</span> (час проверки). Станет: без часа — серию нашла проверка, когда она вышла, неизвестно (KI-32).</span></li>
+</ul>
+<h3>Среда, 25 ноября</h3>
+<ul>
+  <li class="new"><span class="poster"></span><span class="main"><span class="name">Синяя тюрьма</span> Сезон 3, серия 4</span><span class="time">в 03:00</span>
+    <span class="small" style="flex-basis:100%">Серия ровно в 00:00 UTC. Сейчас: без часа. Станет: «в 03:00» (KI-28).</span></li>
+</ul>
+<h3>Пятница, 9 января</h3>
+<ul>
+  <li class="new"><span class="poster"></span><span class="main"><span class="name">Магическая битва</span> Сезон 4 — премьера</span><span class="time"></span>
+    <span class="small" style="flex-basis:100%">Shikimori знает только день — без часа, как сейчас. То же в карточке и в боте: там сейчас пишется «в 03:00», станет без часа.</span></li>
+</ul>
+
+<h2>Недавно</h2>
+<h3>Сегодня, 22 ноября</h3>
+<ul>
+  <li><span class="poster"></span><span class="main">📺 Вышла серия: «Пингвины Мадагаскара», сезон 2, серия 5<span class="small">в 10:15</span></span></li>
+</ul>
+<h3>Пятница, 20 ноября</h3>
+<ul>
+  <li class="new"><span class="poster"></span><span class="main">📺 «Одни из нас»: сезон 2, серия 3<span class="small">вышла до добавления в список</span></span></li>
+  <li class="new"><span class="poster"></span><span class="main">🎬 «Дюна: Часть третья» — цифровой релиз<span class="small">вышел до добавления в список</span></span></li>
+</ul>
+<p class="note">Новое в «Недавно» (KI-29): серии и фильмы последних 7 дней, которые вышли до добавления тайтла или пока он лежал в архиве. Сообщений о них не было и не будет — только строки в Ленте. Строка стоит в день выхода по расписанию источника, без часа, без кнопок, с пометкой серым.</p>
+</body>
+</html>

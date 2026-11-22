@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет 9.1c — Поиск из Входящих</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0 auto; max-width: 46rem; padding: 1rem; color: #1d1d1f; background: #fff; }
+  h1 { font-size: 1.4rem; }
+  .hint { color: #555; }
+  input { font: inherit; padding: 0.5rem; width: 100%; box-sizing: border-box; }
+  ul { list-style: none; margin: 1rem 0; padding: 0; }
+  li { display: flex; gap: 0.75rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; flex-wrap: wrap; }
+  .poster { width: 40px; height: 58px; background: #ddd; border-radius: 4px; flex: none; }
+  .main { flex: 1; min-width: 12rem; } .name { font-weight: 600; } .small { color: #666; font-size: 0.9rem; display: block; }
+  .btn { border: 1px solid #2a62c9; color: #2a62c9; background: #fff; border-radius: 6px; padding: 0.5rem 0.75rem; font: inherit; text-decoration: none; }
+  .btn.primary { background: #2a62c9; color: #fff; }
+  .note { background: #fff7d6; border: 1px dashed #c9a400; padding: 0.5rem 0.75rem; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+  .new { outline: 2px solid #2a7de1; outline-offset: 2px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>Поиск</h1>
+<p class="note">Черновой макет этапа 9.1c. Поиск открыт кнопкой «Найти» у записи «Входящих».</p>
+<p class="hint">Из «Входящих»: добавленный тайтл уберёт эту запись.</p>
+<input value="Hades II" aria-label="Название">
+<ul>
+  <li class="new"><span class="poster"></span><span class="main"><span class="name">🎮 Hades II</span><span class="small">2025 · Ролевая, Слэшер</span></span>
+    <a class="btn" href="#">В списке</a>
+    <button class="btn primary">Это оно — убрать запись</button></li>
+  <li><span class="poster"></span><span class="main"><span class="name">🎮 Hades</span><span class="small">2020 · Ролевая, Слэшер</span></span>
+    <button class="btn primary">Добавить</button></li>
+</ul>
+<p class="note">Сейчас у тайтла, который уже в списке, есть только «В списке», и запись «Входящих» отсюда не убрать (KI-65). Станет: рядом кнопка «Это оно — убрать запись» — нажатие удаляет запись и возвращает во «Входящие» с полосой «Запись убрана». Без «Найти» из «Входящих» (обычный Поиск) — как сейчас, только «В списке».</p>
+</body>
+</html>

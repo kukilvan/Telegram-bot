@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Макет 9.1c — Архив</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0; padding: 1rem; color: #1d1d1f; background: #f3f3f3; }
+  h1 { font-size: 1.3rem; } h2 { font-size: 1rem; margin: 1rem 0 0.5rem; }
+  .phones { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  .phone { width: 375px; max-width: 100%; background: #fff; border: 8px solid #222; border-radius: 24px; padding: 0.75rem; box-sizing: border-box; }
+  .filters { display: flex; gap: 0 0.25rem; overflow-x: auto; white-space: nowrap; border-bottom: 1px solid #eee; }
+  .filters.wrap { flex-wrap: wrap; white-space: normal; overflow: visible; }
+  .filters a { padding: 0.6rem 0.5rem; color: #2a62c9; text-decoration: none; flex: none; border-bottom: 2px solid transparent; }
+  .filters a.cur { color: #111; font-weight: 600; border-bottom-color: #2a62c9; }
+  .label { font-size: 0.8rem; color: #888; margin-top: 0.4rem; }
+  .shown { color: #666; margin: 0.5rem 0; font-size: 0.9rem; }
+  .note { background: #fff7d6; border: 1px dashed #c9a400; padding: 0.5rem 0.75rem; margin: 0.5rem 0 1rem; font-size: 0.9rem; max-width: 50rem; }
+</style>
+</head>
+<body>
+<h1>Архив на телефоне</h1>
+<p class="note">Черновой макет этапа 9.1c. Выбран жанр «Фэнтези» — последний в строке.</p>
+
+<div class="phones">
+  <div class="phone">
+    <h2>Сейчас</h2>
+    <div class="label">Жанр</div>
+    <nav class="filters"><a>Все жанры</a><a>Боевик</a><a>Боевик и Приключения</a><a>Детектив</a><a>Драма</a><a>Криминал</a><a>НФ и Фэнтези</a><a>Приключения</a><a>Триллер</a><a>Ужасы</a><a>Фантастика</a><a class="cur">Фэнтези</a></nav>
+    <p class="shown">Показано: 1 из 9 · жанр «Фэнтези»</p>
+    <p class="note">Выбранный жанр за правым краем, его не видно, пока не пролистать строку вбок. Сериал «НФ и Фэнтези» в «Фэнтези» не попадает.</p>
+  </div>
+
+  <div class="phone">
+    <h2>Вариант А: выбранный — первым</h2>
+    <div class="label">Жанр</div>
+    <nav class="filters"><a class="cur">Фэнтези</a><a>Все жанры</a><a>Боевик</a><a>Детектив</a><a>Драма</a><a>Криминал</a><a>Приключения</a><a>Триллер</a><a>Ужасы</a><a>Фантастика</a></nav>
+    <p class="shown">Показано: 2 из 9 · жанр «Фэнтези»</p>
+    <p class="note">Строка по-прежнему одна и листается вбок, но выбранный стоит в её начале (только на телефоне; на компьютере порядок прежний). Одна строка на ряд — экран короткий.</p>
+  </div>
+
+  <div class="phone">
+    <h2>Вариант Б: строка переносится</h2>
+    <div class="label">Жанр</div>
+    <nav class="filters wrap"><a>Все жанры</a><a>Боевик</a><a>Детектив</a><a>Драма</a><a>Криминал</a><a>Приключения</a><a>Триллер</a><a>Ужасы</a><a>Фантастика</a><a class="cur">Фэнтези</a></nav>
+    <p class="shown">Показано: 2 из 9 · жанр «Фэнтези»</p>
+    <p class="note">Видно всё сразу, порядок как на компьютере, но ряд жанров занимает 3–4 строки, и до тайтлов дальше листать вниз.</p>
+  </div>
+</div>
+
+<p class="note">Одно имя на жанр (KI-30), во всех трёх: «Экшен» (аниме) и «Боевик» — один жанр «Боевик»; составные жанры сериалов TMDb делятся: «Боевик и Приключения» — это «Боевик» и «Приключения», «НФ и Фэнтези» — «Фантастика» и «Фэнтези». Поэтому выше в «Фэнтези» 2 тайтла, а не 1. В карточке жанры остаются, как их назвал источник.</p>
+</body>
+</html>
