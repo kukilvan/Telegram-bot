@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-22 — Ticket 9.1c.01
+
+- The moment of an episode (spec 1.1–1.4, 9, 11 of 9.1c): `EpisodeTiming` (`exact` · `day` · `unknown`) in `models`, `Episode.timing` (default `exact`) in `seasons`; migration 0017 `episodes.timing` filled by the table of spec 11 (on the owner's base: anime 6 `exact`, 21 `day`, 1419 `unknown`; series 185 `day`). `storage` writes and reads it with `air_at`; the JSON export stays without it.
+- The adapters: TMDb `day`; Shikimori the next episode `exact`, the premiere stub and the first episode's start day `day`, the other episodes out `unknown` (all `unknown` with `releasedOn` alone); AniList `_scheduled`: an airing `exact`, else Shikimori's episode whole, an episode out Shikimori's moment when out, else the look `unknown` (`anime_events._out`: the place for the airings of ticket 02). `assemble` keeps a stored moment with its timing and a fresh `exact` one; `relayout` and `keeping_known` keep the timing.
+- One display rule `cards.episode_when` (and `format_episode_when`; `format_when` gone): the Feed (`feed_rows.day_of`), `progress_line`, the part line, `announced_line`, `_next_line`, `message_announced`, `message_moved`, `message_part_ended`. `SeasonProgress.next_episode`, `next_part_start` and `SeasonAnnouncement.premiere` carry an `Episode`; `_EpisodeRun.next_episode`, `first_episode`. `_only_the_hour_learned` reads the timing; `_moment_key` keeps its midnight rule. KI-77: `_aired_at` gives the moment for `exact` and `day`, `Flavor.moments` gone.
+- Tests: `tests/test_tracker_episode_timing.py`, `test_tracker_migration_0017.py`, KI-77 in `test_tracker_check_rules.py`, KI-48 in `test_shikimori_anime_source.py` (fixture `tests/fixtures/shikimori/jjk_s4_and_genres_2026-11-22.json`), the anime midnight test of `test_tracker_feed.py` split by timing. 4901 passed, 3 skipped, the two known Windows failures. `series_events.py` (547) and the Shikimori adapter (474) stay over 400 lines (KI-56, KI-63, 9.1d).
+- KI-28, 32, 77 fixed, KI-48 won't fix. Accepted by the owner («ОК»).
+
 ## 2026-11-22 — Spec 9.1c
 
 - `.scratch/9-1c-feed-web/spec.md` with the live answers in `answers/` (AniList: the schedule request with a second root `recent` — the airings of the last 8 days — answers `200`; Shikimori: season 4 of «Магическая битва» announced without data, the premiere precision of announced parts, the Russian genre list; TMDb: the Russian genre lists of movies and series; Telegram: a button to an `xn--` address taken, one test message sent to the owner with their yes). The owner's base read once, read-only, to fit the migration rule.
