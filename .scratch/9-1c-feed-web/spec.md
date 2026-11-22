@@ -1,6 +1,6 @@
 # Spec 9.1c: Лента, web and login — the known issues
 
-Status: in review
+Status: accepted
 
 Built from `description.md` (accepted 2026-11-22). Terms come from `CONTEXT.md`. ADRs it leans on: 0004 (no own JavaScript: KI-72 and KI-74 stay within CSS), 0005 (SQLite, migrations: one migration, section 11), 0007 (one process: the sign-ins and the address are read once at start), 0014 (sign-ins in `data/web_login.json`: one more field, the same file and version — the ADR stands, no new one).
 
