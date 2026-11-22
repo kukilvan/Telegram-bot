@@ -5,7 +5,8 @@ Parsing is pure (responses in, data out) and is tested on saved real responses. 
 
 `/tv/{id}` lists the seasons (number, name, episode count) but not their episodes, so the seasons are asked
 for in batches: one request returns the series with up to 20 seasons appended (`season/{n}` keys).
-TMDb gives an episode's air day, not its hour: the episode counts as out from the start of that day (UTC).
+TMDb gives an episode's air day, not its hour (timing `day`): the episode counts as out from the start of that day
+(UTC).
 Season 0 holds specials and is not a season.
 """
 
@@ -13,7 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, time
 from typing import Any
 
-from app.tracker.models import TitleKind
+from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.dates import parse_response_date, response_year
 from app.tracker.sources.tmdb_movies import Suggestion
@@ -64,7 +65,11 @@ def _parse_season(summary: dict[str, Any], detail: dict[str, Any] | None) -> Sea
     for raw in (detail or {}).get("episodes") or []:
         aired = parse_response_date(raw.get("air_date"))
         episodes.append(
-            Episode(number=int(raw["episode_number"]), air_at=datetime.combine(aired, time.min) if aired else None)
+            Episode(
+                number=int(raw["episode_number"]),
+                air_at=datetime.combine(aired, time.min) if aired else None,
+                timing=EpisodeTiming.DAY,  # TMDb gives the day of an episode, never the hour
+            )
         )
     number = int(summary["season_number"])
     return Season(

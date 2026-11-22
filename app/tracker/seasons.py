@@ -13,6 +13,10 @@ without such a gap is one part and nothing says «part» about it.
 
 An anime season is the exception: its parts are separate entries of the source (`PartCut`), so they are given,
 not worked out, and the threshold does not apply to it (a season of one entry is one part, whatever its dates).
+
+Every episode keeps where its moment comes from (`EpisodeTiming`: the exact moment, the day only, or unknown), so the
+season hands out the next episode and the first one, not only their moments: what may be shown of a moment depends on
+it (`cards.episode_when`).
 """
 
 from collections.abc import Collection, Iterable, Mapping
@@ -20,6 +24,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from app.tracker import scores
+from app.tracker.models import EpisodeTiming
 
 ANNOUNCED = "announced"  # no episode is out yet
 AIRING = "airing"  # some episodes are out and more are to come (or the total is unknown)
@@ -32,6 +37,7 @@ DEFAULT_PART_GAP = timedelta(weeks=6)
 class Episode:
     number: int
     air_at: datetime | None  # None: the source has no date yet
+    timing: EpisodeTiming = EpisodeTiming.EXACT  # where the moment comes from; never read when there is no moment
 
 
 class _EpisodeRun:
@@ -50,13 +56,23 @@ class _EpisodeRun:
             return None
         return max(self.expected, len(self.episodes))
 
+    def next_episode(self, now: datetime) -> Episode | None:
+        """The dated episode that comes next after `now`; None: none is dated."""
+        coming = [e for e in self.episodes if e.air_at is not None and e.air_at > now]
+        return min(coming, key=lambda e: (e.air_at, e.number)) if coming else None
+
+    def first_episode(self) -> Episode | None:
+        """The earliest dated episode; None: none is dated."""
+        dated = [e for e in self.episodes if e.air_at is not None]
+        return min(dated, key=lambda e: (e.air_at, e.number)) if dated else None
+
     def next_air_at(self, now: datetime) -> datetime | None:
-        coming = [e.air_at for e in self.episodes if e.air_at is not None and e.air_at > now]
-        return min(coming) if coming else None
+        episode = self.next_episode(now)
+        return episode.air_at if episode else None
 
     def first_air_at(self) -> datetime | None:
-        dated = [e.air_at for e in self.episodes if e.air_at is not None]
-        return min(dated) if dated else None
+        episode = self.first_episode()
+        return episode.air_at if episode else None
 
     def status(self, now: datetime) -> str:
         released = self.released(now)
@@ -154,10 +170,10 @@ class SeasonProgress:
     released: int
     total: int | None  # None is shown as «?»
     status: str
-    next_air_at: datetime | None
+    next_episode: Episode | None  # the episode that comes next, with its moment; None: none is dated
     part: int | None = None  # None: the season has no parts
     next_part: int | None = None  # the part after this one, once this one is complete
-    next_part_at: datetime | None = None
+    next_part_start: Episode | None = None  # the first dated episode of that part
 
 
 @dataclass(frozen=True)
@@ -165,7 +181,7 @@ class SeasonAnnouncement:
     """A season with no released episode: «сезон 4 анонсирован»."""
 
     number: int
-    first_air_at: datetime | None  # None: no date yet
+    premiere: Episode | None  # the first dated episode; None: no date yet
 
 
 @dataclass(frozen=True)
@@ -184,10 +200,10 @@ def _progress(season: Season, gap: timedelta, now: datetime) -> SeasonProgress:
         current.released(now),
         current.total(),
         current.status(now),
-        current.next_air_at(now),
+        current.next_episode(now),
         part=current.number if current.split else None,
         next_part=following.number if following else None,
-        next_part_at=following.first_air_at() if following else None,
+        next_part_start=following.first_episode() if following else None,
     )
 
 
@@ -200,7 +216,7 @@ def summarize(
     after = [s for s in ordered if s.released(now) == 0 and (current is None or s.number > current.number)]
     return SeasonsView(
         current=_progress(current, gap, now) if current else None,
-        announced=SeasonAnnouncement(after[0].number, after[0].first_air_at()) if after else None,
+        announced=SeasonAnnouncement(after[0].number, after[0].first_episode()) if after else None,
         watched=tuple(sorted(n for n in watched if n >= 1)),
     )
 
@@ -245,7 +261,7 @@ def rows(
                 watched=mark.watched,
                 can_mark=out,
                 progress=_progress(season, gap, now) if out else None,
-                announcement=None if out else SeasonAnnouncement(season.number, season.first_air_at()),
+                announcement=None if out else SeasonAnnouncement(season.number, season.first_episode()),
                 score=scores.season_score(mark.watched, mark.score),
             )
         )

@@ -17,7 +17,7 @@ from app.tracker import (
     anime_events, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, russian_events,
     sequel_events, series_events,
 )
-from app.tracker.cards import format_when
+from app.tracker.cards import format_weekday_date
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import UnknownCheck, UnknownSample
@@ -212,7 +212,8 @@ class TestSamples:
         tz = (await self.settings.delivery_rules()).tz
 
         def when(value: datetime) -> str:
-            return format_when(value.astimezone(timezone.utc).replace(tzinfo=None), tz)
+            local = value.astimezone(tz)
+            return f"{format_weekday_date(local.date())} в {local:%H:%M}"
 
         result = await self.send_test_event(series_events.SAMPLE_EPISODES_ID, at=moment)
         if result.delivered_at_once:

@@ -12,6 +12,8 @@ import pytest
 
 from anime_fakes import FakeAniList, FakeShikimori, load
 
+from app.tracker.cards import season_lines
+from app.tracker.seasons import summarize
 from app.tracker.sources.shikimori_anime import (
     ShikimoriAnimeSource,
     build_snapshot,
@@ -367,3 +369,16 @@ def test_search_failure_is_an_error_not_an_empty_list():
 
 def load_search():
     return load("search_jujutsu.json")
+
+
+def test_the_announced_season_4_without_data_reads_date_not_announced_known_issue_48():
+    """KI-48, won't fix: Shikimori 63824 as answered on 2026-11-22 (`anons`, no day) over the saved franchise; AniList
+    had no date either. The card says all that is known, and fills in by itself once a source has data."""
+    shikimori = FakeShikimori("jujutsu_kaisen.json")
+    for answered in load("jjk_s4_and_genres_2026-11-22.json"):  # the answer carries no relations: the chain stays
+        shikimori.by_id[answered["id"]].update(answered)
+    snapshot = run(ShikimoriAnimeSource(shikimori, None).snapshot(JJK))
+
+    view = summarize(snapshot.seasons, (), NOW)
+
+    assert season_lines(view)[1] == "Сезон 4 анонсирован, дата не объявлена"

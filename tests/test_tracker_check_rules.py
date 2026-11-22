@@ -14,7 +14,7 @@ from app.tracker.checks import still_checked
 from app.tracker.context import CoreContext
 from app.tracker.db import create_session_factory
 from app.tracker.games import GameDate, GameState, Release
-from app.tracker.models import Event, ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
+from app.tracker.models import EpisodeTiming, Event, ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.movie_events import DetectedEvent, MovieDates, day_start
 from app.tracker.platforms import WORLD, Platform
 from app.tracker.pollers.base import DueTitle, Poller
@@ -163,13 +163,23 @@ def test_a_season_date_announced_has_no_moment():
     assert event.type == series_events.DATE_ANNOUNCED and event.happened_at is None
 
 
-def test_the_episode_events_of_an_anime_have_no_moment():
+def anime_events_of(timing):
     first = datetime(2026, 11, 2, 15, 30)
-    old = series_events.ShowState.of([Season(1, "Сезон 1", 3, weekly(first, 3))], {})
-
-    events = series_events.detect_events(
+    episodes = tuple(Episode(e.number, e.air_at, timing) for e in weekly(first, 3))
+    old = series_events.ShowState.of([Season(1, "Сезон 1", 3, episodes)], {})
+    return series_events.detect_events(
         1, "Аниме", old, old, first - timedelta(days=1), first + timedelta(weeks=3), flavor=anime_events.flavor(None)
     )
+
+
+def test_the_episode_events_of_an_anime_carry_an_exact_moment_known_issue_77():
+    events = anime_events_of(EpisodeTiming.EXACT)
+
+    assert [e.happened_at for e in events] == [datetime(2026, 11, 2, 15, 30) + timedelta(weeks=n) for n in range(3)]
+
+
+def test_the_episode_events_of_an_anime_found_by_a_check_have_no_moment():
+    events = anime_events_of(EpisodeTiming.UNKNOWN)
 
     assert events and all(e.happened_at is None for e in events)
 
@@ -254,3 +264,44 @@ def test_the_first_check_after_the_return_queues_only_what_came_out_after_it(bas
 
     assert poller.record_all(due, events) == len(queued)
     assert queue.recorded == queued
+
+
+# --- KI-77: the episode events of an anime after «Вернуть в список» --------------------------------------------------
+
+
+def first_check_after_the_return(old_episodes, new_episodes, observed_at, now):
+    """The anime events of the first check after the return at RESTORED, through the baseline rule: what is queued."""
+    old = series_events.ShowState.of([Season(1, "Сезон 1", 12, old_episodes)], {})
+    new = series_events.ShowState.of([Season(1, "Сезон 1", 12, new_episodes)], {}).keeping_known(old)
+    events = series_events.detect_events(1, "Аниме", old, new, observed_at, now, flavor=anime_events.flavor(None))
+    queue = StubQueue()
+    poller = Poller(TitleKind.ANIME, None, None, None, queue)
+    poller.record_all(DueTitle(1, TitleKind.ANIME, "Аниме", "10", "shikimori", False, True, RESTORED), events)
+    return queue.recorded
+
+
+OUT_BEFORE = tuple(Episode(n, datetime(2026, 10, 1), EpisodeTiming.UNKNOWN) for n in range(1, 5))
+
+
+def test_the_first_check_after_the_return_reports_an_anime_episode_named_after_it_known_issue_77():
+    aired = RESTORED + timedelta(minutes=1)
+    old = OUT_BEFORE + (Episode(5, aired, EpisodeTiming.EXACT),)  # stored while in the archive: AniList named it
+
+    recorded = first_check_after_the_return(old, old, RESTORED - timedelta(days=1), RESTORED + timedelta(minutes=30))
+
+    assert recorded == ["anime:1:s1:e5:out"]
+
+
+def test_the_first_check_after_the_return_keeps_silent_about_an_anime_episode_with_no_moment():
+    found = RESTORED + timedelta(minutes=30)
+    new = OUT_BEFORE + (Episode(5, found, EpisodeTiming.UNKNOWN),)  # found by this check, no schedule
+
+    assert first_check_after_the_return(OUT_BEFORE, new, RESTORED - timedelta(days=1), found) == []
+
+
+def test_the_first_check_after_the_return_keeps_silent_about_a_premiere_known_by_the_day_of_the_return():
+    premiere = (Episode(1, datetime(2026, 10, 25), EpisodeTiming.DAY),)  # 00:00 UTC of the day of the return
+
+    recorded = first_check_after_the_return((), premiere, RESTORED - timedelta(days=1), RESTORED + timedelta(minutes=5))
+
+    assert recorded == []

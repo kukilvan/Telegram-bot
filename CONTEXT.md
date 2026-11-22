@@ -39,9 +39,9 @@ _Avoid_: cour, Part как отдельный сезон
 In code: `part`.
 
 **Серия** (episode):
-The number of an episode inside a season, as in the source. The bot does not track watching single episodes, only their release.
+The number of an episode inside a season, as in the source. The bot does not track watching single episodes, only their release. Its moment is known in one of three ways: «точное время» (the source named the moment: the day and the hour on the owner's clock), «только день» (the source knows the day: the date as the source gives it, no hour) or «неизвестно» (no moment from the source: the moment of the check that found it, or the start day of its entry; the day, no hour, and no news after «Вернуть в список»).
 _Avoid_: эпизод
-In code: `episode`.
+In code: `episode`; where its moment comes from — `EpisodeTiming` (`episodes.timing`).
 
 ## Statuses and archive
 

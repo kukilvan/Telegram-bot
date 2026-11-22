@@ -10,8 +10,10 @@ instead of a second «вышла серия» message about the same fact.
 
 TMDb gives the day of an episode, not the hour, so an episode counts as out from 00:00 UTC of its day.
 
-An anime goes through the same code with its own `Flavor`: its icon, its key prefix and the owner's time zone, so
-that its messages give the hour of an episode (TMDb knows only the day, and a series keeps the plain form).
+An anime goes through the same code with its own `Flavor`: its icon, its key prefix and the owner's time zone. A moment
+reads by the one rule of `cards.episode_when`: the hour only for an exact moment with a zone, the day of a day-only one
+as stored (a series keeps the plain form). An event about an episode carries its moment (`happened_at`) unless the
+moment is unknown, the moment of the check that found it (KI-77).
 
 Every dedup key holds the season (and the episode where there is one): the end of season 2 is not the end
 of season 1, even when both have the same number of episodes.
@@ -26,7 +28,7 @@ from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, tzinfo
 from typing import Any
 
-from app.tracker.cards import NOT_ANNOUNCED, format_date, format_day_month, format_short_date, format_when, local_moment
+from app.tracker.cards import NOT_ANNOUNCED, episode_when, format_date, format_day_month, format_episode_when, format_short_date
 from app.tracker.dedup import moved_key
 from app.tracker.movie_events import (
     INTERVAL_NEAR,
@@ -38,7 +40,7 @@ from app.tracker.movie_events import (
     DetectedEvent,
 )
 from app.tracker.kinds import KINDS
-from app.tracker.models import TitleKind
+from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.seasons import DEFAULT_PART_GAP, RELEASED as SEASON_RELEASED, Episode, Part, Season
 
 DATE_ANNOUNCED = "series_date_announced"
@@ -62,12 +64,9 @@ class Flavor:
     icon: str = KINDS[TitleKind.SERIES].icon
     key_prefix: str = TitleKind.SERIES.value  # the keys already stored start with the kind's value
     tz: tzinfo | None = None  # None: the source knows only the day, so no hour is shown
-    # whether an episode's moment is when it came out (TMDb's day); an anime episode found by a check without a
-    # schedule has the moment it was found, so its events carry no `happened_at` (KI-77)
-    moments: bool = True
 
-    def day(self, moment: datetime) -> date:
-        return local_moment(moment, self.tz).date()
+    def day(self, episode: Episode) -> date:
+        return episode_when(episode, self.tz)[0]
 
 
 SERIES = Flavor()
@@ -111,8 +110,8 @@ def _keep_season(new: Season, old: Season) -> Season:
     expected = new.expected or old.expected
     if not new.episodes:
         return replace(new, expected=expected, episodes=old.episodes, cuts=cuts)
-    known = {e.number: e.air_at for e in old.episodes}
-    episodes = tuple(Episode(e.number, e.air_at or known.get(e.number)) for e in new.episodes)
+    known = {e.number: e for e in old.episodes}  # a stored episode is taken whole: its moment and where it came from
+    episodes = tuple(known[e.number] if e.air_at is None and e.number in known else e for e in new.episodes)
     return replace(new, expected=expected, episodes=episodes, cuts=cuts)
 
 
@@ -126,11 +125,11 @@ def _total_text(season: Season | Part) -> str:
 
 
 def _next_line(season: Season | Part, now: datetime, flavor: Flavor = SERIES) -> str:
-    coming = season.next_air_at(now)
-    return f"следующая: {format_when(coming, flavor.tz) if coming else NOT_ANNOUNCED}"
+    coming = season.next_episode(now)
+    return f"следующая: {format_episode_when(coming, flavor.tz) if coming else NOT_ANNOUNCED}"
 
 
-def message_announced(name: str, season: int, premiere: datetime, part: int | None = None, flavor: Flavor = SERIES) -> str:
+def message_announced(name: str, season: int, premiere: Episode, part: int | None = None, flavor: Flavor = SERIES) -> str:
     what = f"сезона {season}" if part is None else f"части {part} сезона {season}"
     return f"{flavor.icon} {name} — объявлена дата {what}\nПремьера: {format_date(flavor.day(premiere))}"
 
@@ -168,7 +167,7 @@ def message_part_ended(name: str, part: Part, episode: int, following: Part | No
     head = f"{flavor.icon} {name} — закончилась часть {part.number} сезона {part.season}\n"
     if following is None:
         return f"{head}Вышла последняя серия — {episode}"
-    start = following.first_air_at()
+    start = following.first_episode()
     when = f"с {format_day_month(flavor.day(start))}" if start else NOT_ANNOUNCED
     return f"{head}Вышла последняя серия части — {episode}; часть {following.number} — {when}"
 
@@ -177,8 +176,8 @@ def message_moved(
     name: str,
     season: int,
     episode: int,
-    old: datetime,
-    new: datetime,
+    old: Episode,
+    new: Episode,
     premiere: bool,
     part: int | None = None,
     flavor: Flavor = SERIES,
@@ -190,7 +189,7 @@ def message_moved(
         return f"{flavor.icon} {name} — премьера сезона {season} перенесена\n{days}"
     return (
         f"{flavor.icon} {name} — дата серии {episode} сдвинулась\n"
-        f"Сезон {season} · {format_when(old, flavor.tz)} → {format_when(new, flavor.tz)}"
+        f"Сезон {season} · {format_episode_when(old, flavor.tz)} → {format_episode_when(new, flavor.tz)}"
     )
 
 
@@ -269,7 +268,7 @@ def _season_events(
     }
 
     if not came and new.released(now) == 0:
-        premiere = new.first_air_at()
+        premiere = new.first_episode()
         if premiere is not None:
             old_premiere = old.first_air_at() if old else None
             if old_premiere is None:
@@ -278,14 +277,14 @@ def _season_events(
                         DATE_ANNOUNCED,
                         f"{season_key}:date_announced",
                         message_announced(name, number, premiere, None, flavor),
-                        {"season": number, "date": premiere.date().isoformat()},
+                        {"season": number, "date": premiere.air_at.date().isoformat()},
                     )
                 )
 
     if old is not None and old.released(observed_at) > 0:
         # the season was already running at the previous look: the date of a later part turning up now is news
         for part in parts[1:]:
-            premiere = part.first_air_at()
+            premiere = part.first_episode()
             if part.number - 1 in unseen_ends:
                 continue  # the end of the part before already tells when this one starts
             if part.released(now) == 0 and premiere is not None and _old_first_air(old, part.numbers) is None:
@@ -294,7 +293,7 @@ def _season_events(
                         DATE_ANNOUNCED,
                         f"{season_key}:p{part.number}:date_announced",
                         message_announced(name, number, premiere, part.number, flavor),
-                        {"season": number, "part": part.number, "date": premiere.date().isoformat()},
+                        {"season": number, "part": part.number, "date": premiere.air_at.date().isoformat()},
                     )
                 )
 
@@ -303,7 +302,7 @@ def _season_events(
         episode, old_at, new_at = moved
         part = next(p for p in parts if episode in p.numbers)
         premiere = episode == min(part.numbers) and part.released(now) == 0
-        earlier_key = f"{season_key}:e{episode}:moved:{_moment_key(new_at)}"
+        earlier_key = f"{season_key}:e{episode}:moved:{_moment_key(new_at.air_at)}"
         events.append(
             DetectedEvent(
                 DATE_MOVED,
@@ -311,7 +310,12 @@ def _season_events(
                 message_moved(
                     name, number, episode, old_at, new_at, premiere, part.number if part.split else None, flavor
                 ),
-                {"season": number, "episode": episode, "old": old_at.date().isoformat(), "new": new_at.date().isoformat()},
+                {
+                    "season": number,
+                    "episode": episode,
+                    "old": old_at.air_at.date().isoformat(),
+                    "new": new_at.air_at.date().isoformat(),
+                },
                 earlier_key,
             )
         )
@@ -328,7 +332,7 @@ def _season_events(
                     f"{season_key}:p{part.number}:ended",
                     message_part_ended(name, part, last, parts[part.number], flavor),
                     {"season": number, "episode": last, "part": part.number},
-                    happened_at=_aired_at(new, last, flavor),
+                    happened_at=_aired_at(new, last),
                 )
             )
     return events
@@ -363,7 +367,7 @@ def _part_events(
         opens = episode == first_number and nothing_out_before
         closes = latest and part_over and not was_over
         next_line = _next_line(part, now, flavor) if latest and not closes else None
-        happened_at = _aired_at(season, episode, flavor)
+        happened_at = _aired_at(season, episode)
         if opens:
             text = (
                 message_part_started(name, part, episode, next_line, flavor)
@@ -390,10 +394,13 @@ def _part_events(
     return events
 
 
-def _aired_at(season: Season, number: int, flavor: Flavor) -> datetime | None:
-    """When the episode came out, for an event about it; None when the flavor's moments are not of coming out."""
-    episode = _episode(season, number) if flavor.moments else None
-    return episode.air_at if episode is not None else None
+def _aired_at(season: Season, number: int) -> datetime | None:
+    """When the episode came out, for an event about it: its exact moment or 00:00 UTC of its day; None when the moment
+    is unknown (the moment of the check that found it, KI-77)."""
+    episode = _episode(season, number)
+    if episode is None or episode.timing == EpisodeTiming.UNKNOWN:
+        return None
+    return episode.air_at
 
 
 def _moment_key(moment: datetime) -> str:
@@ -404,14 +411,15 @@ def _moment_key(moment: datetime) -> str:
     return moment.strftime("%Y-%m-%dT%H%M")
 
 
-def _only_the_hour_learned(before: datetime, after: datetime) -> bool:
-    """A day-only date (midnight) that a finer source has now given an hour on the same day: nothing was moved."""
-    return before.time() == datetime.min.time() and before.date() == after.date()
+def _only_the_hour_learned(before: Episode, after: Episode) -> bool:
+    """A day-only date that a finer source has now given an hour on the same day: nothing was moved. (An exact moment
+    at 00:00 UTC is a moment: a change of it is a move.)"""
+    return before.timing == EpisodeTiming.DAY and before.air_at.date() == after.air_at.date()
 
 
 def _moved(
     old: Season | None, new: Season, observed_at: datetime, now: datetime
-) -> tuple[int, datetime, datetime] | None:
+) -> tuple[int, Episode, Episode] | None:
     """The next dated episode of the previous look that is still ahead, when its date changed.
 
     An episode that has come out meanwhile is skipped: it is reported as out, and the move of the one after
@@ -422,9 +430,9 @@ def _moved(
         current = _episode(new, before.number)
         if current is None or current.air_at is None or current.air_at <= now:
             continue
-        if current.air_at == before.air_at or _only_the_hour_learned(before.air_at, current.air_at):
+        if current.air_at == before.air_at or _only_the_hour_learned(before, current):
             return None
-        return before.number, before.air_at, current.air_at
+        return before.number, before, current
     return None
 
 
@@ -478,6 +486,11 @@ def check_interval(show: ShowState, now: datetime) -> timedelta:
 
 
 _SAMPLE = "Укрытие"
+
+
+def _day_only(day: datetime) -> Episode:
+    return Episode(1, day, EpisodeTiming.DAY)
+
 _SAMPLE_SEASON = Season(2, "Сезон 2", 10)
 _SAMPLE_DATE = datetime(2027, 7, 8)
 # season 3 in two parts of eight episodes: part 1 in autumn, part 2 after the break
@@ -491,19 +504,19 @@ _SAMPLE_PARTS = Season(
 
 # (id, menu label, message text) of the sample events in «Тестовое событие»; the core turns them into menu entries
 TEST_SAMPLES: list[tuple[str, str, str]] = [
-    ("series-announced", "Сериал: объявлена дата сезона", message_announced(_SAMPLE, 4, _SAMPLE_DATE)),
+    ("series-announced", "Сериал: объявлена дата сезона", message_announced(_SAMPLE, 4, _day_only(_SAMPLE_DATE))),
     ("series-started", "Сериал: сезон начался", message_started(_SAMPLE, _SAMPLE_SEASON, 1, "следующая: пн, 12 окт")),
     ("series-episode", "Сериал: вышла серия", message_episode(_SAMPLE, _SAMPLE_SEASON, 6, "следующая: пн, 12 окт")),
     ("series-ended", "Сериал: сезон закончился", message_ended(_SAMPLE, _SAMPLE_SEASON, 10)),
     (
         "series-moved",
         "Сериал: дата серии сдвинулась",
-        message_moved(_SAMPLE, 2, 7, datetime(2026, 10, 12), datetime(2026, 10, 19), premiere=False),
+        message_moved(_SAMPLE, 2, 7, _day_only(datetime(2026, 10, 12)), _day_only(datetime(2026, 10, 19)), premiere=False),
     ),
     (
         "series-part-announced",
         "Сериал: объявлена дата части",
-        message_announced(_SAMPLE, 3, datetime(2027, 3, 29), part=2),
+        message_announced(_SAMPLE, 3, _day_only(datetime(2027, 3, 29)), part=2),
     ),
     (
         "series-part-started",

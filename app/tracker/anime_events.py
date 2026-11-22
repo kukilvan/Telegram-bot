@@ -8,18 +8,19 @@ episodes come from. Shikimori says which seasons and parts exist and, roughly, h
 exact schedule of one entry. `assemble` puts them together:
 
 - a part AniList has a schedule for takes its episodes from AniList: those already out are known by their number, the
-  next one by its moment;
+  next one by its moment (exact);
 - a part AniList is expected to know but says nothing about this time (the service is down, the answer is empty or has
   a gap) keeps what was stored; Shikimori adds only the episodes that were not there. A source that fails to answer is
   never taken for a source that says «nothing is out», and the two cannot make the date flip back and forth;
 - every other part (not known to AniList, or one AniList says has nothing out and no date) follows Shikimori, which is
   how a new season or part is noticed even when AniList has no data for it yet.
 
-A date once recorded for an episode that is out stays as it was. An episode that is out now and was not stored before
-gets the moment of this look: it came out after the previous look as far as anyone can tell, and that is what makes it
-news (the first episode of a new season included). At adding there is nothing stored, and what is out is history. So is
-an entry the title never had when its day by Shikimori is not later than the previous look: the chain grew behind the
-owner's back, nothing came out.
+Every episode keeps where its moment comes from (`EpisodeTiming`). A date once recorded for an episode that is out stays
+as it was, with its timing. An episode that is out now and was not stored before keeps the fresh moment when a source
+named it exactly; otherwise it gets the moment of this look, as unknown: it came out after the previous look as far as
+anyone can tell, and that is what makes it news (the first episode of a new season included), though not when. At
+adding there is nothing stored, and what is out is history. So is an entry the title never had when its day by
+Shikimori is not later than the previous look: the chain grew behind the owner's back, nothing came out.
 
 A season is known by the entry it starts with, not by its number: the source numbers the entries of the chain in order,
 and when it adds, removes or regroups an entry the numbers move. `relayout` puts what is stored behind its entries in
@@ -36,7 +37,7 @@ from typing import Any
 from app.tracker import series_events
 from app.tracker.cards import NOT_ANNOUNCED, format_date
 from app.tracker.kinds import KINDS
-from app.tracker.models import TitleKind
+from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.movie_events import DetectedEvent, day_start
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.series_events import Flavor
@@ -51,7 +52,7 @@ MOVIE_RELEASED = "anime_movie_released"
 
 
 def flavor(tz: tzinfo | None) -> Flavor:
-    return Flavor(icon=_ICON, key_prefix=KEY_PREFIX, tz=tz, moments=False)
+    return Flavor(icon=_ICON, key_prefix=KEY_PREFIX, tz=tz)
 
 
 # --- putting the two sources together --------------------------------------------------------------
@@ -60,18 +61,22 @@ def flavor(tz: tzinfo | None) -> Flavor:
 def _scheduled(part: SeasonPart, schedule: PartSchedule, shikimori: Mapping[int, Episode], now: datetime) -> list[Episode]:
     """The episodes of a part as AniList's schedule tells them, in the season's numbering."""
     first = part.first_episode
-    episodes = []
-    for index in range(schedule.released):
-        number = first + index
-        known = shikimori.get(number)
-        episodes.append(Episode(number, known.air_at if known and known.air_at and known.air_at <= now else now))
+    episodes = [_out(first + index, shikimori.get(first + index), now) for index in range(schedule.released)]
     if schedule.next_episode:
         number = first + schedule.next_episode - 1
-        at = schedule.next_at
-        if at is None and number in shikimori:
-            at = shikimori[number].air_at  # AniList knows the number, not the moment
-        episodes.append(Episode(number, at))
+        if schedule.next_at is not None:
+            episodes.append(Episode(number, schedule.next_at, EpisodeTiming.EXACT))
+        else:  # AniList knows the number, not the moment: Shikimori's, with its timing
+            episodes.append(shikimori.get(number, Episode(number, None)))
     return episodes
+
+
+def _out(number: int, shikimori: Episode | None, now: datetime) -> Episode:
+    """An episode AniList counts as out, its moment taken in this order: Shikimori's when that one is out (with its
+    timing), else the moment of this look (unknown)."""
+    if shikimori is not None and shikimori.air_at is not None and shikimori.air_at <= now:
+        return shikimori
+    return Episode(number, now, EpisodeTiming.UNKNOWN)
 
 
 def _usable(part: SeasonPart, schedule: PartSchedule) -> bool:
@@ -158,7 +163,7 @@ def relayout(stored: Sequence[Season], parts: Sequence[SeasonPart]) -> Relayout:
             for episode in season.episodes:
                 if _inside(episode.number, cut.first_episode, end):
                     moved = part.first_episode + episode.number - cut.first_episode
-                    target[moved] = Episode(moved, episode.air_at)
+                    target[moved] = replace(episode, number=moved)
 
     result: dict[int, Season] = {}
     for number in sorted(held):
@@ -245,7 +250,8 @@ def assemble(
                         _inside(number, low, high) for low, high in history
                     ):
                         continue  # out before the previous look, in an entry the title never had: its own day stays
-                    final[number] = Episode(number, now)  # found out now
+                    if episode.timing != EpisodeTiming.EXACT:  # found out now: a moment a source named stays
+                        final[number] = Episode(number, now, EpisodeTiming.UNKNOWN)
             for number, stored in old.items():
                 if number not in final and stored.air_at is not None and stored.air_at <= now:
                     final[number] = stored  # a source that forgets an episode has not un-aired it
@@ -315,7 +321,7 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
     (
         "anime-announced",
         "Аниме: объявлена дата сезона",
-        series_events.message_announced(_SAMPLE, 4, datetime(2027, 1, 10, 15, 0), flavor=_FLAVOR),
+        series_events.message_announced(_SAMPLE, 4, Episode(1, datetime(2027, 1, 10, 15, 0)), flavor=_FLAVOR),
     ),
     (
         "anime-started",
@@ -336,7 +342,13 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
         "anime-moved",
         "Аниме: дата серии сдвинулась",
         series_events.message_moved(
-            _SAMPLE, 4, 7, datetime(2026, 10, 12, 15, 0), datetime(2026, 10, 19, 15, 0), premiere=False, flavor=_FLAVOR
+            _SAMPLE,
+            4,
+            7,
+            Episode(7, datetime(2026, 10, 12, 15, 0)),
+            Episode(7, datetime(2026, 10, 19, 15, 0)),
+            premiere=False,
+            flavor=_FLAVOR,
         ),
     ),
     (
@@ -347,7 +359,7 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
     (
         "anime-part-announced",
         "Аниме: объявлена дата части",
-        series_events.message_announced(_SAMPLE, 3, datetime(2027, 4, 5, 6, 0), part=2, flavor=_FLAVOR),
+        series_events.message_announced(_SAMPLE, 3, Episode(13, datetime(2027, 4, 5, 6, 0)), part=2, flavor=_FLAVOR),
     ),
     (
         "anime-part-started",

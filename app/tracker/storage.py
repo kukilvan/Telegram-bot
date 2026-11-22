@@ -1,5 +1,7 @@
 """What the parts of the core read and write together in one session: a title's seasons and episodes, its stored
-snapshots, and its status that follows from them. Helpers on a session someone else opened; the caller commits."""
+snapshots, and its status that follows from them. Helpers on a session someone else opened; the caller commits.
+
+An episode is written and read with its moment and where that moment comes from (`timing`), always together."""
 
 import logging
 from collections.abc import Iterable, Mapping, Sequence
@@ -25,7 +27,9 @@ def store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]
         )
         session.add(record)
         session.flush()
-        session.add_all(EpisodeRecord(season_id=record.id, number=e.number, air_at=e.air_at) for e in season.episodes)
+        session.add_all(
+            EpisodeRecord(season_id=record.id, number=e.number, air_at=e.air_at, timing=e.timing) for e in season.episodes
+        )
         records[season.number] = record
     return records
 
@@ -36,7 +40,9 @@ def _season(record: SeasonRecord, episodes: Iterable[EpisodeRecord], parts: Sequ
         number=record.number,
         name=record.name,
         expected=record.episode_count,
-        episodes=tuple(sorted((season_logic.Episode(e.number, e.air_at) for e in episodes), key=lambda e: e.number)),
+        episodes=tuple(
+            sorted((season_logic.Episode(e.number, e.air_at, e.timing) for e in episodes), key=lambda e: e.number)
+        ),
         cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count, p.shikimori_id) for p in parts),
         source_id=parts[0].shikimori_id if parts else None,  # the first part (smallest number) starts the season
     )
@@ -117,8 +123,11 @@ def sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season])
         for episode in season.episodes:
             if episode.number in stored:
                 stored[episode.number].air_at = episode.air_at
+                stored[episode.number].timing = episode.timing
             else:
-                session.add(EpisodeRecord(season_id=record.id, number=episode.number, air_at=episode.air_at))
+                session.add(
+                    EpisodeRecord(season_id=record.id, number=episode.number, air_at=episode.air_at, timing=episode.timing)
+                )
         listed = {e.number for e in season.episodes}
         for number, row in stored.items():
             if number not in listed:

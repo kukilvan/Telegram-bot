@@ -49,7 +49,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
     migrate(engine)
     migrate(engine)
 
-    assert "inbox_items" in tables(engine) and version(engine) == "0016"
+    assert "inbox_items" in tables(engine) and version(engine) == "0017"
     with engine.connect() as connection:
         indexes = {row[1] for row in connection.execute(text("PRAGMA index_list('inbox_items')"))}
     assert "ix_inbox_items_state" in indexes
@@ -86,4 +86,4 @@ def test_down_takes_the_table_away_and_up_brings_it_back(engine):
     assert "inbox_items" not in tables(engine) and version(engine) == "0013"
 
     alembic_on(engine, command.upgrade, "head")
-    assert "inbox_items" in tables(engine) and version(engine) == "0016"
+    assert "inbox_items" in tables(engine) and version(engine) == "0017"

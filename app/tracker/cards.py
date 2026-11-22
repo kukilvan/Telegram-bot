@@ -1,17 +1,18 @@
-"""Text card of a title: what the owner reads in the bot. Pure formatting, no database."""
+"""Text card of a title: what the owner reads in the bot. Pure formatting, no database. It holds the one rule of how
+the moment of an episode reads (`episode_when`), for the card, the feed and the messages."""
 
 import dataclasses
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime, timezone, tzinfo
+from datetime import date, datetime, time, timezone, tzinfo
 from typing import TYPE_CHECKING
 
 from app.tracker import scores
 from app.tracker.kinds import KINDS
-from app.tracker.models import TitleKind, TitleStatus
+from app.tracker.models import EpisodeTiming, TitleKind, TitleStatus
 from app.tracker.scores import ScoreView
-from app.tracker.seasons import RELEASED, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
+from app.tracker.seasons import RELEASED, Episode, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
 
 if TYPE_CHECKING:
     from app.tracker.sequel_events import Sequels  # it formats its dates here: a plain import would go round
@@ -245,11 +246,19 @@ def local_moment(moment: datetime, tz: tzinfo | None) -> datetime:
     return moment.replace(tzinfo=timezone.utc).astimezone(tz).replace(tzinfo=None)
 
 
-def format_when(moment: datetime, tz: tzinfo | None = None) -> str:
-    """«пн, 12 окт»; given the owner's time zone, with the hour: «пн, 12 окт в 18:00»."""
-    local = local_moment(moment, tz)
-    text = format_weekday_date(local.date())
-    return text if tz is None else f"{text} в {local:%H:%M}"
+def episode_when(episode: Episode, tz: tzinfo | None) -> tuple[date, time | None]:
+    """The day and the hour of a dated episode; `tz`: the owner's zone for a kind with local times (anime), else None.
+    The hour only for an exact moment with a zone; the day on the owner's clock, but a day-only one as stored."""
+    if tz is None or episode.timing == EpisodeTiming.DAY:
+        return episode.air_at.date(), None
+    local = local_moment(episode.air_at, tz)
+    return local.date(), local.time() if episode.timing == EpisodeTiming.EXACT else None
+
+
+def format_episode_when(episode: Episode, tz: tzinfo | None) -> str:
+    """«пн, 12 окт»; with the hour where `episode_when` gives one: «пн, 12 окт в 18:00»."""
+    day, hour = episode_when(episode, tz)
+    return format_weekday_date(day) + (f" в {hour:%H:%M}" if hour is not None else "")
 
 
 def format_past_moment(moment: datetime, now: datetime) -> str:
@@ -284,19 +293,17 @@ def progress_line(current: SeasonProgress, tz: tzinfo | None = None, name: str =
     """How far the season (or its current part) has got: «Сезон 3, часть 1: вышло 7 из 12, следующая — пн, 12 окт»."""
     line = f"{season_label(current.number, current.part, name)}: вышло {current.released} из {current.total if current.total else '?'}"
     if current.status != RELEASED:
-        line += f", следующая — {format_when(current.next_air_at, tz) if current.next_air_at else NOT_ANNOUNCED}"
-    elif current.next_part_at is not None:
-        line += f"; часть {current.next_part} — с {format_day_month(local_moment(current.next_part_at, tz).date())}"
+        coming = current.next_episode
+        line += f", следующая — {format_episode_when(coming, tz) if coming else NOT_ANNOUNCED}"
+    elif current.next_part_start is not None:
+        line += f"; часть {current.next_part} — с {format_day_month(episode_when(current.next_part_start, tz)[0])}"
     return line
 
 
 def announced_line(announced: SeasonAnnouncement, tz: tzinfo | None = None, name: str = "") -> str:
     """«Сезон 4 анонсирован, премьера 3 апреля 2027» (or «дата не объявлена»)."""
-    when = (
-        f"премьера {format_date(local_moment(announced.first_air_at, tz).date())}"
-        if announced.first_air_at
-        else "дата не объявлена"
-    )
+    premiere = announced.premiere
+    when = f"премьера {format_date(episode_when(premiere, tz)[0])}" if premiere else "дата не объявлена"
     return f"{season_label(announced.number, name=name)} анонсирован, {when}"
 
 

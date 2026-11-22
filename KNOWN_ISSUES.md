@@ -42,11 +42,11 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-25 | Очень длинный номер в адресе карточки — «Не получилось» вместо «Этого тайтла нет в списке» | `app/web/card.py` | fixed | — |
 | KI-26 | Бот пишет в журнал сбой поиска и добавления без причины | `app/bot/tracker_handlers.py` | fixed | — |
 | KI-27 | Устаревшая карточка аниме ставит галочку не тому сезону после перенумерации | `app/web/card.py` | fixed | — |
-| KI-28 | Лента: серия аниме ровно в 00:00 UTC показывается без часа | `app/tracker/sources/shikimori_anime.py` | open | 9.1 |
+| KI-28 | Лента: серия аниме ровно в 00:00 UTC показывается без часа | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`) | 9.1 |
 | KI-29 | «Недавно» не показывает вышедшее до добавления и до первой проверки после возврата | `Poller.record_all` | open | 9.1 |
 | KI-30 | Фильтр жанров Архива: один жанр под разными именами | `Tracker.genres` | open | 9.1 |
 | KI-31 | Список: поиск в режиме «Удалить несколько» сбрасывает галочки | `app/web/title_list.py` | fixed | — |
-| KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | open | 9.1 |
+| KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`) | 9.1 |
 | KI-33 | Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма | `app/runtime.py` | fixed (test: `tests/test_bot_stop_watch.py`) | 9.1a |
 | KI-34 | Настройки: старые методы ядра и страница проверяют значения по-разному | `app/tracker/settings_store.py` | fixed | — |
 | KI-35 | Игры: дата выхода только в Японии считается выходом | `app/tracker/games.py` | fixed (test: `tests/test_tracker_games_dates.py`, `tests/test_tracker_game_outside_date.py`) | 9.1b |
@@ -62,7 +62,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-45 | Сбой Steam и сбой IGDB одной игры за сутки — одно сообщение | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_failures.py`) | 9.1a |
 | KI-46 | Цены Steam: короткая скидка может пройти без сообщения или с неверным «до» | `app/tracker/pollers/game_prices.py` | won't fix (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
 | KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_press.py`) | 9.1b |
-| KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | open | 9.1 |
+| KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | won't fix (test: `tests/test_shikimori_anime_source.py`) | 9.1 |
 | KI-49 | `.env` holds variables the code does not read | `.env` | open | 9.1 |
 | KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
 | KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_batch.py`) | 9.1b |
@@ -91,7 +91,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | open | 9.1 |
 | KI-75 | Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key | `app/web/sessions.py` | open | 9.1 |
 | KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | 9.1 |
-| KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | open | 9.1c |
+| KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | fixed (test: `tests/test_tracker_check_rules.py`) | 9.1c |
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
 | KI-79 | Russian: a game added before 9.1b says «Ещё не проверяли» until its own poll (up to a week), with a Steam page up to 6 hours more | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
 | KI-80 | ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint | `app/tracker/pollers/game_zog.py` (spec 9.1b, 5.6) | open | 9.2 |
@@ -362,7 +362,7 @@ Format of a new entry:
 - **Что не так:** в базе нельзя отличить «Shikimori знает только день премьеры» от «серия выходит ровно в 00:00 UTC». Лента считает любой момент аниме ровно в 00:00:00 UTC днём без часа: день — дата UTC, времени в строке нет. Настоящая серия в 00:00 UTC (09:00 по Токио) покажется без «в 03:00»; у владельца к западу от UTC она к тому же встанет на день позже, чем на его часах.
 - **Как воспроизвести:** аниме, у которого AniList называет следующую серию в 00:00 UTC; в Ленте строка этой серии — без времени.
 - **Насколько вероятно / чем грозит:** редко: аниме обычно выходят вечером и ночью по Токио (14:00–17:00 UTC). Вред — нет часа в одной строке; день у владельца в Израиле верный. Карточка и бот показывают время как раньше («в 03:00» и для премьеры-заглушки). Починка — хранить признак «только день» у серии (колонка) и брать его в Ленте и карточке.
-- **Статус:** Открыто.
+- **Статус:** fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`). Ticket 9.1c.01: every episode keeps where its moment comes from (`EpisodeTiming`, migration 0017); the hour is shown for an exact moment whatever its time, by the one rule of `cards.episode_when`.
 - **Найдено:** 2026-10-28, спека части 5.3.
 
 ## KI-29. «Недавно» не показывает вышедшее до добавления и до первой проверки после возврата
@@ -398,7 +398,7 @@ Format of a new entry:
 - **Что не так:** в блоке «Скоро» у аниме справа стоит время выхода серии. Для такой серии это не время выхода, а время, когда её нашёл опрос («в 14:42»), хотя вышла она, например, ночью. Строка стоит в «Сегодня» (спека 3.3 показывает и уже вышедшее), и время читается как час выхода.
 - **Как воспроизвести:** аниме, о котором знает только Shikimori (у AniList нет расписания, у записи нет `next_at`); счётчик вышедших серий вырос с 6 до 7; опрос в 12:42 UTC сохраняет серию 7 с моментом 12:42, и Лента владельца в Израиле показывает «Сегодня · Сезон 1, серия 7 · в 14:42». Проверено на ядре (`assemble` → `season_pieces`) при ревью части 5.3.
 - **Насколько вероятно / чем грозит:** редко: у аниме с расписанием AniList следующая серия известна заранее вместе с точным моментом, и он сохраняется. Вред — неверный час в одной строке «Сегодня» (день верный); событие «вышла серия» в «Недавно» и сообщение бота не страдают. Починка — хранить признак «момент найден опросом» у серии (колонка) и в Ленте показывать такую серию без часа (как KI-28).
-- **Статус:** Открыто.
+- **Статус:** fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`). Ticket 9.1c.01: an episode found by a check is stored as `unknown` and shows its day with no hour.
 - **Найдено:** 2026-10-30, код-ревью части 5.3.
 
 ## KI-33. Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма
@@ -545,7 +545,7 @@ Format of a new entry:
 - What's wrong: season 4 of Jujutsu Kaisen is announced, AniList has no data for it, so the card shows no episode or schedule information.
 - How to reproduce: open the card of Jujutsu Kaisen and look at the announced season: no episode count, no next-episode time.
 - Likelihood / impact: whenever AniList lacks data for an announced season; the card is poorer, no message is lost.
-- Status: open (carried over from the old bug BUG-14; may already be fine — recheck in stage 9.1).
+- Status: won't fix (test: `tests/test_shikimori_anime_source.py`). Checked live 2026-11-22: Shikimori 63824 `anons` with no day, AniList 209895 `NOT_YET_RELEASED` with no airing; no source has data. The card says «Сезон 4 анонсирован, дата не объявлена» and fills in by itself once a source has data (spec 9 of stage 9.1c).
 - Found: before 2026-10-27, by the owner (old bug table, `docs/history.md`).
 
 ## KI-49. `.env` holds variables the code does not read
@@ -807,7 +807,7 @@ Format of a new entry:
 - What's wrong: after 9.1a the first check after a return reports the facts that happened after the return, by the moment each one came out. An anime episode found by a check without a schedule gets the moment it was found, so its moment cannot tell «out before the return» from «out after it»; the anime episode events are therefore left without a moment and stay silent, as before 9.1a.
 - How to reproduce: return an anime to the list a minute before its episode airs; the first check after the return finds the episode and records it as the reference point — no «вышла серия».
 - Likelihood / impact: very rare (a window of up to a minute). One missed message; the episode is in the card.
-- Status: open. Fix in 9.1c: once an episode keeps whether its moment is from the schedule (KI-28, KI-32), an episode with a schedule moment gets `happened_at`.
+- Status: fixed (test: `tests/test_tracker_check_rules.py`). Ticket 9.1c.01: an anime episode event carries its moment when it is exact or a day (`series_events._aired_at`), none when unknown; `Flavor.moments` is gone.
 - Found: 2026-11-20, spec 9.1a.
 
 

@@ -39,6 +39,14 @@ class DeliveryStatus(StrEnum):
     DELIVERED = "delivered"
 
 
+class EpisodeTiming(StrEnum):
+    """Where the stored moment of an episode comes from, and so what may be shown of it (`cards.episode_when`)."""
+
+    EXACT = "exact"  # the source named the moment: the day and the hour on the owner's clock
+    DAY = "day"  # the source knows the day only, stored as 00:00 UTC of it: the stored date as it is, no hour
+    UNKNOWN = "unknown"  # the source gave no moment: the moment of the check that found it, or the start day of its entry
+
+
 def _stored_as_text(enum: type[StrEnum], length: int = 16) -> Enum:
     """A column that holds the enum's values as plain text (so the database stays as it was) and hands back members."""
     return Enum(
@@ -128,6 +136,7 @@ class EpisodeRecord(TrackerBase):
     season_id: Mapped[int] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"), index=True)
     number: Mapped[int] = mapped_column(Integer)
     air_at: Mapped[datetime | None] = mapped_column(DateTime)  # None: no date yet
+    timing: Mapped[EpisodeTiming] = mapped_column(_stored_as_text(EpisodeTiming), default=EpisodeTiming.EXACT)
 
 
 class PartRecord(TrackerBase):

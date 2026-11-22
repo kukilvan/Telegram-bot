@@ -2,8 +2,9 @@
 last week. Pure functions, no database: `feed` reads what they need and hands it over.
 
 What comes out is cut into pieces, one per thing on a day («Сезон 2, серии 5–8», «Премьера в кино»); the pieces of one
-title on one day make its row, joined by «; ». A day is the source's date as it is, except for a kind whose source gives
-the exact moment (`KINDS[…].local_times`, anime): there it is the day on the owner's clock, and the row gets the hour.
+title on one day make its row, joined by «; ». The day and the hour of an episode follow the one rule of `cards`
+(`episode_when`): the hour only for an exact moment of a kind with local times (anime), and the day of a day-only
+moment is the source's date as it is.
 Which pieces a title has is decided by the poller of its kind (`pollers/`); a game's are cut in `game_rows`. An
 approximate date («4 квартал 2026») stands on the last day of its period and only ever in «Позже».
 
@@ -19,9 +20,9 @@ from typing import Any
 
 from app.tracker import delivery
 from app.tracker.actions import FOLLOW, WATCHED, event_actions
-from app.tracker.cards import local_moment, season_label
+from app.tracker.cards import episode_when, season_label
 from app.tracker.models import TitleKind, TitleStatus
-from app.tracker.seasons import Part, Season
+from app.tracker.seasons import Episode, Part, Season
 from app.tracker.text import key as text_key
 
 UPCOMING_DAYS = 14  # «Скоро»: today and the 13 days after it
@@ -136,13 +137,11 @@ class FeedEvent:
 # --- what comes out ---------------------------------------------------------------------------------
 
 
-def day_of(moment: datetime, tz: tzinfo | None) -> tuple[date, time | None]:
-    """The day of a moment and its hour. Without a time zone (the source gives a day) the stored date as it is; with
-    one, the owner's day and hour, unless the moment is exactly midnight UTC: the source knew only the day (KI-28)."""
-    if tz is None or moment.time() == time(0):
-        return moment.date(), None
-    local = local_moment(moment, tz)
-    return local.date(), local.time()
+def day_of(episode: Episode, tz: tzinfo | None) -> tuple[date, time | None]:
+    """The day of a dated episode and its hour, by where its moment comes from (`cards.episode_when`): an exact moment
+    at 00:00 UTC has its hour too (KI-28), a moment found by a check has none (KI-32). `tz`: None for a kind whose source
+    gives the day."""
+    return episode_when(episode, tz)
 
 
 def _numbers(numbers: Sequence[int]) -> str:
@@ -175,7 +174,7 @@ def season_pieces(
             for episode in part.episodes:
                 if episode.air_at is None:
                     continue
-                day, at = day_of(episode.air_at, tz)
+                day, at = day_of(episode, tz)
                 if day >= today:
                     days.setdefault(day, []).append((episode.number, at))
             for day, episodes in days.items():

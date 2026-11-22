@@ -1,6 +1,6 @@
 # 01: The moment of an episode — KI-28, KI-32, KI-77, KI-48
 
-Status: open
+Status: in review
 Complexity: complex (a migration, one new field through four adapters, one display rule in three places, a changed event moment)
 Blocked by: —
 

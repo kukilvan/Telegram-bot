@@ -18,6 +18,9 @@ new season (Jujutsu Kaisen: Shimetsu Kaiyuu - Kouhen is season 4).
 Shikimori knows when a season started, how many episodes are out and when the next one comes, but not the day
 of every past episode. The episodes that are out get the day the entry started, the next one its own moment, and
 an entry with nothing out yet gets its premiere day as a stub for episode 1. The exact schedule is AniList's job.
+Each episode says where its moment comes from (`EpisodeTiming`): the next one's is exact, the premiere stub's and the
+first episode's start day (`airedOn`) is the day only, and every other episode out has no moment of its own (unknown),
+as has each episode of an entry known only by the day it ended (`releasedOn`).
 """
 
 import logging
@@ -27,7 +30,7 @@ from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time, timezone
 from typing import Any, Protocol
 
-from app.tracker.models import TitleKind
+from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.sources.anilist_schedule import PartSchedule, parse_schedules
 from app.tracker.sources.dates import parse_response_date
@@ -319,11 +322,18 @@ def part_episodes(entry: Entry, first_episode: int) -> list[Episode]:
     if entry.status == "released" and not aired and entry.episodes:
         aired = entry.episodes  # a finished entry whose counter was never filled in
     started = entry.aired_on or entry.released_on
-    episodes = [Episode(first_episode + i, _day(started) if started else None) for i in range(aired)]
+    episodes = [
+        Episode(
+            first_episode + i,
+            _day(started) if started else None,
+            EpisodeTiming.DAY if i == 0 and entry.aired_on is not None else EpisodeTiming.UNKNOWN,
+        )
+        for i in range(aired)
+    ]
     if entry.next_at is not None:
-        episodes.append(Episode(first_episode + aired, entry.next_at))
-    elif not aired and entry.aired_on is not None:
-        episodes.append(Episode(first_episode, _day(entry.aired_on)))  # premiere day as a stub for episode 1
+        episodes.append(Episode(first_episode + aired, entry.next_at, EpisodeTiming.EXACT))
+    elif not aired and entry.aired_on is not None:  # premiere day as a stub for episode 1
+        episodes.append(Episode(first_episode, _day(entry.aired_on), EpisodeTiming.DAY))
     return episodes
 
 

@@ -12,7 +12,8 @@ from app.tracker import failures, feed_rows, movie_events, sequel_events
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import (
-    EpisodeRecord, Event, ExternalId, MovieRecord, PartRecord, SeasonRecord, SourceSnapshot, Title, TitleKind, TitleStatus,
+    EpisodeRecord, EpisodeTiming, Event, ExternalId, MovieRecord, PartRecord, SeasonRecord, SourceSnapshot, Title, TitleKind,
+    TitleStatus,
 )
 from app.tracker.series_events import EPISODE_OUT
 
@@ -78,13 +79,16 @@ def put_title(session_factory, name, kind=SERIES, status=TitleStatus.WANT, poste
         return title.id
 
 
-def put_season(session_factory, title_id, number, episodes, parts=()):
-    """`episodes`: number → moment (None: no date); `parts`: (first episode, count) of the source entries of an anime."""
+def put_season(session_factory, title_id, number, episodes, parts=(), timing=EpisodeTiming.EXACT):
+    """`episodes`: number → moment (None: no date); `parts`: (first episode, count) of the source entries of an anime;
+    `timing`: where every moment comes from."""
     with session_factory() as session:
         record = SeasonRecord(title_id=title_id, number=number, name=f"Сезон {number}", episode_count=None, watched=False)
         session.add(record)
         session.flush()
-        session.add_all(EpisodeRecord(season_id=record.id, number=n, air_at=moment) for n, moment in episodes.items())
+        session.add_all(
+            EpisodeRecord(season_id=record.id, number=n, air_at=moment, timing=timing) for n, moment in episodes.items()
+        )
         session.add_all(
             PartRecord(title_id=title_id, season_id=record.id, number=index, first_episode=first, episode_count=count,
                        shikimori_id=f"{title_id}-{number}-{index}")
@@ -209,9 +213,31 @@ def test_a_tmdb_date_is_the_day_as_the_source_gives_it_whatever_the_time_zone(se
     assert soon(feed(tracker)) == [(day(3), [("Укрытие", "Сезон 2, серия 5", None)])]
 
 
-def test_an_anime_moment_at_exactly_midnight_utc_is_a_day_without_an_hour(tracker, session_factory):
+def test_an_anime_premiere_known_by_the_day_has_no_hour(tracker, session_factory):
     anime = put_title(session_factory, "Фрирен", kind=ANIME)
-    put_season(session_factory, anime, 2, {1: at(5, 0)}, parts=[(1, None)])
+    put_season(session_factory, anime, 2, {1: at(5, 0)}, parts=[(1, None)], timing=EpisodeTiming.DAY)
+
+    assert soon(feed(tracker)) == [(day(5), [("Фрирен", "Сезон 2 — премьера", None)])]
+
+
+def test_an_anime_moment_named_at_midnight_utc_shows_its_hour_on_the_owners_clock_known_issue_28(tracker, session_factory):
+    anime = put_title(session_factory, "Фрирен", kind=ANIME)
+    put_season(session_factory, anime, 2, {1: at(-7, 0), 2: at(5, 0)}, parts=[(1, None)])
+
+    assert soon(feed(tracker)) == [(day(5), [("Фрирен", "Сезон 2, серия 2", time(3, 0))])]
+
+
+def test_an_anime_episode_found_by_a_check_shows_today_with_no_hour_known_issue_32(tracker, session_factory):
+    anime = put_title(session_factory, "Монолог фармацевта", kind=ANIME)
+    put_season(session_factory, anime, 1, {6: at(-7), 7: NOW}, parts=[(1, None)], timing=EpisodeTiming.UNKNOWN)
+
+    assert soon(feed(tracker)) == [(TODAY, [("Монолог фармацевта", "Сезон 1, серия 7", None)])]
+
+
+def test_an_anime_premiere_known_by_the_day_keeps_the_sources_date_west_of_utc(session_factory):
+    tracker = make_tracker(session_factory, tz=timezone(timedelta(hours=-5)))
+    anime = put_title(session_factory, "Фрирен", kind=ANIME)
+    put_season(session_factory, anime, 2, {1: at(5, 0)}, parts=[(1, None)], timing=EpisodeTiming.DAY)
 
     assert soon(feed(tracker)) == [(day(5), [("Фрирен", "Сезон 2 — премьера", None)])]
 
