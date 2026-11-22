@@ -1,4 +1,4 @@
-"""The web login without the web framework: the password rules, the signing key, the lock after wrong tries.
+"""The web login without the web framework: the password rules, the signing key, the mark of the sign-ins file, the lock after wrong tries.
 
 The lock keeps no file itself: `SignIns` of `app/web/sessions.py` builds it from `data/web_login.json` and writes its
 `state` back, so a restart does not open the login (KI-7). A key file shorter than 32 bytes is made anew (KI-13)."""
@@ -36,6 +36,13 @@ def password_matches(typed: str, password: str) -> bool:
 def fingerprint(key: bytes, password: str) -> str:
     """What the session keeps instead of the password: change WEB_PASSWORD and every old sign-in stops matching."""
     return hmac.new(key, password.encode("utf-8"), sha256).hexdigest()[:FINGERPRINT_LENGTH]
+
+
+def login_mark(key: bytes, password: str) -> str:
+    """What `data/web_login.json` keeps to know that the password and the key are still the ones its sign-ins were made
+    under (KI-75): 64 hex characters, HMAC-SHA256 with the key over `web_login.json:` and the password. It is not the
+    fingerprint of the cookie, and the password is not in it."""
+    return hmac.new(key, f"web_login.json:{password}".encode("utf-8"), sha256).hexdigest()
 
 
 def same(value: object, expected: str) -> bool:

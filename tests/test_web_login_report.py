@@ -280,7 +280,7 @@ def test_a_report_that_cannot_be_recorded_never_stops_the_login(client, tracker,
     assert "login report could not be recorded" in caplog.text
 
 
-def test_a_login_report_waits_in_the_queue_by_the_rules_when_the_send_failed_at_night(client, tracker, sender):
+def test_a_login_report_whose_send_failed_at_night_goes_at_the_next_pass_whatever_the_rules(client, tracker, sender):
     asyncio.run(tracker.set_delivery_rules(quiet_from="10:00", quiet_until="13:00"))  # 11:32 is quiet
     sender.failing = True
     log_in(client)
@@ -288,9 +288,9 @@ def test_a_login_report_waits_in_the_queue_by_the_rules_when_the_send_failed_at_
     settle()
     sender.failing = False
 
-    asyncio.run(tracker.deliver_pending())  # by the rules: held
+    asyncio.run(tracker.deliver_pending())  # the rules hold everything, a report is outside them (KI-73)
 
-    assert sender.messages == [] and statuses(tracker) == [DeliveryStatus.PENDING]  # KI-73
+    assert sender.messages == [LOGIN_TEXT.format(address="")] and statuses(tracker) == [DeliveryStatus.DELIVERED]
 
 
 # ---- the core: one method, the facts in, the text out ----------------------

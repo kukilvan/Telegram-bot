@@ -86,11 +86,11 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-69 | Restore: the note «ещё одна копия» of an older copy is not always true | `app/utils/restore.py` | open | 9.1 |
 | KI-70 | Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`) | `restore-bot.ps1` | open | 7.3 |
 | KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | open | 9.1 |
-| KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | open | 9.1 |
-| KI-73 | Login report: a report that failed to send waits for the delivery rules | `app/tracker` (stage 7.2) | open | 9.1 |
+| KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | won't fix (test: `tests/test_web_devices.py`) | 9.1c |
+| KI-73 | Login report: a report that failed to send waits for the delivery rules | `app/tracker` (stage 7.2) | fixed (test: `tests/test_tracker_login_report_rules.py`) | 9.1c |
 | KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | fixed (test: `tests/test_web_css.py`) | 9.1c |
-| KI-75 | Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key | `app/web/sessions.py` | open | 9.1 |
-| KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | 9.1 |
+| KI-75 | Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key | `app/web/sessions.py` | fixed (test: `tests/test_web_sign_in_mark.py`) | 9.1c |
+| KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | fixed (test: `tests/test_app_url.py`) | 9.1c |
 | KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | fixed (test: `tests/test_tracker_check_rules.py`) | 9.1c |
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
 | KI-79 | Russian: a game added before 9.1b says «Ещё не проверяли» until its own poll (up to a week), with a Steam page up to 6 hours more | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
@@ -761,7 +761,7 @@ Format of a new entry:
 - What's wrong: Safari on an iPad of iPadOS 13 and later sends the `User-Agent` of a Mac (`Macintosh; Intel Mac OS X …`), so the login report and the block «Вход» say «macOS, Safari» for it. Telling them apart needs JavaScript (touch points), which the app does not have (ADR 0004).
 - How to reproduce: log in from an iPad in Safari — the 🔐 message says «macOS, Safari».
 - Likelihood / impact: the owner has no iPad as far as known; the wrong word only, the report still comes.
-- Status: open.
+- Status: won't fix (test: `tests/test_web_devices.py::test_an_ipad_that_says_it_is_a_mac_reads_as_a_mac_known_issue_72`; ticket 05 of stage 9.1c). Telling an iPad from a Mac needs JavaScript, which the app does not have (ADR 0004); the owner accepted this with the spec of 9.1c («ОК», 2026-11-22). The test pins the behaviour.
 - Found: 2026-11-15, spec 7.2.
 
 ## KI-73. Login report: a report that failed to send waits for the delivery rules
@@ -770,7 +770,7 @@ Format of a new entry:
 - What's wrong: the report is sent at once whatever the rules; if that send fails (Telegram down, no network), the event stays in the queue and the regular delivery sends it by the rules — a login during the quiet hours is reported only when they end, or in the summary on a work day.
 - How to reproduce: stop the network of the container, log in at 22:00, bring the network back — the report comes at 07:30.
 - Likelihood / impact: rare (Telegram down at the moment of a login); a strange login is seen later. Behind Cloudflare Access a stranger has passed the mail code too.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_login_report_rules.py`; ticket 05 of stage 9.1c). The two report types are outside the delivery rules: every pass sends a queued report as a message of its own, «Сводка сейчас» sends it apart before the summary, it never expires. The send at once and a pass run under `delivery_lock` and send it once.
 - Found: 2026-11-15, spec 7.2.
 
 ## KI-74. Phone: the chosen filter can be past the edge of its row
@@ -788,7 +788,7 @@ Format of a new entry:
 - What's wrong: a change of `WEB_PASSWORD` or a new `data/web_secret` (deleted, or made anew when spoiled, KI-13) ends every sign-in through the cookie (the fingerprint or the signature no longer matches), but the sign-ins stay in `data/web_login.json` until 30 days without a request. So «Вход открыт на N устройствах» counts them, «Выйти на всех устройствах» logs them in its count, and they keep places among the 20.
 - How to reproduce: sign in on the PC and the phone, change `WEB_PASSWORD`, `.\start-bot.ps1`, sign in on the PC — Settings says «Вход открыт на 3 устройствах.», though only one works.
 - Likelihood / impact: rare (a password change); the number is too high, nobody gets in. «Выйти на всех устройствах» clears them. A fix keeps the fingerprint of the password and the key in the file and drops the sign-ins when it differs at start — a change of the file's shape (ADR 0014).
-- Status: open.
+- Status: fixed (test: `tests/test_web_sign_in_mark.py`; ticket 05 of stage 9.1c). The file has a `mark` (HMAC of the password with the key of `data/web_secret`), checked at start: another mark drops every sign-in (the last login and the lock count stay), a file of stage 7.2 keeps its sign-ins and gets the mark.
 - Found: 2026-11-17, review 7.2 (F2).
 
 ## KI-76. `APP_URL`: a Cyrillic domain is refused with a reason about the dot
@@ -797,7 +797,7 @@ Format of a new entry:
 - What's wrong: `APP_URL=https://трекер.рф` is malformed with the reason «Telegram не открывает такие ссылки — … или имя сайта с точкой», though the name has a dot; the bot stays in chat mode. Whether Telegram opens such a name in a button was not checked.
 - How to reproduce: put `APP_URL=https://трекер.рф` into `.env`, `.\start-bot.ps1` — Settings shows the line «записан с ошибкой» with that reason.
 - Likelihood / impact: only if the owner buys a Cyrillic domain. Workaround: write the name in its `xn--…` form (the domain registrar shows it), which is taken.
-- Status: open.
+- Status: fixed (test: `tests/test_app_url.py`; ticket 05 of stage 9.1c). A name with Cyrillic letters is turned into its `xn--…` form by IDNA (UTS 46) for the links and the `Host` check; Settings shows it as written; a name IDNA refuses has its own reason. Telegram took such an address live (2026-11-22).
 - Found: 2026-11-17, review 7.2 (F3).
 
 

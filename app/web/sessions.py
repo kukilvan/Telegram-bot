@@ -6,6 +6,10 @@ temporary file in the same folder and moved over the old one (`os.replace`), off
 a spoiled one (not JSON, another version, a wrong shape) is empty with a warning and is rewritten at the next change; a
 file that cannot be read or written leaves everything in memory until the restart. A restore never touches it.
 
+The file keeps a `mark` (`auth.login_mark`: the password and the key of `data/web_secret`, never the password itself). At
+start a file with another mark loses every sign-in (the last login and the lock count stay): they could not be used any
+more, and «Вход» must not count them (KI-75). A file of stage 7.2, with no mark, keeps its sign-ins and gets the mark.
+
 The middleware (`SessionCookies`, 4.2) gives `request.session` exactly as Starlette's `SessionMiddleware` does, signed the
 same way (`itsdangerous`, the key of `data/web_secret`), but builds the cookie itself so that `Secure` can be chosen per
 request (`secure`: `https`, see `app/web/proxy.py`). Who is signed in is decided in one place, `guard_sign_in` of `app/web/app.py`,
@@ -43,6 +47,8 @@ SEEN_STEP_SECONDS = 60 * 60  # `seen` is written at most once an hour per sign-i
 MAX_SIGN_INS = 20  # beyond that the one used least recently is dropped
 MOMENT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"  # UTC
 SID = re.compile(r"[0-9a-f]{32}")
+MARK = re.compile(r"[0-9a-f]{64}")
+MARK_CHANGED = "WEB_PASSWORD или data/web_secret сменились: закрыто старых входов — %d"
 SPOILED = "%s испорчен — все входы закрыты, счётчик неверных паролей обнулён"
 UNREADABLE = "%s не прочитать (%r): входы и счётчик неверных паролей только в памяти до перезапуска"
 UNWRITABLE = "%s не записать (%r): входы и счётчик неверных паролей только в памяти до перезапуска"
@@ -85,9 +91,9 @@ def _words(value: object) -> str:
     return value
 
 
-def _read(document: Any) -> tuple[dict[str, SignIn], LastLogin | None, int, float | None]:
+def _read(document: Any) -> tuple[dict[str, SignIn], LastLogin | None, int, float | None, str | None]:
     """The file's document read strictly: anything off its shape raises (`ValueError`, `TypeError`, `KeyError`,
-    `AttributeError`)."""
+    `AttributeError`). The last item is the `mark` of the file, None when it has none (a file of stage 7.2)."""
     if not isinstance(document, dict) or document.get("version") != VERSION:
         raise ValueError("another version")
     sessions: dict[str, SignIn] = {}
@@ -103,27 +109,42 @@ def _read(document: Any) -> tuple[dict[str, SignIn], LastLogin | None, int, floa
     wrong, locked = guard["wrong"], guard["locked_until"]
     if type(wrong) is not int or wrong < 0:
         raise ValueError("not a count")
-    return sessions, last_login, wrong, None if locked is None else float(_seconds_of(locked))
+    mark = document.get("mark")
+    if "mark" in document and (not isinstance(mark, str) or not MARK.fullmatch(mark)):
+        raise ValueError("not a mark")
+    return sessions, last_login, wrong, None if locked is None else float(_seconds_of(locked)), mark
 
 
 class SignIns:
     """The sign-ins, the last login and the lock of the login, in memory and in `file` (None: in memory only). `clock`
-    is the wall clock in UTC seconds; the lock (`guard`) runs on it too, so it survives a restart."""
+    is the wall clock in UTC seconds; the lock (`guard`) runs on it too, so it survives a restart. `mark` is the mark of
+    the password and the key of this run (`auth.login_mark`; None: no mark is kept or checked)."""
 
-    def __init__(self, file: Path | None, clock: Callable[[], float] = time.time) -> None:
+    def __init__(self, file: Path | None, clock: Callable[[], float] = time.time, mark: str | None = None) -> None:
         self.file = file
         self._clock = clock
-        self._sessions, self._last_login, wrong, locked_until = self._load()
-        self.guard = LoginGuard(clock, wrong=wrong, locked_until=locked_until)
-        self._guard_written = self.guard.state
+        self._mark = mark
         self._write_lock = threading.Lock()
         self._number = 0  # of the last document handed to a write
         self._written = 0  # of the last document written (or given up)
         self._failing = False  # the last write failed: the next failure is not logged again
+        self._sessions, self._last_login, wrong, locked_until, stored = self._load()
+        self.guard = LoginGuard(clock, wrong=wrong, locked_until=locked_until)
+        self._guard_written = self.guard.state
+        if file is not None and mark is not None and stored is not None and stored != mark:
+            logging.warning(MARK_CHANGED, len(self._sessions))
+            self._sessions.clear()
+        if file is not None and mark is not None and stored != mark and self._found:
+            self._write_at_start()  # the file of 7.2 gets its mark, a file of another mark its new one, at once
 
-    def _load(self) -> tuple[dict[str, SignIn], LastLogin | None, int, float | None]:
-        """Read once at start, before the web serves anything."""
-        empty: tuple[dict[str, SignIn], LastLogin | None, int, float | None] = ({}, None, 0, None)
+    def _write_at_start(self) -> None:
+        self._number += 1
+        self._write(self._number, self._document())
+
+    def _load(self) -> tuple[dict[str, SignIn], LastLogin | None, int, float | None, str | None]:
+        """Read once at start, before the web serves anything. `_found`: a file was read without a fault."""
+        self._found = False
+        empty: tuple[dict[str, SignIn], LastLogin | None, int, float | None, str | None] = ({}, None, 0, None, None)
         if self.file is None:
             return empty
         try:
@@ -134,7 +155,9 @@ class SignIns:
             logging.warning(UNREADABLE, self.file.as_posix(), exc)
             return empty
         try:
-            return _read(json.loads(text))
+            read = _read(json.loads(text))
+            self._found = True
+            return read
         except (ValueError, TypeError, KeyError, AttributeError):
             logging.warning(SPOILED, self.file.as_posix())
             return empty
@@ -201,7 +224,7 @@ class SignIns:
             del self._sessions[sid]  # 30 days without a request: dropped at the next write
         wrong, locked_until = self._guard_written = self.guard.state
         last = self._last_login
-        return {
+        document: dict[str, Any] = {
             "version": VERSION,
             "sessions": {
                 sid: {"since": _text_of(record.since), "seen": _text_of(record.seen), "device": record.device}
@@ -211,6 +234,9 @@ class SignIns:
             # rounded up: a lock read back from the file never ends earlier than it should
             "guard": {"wrong": wrong, "locked_until": None if locked_until is None else _text_of(math.ceil(locked_until))},
         }
+        if self._mark is not None:
+            document["mark"] = self._mark
+        return document
 
     async def _save(self) -> None:
         """The state as it is now goes to the file, in a thread. The document is taken here, on the event loop; a write

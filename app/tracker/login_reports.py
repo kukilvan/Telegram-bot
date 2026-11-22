@@ -3,7 +3,7 @@
 The web hands over the facts (type, device in words, public address or None, the moment, the unique part of the key);
 the text is made here with the moment in words on the owner's clock (`moment_in_words`). Recording is all this does:
 sending at once is the caller's background task (`Tracker.deliver_pending` with `force` and `only`), so a login never
-waits for Telegram. A report that fails to send stays queued and goes out later by the delivery rules (KI-73).
+waits for Telegram. A report that fails to send stays queued and goes out at the next delivery pass, whatever the rules (KI-73).
 """
 
 from datetime import datetime

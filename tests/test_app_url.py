@@ -27,6 +27,7 @@ TELEGRAM = (
 )
 BAD_PORT = "порт должен быть числом от 1 до 65535"
 EXTRA = "после адреса не должно быть ничего лишнего: только http(s)://адрес[:порт]"
+IDNA_REFUSED = "имя сайта записано с ошибкой — проверьте буквы и точки"
 PASSWORD = "correct horse battery"
 
 
@@ -266,3 +267,74 @@ def test_a_malformed_address_never_breaks_the_page(tracker, tmp_path):
     html = settings_page(tracker, tmp_path, app_url=parse_app_url("http://localhost:8080"))
 
     assert "записан с ошибкой: Telegram не открывает такие ссылки" in html
+
+
+# --- a Cyrillic name (KI-76) ---------------------------------------------------------------------------------------------
+
+
+def test_a_cyrillic_name_is_taken_in_its_ascii_form_and_shown_as_written_in_lower_case():
+    url = parse_app_url("https://Трекер.РФ")
+
+    assert url == AppUrl(
+        address="https://xn--e1aaowdh.xn--p1ai", host="xn--e1aaowdh.xn--p1ai", shown="https://трекер.рф"
+    )
+
+
+def test_a_cyrillic_name_with_a_port_keeps_the_port_and_a_slash_at_the_end_goes():
+    url = parse_app_url("https://ТРЕКЕР.РФ:8443/")
+
+    assert (url.address, url.shown) == ("https://xn--e1aaowdh.xn--p1ai:8443", "https://трекер.рф:8443")
+
+
+def test_the_name_the_live_telegram_check_used_comes_out_as_it_was_sent():
+    # `answers/telegram-xn-button-2026-11-22.json`: Telegram took exactly this address
+    assert parse_app_url("https://пример-трекера.рф").address == "https://xn----8sbnbaormzkdbdx.xn--p1ai"
+
+
+def test_a_name_with_latin_and_cyrillic_labels_works():
+    url = parse_app_url("https://tracker.РФ.example.com")
+
+    assert (url.address, url.shown) == ("https://tracker.xn--p1ai.example.com", "https://tracker.рф.example.com")
+
+
+def test_an_ascii_address_is_its_own_shown_form():
+    url = parse_app_url("HTTPS://Tracker.Example.COM:8443")
+
+    assert url.shown == url.address == "https://tracker.example.com:8443"
+
+
+def test_a_cyrillic_name_without_a_dot_has_the_reason_of_a_latin_one():
+    assert parse_app_url("https://трекер") == AppUrl(reason=TELEGRAM)
+    assert parse_app_url("https://трекер.") == AppUrl(reason=TELEGRAM)
+
+
+@pytest.mark.parametrize("raw", ["https://" + "а" * 64 + ".рф", "https://трекер!.рф", "https://тре кер.рф", "https://трекер..рф"])
+def test_a_name_idna_refuses_is_malformed_with_its_own_reason(raw):
+    assert parse_app_url(raw) == AppUrl(reason=IDNA_REFUSED)
+
+
+def test_the_settings_line_shows_the_address_as_written_and_the_bot_gets_the_ascii_one():
+    url = parse_app_url("https://трекер.рф")
+
+    assert address_note(url, "") == (ADDRESS_LINE.format("https://трекер.рф"), "")
+    assert app_links(url) == AppLinks("https://xn--e1aaowdh.xn--p1ai")
+
+
+def test_the_web_answers_under_the_ascii_host_of_a_cyrillic_name(tracker, tmp_path):
+    health = Health()
+    health.bot_running = health.scheduler_running = True
+    health.scheduler_mark = health.clock()
+    app = create_web_app(
+        health=health.report, password=PASSWORD, secret_file=tmp_path / "web_secret", tracker=tracker,
+        app_url=parse_app_url("https://Трекер.РФ"),
+    )
+    client = TestClient(app, follow_redirects=False)
+
+    assert client.get("/health", headers={"host": "xn--e1aaowdh.xn--p1ai"}).status_code == 200
+    assert client.get("/health", headers={"host": "xn--other.xn--p1ai"}).status_code == 400
+
+
+def test_the_page_shows_a_cyrillic_address_as_written(tracker, tmp_path):
+    html = settings_page(tracker, tmp_path, app_url=parse_app_url("https://трекер.рф"))
+
+    assert ("app-address", ADDRESS_LINE.format("https://трекер.рф")) in lines_under_telegram(html)

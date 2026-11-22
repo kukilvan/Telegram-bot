@@ -170,7 +170,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/web/address_line.py` — The line of Settings about the app address (`APP_URL`) and the hint under it (spec 1.2 of stage 7.2); pure.
 - `app/web/app.py` — The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages behind them.
 - `app/web/archive.py` — The archive: the titles with a final status («Просмотрено», «Пройдено», «Бросил») with a search by name, a filter by kind, by genre and by status, and an order (links, so «Назад» and bookmarks work).
-- `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the lock after wrong tries.
+- `app/web/auth.py` — The web login without the web framework: the password rules, the signing key, the mark of the sign-ins file, the lock after wrong tries.
 - `app/web/card.py` — The card of a title: its details, the marks of seasons and platforms, «Следить» at a row of a follow list, the buttons.
 - `app/web/card_blocks.py` — The blocks of the web card that depend on the kind: the platforms (with the date outside the country), the line of an expansion and the follow lists.
 - `app/web/devices.py` — The device of a sign-in in words (pure): the `User-Agent` of a request becomes «Android, Chrome» (spec 6.3 of stage 7.2).

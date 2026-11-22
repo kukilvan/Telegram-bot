@@ -19,6 +19,9 @@ game of one type on several platforms into one line («вышла на ПК и P
 alike. Two discounts in Steam or more that go out at once in messages of their own become one message, a line a game
 («🎮 Скидки в Steam:»); in a summary each keeps its line. An event whose `expires_at` has come (a discount that is over)
 goes out no more (`expired`).
+
+A login report (`login_events.TYPES`) is outside all of this: it goes out as a message of its own at the first pass
+after it is queued, in the quiet hours and on a working morning too, never joins a summary and never expires (KI-73).
 """
 
 import logging
@@ -28,7 +31,7 @@ from dataclasses import dataclass
 from datetime import datetime, time, timedelta, timezone, tzinfo
 from typing import Any
 
-from app.tracker import failures, game_events, price_events
+from app.tracker import failures, game_events, login_events, price_events
 from app.tracker.cards import format_weekday_date, local_moment
 from app.tracker.sources.dates import parse_moment
 from app.tracker.series_events import EPISODE_OUT
@@ -157,14 +160,17 @@ class DeliveryRules:
     def due(self, queue: Sequence["Pending"], now: datetime) -> tuple[list["Pending"], list["Pending"]]:
         """(events to send one by one, events to send in one summary) among the queued ones at `now`.
 
-        An event goes in the summary when it had to wait by the rules, or when silence began after it was allowed to
-        go and before now (its send failed and it outlived the quiet hours or a working morning). A plain retry inside
-        the same open stretch of time is a message of its own."""
+        A login report is always in the first list, whatever the rules say (KI-73). Any other event goes in the summary
+        when it had to wait by the rules, or when silence began after it was allowed to go and before now (its send
+        failed and it outlived the quiet hours or a working morning). A plain retry inside the same open stretch of time
+        is a message of its own."""
+        single = [pending for pending in queue if is_report(pending)]
         if self.holds(now):
-            return [], []
-        single: list[Pending] = []
+            return single, []
         summary: list[Pending] = []
         for pending in queue:
+            if is_report(pending):
+                continue
             release, waited = self.release(pending.queued_at)
             if release > now:
                 continue
@@ -209,6 +215,11 @@ class Unit:
     @property
     def single(self) -> Pending | None:
         return self.members[0] if len(self.members) == 1 else None
+
+
+def is_report(pending: Pending) -> bool:
+    """The queued event is a login report: it is outside the delivery rules (KI-73)."""
+    return pending.type in login_events.TYPES
 
 
 def _episode_key(pending: Pending) -> tuple[Any, ...] | None:

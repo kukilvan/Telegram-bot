@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass
 from zoneinfo import ZoneInfo
 
+import idna
 from dotenv import load_dotenv
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings
@@ -35,6 +36,7 @@ _TELEGRAM_REFUSES = (
     "Telegram не открывает такие ссылки — укажите адрес ПК в сети (например, http://192.168.1.124:8080) "
     "или имя сайта с точкой"
 )
+_IDNA_REFUSES = "имя сайта записано с ошибкой — проверьте буквы и точки"
 _BAD_PORT = "порт должен быть числом от 1 до 65535"
 _EXTRA = "после адреса не должно быть ничего лишнего: только http(s)://адрес[:порт]"
 _HOST_NAME = re.compile(r"[a-z0-9-]+(\.[a-z0-9-]+)+")  # at least one dot, inside the name
@@ -43,32 +45,46 @@ _HOST_NAME = re.compile(r"[a-z0-9-]+(\.[a-z0-9-]+)+")  # at least one dot, insid
 @dataclass(frozen=True)
 class AppUrl:
     """What `APP_URL` says: `address` in its one form, or no address with the `reason` it is malformed (None for an
-    empty line). `host` is the host of a valid address (lower case, an IPv6 one without brackets)."""
+    empty line). `host` is the host of a valid address (lower case, ASCII, an IPv6 one without brackets): a name with
+    Cyrillic letters is in its IDNA form (`xn--…`) in both, which is what the bot's links, Telegram and the `Host` of a
+    browser use. `shown` is the address as written (lower case), for the person; an ASCII address is its own `shown`."""
 
     address: str | None = None
     reason: str | None = None
     host: str | None = None
+    shown: str | None = None
 
 
-def _host_reads(host: str) -> str | None:
-    """The host in the form Telegram opens (lower case), or None: an IPv4 address, an IPv6 one in brackets, a name with a
-    dot inside, never `localhost` or `*.localhost`."""
+class _NameRefused(ValueError):
+    """The name has letters and IDNA does not take it."""
+
+
+def _host_reads(host: str) -> tuple[str, str] | None:
+    """The host in the form Telegram opens (lower case, ASCII) and as written (lower case), or None: an IPv4 address, an
+    IPv6 one in brackets, a name with a dot inside, never `localhost` or `*.localhost`. A name with a character outside
+    ASCII is turned into its ASCII form by IDNA (UTS 46); one IDNA refuses is a `_NameRefused`."""
     if host.startswith("["):
         inner = host[1:-1] if host.endswith("]") else ""
         try:
             ipaddress.IPv6Address(inner)
         except ValueError:
             return None
-        return host.lower()
+        return host.lower(), host.lower()
+    shown = host.lower()
+    if not host.isascii():
+        try:
+            host = idna.encode(host, uts46=True).decode("ascii")
+        except idna.IDNAError:
+            raise _NameRefused from None
     host = host.lower()
     try:
         ipaddress.IPv4Address(host)
-        return host
+        return host, shown
     except ValueError:
         pass
     if host == "localhost" or host.endswith(".localhost"):
         return None
-    return host if _HOST_NAME.fullmatch(host) else None
+    return (host, shown) if _HOST_NAME.fullmatch(host) else None
 
 
 def parse_app_url(raw: str) -> AppUrl:
@@ -93,7 +109,10 @@ def parse_app_url(raw: str) -> AppUrl:
         port = f":{port}" if ":" in host_part else ""
     if not host:
         return AppUrl(reason=_NO_HOST)
-    known = _host_reads(host)
+    try:
+        known = _host_reads(host)
+    except _NameRefused:
+        return AppUrl(reason=_IDNA_REFUSES)
     if known is None:
         return AppUrl(reason=_TELEGRAM_REFUSES)
     if port and not port.startswith(":"):  # something stuck to the closing bracket: «[::1]x»
@@ -104,7 +123,9 @@ def parse_app_url(raw: str) -> AppUrl:
             return AppUrl(reason=_BAD_PORT)
     if authority != host_part or tail not in ("", "/"):
         return AppUrl(reason=_EXTRA)
-    return AppUrl(address=f"{scheme.lower()}{known}{port}", host=known.strip("[]"))
+    ascii_host, shown = known
+    scheme = scheme.lower()
+    return AppUrl(f"{scheme}{ascii_host}{port}", None, ascii_host.strip("[]"), f"{scheme}{shown}{port}")
 
 
 class Settings(BaseSettings):

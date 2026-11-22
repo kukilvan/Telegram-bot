@@ -54,13 +54,18 @@ class DeliveryService:
         return report
 
     async def summary_now(self) -> SummaryResult:
-        """«Сводка сейчас»: everything waiting goes out in one summary at once, whatever the hour, and is marked delivered."""
+        """«Сводка сейчас»: everything waiting goes out in one summary at once, whatever the hour, and is marked delivered.
+        A login report is no part of it: it goes out first as a message of its own (KI-73)."""
         report = DeliveryReport()
         async with self.ctx.delivery_lock:
             moment = self.ctx.now()
             rules, pending, names = await asyncio.to_thread(self._load_queue, None, moment)
-            if pending:
-                await self._send_summary(pending, moment, rules, report, names)
+            reports = [p for p in pending if delivery.is_report(p)]
+            rest = [p for p in pending if not delivery.is_report(p)]
+            for unit in delivery.fold(reports, episodes=False):
+                await self._send(unit.members, unit.text, _unit_actions(unit), report)
+            if rest:
+                await self._send_summary(rest, moment, rules, report, names)
         return SummaryResult(events=len(pending), delivered=bool(pending) and report.failed == 0)
 
     async def all_delivered(self, event_ids: frozenset[int]) -> bool:

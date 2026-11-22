@@ -30,7 +30,7 @@ def address_note(app_url: AppUrl, web_host: str) -> AddressNote:
             "Пока кнопки «Карточка» показывают карточку в чате.",
             "",
         )
-    line = f"Адрес приложения: {app_url.address}. Кнопки «Карточка» в сообщениях бота открывают его."
+    line = f"Адрес приложения: {app_url.shown or app_url.address}. Кнопки «Карточка» в сообщениях бота открывают его."
     if app_url.host == "127.0.0.1":
         hint = "Адрес 127.0.0.1 открывается только на этом ПК: на телефоне кнопки не откроются."
     elif is_private_ipv4(app_url.host or "") and web_host.strip() != OPEN_TO_NETWORK:

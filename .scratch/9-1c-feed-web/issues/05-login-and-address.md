@@ -1,6 +1,6 @@
 # 05: Login and address — the report outside the rules, the mark of the sign-ins, a Cyrillic `APP_URL` — KI-73, KI-75, KI-76, KI-72
 
-Status: open
+Status: in review
 Complexity: medium (three independent changes in delivery, the sign-in file and the address; one status change)
 Blocked by: —
 

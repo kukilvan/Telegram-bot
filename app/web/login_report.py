@@ -4,7 +4,7 @@ A right password queues `WEB_LOGIN` (keyed by the `sid` of the new sign-in), the
 `WEB_LOGIN_LOCKED` (keyed by the end of the lock); a locked try and the wrong passwords before the fifth send nothing
 (spec 6 of stage 7.2). The texts are the core's: this module hands over facts only. The record is made inside the
 request; the send runs as a task of its own, so the answer of the login never waits for Telegram. A send that fails
-leaves the event queued and the regular delivery sends it later by the rules (KI-73). A report that cannot be recorded
+leaves the event queued and the next delivery pass sends it, whatever the rules (KI-73). A report that cannot be recorded
 is logged and never stops a login.
 """
 

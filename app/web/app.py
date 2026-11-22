@@ -103,7 +103,7 @@ def create_web_app(
     configured = auth.login_configured(password)
     key = auth.load_key(secret_file) if configured else b""
     expected = auth.fingerprint(key, password) if configured else ""
-    sign_ins = SignIns(login_file if configured else None, clock)
+    sign_ins = SignIns(login_file if configured else None, clock, auth.login_mark(key, password) if configured else None)
     guard = sign_ins.guard
     reports = LoginReporter(tracker, now)
     security_headers = {**SECURITY_HEADERS}

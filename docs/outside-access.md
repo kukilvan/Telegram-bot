@@ -6,7 +6,7 @@ Eight points, each one needed.
 
 ## 1. `APP_URL`
 
-Set `APP_URL=https://tracker.<domain>` in `.env`. The bot then sends links to the app instead of cards in the chat (its «Карточка» buttons, «📄 Открыть в приложении», the text link after `/start`); empty — the bot works as before. Only `http(s)://host[:port]` is taken, with nothing after it (no path, query or `user@`). A Cyrillic domain goes in its `xn--…` form (KI-76).
+Set `APP_URL=https://tracker.<domain>` in `.env`. The bot then sends links to the app instead of cards in the chat (its «Карточка» buttons, «📄 Открыть в приложении», the text link after `/start`); empty — the bot works as before. Only `http(s)://host[:port]` is taken, with nothing after it (no path, query or `user@`). A Cyrillic domain may be written as it is (`https://трекер.рф`): the app turns it into its `xn--…` form for the bot's links and shows it as written in Settings (KI-76); a name with a mistake in the letters or the dots is refused with the reason in Settings.
 
 Telegram refuses `localhost` (and a single name without a dot) in a link, and one refused button stops the whole message. So such an address is not taken: Settings and the log say why, and the bot stays in chat mode. The value is read once at start; restart after changing it.
 
