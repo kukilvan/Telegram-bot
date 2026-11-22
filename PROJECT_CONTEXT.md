@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Описание 9.1c»: stage 9.1c — the 11 known issues of Лента, web and login (`.scratch/9-1-known-issues/description.md` has the split), with the wishes of review 9.1b (`.scratch/9-1b-games-steam/review.md`). Model Opus 5.5, effort high (`docs/models.md`). Then 9.1d, 7.3, 9.2, 8.
+Session «Спека 9.1c»: stage 9.1c — the 12 known issues of Лента, web and login (KI-28–30, 32, 48, 65, 72–77) by `.scratch/9-1c-feed-web/description.md` (accepted 2026-11-22; the open questions at its end), with the review 9.1b wish about `core.py`. Model Opus 5.5, effort high (`docs/models.md`). Then 9.1d, 7.3, 9.2, 8.
 
 ## State
 
@@ -33,7 +33,7 @@ Session «Описание 9.1c»: stage 9.1c — the 11 known issues of Лен�
 | 7.2 | The app address, phone, bot buttons as links, a safer login | done | — | — |
 | 9.1a | Known issues: start, stop, polling and delivery (17) | done | — | — |
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
-| 9.1c | Known issues: Лента, web and login (11) | not started | 5–6 | — |
+| 9.1c | Known issues: Лента, web and login (12, with KI-77) | spec | 5–6 | — |
 | 9.1d | Known issues: «Входящие», copies and code health (15) | not started | 6 | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | not started | 3 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |

@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-22 — Description 9.1c
+
+- `.scratch/9-1c-feed-web/description.md` with three mockups (`mockups/feed.html`, `archive.html`, `search-inbox.html`): the 11 entries of part 9.1c and KI-77 from spec 9.1a; part 9.1c got a description of its own because its fixes change what the owner sees. `docs/project-spec.md` (stage 9.1: the 9.1c line, about 29 sessions).
+- The owner's decisions: on the phone the chosen filter of «Список» and «Архив» moves to the start of its row, CSS only (KI-74; rejected — a wrapping row); the button «Это оно — убрать запись» in the Search opened from an inbox item (KI-65); «Недавно» from the schedule takes episodes and films, not games (KI-29); no wishes beyond the entries.
+- Taken by the agent, confirmed by «ОК»: the anime episode hour only when the source gave it, in the Feed, the card and the bot (a premiere known by the day loses «в 03:00»); the «Недавно» rows from the schedule — no hour, no buttons, the grey line «вышла до добавления в список»; genre synonyms only in the Archive filter, named by the TMDb word, a composite TMDb genre under each part; the sign-in fingerprint a hash, the update logs nobody out; a Cyrillic `APP_URL` shown as written. KI-48 still reproduces (season 4 of «Магическая битва» has no date or episode count); KI-72 closes as won't fix.
+- Accepted by the owner («ОК»); next step «Спека 9.1c».
+
 ## 2026-11-22 — Review 9.1b (stage 9.1b done)
 
 - The whole stage (tickets 01–06, `edaaf60..918e4d2`) against the spec and the coding standards with the `code-review` skill (xhigh), then a pass for the spec; run: the tests, a scratch web app of the real code on a copy of the owner's database (12 game cards, the PlayStation route with a real `HEAD`, every answer of «Страница на ZoG»), one real ZoG page through the client and the parser, the bot in Docker. Review: `.scratch/9-1b-games-steam/review.md`.

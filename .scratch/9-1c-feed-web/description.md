@@ -1,6 +1,6 @@
 # Stage 9.1c: Лента, web and login — the known issues
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. The stage is part c of stage 9.1 (`docs/project-spec.md`). `.scratch/9-1-known-issues/description.md` set its 11 known issues and a direction of fix for each (part 9.1c, decisions 4 and 5 there). Spec 9.1a passed KI-77 on to this part. This description settles what the owner will see: the episode hour, «Недавно», the genres, the phone filter and the «Найти» button. ADRs it leans on: 0004 (no own JavaScript), 0005 (SQLite, migrations), 0007 (one process), 0014 (sign-ins in a file outside the database).
 
