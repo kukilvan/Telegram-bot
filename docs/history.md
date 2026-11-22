@@ -2,6 +2,15 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-22 — Review 9.1b (stage 9.1b done)
+
+- The whole stage (tickets 01–06, `edaaf60..918e4d2`) against the spec and the coding standards with the `code-review` skill (xhigh), then a pass for the spec; run: the tests, a scratch web app of the real code on a copy of the owner's database (12 game cards, the PlayStation route with a real `HEAD`, every answer of «Страница на ZoG»), one real ZoG page through the client and the parser, the bot in Docker. Review: `.scratch/9-1b-games-steam/review.md`.
+- Fixed now: F1 — a ZoG entry «для <X>-версии» with a platform of two words («Xbox 360», «Nintendo Switch», «PS Vita») counted as a PC patch; now the phrase takes any words up to «-версии» / «-версий» and counts only with the word «ПК» among them (`sources/zog_pages`); F3 — a bug in the ZoG check of one game is logged with its traceback, only `ZogError` is the quiet failure (`pollers/game_zog`); F4 — the stale second «Народный перевод» of `CONTEXT.md` deleted; F5 — the index rows of KI-35–38 say Fix in `9.1b`; F6 — a docstring that gave the owner a pronoun.
+- Deferred: F2 — KI-79 widened: a game added before 9.1b says «Ещё не проверяли — строка появится через минуту-другую» until its own poll gives IGDB's languages (up to a week; on the owner's PC GTA VI until 2026-11-27), and a game without a Steam page logs «Russian check: 1 games» every minute meanwhile; it ends by itself, new games are not affected.
+- ADR 0011 stays (a followed expansion is a game of its own); its last consequence — KI-52, a standalone expansion completed before 6.3 never learns it is one — is no longer true: the follow-up check writes the game's own type and parent when its own check does not run (ticket 03). No new ADR: the decision did not change.
+- Wishes: `core.py` is at 490 of 500 lines — a stage adding facade methods moves a group out first; 9.2 — KI-79, KI-80 if met.
+- Tests: 4844 passed, 3 skipped, the two known Windows failures. No fix round: stage 9.1b is done; the next step is the description of 9.1c. Accepted by the owner («ОК»).
+
 ## 2026-11-21 — Ticket 9.1b.06
 
 - Russian in games, «Страница на ZoG» (idea 002, spec 5.3 item 4, 5.7): the new core module `zog_page` (`ZogPages`; the facade gets `Tracker.set_zog_page(title_id, link)` and `reject_zog_page(title_id)`, both `ChangeResult`). A link is read by `zog_pages.page_of`, the page asked once, saved as `{"page", "by": "owner", support}` (no name or year check, next check in 7 days, a reference point, the undelivered fan events withdrawn in the same write session); every refusal of 5.7 is `errors.ZogPageRefused` with the text for the field, nothing saved. «Не та игра» saves `{"page": null, "by": "rejected"}`, asks nothing. A game out of «Хочу» / «В процессе», a non-game or a core without the ZoG client changes nothing; a title gone raises `UnknownTitle`.

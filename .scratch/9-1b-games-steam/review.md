@@ -1,6 +1,6 @@
 # Review 9.1b: games and Steam prices — the known issues and Russian in games
 
-Status: in review
+Status: accepted
 
 One session (2026-11-22).
 
