@@ -49,10 +49,10 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | open | 9.1 |
 | KI-33 | Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма | `app/runtime.py` | fixed (test: `tests/test_bot_stop_watch.py`) | 9.1a |
 | KI-34 | Настройки: старые методы ядра и страница проверяют значения по-разному | `app/tracker/settings_store.py` | fixed | — |
-| KI-35 | Игры: дата выхода только в Японии считается выходом | `app/tracker/games.py` | fixed (test: `tests/test_tracker_games_dates.py`, `tests/test_tracker_game_outside_date.py`) | 9.1b.01 |
-| KI-36 | Игры: выход, о котором IGDB узнал больше чем через 30 дней, приходит без сообщения | `app/tracker/game_events.py` | fixed (test: `tests/test_tracker_game_events.py`, `tests/test_tracker_game_late_release.py`) | 9.1b.01 |
-| KI-37 | Игры: ссылка в PlayStation Store может вести на страницу ошибки | `app/tracker/games.py` | fixed (test: `tests/test_tracker_playstation.py`); fixed for the web card, the bot's text link keeps the concept | 9.1b.01 |
-| KI-38 | Игры: запись IGDB без точности даты читается как «дата не объявлена» | `app/tracker/games.py` | fixed (test: `tests/test_tracker_games_dates.py`) | 9.1b.01 |
+| KI-35 | Игры: дата выхода только в Японии считается выходом | `app/tracker/games.py` | fixed (test: `tests/test_tracker_games_dates.py`, `tests/test_tracker_game_outside_date.py`) | 9.1b |
+| KI-36 | Игры: выход, о котором IGDB узнал больше чем через 30 дней, приходит без сообщения | `app/tracker/game_events.py` | fixed (test: `tests/test_tracker_game_events.py`, `tests/test_tracker_game_late_release.py`) | 9.1b |
+| KI-37 | Игры: ссылка в PlayStation Store может вести на страницу ошибки | `app/tracker/games.py` | fixed (test: `tests/test_tracker_playstation.py`); fixed for the web card, the bot's text link keeps the concept | 9.1b |
+| KI-38 | Игры: запись IGDB без точности даты читается как «дата не объявлена» | `app/tracker/games.py` | fixed (test: `tests/test_tracker_games_dates.py`) | 9.1b |
 | KI-39 | Игры: примерная дата старшей платформы прячет точную дату своей | `app/tracker/games.py` | fixed | — |
 | KI-40 | Игры: галочка «играю здесь» меняется у платформы, которой у игры больше нет | `app/tracker/statuses.py` | fixed | — |
 | KI-41 | Настройки, испорченные руками в базе, кроме пояса, платформ и страны, ломают чтение | `app/tracker/settings_store.py` | fixed (test: `tests/test_tracker_rare_input.py`) | 9.1a |
@@ -93,7 +93,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | 9.1 |
 | KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | open | 9.1c |
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
-| KI-79 | Russian: a game with a Steam page but no languages there, and IGDB not asked yet, says «Ещё не проверяли» up to 6 hours | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
+| KI-79 | Russian: a game added before 9.1b says «Ещё не проверяли» until its own poll (up to a week), with a Steam page up to 6 hours more | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
 | KI-80 | ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint | `app/tracker/pollers/game_zog.py` (spec 9.1b, 5.6) | open | 9.2 |
 
 ## Entries
@@ -819,14 +819,14 @@ Format of a new entry:
 - Found: 2026-11-20, spec 9.1a.
 
 
-## KI-79. Russian: a game with a Steam page but no languages there, and IGDB not asked yet, says «Ещё не проверяли» up to 6 hours
+## KI-79. Russian: a game added before 9.1b says «Ещё не проверяли» until its own poll (up to a week), with a Steam page up to 6 hours more
 
 - Where: `GameRussian._store` (spec 9.1b, section 5.5: «while Steam has none and IGDB is «not asked yet», nothing is stored»).
-- What's wrong: a game added before stage 9.1b has an own snapshot without the languages of IGDB until its own poll (up to a day). If it has a Steam page and Steam lists no languages for it, the check stores nothing (the first look with data must be a reference point) and waits 6 hours, so Steam is not asked every minute. Meanwhile the card says «Ещё не проверяли — строка появится через минуту-другую»; after the own poll the line already reads by IGDB, but the hint stays until the next check. A game without a Steam page is not affected: it stays due and gets its look in the first pass after its own poll.
-- How to reproduce: a game in «Хочу» added before the update, with a Steam page of an announced game (no languages in Steam); open its card after the first pass.
-- Likelihood / impact: rare (old announced games with a Steam page), once per game. A hint that is wrong for at most 6 hours; no message lost or false.
-- Status: open. Fix in 9.2 only if met in real use (e.g. a hint of its own for «Steam silent, IGDB not asked»).
-- Found: 2026-11-21, ticket 9.1b.04 (self-check on the owner's PC).
+- What's wrong: a game added before stage 9.1b has an own snapshot without the languages of IGDB until its own poll — up to a day for a game with a date ahead, up to a week (`INTERVAL_QUIET`) when every platform is out or the dates are far. Until then the official check stores nothing (the first look with data must be a reference point), and the card says «нет данных» with «Ещё не проверяли — строка появится через минуту-другую». A game without a Steam page stays due, so the log has «Russian check: 1 games, 0 failed» every minute, and it gets its look in the first pass after its own poll. A game with a Steam page whose Steam lists no languages waits 6 hours after each such check, so its hint can stay up to 6 hours after the own poll too. Games added after the update have IGDB's languages from adding and are not affected; the case ends by itself once every old game has had its own poll.
+- How to reproduce: the owner's PC, 2026-11-22 — GTA VI (in «Хочу», no Steam page, next own poll 2026-11-27): its card has said «Ещё не проверяли — строка появится через минуту-другую» since 2026-11-21, and the log line comes every minute.
+- Likelihood / impact: once per old game, for at most a week after the update; a wrong hint and a log line a minute, no message lost or false.
+- Status: open. Fix in 9.2 only if met in real use (e.g. a hint of its own for «IGDB not asked yet», or the own poll made due at once).
+- Found: 2026-11-21, ticket 9.1b.04 (self-check on the owner's PC); widened 2026-11-22 by review 9.1b (F2: a game without a Steam page is affected too, up to a week).
 
 ## KI-80. ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint
 

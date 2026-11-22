@@ -339,6 +339,24 @@ def test_a_failure_tells_the_owner_nothing_and_comes_again_in_six_hours(tracker,
     assert zog_snapshot(session_factory, title_id).state == {"page": "stray", "by": "found", "text": False, "voice": False}
 
 
+def test_a_bug_in_one_game_is_logged_with_its_traceback_and_tells_the_owner_nothing(
+    tracker, igdb, zog, session_factory, caplog
+):
+    # review 9.1b, F3: not a failure of ZoG, so not a warning without a trace that hides the bug
+    zog.failure = TypeError("a bug in reading the page")
+    title_id = add(tracker, igdb, "Stray", year=2022)
+
+    with caplog.at_level(logging.WARNING):
+        run(tracker.poll_due())
+
+    stored = zog_snapshot(session_factory, title_id)
+    assert stored.state == {}
+    assert stored.next_check_at == naive(T0) + timedelta(hours=6)
+    assert failure_events(session_factory) == []
+    bug = [record for record in caplog.records if "failed by a bug" in record.getMessage()]
+    assert len(bug) == 1 and bug[0].levelno == logging.ERROR and bug[0].exc_info is not None
+
+
 def test_a_failure_while_finding_keeps_the_state(tracker, igdb, zog, steam, session_factory):
     zog.failure = ZogError("timeout")
     title_id = add(tracker, igdb, "Baldur's Gate III")

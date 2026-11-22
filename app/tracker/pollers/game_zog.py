@@ -28,6 +28,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, tzinfo
 
+from app.providers.zog import ZogError
 from app.tracker import failures, games, russian, russian_events, storage
 from app.tracker.context import CoreContext
 from app.tracker.game_scope import GameScope
@@ -110,8 +111,12 @@ class GameZog:
             except _Keep:
                 await asyncio.to_thread(self._next_check, title, ZOG_INTERVAL)
                 continue
-            except Exception as exc:  # ZoG did not answer, or a bug in reading one game: the others go on
+            except ZogError as exc:  # ZoG did not answer: a log line, no message
                 logging.warning("ZoG check of title %s failed, again in 6 hours: %r", title.id, exc)
+                await asyncio.to_thread(self._next_check, title, ZOG_RETRY)
+                continue
+            except Exception:  # a bug in reading one game goes to the log with its traceback; the others go on
+                logging.exception("ZoG check of title %s failed by a bug, again in 6 hours", title.id)
                 await asyncio.to_thread(self._next_check, title, ZOG_RETRY)
                 continue
             await asyncio.to_thread(self._queue_and_store, game, new)
@@ -239,8 +244,8 @@ class GameZog:
 
     @staticmethod
     def _moved(session, game: _Game) -> bool:
-        """The owner saved a page or said «Не та игра» while ZoG was asked (`zog_page`): his state stays, this look
-        is dropped with its events (they would be about the other page)."""
+        """The owner saved a page or said «Не та игра» while ZoG was asked (`zog_page`): the owner's state stays, this
+        look is dropped with its events (they would be about the other page)."""
         stored = storage.snapshot_of(session, game.due.id, SOURCE_KEY)
         if stored is not None and stored.state == game.stored:
             return False

@@ -180,10 +180,6 @@ In code: `fan` (`russian.FanLook` — the state of the snapshot `zog`; `FOUND`, 
 Every 6 hours the tracker asks Steam which languages the games in «Хочу» and «В процессе» have (on any platforms), all in one request, in the US store (a game not sold in a country lists no languages there); a game with no Steam page takes what IGDB said with its dates. Once a week it reads the game's page on ZoG for the fan translation, two games a minute: a page not known yet is found by the game's original name (at most four addresses, taken only when ZoG's name and year match the game); a ZoG failure is not reported, only tried again in 6 hours; a page whose layout cannot be read keeps what it said before. The first check of a game, the check after a Steam page appeared or changed, the first read of a ZoG page and the first check after «Вернуть в список» only record what exists, without messages; later each Russian part that appears (text, voice) comes as a message («🎮 В «Stray» появился русский текст», «🎮 Для «Baldur’s Gate 3» вышла народная русская озвучка» — a fan part only when the official lacks it), Russian that disappears gives none, and a source that says nothing keeps what it said before. «Прошёл» and «Бросил» stop the check and take its undelivered messages out; the card keeps the last line.
 In code: `Russian check` (`pollers/game_russian` — the official part; `pollers/game_zog` — the ZoG part; the snapshots of sources `russian_official` and `zog`, what one check saw — `russian.Look`, `russian.FanLook`; which games are checked — `for_russian`; the events — `game_russian_official`, `game_russian_fan`).
 
-**Народный перевод** (fan translation):
-A Russian translation made by fans, not by the game's makers, as listed on the game's page on Zone of Games (ZoG): text, voice or both. Its page — «Страница на ZoG» — is found by the game's name (a few address variants, taken only when ZoG's name of the page matches the game); the owner can paste the right one or reject a wrong one («Не та игра»).
-In code: not in code yet.
-
 ## Delivery
 
 **Рабочие дни** (work days):

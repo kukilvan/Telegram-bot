@@ -101,6 +101,12 @@ def test_the_entries_end_at_the_table_and_the_year_may_be_missing():
         ("Русификатор (текст) - для Switch-версии", None),
         ("Русификатор (звук) - для Mac-версии", None),
         ("Русификатор (текст) - для PS4-версии", None),
+        # a platform of two words or two platforms (review 9.1b, F1): another platform unless ПК is one of them
+        ("Русификатор (текст) - для Xbox 360-версии", None),
+        ("Русификатор (текст) - для Nintendo Switch-версии", None),
+        ("Русификатор (звук) - для PS Vita-версии (GamesVoice)", None),
+        ("Русификатор (текст) - для PS4- и PS5-версий", None),
+        ("Русификатор (текст) - для ПК- и Switch-версий", TEXT),
         ("Русификатор (текстуры) - для ПК-версии", None),
         ("Русификатор (видео)", None),
         ("Українізатор (текст) - для ПК-версии", None),

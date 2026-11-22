@@ -17,7 +17,8 @@ Spec 5.6 and 5.7 of stage 9.1b, ADR 0016. Pure: no database, no network, no cloc
   `/games/<page>/files/<n>.html` after «Переводы:» up to the next `</table>`: no «Переводы:» — no translations
   (Support(no, no)); «Переводы:» with no such link — the entries are unreadable (`GamePage.support` None). An entry
   counts when its text starts with «Русификатор (»: «текст» in the first brackets gives text, «звук» voice; one «для
-  <X>-версии» with X other than «ПК» is not counted (another platform).
+  <X>-версии» (or «-версий») whose X has no word «ПК» is not counted: another platform, of one word or more («Xbox
+  360», «PS4- и PS5»).
 - **The page of a link** (`page_of`): `http(s)://(www.)zoneofgames.ru/games/<page>/…` → `<page>`, lower case.
 """
 
@@ -52,7 +53,7 @@ _TRANSLATIONS = "Переводы:"
 _ENTRY = re.compile(r"""<a\s+href=['"]/games/[a-z0-9_]+/files/\d+\.html['"][^>]*>(.*?)</a>""", re.IGNORECASE | re.DOTALL)
 _TAG = re.compile(r"<[^>]+>")
 _RUSSIAN_ENTRY = "Русификатор ("
-_PLATFORM = re.compile(r"для\s+(\S+?)-версии")
+_PLATFORM = re.compile(r"для\s+(.+?)-верси[ийя]")  # «для Xbox 360-версии», «для PS4- и PS5-версий»
 _PC = "ПК"
 
 
@@ -188,7 +189,7 @@ def entry_parts(entry: str) -> Support | None:
         return None
     inside, rest = entry[len(_RUSSIAN_ENTRY):].split(")", 1)
     platform = _PLATFORM.search(rest)
-    if platform is not None and platform.group(1).upper() != _PC:
+    if platform is not None and _PC not in re.findall(r"\w+", platform.group(1).upper()):
         return None
     words = set(re.findall(r"\w+", inside.lower()))
     parts = Support("текст" in words, "звук" in words)
