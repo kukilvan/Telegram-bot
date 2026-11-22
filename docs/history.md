@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-22 — Ticket 9.1c.05
+
+- KI-73: `DeliveryRules.due` gives the two login reports (`login_events.TYPES`, `delivery.is_report`) in its first list in every case, in front of the others; `DeliveryService.summary_now` sends them apart before the summary; they never expire. Never twice: the passes run under `delivery_lock` and a send marks its items in one step (`tests/test_tracker_login_report_rules.py`).
+- KI-75: `data/web_login.json` has `mark` (`auth.login_mark`: HMAC-SHA256 with the key of `data/web_secret` over `web_login.json:` and `WEB_PASSWORD`); `SignIns(file, clock, mark)` checks it at start (no mark — kept and written at once; another — sign-ins dropped, the last login and the lock count stay, a log line; not 64 hex — spoiled). `VERSION` stays 1 (`tests/test_web_sign_in_mark.py`).
+- KI-76: `config._host_reads` turns a name with a non-ASCII character into its IDNA form (UTS 46, `idna>=3.4` named in `requirements.txt` and `pyproject.toml`); `AppUrl.shown` is the address as written, used by the Settings line; a name IDNA refuses has its own reason. KI-72 won't fix.
+- 5006 passed, 2 skipped (the known Windows failures deselected). Live by the session: the 7.2 file kept its 10 sign-ins and got a mark; a Cyrillic `APP_URL` gave link mode and the Settings line `https://трекер.рф` (the line in `.env` put back); with the container's network cut a report failed by timeout and the next pass delivered it once.
+- Accepted by the owner («ОК»); the password-change step of the check was left to later.
+
 ## 2026-11-22 — Ticket 9.1c.04
 
 - KI-30: an own table `genres.SYNONYMS` (key → the genres it counts as): «Экшен» → «Боевик», «Тайна» → «Детектив», «Боевик и Приключения», «НФ и Фэнтези», «Война и Политика» split into their parts. `merge` and `keys_of` read through `counts_as`; `chosen_key` reads `?genre=` and the `genre` argument (a synonym is its genre, a composite name its first part), and the Archive finds the label by key, so an old bookmark («Экшен», «экшен») marks the merged genre. The card and the Search keep the source's names. The table is checked against the live lists (`tests/fixtures/tmdb/genres_ru.json`, `shikimori/genres_ru.json`); «Политика» stands only inside its composite.
