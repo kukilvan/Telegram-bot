@@ -7,8 +7,8 @@ key prefix and the owner's time zone, so a message gives the hour of an episode)
 episodes come from. Shikimori says which seasons and parts exist and, roughly, how far each has got; AniList gives the
 exact schedule of one entry. `assemble` puts them together:
 
-- a part AniList has a schedule for takes its episodes from AniList: those already out are known by their number, the
-  next one by its moment (exact);
+- a part AniList has a schedule for takes its episodes from AniList: those already out are known by their number (and,
+  when they aired in the last 8 days, by the moment they aired: exact), the next one by its moment (exact);
 - a part AniList is expected to know but says nothing about this time (the service is down, the answer is empty or has
   a gap) keeps what was stored; Shikimori adds only the episodes that were not there. A source that fails to answer is
   never taken for a source that says «nothing is out», and the two cannot make the date flip back and forth;
@@ -18,7 +18,8 @@ exact schedule of one entry. `assemble` puts them together:
 Every episode keeps where its moment comes from (`EpisodeTiming`). A date once recorded for an episode that is out stays
 as it was, with its timing. An episode that is out now and was not stored before keeps the fresh moment when a source
 named it exactly; otherwise it gets the moment of this look, as unknown: it came out after the previous look as far as
-anyone can tell, and that is what makes it news (the first episode of a new season included), though not when. At
+anyone can tell, and that is what makes it news (the first episode of a new season included), though not when (an
+episode AniList says aired in the last 8 days is the exception: it has its own moment). At
 adding there is nothing stored, and what is out is history. So is an entry the title never had when its day by
 Shikimori is not later than the previous look: the chain grew behind the owner's back, nothing came out.
 
@@ -61,7 +62,10 @@ def flavor(tz: tzinfo | None) -> Flavor:
 def _scheduled(part: SeasonPart, schedule: PartSchedule, shikimori: Mapping[int, Episode], now: datetime) -> list[Episode]:
     """The episodes of a part as AniList's schedule tells them, in the season's numbering."""
     first = part.first_episode
-    episodes = [_out(first + index, shikimori.get(first + index), now) for index in range(schedule.released)]
+    episodes = [
+        _out(first + index, schedule.aired.get(index + 1), shikimori.get(first + index), now)
+        for index in range(schedule.released)  # the airings are numbered inside the entry, from 1
+    ]
     if schedule.next_episode:
         number = first + schedule.next_episode - 1
         if schedule.next_at is not None:
@@ -71,9 +75,11 @@ def _scheduled(part: SeasonPart, schedule: PartSchedule, shikimori: Mapping[int,
     return episodes
 
 
-def _out(number: int, shikimori: Episode | None, now: datetime) -> Episode:
-    """An episode AniList counts as out, its moment taken in this order: Shikimori's when that one is out (with its
-    timing), else the moment of this look (unknown)."""
+def _out(number: int, aired: datetime | None, shikimori: Episode | None, now: datetime) -> Episode:
+    """An episode AniList counts as out, its moment taken in this order: its airing from AniList (exact), Shikimori's
+    when that one is out (with its timing), else the moment of this look (unknown)."""
+    if aired is not None and aired <= now:
+        return Episode(number, aired, EpisodeTiming.EXACT)
     if shikimori is not None and shikimori.air_at is not None and shikimori.air_at <= now:
         return shikimori
     return Episode(number, now, EpisodeTiming.UNKNOWN)

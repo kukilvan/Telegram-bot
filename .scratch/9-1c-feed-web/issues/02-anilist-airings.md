@@ -1,6 +1,6 @@
 # 02: AniList airings of the last 8 days
 
-Status: open
+Status: in review
 Complexity: medium (one request root, one field, two callers; the moments of episodes already out)
 Blocked by: 01
 

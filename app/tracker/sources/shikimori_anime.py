@@ -58,8 +58,9 @@ class AniListIds(Protocol):
     async def get_anilist_ids(self, mal_ids: Sequence[int]) -> Mapping[int, int]:
         """AniList ids by MAL id; a MAL id AniList does not know is simply missing."""
 
-    async def get_schedules(self, anilist_ids: Sequence[int]) -> list[dict[str, Any]]:
-        """Raw AniList records (status, episode count, next airing episode) of the given entries."""
+    async def get_schedules(self, anilist_ids: Sequence[int], now: datetime) -> list[dict[str, Any]]:
+        """Raw AniList records (status, episode count, next airing episode, airings of the 8 days before `now`, an
+        aware moment) of the given entries."""
 
 
 @dataclass(frozen=True)
@@ -419,9 +420,15 @@ class ShikimoriAnimeSource:
 
     source_key = SOURCE_KEY
 
-    def __init__(self, shikimori, anilist: AniListIds | None = None) -> None:
+    def __init__(
+        self,
+        shikimori,
+        anilist: AniListIds | None = None,
+        clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+    ) -> None:
         self._shikimori = shikimori
         self._anilist = anilist
+        self._clock = clock  # the core's clock (aware): the airings of the last 8 days are counted back from it
 
     async def suggest(self, query: str) -> list[Suggestion]:
         return parse_search(await self._shikimori.search_anime(query, strict=True))
@@ -454,7 +461,7 @@ class ShikimoriAnimeSource:
         if not asked:
             return snapshot
         try:
-            media = await self._anilist.get_schedules([int(anilist_id) for anilist_id in asked])
+            media = await self._anilist.get_schedules([int(anilist_id) for anilist_id in asked], self._clock())
         except Exception as exc:  # the schedule is a refinement: Shikimori's figures and the stored ones stand without it
             logging.warning("AniList schedules for anime %s not found: %r", snapshot.external_id, exc)
             return snapshot

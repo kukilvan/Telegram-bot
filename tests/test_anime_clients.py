@@ -1,12 +1,18 @@
 """The new methods of the Shikimori and AniList clients, with the HTTP layer replaced. No network."""
 
 import asyncio
+import json
+import pathlib
+from datetime import datetime, timezone
 
 import httpx
 import pytest
 
 from app.providers.anilist import AniListProvider
 from app.providers.shikimori import ENTRY_QUERY, ShikimoriClient, ShikimoriError
+
+
+FIXTURES = pathlib.Path(__file__).parent / "fixtures" / "anilist"
 
 
 def run(coro):
@@ -79,9 +85,57 @@ def test_schedules_are_asked_for_by_anilist_id_in_one_request():
     media = [{"id": 195516, "status": "RELEASING", "episodes": 12, "nextAiringEpisode": {"episode": 5, "airingAt": 1793368800}}]
     client = StubAniList([{"Page": {"media": media}}])
 
-    assert run(client.get_schedules([200927, 195516, 195516])) == media
-    assert client.sent == [{"ids": [195516, 200927]}]
+    assert run(client.get_schedules([200927, 195516, 195516], NOW)) == media
+    assert [sent["ids"] for sent in client.sent] == [[195516, 200927]]
     assert "nextAiringEpisode" in client.SCHEDULES_QUERY
+
+
+NOW = datetime(2026, 11, 22, 12, 0, 0, tzinfo=timezone.utc)
+
+
+def test_one_request_carries_both_roots_and_the_window_of_the_last_eight_days_in_unix_seconds():
+    client = StubAniList([{"Page": {"media": []}, "recent": {"airingSchedules": []}}])
+
+    run(client.get_schedules([195516], NOW))
+
+    assert client.sent == [{"ids": [195516], "since": 1794657600, "until": 1795348800}]  # 14 Nov 12:00 and 22 Nov 12:00 UTC
+    assert client.sent[0]["until"] - client.sent[0]["since"] == 8 * 24 * 3600
+    query = " ".join(client.SCHEDULES_QUERY.split())
+    assert "media(id_in: $ids" in query and "recent: Page(perPage: 50)" in query
+    assert "airingSchedules(mediaId_in: $ids, airingAt_greater: $since, airingAt_lesser: $until, sort: TIME_DESC)" in query
+    assert "pageInfo" not in query
+
+
+def test_the_airings_of_the_saved_answer_reach_the_record_of_their_entry():
+    saved = json.loads((FIXTURES / "schedules_recent.json").read_text(encoding="utf-8"))["data"]
+    client = StubAniList([saved])
+
+    records = run(client.get_schedules([21, 195516, 200927, 99999999], NOW))
+
+    by_id = {r["id"]: r for r in records}
+    assert by_id[195516]["recentAirings"] == [{"mediaId": 195516, "episode": 8, "airingAt": 1795183200}]
+    assert all("recentAirings" not in r for i, r in by_id.items() if i != 195516)
+
+
+def test_more_than_fifty_ids_are_asked_in_packs_each_with_its_own_window_and_its_own_airings():
+    first = {"Page": {"media": [{"id": 1}]}, "recent": {"airingSchedules": [{"mediaId": 1, "episode": 2, "airingAt": 5}]}}
+    second = {"Page": {"media": [{"id": 51}]}, "recent": {"airingSchedules": [{"mediaId": 51, "episode": 3, "airingAt": 6}]}}
+    client = StubAniList([first, second])
+
+    records = run(client.get_schedules(range(1, 52), NOW))
+
+    assert [(s["since"], s["until"]) for s in client.sent] == [(1794657600, 1795348800)] * 2
+    assert [r["recentAirings"][0]["episode"] for r in records] == [2, 3]
+
+
+def test_without_a_given_moment_the_window_ends_at_the_clock_of_the_machine():
+    client = StubAniList([{"Page": {"media": []}}])
+
+    before = int(datetime.now(timezone.utc).timestamp())
+    run(client.get_schedules([1]))
+
+    assert before <= client.sent[0]["until"] <= before + 5
+    assert client.sent[0]["until"] - client.sent[0]["since"] == 8 * 24 * 3600
 
 
 def test_an_empty_schedule_answer_is_a_list_but_a_failed_one_raises():

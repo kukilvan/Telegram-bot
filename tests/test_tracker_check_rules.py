@@ -19,8 +19,9 @@ from app.tracker.movie_events import DetectedEvent, MovieDates, day_start
 from app.tracker.platforms import WORLD, Platform
 from app.tracker.pollers.base import DueTitle, Poller
 from app.tracker.queue import EventQueue
-from app.tracker.seasons import Episode, Season
-from app.tracker.sources.shikimori_anime import SourceIds
+from app.tracker.seasons import Episode, PartCut, Season
+from app.tracker.sources.anilist_schedule import PartSchedule
+from app.tracker.sources.shikimori_anime import SeasonPart, SourceIds
 
 NOW = datetime(2026, 11, 20, 12, 0)
 
@@ -305,3 +306,17 @@ def test_the_first_check_after_the_return_keeps_silent_about_a_premiere_known_by
     recorded = first_check_after_the_return((), premiere, RESTORED - timedelta(days=1), RESTORED + timedelta(minutes=5))
 
     assert recorded == []
+
+
+def test_the_first_check_after_the_return_reports_an_episode_anilist_says_aired_after_it_with_its_airing_moment():
+    aired, found = RESTORED + timedelta(minutes=1), RESTORED + timedelta(minutes=30)  # spec 1.5 of stage 9.1c
+    part = SeasonPart(1, 1, 1, 12, SourceIds("100", "100", "200"), "ongoing")
+    schedule = PartSchedule("RELEASING", 5, 6, found + timedelta(days=7), aired={5: aired})
+    cuts = (PartCut(1, 12, "100"),)
+    old = Season(1, "Сезон 1", 12, OUT_BEFORE, cuts, "100")
+    fresh = Season(1, "Сезон 1", 12, OUT_BEFORE + (Episode(5, datetime(2026, 10, 2), EpisodeTiming.UNKNOWN),), cuts, "100")
+
+    [new] = anime_events.assemble([fresh], [part], {"100": schedule}, [old], found)
+
+    assert new.episodes[4] == Episode(5, aired, EpisodeTiming.EXACT)  # not the moment of the check
+    assert first_check_after_the_return(old.episodes, new.episodes, RESTORED - timedelta(days=1), found) == ["anime:1:s1:e5:out"]

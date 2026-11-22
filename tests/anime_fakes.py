@@ -45,6 +45,7 @@ class FakeAniList:
         self.schedules = dict(schedules or {})
         self.asked = []
         self.asked_schedules = []
+        self.asked_at = []  # the moment each schedule request was given (the core's clock)
         self.broken = False  # AniList is down: every request fails
         self.schedules_broken = False  # only the schedule request fails
 
@@ -56,13 +57,20 @@ class FakeAniList:
             return {m: a for m, a in self.ids.items() if m in mal_ids}
         return {m: m + 100000 for m in mal_ids}  # every MAL id has its own AniList id
 
-    async def get_schedules(self, anilist_ids):
+    async def get_schedules(self, anilist_ids, now=None):
         self.asked_schedules.append(sorted(anilist_ids))
+        self.asked_at.append(now)
         if self.broken or self.schedules_broken:
             raise ConnectionError("AniList is down")
         return [dict(self.schedules[i]) for i in anilist_ids if i in self.schedules]
 
     # --- what a test changes in AniList's answer ---
+
+    def aired(self, anilist_id, episode, moment):
+        """The airing of the entry's own episode `episode` at `moment` (naive UTC) is among the airings of the last days."""
+        record = self.schedules[anilist_id]
+        node = {"mediaId": anilist_id, "episode": episode, "airingAt": int(moment.replace(tzinfo=timezone.utc).timestamp())}
+        record["recentAirings"] = [*record.get("recentAirings", []), node]
 
     def next_episode(self, anilist_id, episode, moment):
         """The entry is running; `episode` (its own number) comes out at `moment` (naive UTC)."""

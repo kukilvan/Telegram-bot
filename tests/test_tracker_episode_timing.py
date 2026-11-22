@@ -124,6 +124,97 @@ def test_anilist_without_an_airing_takes_shikimoris_moment_of_the_next_episode_w
     assert anime_events._scheduled(PART, schedule, shikimori_episodes(4), NOW)[-1] == Episode(5, None)
 
 
+# --- AniList's airings of the last days (spec 1.5) ---------------------------------------------------------------------
+
+THREE_DAYS_AGO = NOW - timedelta(days=3)
+
+
+def with_airings(schedule, **aired):
+    """`PartSchedule` with the airings given by episode: `with_airings(s, e4=moment)`."""
+    return replace(schedule, aired={int(name[1:]): moment for name, moment in aired.items()})
+
+
+def test_an_episode_out_takes_its_airing_before_shikimoris_moment_and_before_the_moment_of_the_look():
+    schedule = with_airings(PartSchedule("RELEASING", 4, 5, AIRING_AT), e2=THREE_DAYS_AGO, e4=THREE_DAYS_AGO)
+
+    built = anime_events._scheduled(PART, schedule, shikimori_episodes(3), NOW)
+
+    assert built == [
+        Episode(1, START, DAY),  # no airing: Shikimori's moment, with its timing
+        Episode(2, THREE_DAYS_AGO, EXACT),  # the airing beats Shikimori's day for the episode
+        Episode(3, START, UNKNOWN),
+        Episode(4, THREE_DAYS_AGO, EXACT),  # Shikimori is behind, the airing is not
+        Episode(5, AIRING_AT, EXACT),
+    ]
+
+
+def test_the_airings_are_numbered_inside_the_entry_and_laid_in_the_numbering_of_the_season():
+    second_cour = SeasonPart(1, 2, 13, 12, SourceIds("101", "101", "201"), "ongoing")
+    schedule = with_airings(PartSchedule("RELEASING", 2, 3, AIRING_AT), e2=THREE_DAYS_AGO)
+
+    built = anime_events._scheduled(second_cour, schedule, {}, NOW)
+
+    assert built == [
+        Episode(13, NOW, UNKNOWN),
+        Episode(14, THREE_DAYS_AGO, EXACT),  # the entry's episode 2 is the season's 14
+        Episode(15, AIRING_AT, EXACT),
+    ]
+
+
+def test_an_airing_that_is_not_behind_the_clock_is_not_a_moment_of_an_episode_out():
+    schedule = with_airings(PartSchedule("RELEASING", 4, 5, AIRING_AT), e4=NOW + timedelta(minutes=5))
+
+    assert anime_events._scheduled(PART, schedule, shikimori_episodes(3), NOW)[3] == Episode(4, NOW, UNKNOWN)
+
+
+def test_a_title_added_with_an_episode_out_three_days_ago_stores_its_airing_moment_as_exact():
+    schedule = with_airings(PartSchedule("RELEASING", 4, 5, AIRING_AT), e4=THREE_DAYS_AGO)
+
+    found = assemble(shikimori_episodes(3), None, schedule)
+
+    assert found[4] == Episode(4, THREE_DAYS_AGO, EXACT)
+    assert found[3] == Episode(3, START, UNKNOWN)  # no airing: as after ticket 01
+
+
+def test_an_episode_a_check_finds_a_minute_after_it_aired_is_stored_at_the_airing_moment_not_the_checks():
+    aired = AIRING_AT
+    schedule = with_airings(PartSchedule("RELEASING", 4, 5, aired + timedelta(days=7)), e4=aired)
+
+    found = assemble(shikimori_episodes(4), shikimori_episodes(3), schedule, now=aired + timedelta(minutes=1))
+
+    assert found[4] == Episode(4, aired, EXACT)
+
+
+def test_without_an_airing_the_episode_a_check_finds_has_the_moment_of_the_look_as_unknown():
+    schedule = PartSchedule("RELEASING", 4, 5, AIRING_AT + timedelta(days=7))
+
+    found = assemble(shikimori_episodes(4), shikimori_episodes(3), schedule)
+
+    assert found[4] == Episode(4, NOW, UNKNOWN)
+
+
+def test_shikimoris_moment_is_the_second_choice_when_the_airing_is_missing():
+    schedule = with_airings(PartSchedule("RELEASING", 4, 5, AIRING_AT + timedelta(days=7)), e3=THREE_DAYS_AGO)
+    shikimori = {**shikimori_episodes(3), 4: Episode(4, NOW - timedelta(hours=2), EXACT)}  # out, named by Shikimori
+
+    built = anime_events._scheduled(PART, schedule, shikimori, NOW)
+
+    assert (built[2], built[3]) == (Episode(3, THREE_DAYS_AGO, EXACT), Episode(4, NOW - timedelta(hours=2), EXACT))
+
+
+def test_when_more_than_fifty_airings_came_the_oldest_missing_episode_takes_the_moment_of_the_check():
+    # the answer is the latest 50, so episode 1 (the oldest) is not there: it was stored by nothing, out and silent
+    out = 12
+    part = replace(PART, episode_count=out)
+    airings = {n: THREE_DAYS_AGO + timedelta(hours=n) for n in range(2, out + 1)}
+    schedule = PartSchedule("RELEASING", out, None, None, aired=airings)
+
+    built = anime_events._scheduled(part, schedule, {}, NOW)
+
+    assert built[0] == Episode(1, NOW, UNKNOWN)
+    assert all(e.timing == EXACT for e in built[1:])
+
+
 def season_of(episodes):
     return Season(1, "Сезон 1", 12, tuple(episodes[n] for n in sorted(episodes)), (PartCut(1, 12, "100"),), "100")
 

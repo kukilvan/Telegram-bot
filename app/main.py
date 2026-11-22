@@ -155,14 +155,17 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
     steam = SteamProvider()  # one client for the Russian texts of a game being added and for its prices
     # one client for the games and their expansions and sequels: one pace for every request to IGDB
     igdb = IGDBProvider(settings.igdb_client_id, settings.igdb_client_secret)
+    def clock() -> dt:
+        return dt.now(tz=timezone.utc)
+
     return Tracker(
         create_session_factory(),
-        clock=lambda: dt.now(tz=timezone.utc),
+        clock=clock,
         sender=TelegramSender(bot, settings.owner_chat, links),
         sources={
             TitleKind.MOVIE: TmdbMovieSource(tmdb),
             TitleKind.SERIES: TmdbSeriesSource(tmdb),
-            TitleKind.ANIME: ShikimoriAnimeSource(ShikimoriClient(), AniListProvider()),
+            TitleKind.ANIME: ShikimoriAnimeSource(ShikimoriClient(), AniListProvider(), clock),
             # without the keys of IGDB both sources of it are «not connected»: they ask nothing and say so
             TitleKind.GAME: IgdbGameSource(igdb, steam),
         },

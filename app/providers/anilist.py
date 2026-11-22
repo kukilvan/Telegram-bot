@@ -9,9 +9,9 @@ import logging
 import time
 from collections import deque
 from collections.abc import Sequence
+from datetime import datetime, timedelta, timezone
 
 import httpx
-
 
 
 class AniListProvider:
@@ -112,9 +112,10 @@ class AniListProvider:
     """
     IDS_PAGE = 50
 
-    # The airing schedule of several entries at once; an id AniList does not know is simply missing
+    # The airing schedule of several entries at once; an id AniList does not know is simply missing. The second root
+    # is the airings of the last days (the latest first; past 50 the oldest are not there, and those are the least needed)
     SCHEDULES_QUERY = """
-    query ($ids: [Int]) {
+    query ($ids: [Int], $since: Int, $until: Int) {
       Page(page: 1, perPage: 50) {
         media(id_in: $ids, type: ANIME) {
           id
@@ -123,8 +124,17 @@ class AniListProvider:
           nextAiringEpisode { episode airingAt }
         }
       }
+      recent: Page(perPage: 50) {
+        airingSchedules(mediaId_in: $ids, airingAt_greater: $since, airingAt_lesser: $until, sort: TIME_DESC) {
+          mediaId
+          episode
+          airingAt
+        }
+      }
     }
     """
+    RECENT_DAYS = 8  # how far back the airings are asked for
+    RECENT_KEY = "recentAirings"  # where `get_schedules` puts the airings of an entry in its record
 
     # AniList's own request pacing (not TMDb's settings)
     min_call_interval = 1.5      # seconds between consecutive calls
@@ -251,15 +261,38 @@ class AniListProvider:
                     found[int(media["idMal"])] = int(media["id"])
         return found
 
-    async def get_schedules(self, anilist_ids: Sequence[int]) -> list[dict]:
-        """Raw AniList records (status, episode count, next airing episode) of the given entries, 50 ids per request.
+    async def get_schedules(self, anilist_ids: Sequence[int], now: datetime | None = None) -> list[dict]:
+        """Raw AniList records (status, episode count, next airing episode) of the given entries, 50 ids per request,
+        each with its airings of the last 8 days from `now` (an aware moment; the caller's clock) under `recentAirings`.
 
-        Raises when a request fails: «AniList is down» must not look like «AniList has no schedule»."""
+        The airings come in the same request (no more requests, the same pace). An answer without them, or with a
+        broken part, just leaves the records as they are. Raises when a request fails: «AniList is down» must not
+        look like «AniList has no schedule»."""
+        now = now or datetime.now(timezone.utc)
+        until = int(now.timestamp())
+        since = int((now - timedelta(days=self.RECENT_DAYS)).timestamp())
         wanted = sorted(set(anilist_ids))
         media: list[dict] = []
         for start in range(0, len(wanted), self.IDS_PAGE):
-            data = await self._post(self.SCHEDULES_QUERY, {"ids": wanted[start:start + self.IDS_PAGE]})
+            ids = wanted[start:start + self.IDS_PAGE]
+            data = await self._post(self.SCHEDULES_QUERY, {"ids": ids, "since": since, "until": until})
             if data is None:
                 raise RuntimeError("AniList request failed")
-            media.extend((data.get("Page") or {}).get("media") or [])
+            records = (data.get("Page") or {}).get("media") or []
+            media.extend(self._with_airings(records, data.get("recent")))
         return media
+
+    @classmethod
+    def _with_airings(cls, records: list[dict], recent: object) -> list[dict]:
+        """The records, each with the airings of its own id (as AniList sent them; the reading is the adapter's)."""
+        nodes = recent.get("airingSchedules") if isinstance(recent, dict) else None
+        if not isinstance(nodes, list):
+            return records
+        by_id: dict[int, list[dict]] = {}
+        for node in nodes:
+            media_id = node.get("mediaId") if isinstance(node, dict) else None
+            if isinstance(media_id, int):
+                by_id.setdefault(media_id, []).append(node)
+        return [
+            {**record, cls.RECENT_KEY: by_id[record["id"]]} if record.get("id") in by_id else record for record in records
+        ]
