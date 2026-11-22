@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-22 — Ticket 9.1c.02
+
+- AniList airings of the last 8 days (spec 1.5, 12 of 9.1c): the schedule request got the second root `recent: Page(perPage: 50) { airingSchedules(mediaId_in, airingAt_greater: $since, airingAt_lesser: $until, sort: TIME_DESC) }` in the same request (no new request, the same pace). `AniListProvider.get_schedules(ids, now)` takes the core's clock (`ShikimoriAnimeSource(…, clock)`; `main.py` hands the same clock), counts `$since` = now − 8 days, `$until` = now in unix seconds and puts the airings of each entry into its record under `recentAirings` (a broken or missing `recent` leaves the records as they are).
+- `sources/anilist_schedule` reads them strictly into `PartSchedule.aired` (entry's own number → naive UTC moment): a node without an `int` `mediaId` of the record, a positive `int` `episode` or an `int` `airingAt` is skipped, so is a number beyond AniList's count; `_usable` dropping a schedule drops its airings. `anime_events._out`: an airing behind the clock (`exact`), else Shikimori's moment when out, else the look (`unknown`); `assemble` needed no change (an `exact` moment found now stays). More than 50 airings: the oldest missing episode takes the moment of the check.
+- Tests: `test_tracker_anilist_airings` (through the facade), the airings in `test_anilist_schedule_source`, `test_anime_clients`, `test_tracker_episode_timing`, `test_tracker_check_rules`; the saved answer `tests/fixtures/anilist/schedules_recent.json`; `FakeAniList.aired`. 4933 passed, 3 skipped, the two known Windows failures. Live check with the real client: episode 8 of 195516 at 2026-11-20 14:00 UTC. The Gotcha about the moments of aired anime episodes rewritten.
+- Accepted by the owner («ОК»).
+
 ## 2026-11-22 — Ticket 9.1c.01
 
 - The moment of an episode (spec 1.1–1.4, 9, 11 of 9.1c): `EpisodeTiming` (`exact` · `day` · `unknown`) in `models`, `Episode.timing` (default `exact`) in `seasons`; migration 0017 `episodes.timing` filled by the table of spec 11 (on the owner's base: anime 6 `exact`, 21 `day`, 1419 `unknown`; series 185 `day`). `storage` writes and reads it with `air_at`; the JSON export stays without it.
