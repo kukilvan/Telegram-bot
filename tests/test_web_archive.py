@@ -149,6 +149,26 @@ def test_the_genres_are_those_of_the_archive_merged_and_in_alphabetical_order(cl
     assert current(client.get("/archive?genre=Драма").text) == ["Все", "Драма", "Весь архив", "По оценке"]
 
 
+def test_the_genre_row_names_each_genre_once_whatever_the_source_wrote_and_the_address_reads_the_table(
+    client, session_factory
+):
+    put(session_factory, "Один", TitleKind.ANIME, genres=["Экшен", "Тайна"])
+    put(session_factory, "Два", TitleKind.MOVIE, genres=["боевик", "детектив"])
+    put(session_factory, "Три", TitleKind.SERIES, genres=["НФ и Фэнтези"])
+    put(session_factory, "Четыре", TitleKind.ANIME, genres=["Фэнтези"])
+
+    html = client.get("/archive").text
+    row = re.search(r'<nav class="filters" aria-label="Жанр">(.*?)</nav>', html, re.S).group(1)
+
+    assert re.findall(r">([^<]+)</a>", row) == ["Все жанры", "Боевик", "Детектив", "Фантастика", "Фэнтези"]
+    assert sorted(shown(client.get("/archive?genre=Фэнтези").text)) == ["Три", "Четыре"]
+    for old in ("Экшен", "экшен", "Боевик"):  # a bookmark of the old name marks the merged genre
+        page = client.get("/archive", params={"genre": old}).text
+        assert sorted(shown(page)) == ["Два", "Один"] and current(page)[1] == "Боевик"
+    page = client.get("/archive", params={"genre": "НФ и Фэнтези"}).text
+    assert shown(page) == ["Три"] and current(page)[1] == "Фантастика"
+
+
 def test_the_genres_follow_the_kind_and_the_status(client, archive):
     html = client.get("/archive?kind=series&status=dropped").text
 

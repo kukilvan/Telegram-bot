@@ -4,7 +4,8 @@ the second letter on; HTMX waits for a pause in typing and drops a request that 
 
 The search can come from «Входящие» (`inbox=<item id>`, ticket 05 of stage 6.4): the page then says that adding a title
 removes the item, the suggestions and the add form carry the number, and a title added (new or already in the list)
-deletes the item. A number that is not an item of ours is ignored."""
+deletes the item. A suggestion of a title already in the list gets the form «Это оно — убрать запись» (the route of
+«Убрать»; KI-65). A number that is not an item of ours is ignored."""
 
 import logging
 from typing import NamedTuple
@@ -154,11 +155,14 @@ def _note(kind: TitleKind | None) -> str:
     return KINDS[kind].search_note if kind is not None else ""
 
 
-def _shared(request: Request) -> dict[str, object]:
+def _shared(request: Request, inbox: int | None) -> dict[str, object]:
+    """What the page and the fragment share; `inbox`, the item the search was opened for, gives the address of its
+    «Убрать» (the route of «Входящие»), which the suggestions of titles already in the list use (KI-65)."""
     return {
         "size": LIST_SIZE,
         "add_address": str(request.app.url_path_for("add_title")),
         "suggestions_address": str(request.app.url_path_for("search_suggestions")),
+        "inbox_remove": None if inbox is None else str(request.app.url_path_for("inbox_remove", item_id=inbox)),
     }
 
 
@@ -170,10 +174,11 @@ async def search_page(request: Request, kind: str = "", q: str = "", inbox: str 
     chosen = _kind_of(kind) or _remembered(request)
     if q.strip():
         request.session[KIND_KEY] = chosen.value
+    item = await _from_inbox(request, inbox)
     return await pages.page(
         request, "search.html", current=str(request.app.url_path_for("search")), choices=_switch(chosen),
-        note=_note(chosen), oob=False, inbox=await _from_inbox(request, inbox), from_inbox=FROM_INBOX,
-        **_shared(request), **await _found(request, chosen, q),
+        note=_note(chosen), oob=False, inbox=item, from_inbox=FROM_INBOX,
+        **_shared(request, item), **await _found(request, chosen, q),
     )
 
 
@@ -181,12 +186,14 @@ async def search_page(request: Request, kind: str = "", q: str = "", inbox: str 
 @pages.guarded
 async def suggestions(request: Request, kind: str = "", q: str = "", inbox: str = "") -> Response:
     """The place of the suggestions, for HTMX; the line under the switch comes with it (out of band), since the kind may
-    have changed. The number of the item (the page checked it) goes on to the add forms."""
+    have changed. The number of the item goes on to the add forms; the form «Это оно — убрать запись» only if the item
+    is still there."""
     chosen = _kind_of(kind)
     if chosen is not None:
         request.session[KIND_KEY] = chosen.value
+    item = await _from_inbox(request, inbox)
     return pages.fragment(
-        request, "suggestions.html", note=_note(chosen), oob=True, inbox=_inbox_id(inbox), **_shared(request),
+        request, "suggestions.html", note=_note(chosen), oob=True, inbox=_inbox_id(inbox), **_shared(request, item),
         **await _found(request, chosen, q),
     )
 

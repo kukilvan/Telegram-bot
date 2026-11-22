@@ -85,8 +85,8 @@ _Avoid_: рейтинг (that is a foreign score from a source)
 In code: `score` (the scale — `scores`: `SCALE`, `label`, `average`, `rounded`; the average over seasons — `by_seasons`).
 
 **Жанр** (genre):
-The genre of a title as its source names it (TMDb, Shikimori). In the Archive filter equal genres are merged: case does not matter, «ё» counts as «е» («драма» and «Драма» are one genre «Драма»). Synonyms of different sources («Боевик» and «Экшен») are different genres.
-In code: `genre` (merging — `genres`: `key_of`, `merge`).
+The genre of a title as its source names it (TMDb, Shikimori). In the Archive filter equal genres are merged: case does not matter, «ё» counts as «е» («драма» and «Драма» are one genre «Драма»). Synonyms of different sources are merged by an own table in the Archive filter («Боевик» of TMDb and «Экшен» of Shikimori are «Боевик»), a composite TMDb genre counts under each part («НФ и Фэнтези» is «Фантастика» and «Фэнтези»); the card and the Search keep the source's names.
+In code: `genre` (merging — `genres`: `key_of`, `merge`, the table `SYNONYMS`).
 
 ## Games
 

@@ -476,3 +476,73 @@ def test_the_way_back_after_a_refusal_keeps_the_number(tmp_path):
     response = client.post("/titles", data={"kind": "robot", "external_id": "1", "q": "Дюна", "inbox": str(number)})
 
     assert response.status_code == 303 and response.headers["location"].endswith(f"&inbox={number}")
+
+
+# ---- «Это оно — убрать запись»: the title is in the list already (KI-65) ----------------------------------------
+
+THIS_IT = "Это оно — убрать запись"
+
+
+def in_the_list(tracker):
+    """«Дюна» of the fake source is in the list, so its suggestion shows «В списке»."""
+    asyncio.run(tracker.add_title(TitleKind.MOVIE, "1"))
+
+
+def test_a_title_in_the_list_gets_the_form_that_removes_the_item(tmp_path):
+    tracker = make_tracker()
+    in_the_list(tracker)
+    number = put(tracker, text="Дюна")
+    client = make_client(tracker, tmp_path)
+
+    html = client.get("/search", params={"kind": "movie", "q": "Дюна", "inbox": number}).text
+    form = re.search(r'<form[^>]*action="/inbox/%d/remove"[^>]*>.*?</form>' % number, html, re.S)
+
+    assert "В списке" in html and form is not None and THIS_IT in form.group(0)
+    assert 'method="post"' in form.group(0) and "hx-" not in form.group(0) and "Добавить" not in html
+
+
+def test_the_fragment_for_htmx_has_the_same_form(tmp_path):
+    tracker = make_tracker()
+    in_the_list(tracker)
+    number = put(tracker, text="Дюна")
+    client = make_client(tracker, tmp_path)
+
+    html = client.get("/search/suggestions", params={"kind": "movie", "q": "Дюна", "inbox": number}, headers=HTMX).text
+
+    assert THIS_IT in html and f'action="/inbox/{number}/remove"' in html
+
+
+def test_without_the_item_there_is_no_form(tmp_path):
+    tracker = make_tracker()
+    in_the_list(tracker)
+    put(tracker, text="Дюна")
+    client = make_client(tracker, tmp_path)
+
+    for params in ({"kind": "movie", "q": "Дюна"}, {"kind": "movie", "q": "Дюна", "inbox": "77"}):
+        page = client.get("/search", params=params).text
+        fragment = client.get("/search/suggestions", params=params, headers=HTMX).text
+        assert "В списке" in page and THIS_IT not in page and "/remove" not in page and THIS_IT not in fragment
+
+
+def test_a_title_not_in_the_list_keeps_add_and_has_no_remove_form(tmp_path):
+    tracker = make_tracker()
+    number = put(tracker, text="Дюна")
+    client = make_client(tracker, tmp_path)
+
+    html = client.get("/search", params={"kind": "movie", "q": "Дюна", "inbox": number}).text
+
+    assert "Добавить" in html and THIS_IT not in html
+
+
+def test_the_press_deletes_the_item_and_goes_to_the_inbox_and_a_second_press_is_the_same(tmp_path):
+    tracker = make_tracker()
+    in_the_list(tracker)
+    number = put(tracker, text="Дюна")
+    keep = put(tracker, text="другое")
+    client = make_client(tracker, tmp_path)
+
+    first = client.post(f"/inbox/{number}/remove")
+    again = client.post(f"/inbox/{number}/remove")
+
+    assert first.status_code == again.status_code == 303 and first.headers["location"] == "/inbox"
+    assert again.headers["location"] == "/inbox" and left(tracker) == [keep]

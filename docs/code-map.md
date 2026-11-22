@@ -84,7 +84,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/game_rows.py` — What the owner reads of a game: the lines of its platforms on the card, the date outside the country, the links to the stores, the pieces of the feed.
 - `app/tracker/game_scope.py` — What the owner sees of the games: the country of the stores, «Мои платформы» and the marks «играю здесь».
 - `app/tracker/games.py` — The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
-- `app/tracker/genres.py` — Genres as the owner picks them: the same genre written in two cases or with «е» for «ё» is one genre.
+- `app/tracker/genres.py` — Genres as the owner picks them: one genre is one name, whatever the case, the «е» for «ё» or the source that wrote it.
 - `app/tracker/google_drive.py` — The connection of the Google Drive copy: whether it is on, the sign-in to Google and the sign-out, and the files of the connection in `data/`.
 - `app/tracker/inbox.py` — «Входящие»: taking in what the owner sends to the bot, the states of an item and its moves, the 12 hours, the list, the count and deleting.
 - `app/tracker/inbox_answers.py` — The answers to an inbox item: the end of its pause, the analysis by its links or by the kind the owner chose, the offer cards, «Да» and «Нет» (spec 1.3, 2.3, 6 and 7 of stage 6.4).

@@ -13,7 +13,7 @@ from sqlalchemy import func, select
 from app.tracker import scores
 from app.tracker import sequel_events, storage
 from app.tracker.cards import SequelsView, TitleCard, sequel_view
-from app.tracker.genres import key_of as genre_key
+from app.tracker.genres import chosen_key as chosen_genre_key
 from app.tracker.genres import keys_of as genre_keys
 from app.tracker.genres import merge as merge_genres
 from app.tracker.text import by_name
@@ -112,7 +112,7 @@ class Listing:
     @staticmethod
     def _matching(titles: list[Title], query: str | None, genre: str | None) -> list[Title]:
         needle = text_key(query.strip()) if query else ""
-        wanted = genre_key(genre) if genre else ""
+        wanted = chosen_genre_key(genre) if genre else ""
         if needle:
             titles = [t for t in titles if needle in text_key(t.name) or needle in text_key(t.original_name or "")]
         if wanted:

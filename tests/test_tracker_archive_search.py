@@ -106,8 +106,8 @@ def test_genres_that_differ_in_case_or_yo_are_one_genre():
     assert genres.label(["драма", "Драма"]) == "Драма"
 
 
-def test_synonyms_of_different_sources_stay_different_genres():
-    assert genres.merge([["Боевик"], ["Экшен"], ["Боевик и Приключения"]]) == ["Боевик", "Боевик и Приключения", "Экшен"]
+def test_synonyms_of_different_sources_are_one_genre_through_the_table():
+    assert genres.merge([["Боевик"], ["Экшен"], ["Боевик и Приключения"]]) == ["Боевик", "Приключения"]
 
 
 def test_genres_ignore_whatever_is_not_a_name():
@@ -121,7 +121,7 @@ def test_the_filter_by_a_genre_merges_the_writings(tracker, session_factory):
     put(session_factory, "Четыре")
 
     assert names(run(tracker.list_titles(genre="Драма"))) == ["Один", "Два"]
-    assert names(run(tracker.list_titles(genre="Боевик"))) == ["Два"]
+    assert names(run(tracker.list_titles(genre="Боевик"))) == ["Два", "Три"]  # «Экшен» is «Боевик» (KI-30)
     assert names(run(tracker.list_titles(genre="Вестерн"))) == []
     assert names(run(tracker.list_titles(genre=None))) == ["Один", "Два", "Три", "Четыре"]
 

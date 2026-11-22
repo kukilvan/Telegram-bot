@@ -44,7 +44,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-27 | Устаревшая карточка аниме ставит галочку не тому сезону после перенумерации | `app/web/card.py` | fixed | — |
 | KI-28 | Лента: серия аниме ровно в 00:00 UTC показывается без часа | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`) | 9.1 |
 | KI-29 | «Недавно» не показывает вышедшее до добавления и до первой проверки после возврата | `Poller.record_all` | fixed (test: `tests/test_tracker_feed_released.py`) | 9.1c |
-| KI-30 | Фильтр жанров Архива: один жанр под разными именами | `Tracker.genres` | open | 9.1 |
+| KI-30 | Фильтр жанров Архива: один жанр под разными именами | `Tracker.genres` | fixed (test: `tests/test_tracker_genres_table.py`) | 9.1c |
 | KI-31 | Список: поиск в режиме «Удалить несколько» сбрасывает галочки | `app/web/title_list.py` | fixed | — |
 | KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`) | 9.1 |
 | KI-33 | Строка «Бот не подключён к Telegram» не появляется, если связь пропала во время приёма | `app/runtime.py` | fixed (test: `tests/test_bot_stop_watch.py`) | 9.1a |
@@ -79,7 +79,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | open | 9.1 |
 | KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | open | 9.1 |
 | KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | open | 9.1 |
-| KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | open | 9.1 |
+| KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | fixed (test: `tests/test_web_inbox.py`) | 9.1c |
 | KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | open | 9.1 |
 | KI-67 | Google Drive copy: a folder of over 1000 files is listed only in part | `app/providers/google_drive.py` | open | 9.1 |
 | KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | open | 9.1 |
@@ -88,7 +88,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | open | 9.1 |
 | KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | open | 9.1 |
 | KI-73 | Login report: a report that failed to send waits for the delivery rules | `app/tracker` (stage 7.2) | open | 9.1 |
-| KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | open | 9.1 |
+| KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | fixed (test: `tests/test_web_css.py`) | 9.1c |
 | KI-75 | Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key | `app/web/sessions.py` | open | 9.1 |
 | KI-76 | `APP_URL`: a Cyrillic domain is refused with a reason about the dot | `app/config.py` | open | 9.1 |
 | KI-77 | Anime: an episode out right after «Вернуть в список» passes silently | `app/tracker/pollers/base.py` (spec 9.1a, 4.2) | fixed (test: `tests/test_tracker_check_rules.py`) | 9.1c |
@@ -380,7 +380,7 @@ Format of a new entry:
 - **Что не так:** TMDb и Shikimori называют жанры по-своему, а у сериалов TMDb жанры составные. В фильтре стоят рядом «Боевик» (фильм TMDb), «Экшен» (аниме Shikimori) и «Боевик и Приключения» (сериал TMDb); выбор одного не покажет тайтлы под другими именами.
 - **Как воспроизвести:** в архиве фильм-боевик, аниме-экшен и сериал «Боевик и Приключения»; фильтр «Боевик» показывает только фильм.
 - **Насколько вероятно / чем грозит:** всегда, когда в архиве есть тайтлы разных источников. Вред — подборку по жанру приходится собирать из двух-трёх фильтров. Починка — таблица синонимов жанров (своя, без источника) или фильтр по нескольким жанрам сразу.
-- **Статус:** Открыто.
+- **Статус:** Исправлено (тесты: `tests/test_tracker_genres_table.py`, `tests/test_web_archive.py`; тикет 04 этапа 9.1c). Своя таблица синонимов `genres.SYNONYMS`: «Экшен» — «Боевик», «Тайна» — «Детектив», составные жанры TMDb считаются по каждой части; `?genre=` читается через таблицу. Карточка и Поиск показывают жанры как их назвал источник.
 - **Найдено:** 2026-10-28, спека части 5.3 (описание, «Что может пойти не так»).
 
 ## KI-31. Список: поиск в режиме «Удалить несколько» сбрасывает галочки
@@ -698,7 +698,7 @@ Format of a new entry:
 - What's wrong: spec 9.3 deletes the item when adding succeeds «new or already in the list», but the Search shows a title of the list without «Добавить», so from «Найти» the item of such a title is never removed; the «already in the list» branch of `add` is reached only by a race.
 - How to reproduce: add a game, then send the bot a post about it and let it go to «Входящие» (e.g. «Нет» on its offer); on the web press «Найти» on it — the game shows «В списке», nothing removes the record.
 - Likelihood / impact: rare (the bot itself says «Уже в списке» and resolves such an item when it finds the title); the owner presses «Убрать». A fix: with `inbox`, a row in the list gets a button that removes the item («Это оно — убрать запись»), a choice of text for the fix.
-- Status: open.
+- Status: fixed (test: `tests/test_web_inbox.py`, «Это оно — убрать запись»; ticket 04 of stage 9.1c). With `inbox` of an item that is there, a row in the list gets a plain form to `POST /inbox/<id>/remove`.
 - Found: 2026-11-06, review of stage 6.4 (F10).
 
 ## KI-66. Copies: the time of a copy is the container's clock, not the zone of Settings
@@ -779,7 +779,7 @@ Format of a new entry:
 - What's wrong: on a phone each row of filter links is one line that scrolls sideways; a chosen link far to the right (a genre late in the list, «Весь список») can be out of sight until the row is swiped. Bringing it into view needs JavaScript (ADR 0004).
 - How to reproduce: at 375 px choose the last genre of «Архив», reload — its row starts from «Все жанры».
 - Likelihood / impact: only the look; the shown rows and the line «Показано …» follow the filter.
-- Status: open.
+- Status: fixed (test: `tests/test_web_css.py`; ticket 04 of stage 9.1c). No JavaScript needed after all: `order: -1` puts the chosen link first under 40rem.
 - Found: 2026-11-15, spec 7.2.
 
 ## KI-75. Sign-ins: the block «Вход» counts sign-ins ended by a new `WEB_PASSWORD` or key

@@ -9,6 +9,11 @@
     {{ title_main(row.poster, size, row.icon, row.name, row.original_name, row.year, row.details) }}
     {% if row.card %}
     <a class="row-action button-link" href="{{ row.card }}">В списке</a>
+    {% if inbox_remove %}
+    <form class="row-action" method="post" action="{{ inbox_remove }}">
+      <button type="submit">Это оно — убрать запись</button>
+    </form>
+    {% endif %}
     {% else %}
     <form class="row-action" method="post" action="{{ add_address }}" hx-post="{{ add_address }}" hx-target="this" hx-swap="outerHTML" hx-disabled-elt="find button">
       <input type="hidden" name="kind" value="{{ row.kind }}">

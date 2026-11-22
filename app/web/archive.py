@@ -9,6 +9,7 @@ from fastapi import APIRouter, Request, Response
 
 from app.tracker.cards import STATUS_LABELS, titles_word
 from app.tracker.core import ListOrder
+from app.tracker.genres import chosen_key, key_of
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from app.web import pages
 from app.web.filters import (
@@ -95,8 +96,11 @@ async def _view(request: Request, filters: Filters) -> tuple[str, dict[str, obje
     tracker = pages.tracker_of(request)
     # the genres are those of the archive under the kind and the status, not under the search or under the genre itself
     genres = await tracker.genres(filters.kind, filters.statuses())
-    if filters.genre is not None and filters.genre not in genres:
-        filters = replace(filters, genre=None)  # a bookmark of a genre the archive no longer has: no filter
+    if filters.genre is not None:
+        # an old bookmark («Экшен», «НФ и Фэнтези», «экшен») is read through the table, and the row marks the merged genre
+        wanted = chosen_key(filters.genre)
+        # a genre the archive no longer has: no filter
+        filters = replace(filters, genre=next((g for g in genres if key_of(g) == wanted), None))
     titles = await tracker.list_titles(
         filters.kind, filters.statuses(), filters.order, filters.query or None, filters.genre
     )
