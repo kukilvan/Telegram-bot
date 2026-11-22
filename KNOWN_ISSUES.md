@@ -95,6 +95,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
 | KI-79 | Russian: a game added before 9.1b says «Ещё не проверяли» until its own poll (up to a week), with a Steam page up to 6 hours more | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
 | KI-80 | ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint | `app/tracker/pollers/game_zog.py` (spec 9.1b, 5.6) | open | 9.2 |
+| KI-81 | Anime: a premiere Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_anime.py` (`part_episodes`) | open | 9.1d |
+| KI-82 | Login report: a report that waits past midnight says «сегодня» of the day before | `app/tracker/login_reports.py` | open | 9.2 |
 
 ## Entries
 
@@ -836,3 +838,21 @@ Format of a new entry:
 - Likelihood / impact: only while ZoG's layout is broken (the log says so every day); the fan part of new games is unknown for that time anyway. No message lost or false.
 - Status: open. Fix in 9.2 only if met (e.g. the state `{"page": null, "by": "unreadable"}` with the hint of an unreadable page).
 - Found: 2026-11-21, ticket 9.1b.05.
+
+## KI-81. Anime: a premiere Shikimori knows by the month or the year stands on a made-up first day
+
+- Where: `app/tracker/sources/shikimori_anime.py`, `part_episodes` (the premiere stub of an announced entry from `airedOn.date`); the Feed («Позже») and the card («часть 2 — с 1 апреля»).
+- What's wrong: for an announced entry Shikimori fills `airedOn.date` with the first of the month or of January when it knows only the month or the year (`airedOn.day` is null, sometimes `month` too). The stub is stored as that day, so the Feed and the card show a day nobody announced. Checked live 2026-11-22 (`.scratch/9-1c-feed-web/answers/shikimori-premiere-precision-2026-11-22.json`): «Монолог фармацевта» season 3 part 2 → 2027-04-01 (month only), «Ванпанчмен» season 3 part 2 and «Реинкарнация безработного» season 3 part 2 → 2027-01-01 (month only and year only).
+- How to reproduce: the card of «Ванпанчмен» — «Сезон 3 …; часть 2 — с 1 января»; the Feed, «Позже» — «1 января 2027».
+- Likelihood / impact: every announced part or season without an exact day; the owner may take the day for real. Nothing is lost: the right day comes with the source. A fix: read `airedOn { year month day }`, keep the precision with the stub (the episode timing of spec 9.1c gets one more value, or the stub is not stored) and show it as an approximate date («апрель 2027», «2027»), as games do; together with KI-64 (the same Shikimori day in an offer).
+- Status: open. Fix in 9.1d.
+- Found: 2026-11-22, spec 9.1c.
+
+## KI-82. Login report: a report that waits past midnight says «сегодня» of the day before
+
+- Where: `app/tracker/login_reports.py` (`LoginReports.record`: the moment in words is made when the login is recorded), spec 9.1c, section 6.
+- What's wrong: the text of a report keeps the words of the moment as they were at the login («сегодня в 23:50»). A report that could not be sent and goes after midnight says «сегодня» of the day before.
+- How to reproduce: stop the network of the container, log in at 23:50, bring the network back at 00:10 — the 🔐 message says «сегодня в 23:50».
+- Likelihood / impact: very rare after KI-73 (the report goes at the first delivery pass once Telegram answers); the time is right, only the day word is off.
+- Status: open. Fix in 9.2 only if met (e.g. the payload keeps the moment and the words are made at the send).
+- Found: 2026-11-22, spec 9.1c.
