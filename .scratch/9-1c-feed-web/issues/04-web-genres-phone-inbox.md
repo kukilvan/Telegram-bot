@@ -1,6 +1,6 @@
 # 04: Web — genres in the Archive filter, the chosen filter on the phone, «Это оно — убрать запись» — KI-30, KI-74, KI-65
 
-Status: in review
+Status: accepted
 Complexity: medium (three small independent changes in the web layer; no migration)
 Blocked by: —
 

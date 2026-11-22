@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-22 — Ticket 9.1c.04
+
+- KI-30: an own table `genres.SYNONYMS` (key → the genres it counts as): «Экшен» → «Боевик», «Тайна» → «Детектив», «Боевик и Приключения», «НФ и Фэнтези», «Война и Политика» split into their parts. `merge` and `keys_of` read through `counts_as`; `chosen_key` reads `?genre=` and the `genre` argument (a synonym is its genre, a composite name its first part), and the Archive finds the label by key, so an old bookmark («Экшен», «экшен») marks the merged genre. The card and the Search keep the source's names. The table is checked against the live lists (`tests/fixtures/tmdb/genres_ru.json`, `shikimori/genres_ru.json`); «Политика» stands only inside its composite.
+- KI-74: `.filters a[aria-current="true"] { order: -1; }` inside the 40rem block (`tests/test_web_css.py` reads the sheet). KI-65: with `inbox` of an item that is there (the fragment checks it too), a row in the list gets a plain form to `POST /inbox/<id>/remove`, «Это оно — убрать запись»; the address comes from the page (`inbox_remove`). No facade method.
+- `genres` joined the pure modules the web may import (rule 10, `test_web_skeleton`, `coding-standards.md`). 4949 passed, 2 skipped (the two known Windows failures deselected). Live: the container started, `/health` ok, no errors in the log, the served CSS holds the rule; a look at 375 px in the signed-in pages was not done (the password is the owner's) — the test reads the sheet.
+- Accepted by the owner («ОК»).
+
 ## 2026-11-22 — Ticket 9.1c.03
 
 - «Недавно» from the schedule (spec 2, KI-29): each poller hands over what its schedule says came out in the window (`Poller.feed_released(session, shown, basis, now)` — `SeasonalPoller` from the stored seasons, `MoviePoller` from its own states, games and the films of an anime franchise none); the new pure module `feed_released` keeps an episode (`exact` or `day`, out by now, its day within today − 6 … today) or a film date when it came out before adding (`air_at ≤ added_at`) or while in the archive (`≤ restored_at`; before adding wins) and no event of the title names it (`series_season_started`, `series_episode_out`, `series_season_ended` by season and episode; `movie_released`, `movie_digital`) since today − 7 on the owner's clock; folds one part of one season on one day, writes «{icon} {name} — {what}» with the pieces of «Скоро» (`feed_rows.part_text`, made public) and the grey line «вышла / вышли / вышел до добавления в список» or «…, пока тайтл был в архиве».
