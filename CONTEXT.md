@@ -243,9 +243,9 @@ _Avoid_: уведомление о входе, алерт
 In code: the events `web_login` and `web_login_locked` (`WEB_LOGIN`, `WEB_LOGIN_LOCKED`; no title, so the Feed never shows them), the texts `app/tracker/login_events.py`, the record `Tracker.record_login_report` (`login_reports`), the web side `LoginReporter` (`app/web/login_report.py`), the device words `app/web/devices.py`.
 
 **Лента** (feed):
-The main screen of the app: what comes out in the next days and what came out recently, by dates. Blocks: «Скоро» — the next 14 days by day, «Позже» — what comes out after them, «Недавно» — events of 7 days.
+The main screen of the app: what comes out in the next days and what came out recently, by dates. Blocks: «Скоро» — the next 14 days by day, «Позже» — what comes out after them, «Недавно» — events of 7 days. «Недавно» also shows what came out in those days before adding or while the title was in the archive (rows from the schedule: a grey line «вышла до добавления в список» / «…, пока тайтл был в архиве», no hour, no buttons), unless an event already tells it.
 _Avoid_: дашборд, календарь
-In code: `feed`; blocks — `upcoming` («Скоро»), `later` («Позже»), `recent` («Недавно»).
+In code: `feed`; blocks — `upcoming` («Скоро»), `later` («Позже»), `recent` («Недавно»); rows from the schedule — `feed_released`.
 
 **Карточка** (card):
 A title's page in the app (in the bot — a message) with details, seasons and buttons.

@@ -464,7 +464,7 @@ def test_a_list_with_nothing_coming_and_nothing_found(tracker, session_factory):
 def fill(session_factory, count):
     for n in range(count):
         series = put_title(session_factory, f"Сериал {n}")
-        put_season(session_factory, series, 1, {1: at(-3), 2: at(4)})
+        put_season(session_factory, series, 1, {1: at(-3), 2: at(-2), 3: at(4)})  # episode 2: a row from the schedule
         put_event(session_factory, series, EPISODE_OUT, episode_text(f"Сериал {n}", 1), at(-3), {"season": 1, "episode": 1})
         anime = put_title(session_factory, f"Аниме {n}", kind=ANIME)
         put_season(session_factory, anime, 1, {1: at(2, 15)}, parts=[(1, None)])
@@ -473,7 +473,7 @@ def fill(session_factory, count):
         put_event(session_factory, film, sequel_events.SEQUEL_ANNOUNCED, "🎬 Анонс", at(-1),
                   {"kind": "movie", "sequel_id": f"s{n}"})
         wanted = put_title(session_factory, f"Новый {n}", kind=MOVIE)
-        put_movie_dates(session_factory, wanted, theatrical=day(9))
+        put_movie_dates(session_factory, wanted, theatrical=day(9), digital=day(-2))  # out before adding: a row too
 
 
 def count_reads(session_factory, tracker):
@@ -500,7 +500,8 @@ def test_the_feed_reads_as_much_for_one_title_of_each_sort_as_for_fifty():
     reads_fifty, big = count_reads(fifty, make_tracker(fifty))
 
     assert reads_one == reads_fifty
-    assert len(big.upcoming[0].rows) == 50 and len(big.recent) == 2  # the fifty were really read
+    assert len(big.upcoming[0].rows) == 50 and len(big.recent) == 3  # the fifty were really read
+    assert len(big.recent[1].rows) == 100  # the rows from the schedule: an episode of each series, a date of each film
 
 
 # --- KI-10: «Посмотрел» is no check of a source -----------------------------------------------------------------------

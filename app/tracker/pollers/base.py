@@ -6,7 +6,8 @@ snapshot with the stored one, queues the events and stores the new state; `after
 of a press of the owner, what the press ends of the checks of the kind (a game: its price check); `end_of_pass` checks what is looked at for all
 the titles of the kind at once, after the pass over the titles (the Steam prices of the games, their expansions and sequels and
 Russian in them). What the owner reads is
-asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `card_part` gives what a card
+asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `feed_released` what came out
+in the days of «Недавно» (the Feed keeps what came out before a title's baseline), `card_part` gives what a card
 holds that depends on the kind, `list_marks` the marks of the rows of the list and `list_tags` the words after their
 names; `offers_follow_ups` says whether the kind announces titles to follow. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
 """
@@ -22,6 +23,7 @@ from sqlalchemy import Select, select
 from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart
 from app.tracker.context import PRIMARY_ROLE, CoreContext
+from app.tracker.feed_released import Out
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
 from app.tracker.models import ARCHIVE_STATUSES, ExternalId, SeasonRecord, Title, TitleKind, TitleStatus
 
@@ -120,6 +122,12 @@ class Poller:
     def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
         """What comes out from `basis.today` on, of all the titles of this kind that are not in the archive (`shown`:
         how their rows show them), in a number of reads that does not grow with the number of titles."""
+        return []
+
+    def feed_released(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> list[Out]:
+        """What the schedule says came out by `now` (naive UTC) in the days of «Недавно», of all the titles of this kind
+        that are not in the archive, in a number of reads that does not grow with the number of titles. The Feed keeps
+        what came out before a title's baseline and is not in the log (`feed_released`). None for a game."""
         return []
 
     def card_part(self, session, title: Title) -> CardPart:

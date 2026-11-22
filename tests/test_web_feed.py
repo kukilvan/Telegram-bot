@@ -227,8 +227,8 @@ def test_the_days_of_recent_are_today_yesterday_and_then_the_weekday_and_date(cl
 def test_every_row_leads_to_the_card_and_has_the_poster_or_the_icon(client, session_factory):
     shown = put_title(session_factory, "С постером", poster="/abc.jpg")
     bare = put_title(session_factory, "Без постера")
-    put_season(session_factory, shown, 1, {1: at(0)})
-    put_season(session_factory, bare, 1, {1: at(0)})
+    put_season(session_factory, shown, 1, {1: at(1)})  # tomorrow: today's would be out at adding, a row of «Недавно» too
+    put_season(session_factory, bare, 1, {1: at(1)})
 
     html = client.get("/").text
 
@@ -276,13 +276,25 @@ def test_nothing_coming_but_something_later_says_so_and_then_shows_later(client,
 
 def test_nothing_recent_says_so(client, session_factory):
     show = put_title(session_factory, "Укрытие")
-    put_season(session_factory, show, 2, {5: at(0)})
+    put_season(session_factory, show, 2, {5: at(1)})  # not out yet: nothing came out before adding either
     put_event(session_factory, show, EPISODE_OUT, "📺 Укрытие — вышла серия 1", at(-8), {"season": 1, "episode": 1})  # eight days ago
 
     html = client.get("/").text
 
     assert "За неделю ничего не случилось" in html and "вышла серия 1" not in html
 
+
+
+def test_what_came_out_before_adding_is_a_row_of_recent_with_its_grey_line_no_hour_and_no_buttons(client, session_factory):
+    show = put_title(session_factory, "Одни из нас")
+    put_season(session_factory, show, 2, {2: at(-9, 0), 3: at(-2, 0)})  # KI-29
+
+    html = client.get("/").text
+
+    assert days_of(html, "recent") == [format_weekday_date(day(-2))]
+    assert rows_of(html, "recent") == ["📺 Одни из нас — Сезон 2, серия 3 вышла до добавления в список"]
+    assert f'<a class="row-link" href="/titles/{show}">' in html
+    assert "За неделю ничего не случилось" not in html and "row-action" not in html
 
 # ---- the buttons -------------------------------------------------------------------------------------------------
 

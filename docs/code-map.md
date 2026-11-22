@@ -77,6 +77,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/exports.py` — The export of the owner's data, download only: the CSV list and the JSON of everything (spec 3 of stage 7.1).
 - `app/tracker/failures.py` — Source failure notices: why a title could not be checked, and how the message to the owner reads.
 - `app/tracker/feed.py` — The feed (`Tracker.feed()`): one read of the database for «Скоро», «Позже» and «Недавно».
+- `app/tracker/feed_released.py` — The rows of «Недавно» from the schedule (pure): what came out in its 7 days before adding or while in the archive, and is not in the event log.
 - `app/tracker/feed_rows.py` — The rows of the feed (`Tracker.feed()`): what comes out in the next days, what comes later, and what happened in the last week.
 - `app/tracker/follow_ups.py` — The follow-up check of a game (pure): its stored state, which expansions and games of its series are shown, their dates, what is new and the events.
 - `app/tracker/game_events.py` — Game events: what changed between two snapshots of a game on the platforms the owner is told about, and how the message reads.
@@ -123,8 +124,8 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/pollers/game_russian.py` — The official Russian check at the end of a polling pass: which games, the reconciliation, the due games, Steam in packs of 100, the reference point, the events, the store and the card's view.
 - `app/tracker/pollers/game_steam.py` — What the owner reads of the Steam prices of games: the block of a card and the marks of the rows of the list.
 - `app/tracker/pollers/game_zog.py` — The ZoG check at the end of a polling pass: the fan Russian of the games read from their pages on ZoG, and the card's part of it.
-- `app/tracker/pollers/movie.py` — A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show the same two dates.
-- `app/tracker/pollers/seasonal.py` — What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card lists.
+- `app/tracker/pollers/movie.py` — A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show the same two dates, and «Недавно» what of them came out before the film's baseline.
+- `app/tracker/pollers/seasonal.py` — What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card lists, and what came out in the days of «Недавно».
 - `app/tracker/pollers/sequels.py` — An archived movie: its own release is no longer followed, only the collection it belongs to, for sequels.
 - `app/tracker/pollers/series.py` — A series: the fresh seasons are compared with the stored ones, and the owner's season marks keep the status.
 - `app/tracker/polling.py` — Polling: the pass over the titles whose check time has come, and the one table that says which poller serves a kind.

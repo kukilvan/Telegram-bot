@@ -1,13 +1,14 @@
 """What a series and an anime share: their seasons decide when to look again, what the feed shows and what the card
-lists. An anime's source gives the moment of an episode, so its days and hours are the owner's (`KINDS[…].local_times`)."""
+lists, and what came out in the days of «Недавно». An anime's source gives the moment of an episode, so its days and hours are the owner's (`KINDS[…].local_times`)."""
 
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
-from app.tracker import feed_rows, series_events, storage
+from app.tracker import feed_released, feed_rows, series_events, storage
 from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart
+from app.tracker.feed_released import Out
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
 from app.tracker.kinds import KINDS
 from app.tracker.models import Title
@@ -26,6 +27,16 @@ class SeasonalPoller(Poller):
             if title_id in shown:
                 pieces += feed_rows.season_pieces(shown[title_id], seasons, basis.gap, local, basis.today)
         return pieces
+
+    def feed_released(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> list[Out]:
+        """The episodes out in the days of «Недавно» of all the titles of the kind, by the parts of «Скоро», from three
+        reads; the films of an anime franchise are never among them."""
+        local = basis.tz if KINDS[self.kind].local_times else None
+        outs: list[Out] = []
+        for title_id, seasons in storage.load_seasons_of(session, self._active()).items():
+            if title_id in shown:
+                outs += feed_released.season_outs(shown[title_id], seasons, basis.gap, local, basis.today, now)
+        return outs
 
     def card_part(self, session, title: Title) -> CardPart:
         """Where the seasons have got, and a row per season with the owner's mark and score (the web)."""

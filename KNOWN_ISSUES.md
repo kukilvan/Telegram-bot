@@ -43,7 +43,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-26 | Бот пишет в журнал сбой поиска и добавления без причины | `app/bot/tracker_handlers.py` | fixed | — |
 | KI-27 | Устаревшая карточка аниме ставит галочку не тому сезону после перенумерации | `app/web/card.py` | fixed | — |
 | KI-28 | Лента: серия аниме ровно в 00:00 UTC показывается без часа | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`) | 9.1 |
-| KI-29 | «Недавно» не показывает вышедшее до добавления и до первой проверки после возврата | `Poller.record_all` | open | 9.1 |
+| KI-29 | «Недавно» не показывает вышедшее до добавления и до первой проверки после возврата | `Poller.record_all` | fixed (test: `tests/test_tracker_feed_released.py`) | 9.1c |
 | KI-30 | Фильтр жанров Архива: один жанр под разными именами | `Tracker.genres` | open | 9.1 |
 | KI-31 | Список: поиск в режиме «Удалить несколько» сбрасывает галочки | `app/web/title_list.py` | fixed | — |
 | KI-32 | Лента: серия аниме, найденная без расписания, стоит в «Сегодня» с часом проверки | `app/tracker/anime_events.py` | fixed (test: `tests/test_tracker_episode_timing.py`, `tests/test_tracker_feed.py`) | 9.1 |
@@ -371,7 +371,7 @@ Format of a new entry:
 - **Что не так:** серия или фильм, вышедшие за последние 7 дней, но до добавления тайтла (или пока он лежал в архиве), в «Недавно» не попадают: для журнала это точка отсчёта, а не новость.
 - **Как воспроизвести:** добавить сериал, серия которого вышла вчера; в Ленте в «Недавно» её нет (в карточке видно «вышло N из M»).
 - **Насколько вероятно / чем грозит:** при каждом добавлении идущего сериала или аниме. Вред — неполное «Недавно» в первые дни после добавления; данные целы. Решение описания части 5.3 (вопрос 1: журнал показывает ещё объявленные и перенесённые даты и закрытия). Если станет мешать — добавить в «Недавно» серии и фильмы из расписания за 7 дней, которых нет в журнале.
-- **Статус:** Открыто.
+- **Статус:** fixed (test: `tests/test_tracker_feed_released.py`, `tests/test_web_feed.py::test_what_came_out_before_adding_is_a_row_of_recent_with_its_grey_line_no_hour_and_no_buttons`). Ticket 9.1c.03: «Недавно» gets rows from the schedule — the episodes (timing `exact` or `day`) and film dates of its 7 days that came out before adding («вышла до добавления в список») or while the title was in the archive («…, пока тайтл был в архиве») and that no event of the title names; no hour, no buttons, nothing queued (`Poller.feed_released`, the pure `feed_released`).
 - **Найдено:** 2026-10-28, описание и спека части 5.3.
 
 ## KI-30. Фильтр жанров Архива: один жанр под разными именами

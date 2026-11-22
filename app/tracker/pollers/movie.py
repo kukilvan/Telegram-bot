@@ -1,14 +1,15 @@
 """A movie: its own release dates are compared, and its snapshot says when to look again; the feed and the card show
-the same two dates."""
+the same two dates, and «Недавно» what of them came out before the film's baseline."""
 
 from collections.abc import Mapping, Sequence
 from datetime import datetime
 from typing import Any
 
-from app.tracker import feed_rows, movie_events
+from app.tracker import feed_released, feed_rows, movie_events
 from app.tracker import seasons as season_logic
 from app.tracker import storage
 from app.tracker.cards import CardPart
+from app.tracker.feed_released import Out
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
 from app.tracker.models import Title
 from app.tracker.pollers.base import DueTitle, Poller
@@ -26,6 +27,15 @@ class MoviePoller(Poller):
                 dates = movie_events.MovieDates.from_state(state)
                 pieces += feed_rows.movie_pieces(shown[title_id], dates.theatrical, dates.digital, basis.today)
         return pieces
+
+    def feed_released(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> list[Out]:
+        """The two dates of every film that fall in the days of «Недавно», from one read."""
+        outs: list[Out] = []
+        for title_id, state in storage.own_states_of(session, self._active()).items():
+            if title_id in shown:
+                dates = movie_events.MovieDates.from_state(state)
+                outs += feed_released.film_outs(shown[title_id], dates.theatrical, dates.digital, basis.today)
+        return outs
 
     def card_part(self, session, title: Title) -> CardPart:
         state = storage.own_state(session, title.id)

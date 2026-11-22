@@ -9,7 +9,8 @@ Which pieces a title has is decided by the poller of its kind (`pollers/`); a ga
 approximate date («4 квартал 2026») stands on the last day of its period and only ever in «Позже».
 
 What happened is the log of events with the texts of the bot's messages; episodes of one season found on one day are
-folded into one line by the rule of the summary (`delivery.fold`). Which buttons a row of an event has is decided here,
+folded into one line by the rule of the summary (`delivery.fold`). What came out before the baseline of a title is not
+in the log: its rows come from the schedule (`feed_released`) and follow the rows of the events in their day. Which buttons a row of an event has is decided here,
 so the page compares neither kinds nor statuses.
 """
 
@@ -72,12 +73,14 @@ class FollowOffer:
 
 @dataclass(frozen=True)
 class RecentRow:
-    """One event of the log (or several episodes folded into one), with the text of the bot's message."""
+    """One event of the log (or several episodes folded into one), with the text of the bot's message; or a row from
+    the schedule (`feed_released`): what came out before the baseline of the title, with no hour and no buttons."""
 
     title: FeedTitle
     headline: str  # the first line of the message
     details: tuple[str, ...]  # the other lines, smaller
-    at: datetime  # when it was found, on the owner's clock (naive); a folded row: the latest of its events
+    # when it was found, on the owner's clock (naive); a folded row: the latest of its events; None: a row from the schedule
+    at: datetime | None
     watched: bool = False  # «Посмотрел»: an event of a movie that is still «Хочу»
     follow: FollowOffer | None = None
 
@@ -148,7 +151,7 @@ def _numbers(numbers: Sequence[int]) -> str:
     return f"серии {delivery.episode_ranges(numbers)}" if len(numbers) > 1 else f"серия {numbers[0]}"
 
 
-def _part_text(season: int, part: Part, first_of_season: int, numbers: list[int]) -> str:
+def part_text(season: int, part: Part, first_of_season: int, numbers: list[int]) -> str:
     """«Сезон 2, серия 5», «Сезон 3 — премьера, серии 1–8», «Сезон 3, часть 2 — премьера»."""
     if numbers[0] == first_of_season:
         premiere = f"{season_label(season)} — премьера"
@@ -180,7 +183,7 @@ def season_pieces(
             for day, episodes in days.items():
                 numbers = sorted(number for number, _ in episodes)
                 hours = [at for _, at in episodes if at is not None]
-                text = _part_text(season.number, part, first, numbers)
+                text = part_text(season.number, part, first, numbers)
                 pieces.append(Piece(title, day, min(hours) if hours else None, (season.number, numbers[0]), text))
     return pieces
 
@@ -271,21 +274,27 @@ def _recent_row(unit: delivery.Unit, events: Mapping[int, FeedEvent], listed: Ma
 
 
 def recent(
-    events: Iterable[FeedEvent], today: date, listed: Mapping[Followable, int]
+    events: Iterable[FeedEvent], today: date, listed: Mapping[Followable, int],
+    released: Iterable[tuple[date, RecentRow]] = (),
 ) -> tuple[FeedDay[RecentRow], ...]:
     """«Недавно»: the days from today back to today − 6 that have something, the latest first; in a day the latest event
     first. Episodes of one season of a title found on one day are one row, as in the summary. `listed` gives the title
-    of an announced title the list has already."""
+    of an announced title the list has already. `released`: the rows from the schedule with their days, in their order
+    (`feed_released.released_rows`); in a day they follow the rows of the events."""
     first = today - timedelta(days=RECENT_DAYS - 1)
     days: dict[date, list[FeedEvent]] = {}
     for event in events:
         if first <= event.at.date() <= today:
             days.setdefault(event.at.date(), []).append(event)
+    scheduled: dict[date, list[RecentRow]] = {}
+    for day, row in released:
+        if first <= day <= today:
+            scheduled.setdefault(day, []).append(row)
     result = []
-    for day in sorted(days, reverse=True):
-        members = sorted(days[day], key=lambda e: (e.at, e.id), reverse=True)
+    for day in sorted(days.keys() | scheduled.keys(), reverse=True):
+        members = sorted(days.get(day, ()), key=lambda e: (e.at, e.id), reverse=True)
         by_id = {e.id: e for e in members}
         pending = [delivery.Pending(e.id, e.id, e.type, e.title.id, e.text, dict(e.data), e.at) for e in members]
         rows = tuple(_recent_row(unit, by_id, listed) for unit in delivery.fold(pending, episodes=True))
-        result.append(FeedDay(day, rows))
+        result.append(FeedDay(day, rows + tuple(scheduled.get(day, ()))))
     return tuple(result)
