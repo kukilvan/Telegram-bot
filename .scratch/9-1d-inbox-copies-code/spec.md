@@ -1,6 +1,6 @@
 # Spec 9.1d: «Входящие», copies and code health — the known issues
 
-Status: in review
+Status: accepted
 
 Built from `description.md` (accepted 2026-11-23). Terms come from `CONTEXT.md`. ADRs it leans on: 0005 (SQLite, migrations: two small migrations, section 12), 0007 (one process: the bot asks its unanswered item at start, section 9), 0010 (the bot takes posts and names by rules, no AI: the companies of IGDB are one more rule, not a model), 0012 (Drive copies through its API with the owner's client: section 10 stays within the same calls). No ADR is contradicted; no new ADR (section 16).
 
