@@ -2,6 +2,24 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-23 — Description 9.1d
+
+- `.scratch/9-1d-inbox-copies-code/description.md`: part d of stage 9.1 got a description of its own, with 18 entries — the 15 of the stage 9.1 description (KI-49, 56–64, 66–69, 71) plus KI-81 of spec 9.1c and KI-83, 84 of review 9.1c. It takes in the wishes of review 9.1c (F4: the Feed loads seasons once; F5: a film date enum; the `series_events.py` split) and of review 9.1b (`core.py` at 490 of 500 lines).
+- The owner's decisions:
+  - an approximate date of an offer reads «выйдет в 4 квартале 2027» / «во 2 квартале» / «в январе 2027» / «в 2028». The card's «4 квартал» is used, not the «IV квартал» of the 9.1 description. Rejected: the card's words without «выйдет».
+  - an anime premiere known by the month or the year is shown («часть 2 — в апреле 2027», the Feed's «Позже» as for games) and sends no message until the exact day. Rejected: a message for both.
+  - the companies of a post come from IGDB, one request per item (the 5.5 budget of spec 6.4 becomes 11), with the fixed list kept for the rest and as the fallback. Rejected: a big fixed list made once.
+  - no wishes beyond the entries.
+- Taken by the agent and confirmed by the «ОК»:
+  - Cyrillic mid-sentence candidates get the lowest weight;
+  - «Что это?» after a start, for items of the last 12 hours only;
+  - copies are shown in the zone of Settings;
+  - the restore note drops the promise of a copy;
+  - the six unread names (`KINOPUB_ACCESS_TOKEN`, `PS_STORE_REGION`, `SHIKIMORI_CLIENT_ID/SECRET`, `psn_api_key`, `rawg_api_key`) leave the owner's `.env`, values not kept;
+  - the code is split first, in a ticket with no change of behaviour.
+- `inbox_items` is empty on the owner's base: the candidate rules are tuned on samples, real posts in 9.2.
+- Estimate: five tickets, 9 sessions for 9.1d; `docs/project-spec.md` updated (about 32 for 9.1).
+
 ## 2026-11-23 — Review 9.1c
 
 - Stage 9.1c done (`.scratch/9-1c-feed-web/review.md`): the five tickets against the spec and the coding standards, with the `code-review` skill (effort high) and live checks — the owner's database after migration 0017 (1446 anime episodes: 21 `day`, 6 `exact`, 1419 `unknown`; 185 series `day`), a scratch web app on its copy (the Feed, the Archive genre row and the old `?genre=` bookmarks), the bot in Docker (a clean poll pass).

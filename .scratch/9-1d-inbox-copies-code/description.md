@@ -1,6 +1,6 @@
 # Stage 9.1d: «Входящие», copies and code health — the known issues
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. The stage is part d, the last part, of stage 9.1 (`docs/project-spec.md`). `.scratch/9-1-known-issues/description.md` set its 15 known issues and a direction of fix for each (part 9.1d, decisions 4 and 5 there). Review 9.1c added KI-83 and KI-84, and spec 9.1c added KI-81. This description settles what the owner will see: the date of an offer and of an anime premiere, the studios in a post, the question after a restart, and the time of a copy. ADRs it leans on: 0005 (SQLite, migrations), 0007 (one process), 0010 (the bot takes posts and names; rules, no AI), 0012 (Drive copies through its API).
 
