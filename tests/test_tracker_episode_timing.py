@@ -1,5 +1,5 @@
 """Where the moment of an episode comes from (spec 1.1–1.4 of stage 9.1c; KI-28, KI-32): the adapters set the timing,
-`assemble` and `keeping_known` keep a stored one, and the one rule of `cards.episode_when` reads a moment the same way
+`assemble` and `keeping_known` keep a stored one, and the one rule of `moment_words.episode_when` reads a moment the same way
 in the Feed, the cards and the bot messages, east and west of UTC. Pure functions; no database, no network."""
 
 import asyncio
@@ -13,11 +13,12 @@ import pytest
 
 from anime_fakes import FakeShikimori, load
 
-from app.tracker import anime_events, cards, feed_rows, series_events
+from app.tracker import anime_events, cards, feed_rows, series_events, series_messages
 from app.tracker.models import EpisodeTiming
 from app.tracker.seasons import Episode, PartCut, Season, SeasonAnnouncement, SeasonProgress, AIRING, RELEASED
 from app.tracker.sources.anilist_schedule import PartSchedule
-from app.tracker.sources.shikimori_anime import SeasonPart, ShikimoriAnimeSource, SourceIds, parse_entry, part_episodes
+from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
+from app.tracker.sources.shikimori_chain import SeasonPart, SourceIds, parse_entry, part_episodes
 from app.tracker.sources.tmdb_series import parse_show
 
 EXACT, DAY, UNKNOWN = EpisodeTiming.EXACT, EpisodeTiming.DAY, EpisodeTiming.UNKNOWN
@@ -348,13 +349,13 @@ def test_the_next_line_of_a_message_has_the_hour_only_for_an_exact_moment():
     exact = Season(1, "Сезон 1", 12, (Episode(5, MIDNIGHT, EXACT),))
     known_by_day = Season(1, "Сезон 1", 12, (Episode(5, MIDNIGHT, DAY),))
 
-    assert series_events._next_line(exact, NOW, anime(ISRAEL)) == "следующая: ср, 25 ноя в 02:00"
-    assert series_events._next_line(known_by_day, NOW, anime(WEST)) == "следующая: ср, 25 ноя"
-    assert series_events._next_line(known_by_day, NOW) == "следующая: ср, 25 ноя"  # a series, as before
+    assert series_messages.next_episode_line(exact, NOW, anime(ISRAEL)) == "следующая: ср, 25 ноя в 02:00"
+    assert series_messages.next_episode_line(known_by_day, NOW, anime(WEST)) == "следующая: ср, 25 ноя"
+    assert series_messages.next_episode_line(known_by_day, NOW) == "следующая: ср, 25 ноя"  # a series, as before
 
 
 def test_an_announced_premiere_known_by_the_day_keeps_its_date_west_of_utc_in_the_message():
-    text = series_events.message_announced("Фрирен", 2, Episode(1, datetime(2027, 1, 9), DAY), flavor=anime(WEST))
+    text = series_messages.message_announced("Фрирен", 2, Episode(1, datetime(2027, 1, 9), DAY), flavor=anime(WEST))
 
     assert text.endswith("Премьера: 9 января 2027")
 
@@ -362,8 +363,8 @@ def test_an_announced_premiere_known_by_the_day_keeps_its_date_west_of_utc_in_th
 def test_a_moved_episode_reads_both_moments_by_their_timing():
     old, new = Episode(7, MIDNIGHT, DAY), Episode(7, datetime(2026, 11, 26, 14, 0), EXACT)
 
-    text = series_events.message_moved("Фрирен", 2, 7, old, new, premiere=False, flavor=anime(ISRAEL))
-    premiere = series_events.message_moved("Фрирен", 2, 1, old, new, premiere=True, flavor=anime(WEST))
+    text = series_messages.message_moved("Фрирен", 2, 7, old, new, premiere=False, flavor=anime(ISRAEL))
+    premiere = series_messages.message_moved("Фрирен", 2, 1, old, new, premiere=True, flavor=anime(WEST))
 
     assert text.endswith("Сезон 2 · ср, 25 ноя → чт, 26 ноя в 16:00")
     assert premiere.endswith("25 ноя 2026 → 26 ноя 2026")
@@ -378,7 +379,7 @@ def test_the_end_of_a_part_names_the_day_of_the_next_part_by_the_rule():
     )
     first, second = season.parts()
 
-    text = series_events.message_part_ended("Аниме", first, 12, second, anime(WEST))
+    text = series_messages.message_part_ended("Аниме", first, 12, second, anime(WEST))
 
     assert text.endswith("часть 2 — с 1 апреля")
 

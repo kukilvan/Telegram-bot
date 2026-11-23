@@ -8,8 +8,8 @@ from typing import Any
 from app.tracker import feed_released, feed_rows, series_events, storage
 from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart
-from app.tracker.feed_released import Out
-from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
+from app.tracker.feed_released import FeedParts
+from app.tracker.feed_rows import FeedBasis, FeedTitle
 from app.tracker.kinds import KINDS
 from app.tracker.models import Title
 from app.tracker.pollers.base import Poller
@@ -19,24 +19,17 @@ class SeasonalPoller(Poller):
     def first_check(self, session, seasons: Sequence[season_logic.Season], state: dict[str, Any], now: datetime) -> datetime:
         return now + series_events.check_interval(series_events.ShowState.of(seasons, state), now)
 
-    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
-        """The dated episodes of all the titles of the kind, by parts of seasons, from three reads."""
+    def feed(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> FeedParts:
+        """The dated episodes of all the titles of the kind, by parts of seasons: the pieces from today on and the
+        episodes out in the days of «Недавно» (the films of an anime franchise are never among them), both cut from one
+        read of the seasons (three reads)."""
         local = basis.tz if KINDS[self.kind].local_times else None  # the source gives the moment, not only the day
-        pieces: list[Piece] = []
+        parts = FeedParts()
         for title_id, seasons in storage.load_seasons_of(session, self._active()).items():
             if title_id in shown:
-                pieces += feed_rows.season_pieces(shown[title_id], seasons, basis.gap, local, basis.today)
-        return pieces
-
-    def feed_released(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> list[Out]:
-        """The episodes out in the days of «Недавно» of all the titles of the kind, by the parts of «Скоро», from three
-        reads; the films of an anime franchise are never among them."""
-        local = basis.tz if KINDS[self.kind].local_times else None
-        outs: list[Out] = []
-        for title_id, seasons in storage.load_seasons_of(session, self._active()).items():
-            if title_id in shown:
-                outs += feed_released.season_outs(shown[title_id], seasons, basis.gap, local, basis.today, now)
-        return outs
+                parts.pieces.extend(feed_rows.season_pieces(shown[title_id], seasons, basis.gap, local, basis.today))
+                parts.outs.extend(feed_released.season_outs(shown[title_id], seasons, basis.gap, local, basis.today, now))
+        return parts
 
     def card_part(self, session, title: Title) -> CardPart:
         """Where the seasons have got, and a row per season with the owner's mark and score (the web)."""

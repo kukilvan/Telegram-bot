@@ -8,9 +8,18 @@ from datetime import date
 import pytest
 
 from app.tracker.games import (
-    CANCELLED, EARLY, FULL, NOT_ANNOUNCED, GameDate, GameState, PlatformDate, Release, carry_over, has_platform, pick,
+    CANCELLED,
+    EARLY,
+    FULL,
+    GameState,
+    PlatformDate,
+    Release,
+    carry_over,
+    has_platform,
+    pick,
     platform_dates,
 )
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.platforms import EUROPE, NORTH_AMERICA, PLATFORMS, STORE_COUNTRIES, WORLD, Platform
 from app.tracker.sources.igdb_games import parse_game
 
@@ -42,7 +51,7 @@ def full_label(state, platform, country="il"):
     ],
 )
 def test_five_precisions_have_their_labels_and_periods(text, label, start, end, exact):
-    game_date = GameDate.parse(text)
+    game_date = ReleaseDate.parse(text)
 
     assert (game_date.label, game_date.start, game_date.end, game_date.exact) == (label, start, end, exact)
     assert game_date.text == text
@@ -63,17 +72,17 @@ def test_five_precisions_have_their_labels_and_periods(text, label, start, end, 
     ],
 )
 def test_a_date_of_igdb_by_its_format(release, text):
-    assert GameDate.from_igdb(release).text == text
+    assert ReleaseDate.from_igdb(release).text == text
 
 
 def test_y_and_m_come_from_date_when_they_are_missing():
-    assert GameDate.from_igdb({"date_format": 1, "date": 1801958400}).text == "2027-02"  # 1 February 2027, UTC
-    assert GameDate.from_igdb({"date_format": 2, "date": 1861833600}).text == "2028"  # 31 December 2028
-    assert GameDate.from_igdb({"date_format": 5, "date": 1822262400}).text == "2027-Q3"
+    assert ReleaseDate.from_igdb({"date_format": 1, "date": 1801958400}).text == "2027-02"  # 1 February 2027, UTC
+    assert ReleaseDate.from_igdb({"date_format": 2, "date": 1861833600}).text == "2028"  # 31 December 2028
+    assert ReleaseDate.from_igdb({"date_format": 5, "date": 1822262400}).text == "2027-Q3"
 
 
 def test_the_day_is_read_by_utc():
-    assert GameDate.from_igdb({"date_format": 0, "date": 1427414400 + 23 * 3600}).text == "2015-03-27"  # 23:00 UTC
+    assert ReleaseDate.from_igdb({"date_format": 0, "date": 1427414400 + 23 * 3600}).text == "2015-03-27"  # 23:00 UTC
 
 
 @pytest.mark.parametrize(
@@ -88,7 +97,7 @@ def test_the_day_is_read_by_utc():
     ],
 )
 def test_garbage_from_igdb_is_no_date(release):
-    assert GameDate.from_igdb(release) == NOT_ANNOUNCED
+    assert ReleaseDate.from_igdb(release) == NOT_ANNOUNCED
 
 
 @pytest.mark.parametrize(
@@ -106,14 +115,14 @@ def test_garbage_from_igdb_is_no_date(release):
     ],
 )
 def test_a_record_without_a_known_format_is_a_year_never_a_month_or_a_day(release, text):
-    assert GameDate.from_igdb(release).text == text
-    assert not GameDate.from_igdb(release).exact
+    assert ReleaseDate.from_igdb(release).text == text
+    assert not ReleaseDate.from_igdb(release).exact
 
 
 @pytest.mark.parametrize("text", ["", "2027-13", "2027-Q5", "2027-Q0", "27", "2027-3-12", "20270312", "garbage", "2027-02-30", 2027])
 def test_the_stored_text_is_read_strictly(text):
     with pytest.raises(ValueError):
-        GameDate.parse(text)
+        ReleaseDate.parse(text)
 
 
 def test_a_release_of_unknown_kind_in_the_snapshot_is_a_bug():
@@ -144,7 +153,7 @@ def test_yomawari_by_regions():
 
 def test_the_world_comes_first_then_the_regions_of_the_country_and_no_other_region_is_the_date_of_the_country():
     def release(region, text):
-        return Release(6, region, FULL, GameDate.parse(text))
+        return Release(6, region, FULL, ReleaseDate.parse(text))
 
     regions = STORE_COUNTRIES["il"].regions
     every = [release(JAPAN, "2026-01-01"), release(NORTH_AMERICA, "2026-02-01"), release(EUROPE, "2026-03-01"),
@@ -163,8 +172,8 @@ def test_the_world_comes_first_then_the_regions_of_the_country_and_no_other_regi
 
 
 def test_two_records_of_one_region_the_earlier_start_wins_and_not_announced_is_last():
-    releases = [Release(6, EUROPE, FULL, GameDate.parse(None)), Release(6, EUROPE, FULL, GameDate.parse("2027")),
-                Release(6, EUROPE, FULL, GameDate.parse("2026-12-30"))]
+    releases = [Release(6, EUROPE, FULL, ReleaseDate.parse(None)), Release(6, EUROPE, FULL, ReleaseDate.parse("2027")),
+                Release(6, EUROPE, FULL, ReleaseDate.parse("2026-12-30"))]
 
     assert pick(releases, 6, FULL, STORE_COUNTRIES["il"].regions).text == "2026-12-30"
 
@@ -205,24 +214,24 @@ def test_the_witcher_3_on_ps5_and_switch_2_takes_the_earlier_older_date():
 def own_and_older(own, older):
     releases = []
     if own != "none":
-        releases.append(Release(167, WORLD, FULL, GameDate.parse(own)))
+        releases.append(Release(167, WORLD, FULL, ReleaseDate.parse(own)))
     if older != "none":
-        releases.append(Release(48, WORLD, FULL, GameDate.parse(older)))
+        releases.append(Release(48, WORLD, FULL, ReleaseDate.parse(older)))
     return GameState(platforms=(48, 167), releases=tuple(releases))
 
 
 @pytest.mark.parametrize(
     "own, older, expected",
     [
-        ("2027-03-12", "2027-03-12", PlatformDate(GameDate.parse("2027-03-12"))),  # a tie: the own one
-        ("2027-03-12", "2027", PlatformDate(GameDate.parse("2027-03-12"))),  # a day ends before its year does (KI-39)
-        ("2027", "2027-03-12", PlatformDate(GameDate.parse("2027-03-12"), "PS4")),
-        (None, "2027", PlatformDate(GameDate.parse("2027"), "PS4")),  # not announced loses
-        ("2027", None, PlatformDate(GameDate.parse("2027"))),
+        ("2027-03-12", "2027-03-12", PlatformDate(ReleaseDate.parse("2027-03-12"))),  # a tie: the own one
+        ("2027-03-12", "2027", PlatformDate(ReleaseDate.parse("2027-03-12"))),  # a day ends before its year does (KI-39)
+        ("2027", "2027-03-12", PlatformDate(ReleaseDate.parse("2027-03-12"), "PS4")),
+        (None, "2027", PlatformDate(ReleaseDate.parse("2027"), "PS4")),  # not announced loses
+        ("2027", None, PlatformDate(ReleaseDate.parse("2027"))),
         (None, None, PlatformDate(NOT_ANNOUNCED)),
-        ("none", "2015-05-19", PlatformDate(GameDate.parse("2015-05-19"), "PS4")),  # only the older one has a record
+        ("none", "2015-05-19", PlatformDate(ReleaseDate.parse("2015-05-19"), "PS4")),  # only the older one has a record
         ("none", None, PlatformDate(NOT_ANNOUNCED, "PS4")),
-        ("2027", "none", PlatformDate(GameDate.parse("2027"))),
+        ("2027", "none", PlatformDate(ReleaseDate.parse("2027"))),
     ],
 )
 def test_the_own_date_or_the_older_one(own, older, expected):
@@ -243,7 +252,7 @@ def test_the_own_date_or_the_older_one(own, older, expected):
 def test_the_date_of_the_older_platform_is_taken_by_the_end_of_the_period(older, own, expected, label):
     dated = platform_dates(own_and_older(own, older), Platform.PS5, "il").full
 
-    assert dated == PlatformDate(GameDate.parse(expected), label or None)
+    assert dated == PlatformDate(ReleaseDate.parse(expected), label or None)
 
 
 @pytest.mark.parametrize("platform", [Platform.SWITCH_2, Platform.XBOX_SERIES])
@@ -251,14 +260,14 @@ def test_switch_2_and_xbox_series_take_the_older_date_the_same_way(platform):
     info = PLATFORMS[platform]
     own, older = info.igdb_id, info.older.igdb_id
     year_only = GameState(platforms=(older, own), releases=(
-        Release(own, WORLD, FULL, GameDate.parse("2026-11-10")), Release(older, WORLD, FULL, GameDate.parse("2026")),
+        Release(own, WORLD, FULL, ReleaseDate.parse("2026-11-10")), Release(older, WORLD, FULL, ReleaseDate.parse("2026")),
     ))
     earlier_day = GameState(platforms=(older, own), releases=(
-        Release(own, WORLD, FULL, GameDate.parse("2027")), Release(older, WORLD, FULL, GameDate.parse("2026-11-10")),
+        Release(own, WORLD, FULL, ReleaseDate.parse("2027")), Release(older, WORLD, FULL, ReleaseDate.parse("2026-11-10")),
     ))
 
-    assert platform_dates(year_only, platform, "il").full == PlatformDate(GameDate.parse("2026-11-10"))
-    assert platform_dates(earlier_day, platform, "il").full == PlatformDate(GameDate.parse("2026-11-10"), info.older.label)
+    assert platform_dates(year_only, platform, "il").full == PlatformDate(ReleaseDate.parse("2026-11-10"))
+    assert platform_dates(earlier_day, platform, "il").full == PlatformDate(ReleaseDate.parse("2026-11-10"), info.older.label)
 
 
 def test_the_game_is_on_a_platform_by_its_list_or_by_its_records():
@@ -284,7 +293,7 @@ def test_prince_of_persia_is_cancelled_everywhere():
 
 def test_a_cancelled_platform_whose_older_one_came_out_is_the_older_version():
     state = GameState(platforms=(48, 167), releases=(
-        Release(167, WORLD, CANCELLED, NOT_ANNOUNCED), Release(48, WORLD, FULL, GameDate.parse("2020-11-12")),
+        Release(167, WORLD, CANCELLED, NOT_ANNOUNCED), Release(48, WORLD, FULL, ReleaseDate.parse("2020-11-12")),
     ))
 
     dates = platform_dates(state, Platform.PS5, "il")
@@ -294,7 +303,7 @@ def test_a_cancelled_platform_whose_older_one_came_out_is_the_older_version():
 
 def test_a_platform_with_a_cancelled_record_and_a_date_is_not_cancelled():
     state = GameState(platforms=(6,), releases=(
-        Release(6, JAPAN, CANCELLED, NOT_ANNOUNCED), Release(6, WORLD, FULL, GameDate.parse("2027")),
+        Release(6, JAPAN, CANCELLED, NOT_ANNOUNCED), Release(6, WORLD, FULL, ReleaseDate.parse("2027")),
     ))
 
     assert not platform_dates(state, Platform.PC, "il").cancelled
@@ -304,7 +313,7 @@ def test_a_platform_with_a_cancelled_record_and_a_date_is_not_cancelled():
 
 
 def state_of(*releases, platforms=(6, 167)):
-    return GameState(platforms=platforms, releases=tuple(Release(p, WORLD, kind, GameDate.parse(text)) for p, kind, text in releases))
+    return GameState(platforms=platforms, releases=tuple(Release(p, WORLD, kind, ReleaseDate.parse(text)) for p, kind, text in releases))
 
 
 def test_a_record_the_source_stopped_sending_is_carried_over():

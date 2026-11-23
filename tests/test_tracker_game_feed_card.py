@@ -27,7 +27,8 @@ from app.tracker.cards import format_card
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.feed_rows import FeedTitle
-from app.tracker.games import GameDate, GameState, Release
+from app.tracker.games import GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import (
     EpisodeRecord, ExternalId, GamePlatformRecord, SeasonRecord, SettingRecord, SourceSnapshot, Title, TitleKind,
     TitleStatus,
@@ -57,7 +58,7 @@ def fixture_game(name) -> GameSnapshot:
 
 def made_up(*releases, steam_id=None, ps_concept=None, platforms=None):
     """Releases of the world region as (IGDB platform, kind, date text)."""
-    records = tuple(Release(platform=p, region=WORLD, type=k, date=GameDate.parse(d)) for p, k, d in releases)
+    records = tuple(Release(platform=p, region=WORLD, type=k, date=ReleaseDate.parse(d)) for p, k, d in releases)
     listed = platforms if platforms is not None else sorted({r.platform for r in records})
     return GameState(steam_id=steam_id, ps_concept=ps_concept, platforms=tuple(listed), releases=records)
 
@@ -84,7 +85,7 @@ def test_hades_ii_out_on_the_pc_has_its_day_and_no_early_access():
 def test_hades_ii_a_year_ago_had_no_date_and_the_early_access():
     hades = fixture_game("hades-2").game
     earlier = replace(hades, releases=tuple(
-        replace(r, date=GameDate.parse(None)) if r.type == "full" else r for r in hades.releases
+        replace(r, date=ReleaseDate.parse(None)) if r.type == "full" else r for r in hades.releases
     ))
 
     assert lines(earlier, mine=(Platform.PC,), today=date(2025, 5, 1)) == [
@@ -228,8 +229,8 @@ def test_switch_2_by_the_date_of_switch_is_told_by_switch_itself():
 
 def test_the_dates_are_the_ones_of_the_country():
     game = GameState(platforms=(PC,), releases=(
-        Release(PC, EUROPE, "full", GameDate.parse(day(3).isoformat())),
-        Release(PC, 2, "full", GameDate.parse(day(5).isoformat())),  # North America
+        Release(PC, EUROPE, "full", ReleaseDate.parse(day(3).isoformat())),
+        Release(PC, 2, "full", ReleaseDate.parse(day(5).isoformat())),  # North America
     ))
 
     assert pieces(game, country="il") == [(day(3), "Выход на ПК", "")]
@@ -361,8 +362,8 @@ def test_a_game_is_in_the_feed_without_its_source(session_factory, games):
 
 def test_the_feed_and_the_card_take_the_country_of_the_stores_now(tracker, session_factory, games):
     game = GameState(platforms=(PC,), releases=(
-        Release(PC, EUROPE, "full", GameDate.parse(day(3).isoformat())),
-        Release(PC, 2, "full", GameDate.parse(day(5).isoformat())),
+        Release(PC, EUROPE, "full", ReleaseDate.parse(day(3).isoformat())),
+        Release(PC, 2, "full", ReleaseDate.parse(day(5).isoformat())),
     ))
     title_id = add(tracker, games, game)
     put_setting(session_factory, STORE_COUNTRY_SETTING, "us")

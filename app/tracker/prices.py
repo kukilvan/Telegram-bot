@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any, Protocol
 
-from app.tracker.cards import format_day_month
+from app.tracker.moment_words import format_day_month
 from app.tracker.sources.dates import parse_moment
 
 # What Steam answered about a game: the `answer` of a look (spec 3.2), in the order the adapter tries them

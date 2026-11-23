@@ -16,7 +16,7 @@ not worked out, and the threshold does not apply to it (a season of one entry is
 
 Every episode keeps where its moment comes from (`EpisodeTiming`: the exact moment, the day only, or unknown), so the
 season hands out the next episode and the first one, not only their moments: what may be shown of a moment depends on
-it (`cards.episode_when`).
+it (`moment_words.episode_when`).
 """
 
 from collections.abc import Collection, Iterable, Mapping

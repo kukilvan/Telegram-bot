@@ -1,9 +1,9 @@
 """The feed (`Tracker.feed()`): one read of the database for «Скоро», «Позже» and «Недавно». How the rows read and
 which buttons they have is decided by the pure `feed_rows`; what comes out of a title is cut by the poller of its kind
-(`Poller.feed_pieces`): this module groups the titles by kind and asks each poller once.
+(`Poller.feed`): this module groups the titles by kind and asks each poller once.
 
 «Недавно» also holds what came out before a title's baseline (adding, or the return from the archive) and is not in the
-log: each poller hands over what its schedule says came out in the window (`Poller.feed_released`), and the pure
+log: each poller hands over what its schedule says came out in the window (the `outs` of `Poller.feed`), and the pure
 `feed_released` keeps it against the baselines of the titles read here and the events of the window read once more.
 
 The number of reads does not grow with the number of titles: the seasons, episodes, parts, dates and events of all
@@ -20,10 +20,10 @@ from sqlalchemy import select
 
 from app.tracker import delivery, failures, feed_released, feed_rows
 from app.tracker.actions import FOLLOW_TYPES
-from app.tracker.cards import local_moment
+from app.tracker.moment_words import local_moment
 from app.tracker.context import CoreContext, naive_utc
-from app.tracker.feed_released import Baseline, Out
-from app.tracker.feed_rows import Feed, FeedBasis, FeedEvent, Followable, FeedTitle, Piece, RecentRow
+from app.tracker.feed_released import Baseline, FeedParts, Out
+from app.tracker.feed_rows import Feed, FeedBasis, FeedEvent, Followable, FeedTitle, RecentRow
 from app.tracker.models import ARCHIVE_STATUSES, Event, Title, TitleKind
 from app.tracker.settings_store import SettingsStore
 
@@ -48,10 +48,11 @@ class FeedReader:
             titles = {t.id: t for t in session.scalars(select(Title))}
             shown = {t.id: FeedTitle(t.id, t.kind, t.name, t.poster_path) for t in titles.values()}
             by_kind = self._active_by_kind(titles, shown)
-            soon, later = feed_rows.upcoming(self._pieces(session, by_kind, basis), basis.today)
+            parts = self._parts(session, by_kind, basis, now)
+            soon, later = feed_rows.upcoming(parts.pieces, basis.today)
             events = self._events(session, titles, shown, tz, basis.today)
             listed = self._listed(session, events)
-            released = self._released(session, titles, by_kind, basis, now)
+            released = self._released(session, titles, parts.outs, basis)
         recent = feed_rows.recent(events, basis.today, listed, released)
         return Feed(soon, later, recent, has_titles=bool(titles), today=basis.today)
 
@@ -66,22 +67,23 @@ class FeedReader:
                 by_kind.setdefault(title.kind, {})[title.id] = shown[title.id]
         return by_kind
 
-    def _pieces(self, session, by_kind: Mapping[TitleKind, Mapping[int, FeedTitle]], basis: FeedBasis) -> list[Piece]:
-        """What comes out from today on: the poller of each kind cuts the pieces of all its titles at once."""
-        pieces: list[Piece] = []
+    def _parts(
+        self, session, by_kind: Mapping[TitleKind, Mapping[int, FeedTitle]], basis: FeedBasis, now: datetime
+    ) -> FeedParts:
+        """What comes out from today on and what came out in the days of «Недавно»: the poller of each kind cuts both
+        for all its titles at once. `now`: naive UTC."""
+        parts = FeedParts()
         for kind, of_kind in by_kind.items():
-            pieces += self.pollers.reader_of(kind).feed_pieces(session, of_kind, basis)
-        return pieces
+            of_this = self.pollers.reader_of(kind).feed(session, of_kind, basis, now)
+            parts.pieces.extend(of_this.pieces)
+            parts.outs.extend(of_this.outs)
+        return parts
 
     def _released(
-        self, session, titles: Mapping[int, Title], by_kind: Mapping[TitleKind, Mapping[int, FeedTitle]],
-        basis: FeedBasis, now: datetime,
+        self, session, titles: Mapping[int, Title], outs: list[Out], basis: FeedBasis
     ) -> list[tuple[date, RecentRow]]:
-        """The rows of «Недавно» from the schedule: what the poller of each kind says came out in the window, kept when
-        it came out before the title's baseline and the log of the window does not name it. `now`: naive UTC."""
-        outs: list[Out] = []
-        for kind, of_kind in by_kind.items():
-            outs += self.pollers.reader_of(kind).feed_released(session, of_kind, basis, now)
+        """The rows of «Недавно» from the schedule: what the pollers say came out in the window (`outs`), kept when it
+        came out before the title's baseline and the log of the window does not name it."""
         if not outs:
             return []
         baselines = {t.id: Baseline(t.added_at, t.restored_at) for t in titles.values()}

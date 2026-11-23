@@ -70,14 +70,14 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
-| KI-56 | The size test of the core misses the pure modules: `series_events.py` 547 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | open | 9.1 |
+| KI-56 | The size test of the core misses the pure modules: `series_events.py` 547 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
 | KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | open | 9.1 |
 | KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | open | 9.1 |
 | KI-59 | «Входящие»: the stop list of candidates is a fixed list | `app/tracker/candidates.py` | open | 9.1 |
 | KI-60 | «Входящие»: a Latin run keeps a leading «from», and a bare number after a colon is cut off the name | `app/tracker/candidates.py` | open | 9.1 |
 | KI-61 | «Входящие»: a typo in a name is not corrected when the source answers in another language | `app/tracker/offers.py` | open | 9.1 |
 | KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | open | 9.1 |
-| KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | open | 9.1 |
+| KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
 | KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | open | 9.1 |
 | KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | fixed (test: `tests/test_web_inbox.py`) | 9.1c |
 | KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | open | 9.1 |
@@ -85,7 +85,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | open | 9.1 |
 | KI-69 | Restore: the note «ещё одна копия» of an older copy is not always true | `app/utils/restore.py` | open | 9.1 |
 | KI-70 | Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`) | `restore-bot.ps1` | open | 7.3 |
-| KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | open | 9.1 |
+| KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | fixed (test: `tests/test_tracker_split_health.py`) | 9.1d.01 |
 | KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | won't fix (test: `tests/test_web_devices.py`) | 9.1c |
 | KI-73 | Login report: a report that failed to send waits for the delivery rules | `app/tracker` (stage 7.2) | fixed (test: `tests/test_tracker_login_report_rules.py`) | 9.1c |
 | KI-74 | Phone: the chosen filter can be past the edge of its row | `app/web/static/style.css` (stage 7.2) | fixed (test: `tests/test_web_css.py`) | 9.1c |
@@ -620,7 +620,7 @@ Format of a new entry:
 - What's wrong: rule 7 of `docs/coding-standards.md` says no module of the core is longer than ~400 lines, and its check names this test. The test covers only the modules listed in `MODULES` and the pollers; the pure modules (`games`, `cards`, `series_events`, `feed_rows`, `follow_ups`…) are not checked. `series_events.py` has 521 lines (before stage 6.3); `games.py` went from 360 to 406 in stage 6.3 (the expansion of a game). Stage 9.1c: `series_events.py` 534 → 547 lines (the timing of an episode), `cards.py` 393 → 400 (review 9.1c, F3).
 - How to reproduce: `wc -l app/tracker/*.py`.
 - Likelihood / impact: no effect on the owner; long modules cost more to read in every session. A fix: the test takes every `app/tracker/*.py`; `series_events.py` and `games.py` split (e.g. `GameDate` into a module of its own).
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_core_split.py::test_no_part_of_the_core_is_longer_than_the_limit`, one case for every module found by a glob, and `…::test_the_glob_of_the_size_test_sees_every_module_of_the_core`), ticket 01 of stage 9.1d. The glob takes every `app/tracker/**/*.py` but `core.py`, `migrations/` and `__init__.py`; the pure modules join `PURE`. `series_events` gave `series_messages`, `games` gave `release_dates` (`GameDate` is `ReleaseDate`), `cards` gave its date words to `moment_words`, `offers` gave `offer_cards`, `candidates` gave `candidate_words`.
 - Found: 2026-11-05, review of stage 6.3.
 
 ## KI-57. «Входящие»: a restart within the 2-second pause leaves the item without «Что это?»
@@ -683,7 +683,7 @@ Format of a new entry:
 - What's wrong: rule 7 wants every module of the core within about 400 lines; the adapter holds the parsing, the chain of seasons and the source in one file, and the size test does not list it, so nothing fails.
 - How to reproduce: `wc -l app/tracker/sources/shikimori_anime.py`.
 - Likelihood / impact: no bug; the file is harder to read and to change in parallel. A fix: move the chain (`collect_entries`, `chain_order`, `group_seasons`, `build_*`) into a module of its own and list every adapter in the size test (like KI-56 for the pure modules).
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_core_split.py::test_no_part_of_the_core_is_longer_than_the_limit[sources/shikimori_anime.py]`), ticket 01 of stage 9.1d. `sources/shikimori_chain.py` holds the entry as Shikimori describes it (`Entry`, `parse_entry`), the walk along `prequel` and `sequel`, the seasons, the parts and the films; `sources/shikimori_anime.py` keeps the suggestions and the source class (the entry types had to move with the chain: the source class calls the chain, and the chain builds from the entries, so one of them could not import the other).
 - Found: 2026-11-06, ticket 04 of stage 6.4.
 
 ## KI-64. «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028»)
@@ -755,7 +755,7 @@ Format of a new entry:
 - What's wrong: rule 7 of `docs/coding-standards.md`: the core does not ask a title's kind outside `polling.py`, and a rule lives in one place. `_parents` reads the states of the games by `Title.kind == TitleKind.GAME` and finds the base game of an expansion by its own query, a copy of `GamePoller.parent` and `Poller.known_ids` («the smaller number, as `known_ids`»). `tests/test_tracker_core_split.py` did not see it: `exports` and `export_all` were missing from its list of core modules (review 7.1 added `exports` and the pure `export_rows`; `export_all` stays out until this is fixed, or the test fails).
 - How to reproduce: add `"export_all"` to `MODULES` of `tests/test_tracker_core_split.py`: `test_the_core_does_not_ask_which_kind_a_title_is` fails.
 - Likelihood / impact: no wrong output today — `expansion_of` in the JSON is the name the card shows. The risk is a change of the card's rule (say, the base game found by another id) that the export does not follow. A fix: the export asks every poller for the extra fields of its titles (a poller action with an empty default; the game poller answers with `parent`), then `export_all` joins the list of the test.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_split_health.py::test_a_game_poller_names_the_base_game_by_the_list_when_the_list_has_it_else_by_igdb`, `…::test_a_game_whose_state_cannot_be_read_is_left_out_with_a_warning`, `…::test_a_kind_with_nothing_to_add_answers_nothing`, and the JSON byte for byte as before: `tests/test_tracker_split_baselines.py::test_the_export_json_of_the_sample_base_is_the_one_recorded_before_the_split`), ticket 01 of stage 9.1d. `Poller.export_extras(session, title_ids)`, `{}` by default; `GamePoller` answers `{"expansion_of": …}`; `export_all` asks the poller of every kind present and `_parents` is gone.
 - Found: 2026-11-15, review 7.1 (F6).
 
 ## KI-72. Login report: an iPad on iPadOS 13+ reads as «macOS, Safari»

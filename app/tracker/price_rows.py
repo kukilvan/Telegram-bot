@@ -9,7 +9,8 @@ from collections.abc import Collection
 from datetime import date, datetime, timezone, tzinfo
 from typing import Any
 
-from app.tracker.cards import SteamView, format_date, format_past_moment, games_word, local_moment
+from app.tracker.cards import SteamView, games_word
+from app.tracker.moment_words import format_date, format_past_moment, local_moment
 from app.tracker.platforms import STORE_COUNTRIES
 from app.tracker.prices import (
     BUNDLES_ONLY, COMING_SOON, FREE, FREE_PCT, NOT_IN_COUNTRY, NOT_SOLD, UNKNOWN_APP, WHOLE_SET, Money, Price,

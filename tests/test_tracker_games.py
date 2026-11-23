@@ -20,7 +20,8 @@ from app.tracker.core import (
     CannotScore, SourceNotConfigured, Tracker, UnknownPlatform, UnknownTitle,
 )
 from app.tracker.game_scope import GameScope
-from app.tracker.games import GameDate, GameState, Release
+from app.tracker.games import GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import (
     DeliveryItem, DeliveryStatus, GamePlatformRecord, SettingRecord, SourceSnapshot, Title, TitleKind, TitleStatus,
 )
@@ -114,7 +115,7 @@ class MadeUpGames:
 
 def state(*releases):
     """Releases of the world region as (IGDB platform, kind, date text)."""
-    records = tuple(Release(platform=p, region=WORLD, type=k, date=GameDate.parse(d)) for p, k, d in releases)
+    records = tuple(Release(platform=p, region=WORLD, type=k, date=ReleaseDate.parse(d)) for p, k, d in releases)
     return GameState(platforms=tuple(sorted({r.platform for r in records})), releases=records)
 
 

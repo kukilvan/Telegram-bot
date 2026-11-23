@@ -8,7 +8,7 @@ from datetime import datetime
 
 from app.tracker.anime_events import relayout
 from app.tracker.seasons import Episode, PartCut, Season
-from app.tracker.sources.shikimori_anime import SeasonPart, SourceIds
+from app.tracker.sources.shikimori_chain import SeasonPart, SourceIds
 
 DAY = datetime(2026, 1, 1)
 

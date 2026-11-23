@@ -152,7 +152,7 @@ In code: `early access` (date kind — `early`; full release — `full`).
 **Примерная дата** (approximate date):
 A game's release date without a day: month, quarter or year («март 2027», «4 квартал 2026», «2027»). Visible in the card and in «Позже» but gives no messages: messages come only about an exact day.
 _Avoid_: неточная дата, TBD (that is "date not announced")
-In code: `GameDate` without a day.
+In code: `ReleaseDate` without a day.
 
 **Дата вне страны** (date outside the country):
 A release date of a game in a region that is not the store country's (Japan, Australia…). It is not a release for the owner: no message, no piece of the Feed, no effect on the check interval. The card shows it in a line of its own after the platforms («в Японии — 12 марта 2027») when it ends earlier than the platform's own date.

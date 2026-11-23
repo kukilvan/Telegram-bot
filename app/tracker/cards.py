@@ -1,18 +1,19 @@
-"""Text card of a title: what the owner reads in the bot. Pure formatting, no database. It holds the one rule of how
-the moment of an episode reads (`episode_when`), for the card, the feed and the messages."""
+"""Text card of a title: what the owner reads in the bot, and the views of its parts. Pure formatting, no database. The
+dates and moments in its lines are written by `moment_words`."""
 
 import dataclasses
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import date, datetime, time, timezone, tzinfo
+from datetime import date, datetime, tzinfo
 from typing import TYPE_CHECKING
 
 from app.tracker import scores
 from app.tracker.kinds import KINDS
-from app.tracker.models import EpisodeTiming, TitleKind, TitleStatus
+from app.tracker.models import TitleKind, TitleStatus
+from app.tracker.moment_words import NOT_ANNOUNCED, episode_when, format_date, format_day_month, format_episode_when
 from app.tracker.scores import ScoreView
-from app.tracker.seasons import RELEASED, Episode, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
+from app.tracker.seasons import RELEASED, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
 
 if TYPE_CHECKING:
     from app.tracker.sequel_events import Sequels  # it formats its dates here: a plain import would go round
@@ -26,14 +27,6 @@ STATUS_LABELS = {
     TitleStatus.COMPLETED: "Пройдено",
     TitleStatus.DROPPED: "Бросил",
 }
-_WEEKDAYS = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")
-
-_MONTHS = (
-    "января", "февраля", "марта", "апреля", "мая", "июня",
-    "июля", "августа", "сентября", "октября", "ноября", "декабря",
-)
-_SHORT_MONTHS = ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
-NOT_ANNOUNCED = "не объявлена"
 STEAM_PRICE_LABEL = "Цена в Steam"
 RUSSIAN_LABEL = "Русский"  # «Русский: текст — официально» on both cards
 PARENT_LINE_START = "Дополнение к игре «"  # the web card links the name between the start and the end
@@ -205,20 +198,6 @@ class TitleCard:
     follow_ups: FollowUpsView | None = None  # a game for the follow-up check: its expansions and sequels; for the web
 
 
-def format_date(value: date | None) -> str:
-    return f"{value.day} {_MONTHS[value.month - 1]} {value.year}" if value else NOT_ANNOUNCED
-
-
-def format_short_date(value: date) -> str:
-    """«15 дек 2026»: the form used when two dates stand side by side."""
-    return f"{value.day} {_SHORT_MONTHS[value.month - 1]} {value.year}"
-
-
-def format_weekday_date(value: date) -> str:
-    """«пн, 12 окт»: a near day, as the next episode is announced."""
-    return f"{_WEEKDAYS[value.weekday()]}, {value.day} {_SHORT_MONTHS[value.month - 1]}"
-
-
 def plural(count: int, one: str, few: str, many: str) -> str:
     """The form of a word that follows the number: `one` after 1 and 21, `few` after 2–4 and 22–24, `many` otherwise
     (5, 11–14)."""
@@ -237,46 +216,6 @@ def titles_word(count: int) -> str:
 def games_word(count: int) -> str:
     """«2 игры», «5 игр», «21 игра»: the number of games of a bundle of Steam."""
     return f"{count} {plural(count, 'игра', 'игры', 'игр')}"
-
-
-def local_moment(moment: datetime, tz: tzinfo | None) -> datetime:
-    """A naive UTC moment as the owner's clock shows it (naive); without a time zone it stays as it is."""
-    if tz is None:
-        return moment
-    return moment.replace(tzinfo=timezone.utc).astimezone(tz).replace(tzinfo=None)
-
-
-def episode_when(episode: Episode, tz: tzinfo | None) -> tuple[date, time | None]:
-    """The day and the hour of a dated episode; `tz`: the owner's zone for a kind with local times (anime), else None.
-    The hour only for an exact moment with a zone; the day on the owner's clock, but a day-only one as stored."""
-    if tz is None or episode.timing == EpisodeTiming.DAY:
-        return episode.air_at.date(), None
-    local = local_moment(episode.air_at, tz)
-    return local.date(), local.time() if episode.timing == EpisodeTiming.EXACT else None
-
-
-def format_episode_when(episode: Episode, tz: tzinfo | None) -> str:
-    """«пн, 12 окт»; with the hour where `episode_when` gives one: «пн, 12 окт в 18:00»."""
-    day, hour = episode_when(episode, tz)
-    return format_weekday_date(day) + (f" в {hour:%H:%M}" if hour is not None else "")
-
-
-def format_past_moment(moment: datetime, now: datetime) -> str:
-    """When something last happened, on the owner's clock (both moments aware, in the same zone): «в 14:05» today,
-    «вчера в 23:10», «26 окт в 09:05» before that, «26 окт 2025 в 09:05» in another year."""
-    local = moment.astimezone(now.tzinfo)
-    days = (now.date() - local.date()).days
-    if days <= 0:
-        return f"в {local:%H:%M}"
-    if days == 1:
-        return f"вчера в {local:%H:%M}"
-    day = f"{local.day} {_SHORT_MONTHS[local.month - 1]}"
-    return f"{day} {local.year} в {local:%H:%M}" if local.year != now.year else f"{day} в {local:%H:%M}"
-
-
-def format_day_month(value: date) -> str:
-    """«27 марта»: the day a part starts, as the card says «часть 2 — с 27 марта»."""
-    return f"{value.day} {_MONTHS[value.month - 1]}"
 
 
 _DEFAULT_SEASON_NAME = re.compile(r"(сезон|season)\s*\d+", re.IGNORECASE)

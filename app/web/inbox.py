@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Request, Response
 
-from app.tracker.cards import format_day_month
+from app.tracker.moment_words import format_day_month
 from app.tracker.core import INBOX_REASONS, MEDIA_WORDS, InboxEntry
 from app.tracker.kinds import KINDS
 from app.web import pages

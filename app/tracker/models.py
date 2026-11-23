@@ -40,7 +40,7 @@ class DeliveryStatus(StrEnum):
 
 
 class EpisodeTiming(StrEnum):
-    """Where the stored moment of an episode comes from, and so what may be shown of it (`cards.episode_when`)."""
+    """Where the stored moment of an episode comes from, and so what may be shown of it (`moment_words.episode_when`)."""
 
     EXACT = "exact"  # the source named the moment: the day and the hour on the owner's clock
     DAY = "day"  # the source knows the day only, stored as 00:00 UTC of it: the stored date as it is, no hour

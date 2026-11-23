@@ -15,7 +15,7 @@ from fastapi.testclient import TestClient
 
 from app.runtime import Health
 from app.tracker import movie_events, sequel_events
-from app.tracker.cards import format_date, format_weekday_date
+from app.tracker.moment_words import format_date, format_weekday_date
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import (
@@ -507,7 +507,8 @@ def test_the_feed_module_reaches_the_core_only_through_the_facade_and_pure_modul
     tree = ast.parse((ROOT / "app" / "web" / "feed.py").read_text(encoding="utf-8"))
     seen = [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module and n.module.startswith("app.tracker")]
 
-    assert seen and set(seen) <= {"app.tracker.cards", "app.tracker.core", "app.tracker.kinds", "app.tracker.models"}
+    assert seen and set(seen) <= {"app.tracker.cards", "app.tracker.core", "app.tracker.kinds", "app.tracker.models",
+                           "app.tracker.moment_words"}
 
 
 def test_the_feed_templates_have_no_script_and_no_inline_style():

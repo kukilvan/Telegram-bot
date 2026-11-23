@@ -32,7 +32,7 @@ from datetime import datetime, time, timedelta, timezone, tzinfo
 from typing import Any
 
 from app.tracker import failures, game_events, login_events, price_events
-from app.tracker.cards import format_weekday_date, local_moment
+from app.tracker.moment_words import format_weekday_date, local_moment
 from app.tracker.sources.dates import parse_moment
 from app.tracker.series_events import EPISODE_OUT
 

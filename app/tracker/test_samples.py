@@ -15,9 +15,9 @@ from typing import Any
 
 from app.tracker import (
     anime_events, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, russian_events,
-    sequel_events, series_events,
+    sequel_events, series_events, series_messages,
 )
-from app.tracker.cards import format_weekday_date
+from app.tracker.moment_words import format_weekday_date
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.delivery_service import DeliveryService
 from app.tracker.errors import UnknownCheck, UnknownSample
@@ -93,6 +93,11 @@ def _ping_payload() -> dict[str, Any]:
     return {"text": "если вы это видите, доставка работает."}
 
 
+def _sample_episode_events() -> list[tuple[str, dict[str, Any]]]:
+    """Two episodes of one season as real «вышла серия» events (type and payload): a summary folds them into one line."""
+    return [(series_events.EPISODE_OUT, payload) for payload in series_messages.sample_episode_payloads()]
+
+
 class TestSamples:
     __test__ = False
 
@@ -111,7 +116,7 @@ class TestSamples:
         sample_texts = (
             movie_events.TEST_SAMPLES
             + sequel_events.TEST_SAMPLES
-            + series_events.TEST_SAMPLES
+            + series_messages.TEST_SAMPLES
             + anime_events.TEST_SAMPLES
             + game_events.TEST_SAMPLES
             + follow_ups.TEST_SAMPLES
@@ -142,10 +147,10 @@ class TestSamples:
             self.register(TestSample(sample_id, label, lambda events=events: events()[0][1], events))
         self.register(
             TestSample(
-                series_events.SAMPLE_EPISODES_ID,
-                series_events.SAMPLE_EPISODES_LABEL,
-                lambda: series_events.sample_episode_events()[0][1],
-                series_events.sample_episode_events,
+                series_messages.SAMPLE_EPISODES_ID,
+                series_messages.SAMPLE_EPISODES_LABEL,
+                lambda: series_messages.sample_episode_payloads()[0],
+                _sample_episode_events,
             )
         )
 
@@ -215,7 +220,7 @@ class TestSamples:
             local = value.astimezone(tz)
             return f"{format_weekday_date(local.date())} в {local:%H:%M}"
 
-        result = await self.send_test_event(series_events.SAMPLE_EPISODES_ID, at=moment)
+        result = await self.send_test_event(series_messages.SAMPLE_EPISODES_ID, at=moment)
         if result.delivered_at_once:
             return DeliveryCheckResult(CheckOutcome.AT_ONCE, when(moment))
         if result.delivered and result.held_until is not None:

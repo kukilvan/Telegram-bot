@@ -17,7 +17,8 @@ from collections.abc import Iterable, Mapping, Sequence
 from datetime import date, datetime, tzinfo
 from typing import Any
 
-from app.tracker.cards import games_word, local_moment
+from app.tracker.cards import games_word
+from app.tracker.moment_words import local_moment
 from app.tracker.dedup import moved_key
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind

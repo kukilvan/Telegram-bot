@@ -174,7 +174,7 @@ class Tracker:
         database = database_file(self.database_url) if self.database_url else None
         self._drive = GoogleDrive(ctx, self.drive_settings, self.drive_api, database.parent if database else None)
         self._backups = Backups(ctx, self._settings, self._queue, self.database_url, self._drive)
-        self._exports = Exports(ctx, self._settings)
+        self._exports = Exports(ctx, self._settings, pollers)
         self._logins = LoginReports(ctx, self._queue, self._settings)
         self._playstation = PlayStationLinks(ctx, self._settings, self.playstation_source)
         self._zog_page = ZogPages(ctx, self.zog_source)
@@ -225,23 +225,17 @@ class Tracker:
         return await self._settings.settings()
 
     async def save_settings(self, change: SettingsChange) -> None:
-        """Store the whole settings form: all of it, or nothing when a value is wrong (SettingsRefused names the first
-        one, in the order of the form). The rules apply from the next pass of the delivery queue."""
+        """Store the whole settings form: all of it, or nothing when a value is wrong."""
         await self._settings.save_settings(change)
 
     # --- titles ---------------------------------------------------------------------------------
 
     async def search(self, kind: TitleKind, query: str) -> list[Any]:
-        """Suggestions for `query` from the source of this kind, each with its poster and the number of its title when
-        it is in the list already. Raises KeyError for an unknown kind, SourceNotConfigured when the source has no keys
-        (games without the keys of IGDB), SourceFailed when the source fails."""
+        """Suggestions for `query` from the source of the kind, marked with the titles already in the list."""
         return await self._titles.search(kind, query)
 
     async def add_title(self, kind: TitleKind, external_id: str) -> AddResult:
-        """Put a search result into the list with status «Хочу», or open the title that is already there (an anime is
-        known by any entry of its chain; a game by its number in IGDB). Raises BadExternalId (a TitleNotFound) for a
-        number that is no number of any source, SourceNotConfigured when the source has no keys, SourceFailed when it
-        fails, TitleNotFound when it has no such title."""
+        """Put a search result into the list as «Хочу», or open the title that is already there."""
         return await self._titles.add_title(kind, external_id)
 
     async def watchable_seasons(self, title_id: int) -> list[WatchableSeason]:
@@ -249,8 +243,7 @@ class Tracker:
         return await self._statuses.watchable_seasons(title_id)
 
     async def set_season_watched(self, title_id: int, season_id: int, watched: bool) -> None:
-        """Mark a season (by its record, `SeasonRow.id`) as watched, or take the mark off (the state asked for, not a
-        switch). Marking twice changes nothing; a season with nothing out or of another title is an UnknownSeason."""
+        """Mark a season as watched, or take the mark off: the state asked for, not a switch."""
         await self._statuses.set_season_watched(title_id, season_id, watched)
 
     async def mark_all_released(self, title_id: int) -> ChangeResult:
@@ -258,13 +251,11 @@ class Tracker:
         return await self._statuses.mark_all_released(title_id)
 
     async def toggle_season(self, title_id: int, season_id: int) -> list[WatchableSeason]:
-        """The button of a season (by its record): mark it, or take the mark off. Returns the seasons with their marks
-        as they are now."""
+        """The button of a season: mark it, or take the mark off; the seasons as they are now."""
         return await self._statuses.toggle_season(title_id, season_id)
 
     async def set_title_score(self, title_id: int, score: int | None) -> ChangeResult:
-        """The owner's own score of a title, or None to take it off (a series then shows the average of its seasons).
-        Only what is watched gets one: CannotScore otherwise. ValueError for a value off the scale (`scores.SCALE`)."""
+        """The owner's score of a title, or None to take it off; only what is watched gets one."""
         return await self._statuses.set_title_score(title_id, score)
 
     async def set_season_score(self, title_id: int, season_id: int, score: int | None) -> ChangeResult:
@@ -272,8 +263,7 @@ class Tracker:
         return await self._statuses.set_season_score(title_id, season_id, score)
 
     async def mark_watched(self, title_id: int) -> ChangeResult:
-        """«Посмотрел» of a movie, «Прошёл» of a game: the final status of the kind («Просмотрено», «Пройдено»), and
-        the title moves to the archive (a movie's sequels are still watched there)."""
+        """«Посмотрел» of a movie, «Прошёл» of a game: the final status; the title moves to the archive."""
         return await self._statuses.mark_watched(title_id)
 
     async def mark_started(self, title_id: int) -> ChangeResult:
@@ -281,9 +271,7 @@ class Tracker:
         return await self._statuses.mark_started(title_id)
 
     async def set_platform_playing(self, title_id: int, platform: str, playing: bool) -> ChangeResult:
-        """The mark «играю здесь» on a platform of a game (`platform` as the address gives it). The same twice changes
-        nothing. Raises UnknownTitle, and UnknownPlatform for a platform the game is not on (or a title that is no
-        game)."""
+        """The mark «играю здесь» on a platform of a game (`UnknownTitle`, `UnknownPlatform`)."""
         return await self._statuses.set_platform_playing(title_id, platform, playing)
 
     async def mark_dropped(self, title_id: int) -> ChangeResult:
@@ -291,8 +279,7 @@ class Tracker:
         return await self._statuses.mark_dropped(title_id)
 
     async def restore_title(self, title_id: int) -> ChangeResult:
-        """«Вернуть в список»: the title leaves the archive; its first check after that records what it finds
-        silently."""
+        """«Вернуть в список»: the title leaves the archive; its first check after that is silent."""
         return await self._statuses.restore_title(title_id)
 
     async def delete_title(self, title_id: int) -> DeleteResult:
@@ -300,9 +287,7 @@ class Tracker:
         return await self._titles.delete_title(title_id)
 
     async def follow(self, kind: str, external_id: str) -> AddResult:
-        """«Следить»: a sequel of a film, an expansion or a game of the series joins the list as «Хочу» (by its id in
-        the source of the kind). Pressing twice opens it. UnknownKind for a kind that announces nothing; BadExternalId
-        as `add_title` has it."""
+        """«Следить»: a sequel, an expansion or a game of the series joins the list as «Хочу»."""
         return await self._titles.follow(kind, external_id)
 
     async def follow_sequel(self, event_id: int) -> AddResult:
@@ -317,9 +302,7 @@ class Tracker:
         query: str | None = None,
         genre: str | None = None,
     ) -> list[TitleSummary]:
-        """The rows of the list, filtered by kind, by a set of statuses (None: all), by a part of the name (`query`)
-        and by a merged genre (`genre`, as `genres` names it), in the given order (without one: as the titles were
-        added, which is the bot's list)."""
+        """The rows of the list by kind, statuses, a part of the name and a genre, in the given order."""
         return await self._listing.list_titles(kind, statuses, order, query, genre)
 
     async def genres(self, kind: TitleKind | None = None, statuses: Collection[TitleStatus] | None = None) -> list[str]:
@@ -334,14 +317,11 @@ class Tracker:
         return await self._listing.title_card(title_id)
 
     async def playstation_link(self, title_id: int) -> str | None:
-        """«Открыть в PlayStation Store» of the web card: the page of the game's concept when the store has it, else the
-        search by its original name (one `HEAD`, kept a day). None: the card is the place — no such title, no game, or
-        no link (no store in the country, PS5 not among «Мои платформы»)."""
+        """«Открыть в PlayStation Store» of the web card: the concept page, else the search."""
         return await self._playstation.link(title_id)
 
     async def set_zog_page(self, title_id: int, link: str) -> ChangeResult:
-        """«Страница на ZoG»: the owner's link, its page asked once, saved silently. ZogPageRefused (`text`): a bad
-        link, nothing saved; UnknownTitle; no change for a title that is no game in «Хочу» or «В процессе»."""
+        """«Страница на ZoG»: the owner's link, its page asked once, saved silently."""
         return await self._zog_page.set(title_id, link)
 
     async def reject_zog_page(self, title_id: int) -> ChangeResult:
@@ -349,8 +329,7 @@ class Tracker:
         return await self._zog_page.reject(title_id)
 
     async def feed(self) -> Feed:
-        """The feed: what comes out from today on («Скоро» by days for two weeks, then «Позже») and the events of the
-        last week («Недавно»), with the buttons of each row decided."""
+        """The feed: «Скоро» by days, «Позже» and the events of the last week («Недавно»), buttons decided."""
         return await self._feed.feed()
 
     # --- polling --------------------------------------------------------------------------------
@@ -364,7 +343,7 @@ class Tracker:
     async def deliver_pending(
         self, *, now: datetime | None = None, only: frozenset[int] | None = None, force: bool = False
     ) -> DeliveryReport:
-        """Send what the delivery rules let out at this moment. A failed send stays queued; the rest still go out."""
+        """Send what the delivery rules let out at this moment; a failed send stays queued."""
         return await self._deliveries.deliver_pending(now=now, only=only, force=force)
 
     async def summary_now(self) -> SummaryResult:
@@ -384,8 +363,7 @@ class Tracker:
         return self._samples.samples()
 
     async def send_test_event(self, sample_id: str, at: datetime | None = None) -> TestEventResult:
-        """Create a fresh sample of the given id and deliver it, at once or as if `at` were now. UnknownSample for an
-        id the core does not know."""
+        """Create a fresh sample of the given id and deliver it, at once or as if `at` were now."""
         return await self._samples.send_test_event(sample_id, at)
 
     async def delivery_check_moment(self, check: DeliveryCheck) -> datetime:
@@ -393,22 +371,19 @@ class Tracker:
         return await self._samples.delivery_check_moment(check)
 
     async def delivery_check(self, check_id: str) -> DeliveryCheckResult:
-        """«Проверка правил доставки»: the sample as if the moment of the check were now, and what the rules did with
-        it. An unknown `check_id` is an UnknownCheck."""
+        """«Проверка правил доставки»: the sample as if the check moment were now, and what the rules did."""
         return await self._samples.delivery_check(check_id)
 
     async def record_login_report(
         self, event_type: str, unique: str, device: str, address: str | None, moment: datetime
     ) -> int | None:
-        """Queue the login report of a fact (`WEB_LOGIN` or `WEB_LOGIN_LOCKED`), its text made here; send it with
-        `deliver_pending(force=True, only=…)`. None: reported already."""
+        """Queue the login report of a fact, its text made here; None: reported already."""
         return await self._logins.record(event_type, unique, device, address, moment)
 
     # --- copies of the database ------------------------------------------------------------------
 
     async def backup_block(self, host: str = "") -> BackupBlock:
-        """The lines of the Settings block «Копии и выгрузка» for a page opened at `host` (the `Host` of the request:
-        the Google Drive button is only for this PC); a folder that cannot be read gives the line that says so."""
+        """The lines of the Settings block «Копии и выгрузка» for a page opened at `host`."""
         return await self._backups.block(host)
 
     async def make_backup_now(self) -> str:
@@ -442,27 +417,19 @@ class Tracker:
     # --- «Входящие» -----------------------------------------------------------------------------
 
     async def take_in(self, message: IncomingMessage) -> TakeIn:
-        """Write a message of the owner as an inbox item before anything is answered: a new item that waits (every
-        other waiting one goes to «Входящие» «без ответа» in the same write), or the newest item it joins (an album,
-        a forward after its comment, within 2 seconds)."""
+        """Write a message of the owner as an inbox item before anything is answered."""
         return await self._inbox.take_in(message)
 
     async def inbox_pause_over(self, item_id: int) -> InboxReply:
-        """The pause after the last message of an item is over: an item with links of sources gets the offers of its
-        links, no question; else «Что это?» for an item with text, and an item without text goes to «Входящие» «нет
-        текста»; nothing for an item that is gone or no longer waits."""
+        """The pause after the last message of an item is over: its offers, or «Что это?»."""
         return await self._answers.pause_over(item_id)
 
     async def answer_kind(self, item_id: int, kind: TitleKind) -> InboxReply:
-        """The kind the owner chose for an item: the analysis of its name candidates in the source of the kind — the
-        first offer, «Уже в списке», or the item goes to «Входящие» (not found, the source failed, games not
-        connected). UnknownInboxItem when the item is gone."""
+        """The kind the owner chose for an item: its first offer, «Уже в списке», or «Входящие»."""
         return await self._answers.answer_kind(item_id, kind)
 
     async def answer_offer(self, item_id: int, number: int, accepted: bool) -> InboxReply:
-        """«Да» (`accepted`): the title of offer `number` is added as on the web and the item resolved; «Нет»: the
-        next offer, or the item goes to «Входящие» «не нашёл» after the last one. UnknownInboxItem when the item is
-        gone."""
+        """«Да»: the offer's title is added and the item resolved; «Нет»: the next offer."""
         return await self._answers.answer_offer(item_id, number, accepted)
 
     async def forget_inbox_item(self, item_id: int) -> bool:

@@ -7,6 +7,7 @@ JSON document is `export_all`. There is no import: the data comes back from a co
 
 import asyncio
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 
@@ -19,11 +20,15 @@ from app.tracker.models import ARCHIVE_STATUSES, SeasonRecord, Title
 from app.tracker.settings_store import SettingsStore
 from app.tracker.text import by_name
 
+if TYPE_CHECKING:
+    from app.tracker.polling import Pollers
+
 
 class Exports:
-    def __init__(self, ctx: CoreContext, settings: SettingsStore) -> None:
+    def __init__(self, ctx: CoreContext, settings: SettingsStore, pollers: "Pollers") -> None:
         self.ctx = ctx
         self.settings = settings
+        self.pollers = pollers
 
     async def list_file(self) -> ExportFile:
         """`tracker-list-<date>.csv`: every title, the archive too, in the order «по названию» of the List."""
@@ -60,5 +65,5 @@ class Exports:
         now = self.ctx.now()
         with self.ctx.session_factory() as session:
             tz = self.settings.time_zone(session)
-            content = export_rows.json_bytes(export_all.document(session, tz, now))
+            content = export_rows.json_bytes(export_all.document(session, tz, now, self.pollers))
         return ExportFile(export_rows.all_file_name(export_rows.file_day(now, tz)), export_rows.JSON_TYPE, content)

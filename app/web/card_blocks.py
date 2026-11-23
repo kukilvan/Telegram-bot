@@ -13,9 +13,8 @@ from typing import NamedTuple
 
 from fastapi import Request
 
-from app.tracker.cards import (
-    PARENT_LINE_END, PARENT_LINE_START, FollowLine, FollowUpsView, SequelsView, TitleCard, format_past_moment,
-)
+from app.tracker.cards import PARENT_LINE_END, PARENT_LINE_START, FollowLine, FollowUpsView, SequelsView, TitleCard
+from app.tracker.moment_words import format_past_moment
 from app.tracker.kinds import KINDS
 
 PLATFORMS_HINT = "Галочка — «играю здесь»: о выходе на отмеченных платформах придёт сообщение; у ПК — ещё цены и скидки Steam"

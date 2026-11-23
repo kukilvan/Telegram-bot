@@ -59,8 +59,9 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the messages of both places (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
 - `app/tracker/backup_rows.py` — What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
 - `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
+- `app/tracker/candidate_words.py` — The word lists of the candidate rules (pure): kind words, name markers and the names that are never a title.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
-- `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot.
+- `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot, and the views of its parts.
 - `app/tracker/checks.py` — Whether a check of a title still runs: the one rule every write of a poll asks before it queues what it found.
 - `app/tracker/context.py` — What every part of the core shares: the session factory, the clock, the sender, the default time zone, the locks, the running sends.
 - `app/tracker/core.py` — Tracker core facade: the only door the bot (and later the web app) uses.
@@ -83,7 +84,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/game_events.py` — Game events: what changed between two snapshots of a game on the platforms the owner is told about, and how the message reads.
 - `app/tracker/game_rows.py` — What the owner reads of a game: the lines of its platforms on the card, the date outside the country, the links to the stores, the pieces of the feed.
 - `app/tracker/game_scope.py` — What the owner sees of the games: the country of the stores, «Мои платформы» and the marks «играю здесь».
-- `app/tracker/games.py` — The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
+- `app/tracker/games.py` — The dates of a game: the release records of IGDB, which one is ours, backward compatibility and a lost date.
 - `app/tracker/genres.py` — Genres as the owner picks them: one genre is one name, whatever the case, the «е» for «ё» or the source that wrote it.
 - `app/tracker/google_drive.py` — The connection of the Google Drive copy: whether it is on, the sign-in to Google and the sign-out, and the files of the connection in `data/`.
 - `app/tracker/inbox.py` — «Входящие»: taking in what the owner sends to the bot, the states of an item and its moves, the 12 hours, the list, the count and deleting.
@@ -111,9 +112,10 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0016_drop_failure_notified_at.py` — The column `titles.failure_notified_at` goes (spec 4.4 of stage 9.1a, KI-45).
 - `app/tracker/migrations/versions/0017_episode_timing.py` — The column `episodes.timing`: where the stored moment of an episode comes from (spec 1.1 and 11 of stage 9.1c, KI-28, KI-32, KI-77).
 - `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, snapshots, events, the delivery queue, settings, game platforms, prices, the inbox and the last number given to a title.
-- `app/tracker/moment_words.py` — A moment in words for the owner (pure): «сегодня в 07:58», «вчера в 18:32», «4 ноября в 07:58», «4 ноября 2025 в 07:58».
+- `app/tracker/moment_words.py` — Dates and moments in words for the owner (pure): «15 декабря 2026», «пн, 12 окт», «сегодня в 07:58», «вчера в 18:32».
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
-- `app/tracker/offers.py` — Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner sees them, and the text of an offer card (spec 3, 5 and 6.1 of stage 6.4).
+- `app/tracker/offer_cards.py` — An offer as the item keeps it and the text of its card (pure).
+- `app/tracker/offers.py` — Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner sees them (spec 3 and 5 of stage 6.4); the offer and its card are `offer_cards`.
 - `app/tracker/platforms.py` — The platforms of the tracker and the countries of the stores: where a game comes out, whose region its dates are, and the words of the other regions.
 - `app/tracker/playstation.py` — The link of a game in PlayStation Store, checked at a click: the page of its concept when the store has it, else the search.
 - `app/tracker/pollers/anime.py` — An anime franchise: two sources are put together (Shikimori for the seasons, AniList for the schedule), and the source entries behind the seasons and the franchise films are kept beside them.
@@ -135,19 +137,22 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/prices.py` — Steam prices of a game: what one price check saw (`PriceLook`), an amount of money (`Money`) and «самая низкая с добавления».
 - `app/tracker/progress.py` — The status a series takes by itself from the owner's season marks and the state of the show.
 - `app/tracker/queue.py` — Putting events into the delivery queue: the events the polls find, the test events, the «could not check» messages.
+- `app/tracker/release_dates.py` — A release date that may be approximate: a day, a month, a quarter or a year (pure).
 - `app/tracker/results.py` — What the tracker core hands back to its callers.
 - `app/tracker/russian.py` — Russian in a game (pure): what a source says (`Support`), the official look and its strict reading, the line «Русский: …», what appeared and «(ПК)».
 - `app/tracker/russian_events.py` — The events of Russian in games (pure): the texts, the keys, the payloads, the samples of «Тестовое событие» and `TYPES`.
 - `app/tracker/scores.py` — The owner's score: ten points with «+» and «−».
 - `app/tracker/seasons.py` — Seasons of a series: what the source says about them and how far each one has got.
 - `app/tracker/sequel_events.py` — Sequel announcements for an archived movie: what is new in its collection, how the message reads.
-- `app/tracker/series_events.py` — Series events: what changed between two looks at a series, how the message reads, how soon to look again.
+- `app/tracker/series_events.py` — Series events: what changed between two looks at a series and how soon to look again; the texts are `series_messages`.
+- `app/tracker/series_messages.py` — The texts of the series events and their samples (pure): the message of each event, the `Flavor` that makes an anime read as itself, and the samples of «Тестовое событие».
 - `app/tracker/settings_store.py` — The owner's settings in the `settings` table: the break that splits a season into parts, the delivery rules, the time zone, the platforms of the games and the country of the stores.
 - `app/tracker/sources/anilist_schedule.py` — AniList adapter for anime: the airing schedule of one source entry (a season, or a part of it).
 - `app/tracker/sources/dates.py` — Reading a date from text: two readers, and which one to use depends on who wrote the text.
 - `app/tracker/sources/igdb_follow_ups.py` — IGDB adapter of the follow-up check: one request a game for its expansions and the games of its series, parsed into a `FollowUpsSnapshot`.
 - `app/tracker/sources/igdb_games.py` — IGDB adapter for games: search suggestions and the game snapshot, with the Russian texts of Steam when a game is added.
-- `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the franchise built from the chain of sequels.
+- `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the source of the tracker core.
+- `app/tracker/sources/shikimori_chain.py` — The franchise built from the chain of Shikimori entries (pure): the entry, the walk along the chain, the snapshot.
 - `app/tracker/sources/steam_languages.py` — Steam adapter for languages: what Steam answered about each game becomes what it says about Russian (`russian.Support` or «no data»).
 - `app/tracker/sources/steam_prices.py` — Steam adapter for prices: what Steam answered about each game becomes its price look (`PriceLook`), source `steam`.
 - `app/tracker/sources/tmdb_find.py` — TMDb adapter for the IMDb links of «Входящие»: `/find` by an IMDb id gives the movie or the series it names.

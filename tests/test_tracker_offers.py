@@ -13,7 +13,8 @@ from app.tracker import offers as module
 from app.tracker.candidates import Candidate
 from app.tracker.core import IncomingMessage, InboxOutcome, InboxReason, InboxState
 from app.tracker.models import GamePlatformRecord, InboxRecord, TitleKind
-from app.tracker.offers import Offer, card_text, new_from, searched
+from app.tracker.offers import new_from, searched
+from app.tracker.offer_cards import Offer, card_text
 from inbox_fakes import ANSWERS, Clients, samples, tracker_on
 
 GAME, SERIES, ANIME, MOVIE = TitleKind.GAME, TitleKind.SERIES, TitleKind.ANIME, TitleKind.MOVIE

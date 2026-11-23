@@ -12,7 +12,8 @@ from datetime import date
 from typing import Any
 
 from app.tracker import text
-from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, Parent, PlatformDates, Release, platform_dates
+from app.tracker.games import GameState, Parent, PlatformDates, Release, platform_dates
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent
@@ -181,7 +182,7 @@ def came_out_before(follow_up: FollowUp, own_date: date | None, today: date) -> 
 class FollowUpDate:
     """What «Выход:» says of a follow-up (spec 4.4): a date, and whether it is the early access."""
 
-    date: GameDate = NOT_ANNOUNCED
+    date: ReleaseDate = NOT_ANNOUNCED
     early: bool = False
 
     @property
@@ -190,7 +191,7 @@ class FollowUpDate:
         return self.date.label + (EARLY_ACCESS_NOTE if self.early else "")
 
 
-def _ends_first(game_date: GameDate) -> tuple[date, bool]:
+def _ends_first(game_date: ReleaseDate) -> tuple[date, bool]:
     """The date that ends earlier first (KI-39: a day of 2027 is earlier than «2027»); on a tie the exact one."""
     return (game_date.end, not game_date.exact)
 
@@ -198,8 +199,8 @@ def _ends_first(game_date: GameDate) -> tuple[date, bool]:
 def follow_up_date(follow_up: FollowUp, mine: Collection[Platform], country: str) -> FollowUpDate:
     """The announced full release on «Мои платформы» that ends earliest; else such an early access; else «дата не
     объявлена». Cancelled platforms give nothing."""
-    full: list[GameDate] = []
-    early: list[GameDate] = []
+    full: list[ReleaseDate] = []
+    early: list[ReleaseDate] = []
     for dates in _dates_on_mine(follow_up, mine, country):
         if dates.full is not None and dates.full.date.announced:
             full.append(dates.full.date)
@@ -329,11 +330,11 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
     (
         "game-expansion",
         "Игра: анонсировано дополнение",
-        expansion_text("Ведьмак 3: Дикая Охота — Баллады прошлого", _SAMPLE_GAME, FollowUpDate(GameDate(year=2027))),
+        expansion_text("Ведьмак 3: Дикая Охота — Баллады прошлого", _SAMPLE_GAME, FollowUpDate(ReleaseDate(year=2027))),
     ),
     (
         "game-sequel",
         "Игра: новая игра серии",
-        sequel_text("The Witcher IV", _SAMPLE_GAME, FollowUpDate(GameDate(year=2028))),
+        sequel_text("The Witcher IV", _SAMPLE_GAME, FollowUpDate(ReleaseDate(year=2028))),
     ),
 ]

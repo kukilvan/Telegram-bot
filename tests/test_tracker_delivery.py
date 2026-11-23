@@ -17,7 +17,8 @@ from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import DeliveryItem, Title
 from app.tracker.seasons import Episode, Season
-from app.tracker.series_events import EPISODE_OUT, SAMPLE_EPISODES_ID, message_episode
+from app.tracker.series_events import EPISODE_OUT
+from app.tracker.series_messages import SAMPLE_EPISODES_ID, message_episode
 from app.tracker.sources.tmdb_movies import MovieSnapshot
 from app.tracker.sources.tmdb_series import SeriesSnapshot
 

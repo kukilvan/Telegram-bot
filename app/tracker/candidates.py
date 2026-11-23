@@ -16,6 +16,7 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
+from app.tracker.candidate_words import KIND_WORDS, MARKERS, STOP_NAMES
 from app.tracker.models import TitleKind
 from app.tracker.text import key
 
@@ -49,28 +50,9 @@ _EPISODE_HEAD = re.compile(r"^(.+?):\s*\d+\s*(?:сери\w*|сері[яюї]\w*|
 _PLATFORM_WORD = re.compile(r"xbox|nintendo|playstation|ps\d+|switch", re.I)
 _SHOP_WORD = re.compile(r"steam|quest", re.I)  # dropped as the start of a run only when a word follows
 
-_KIND_WORDS = (
-    r"игр[аыуе]|гр[аиу]|сериал[аеу]?|серіал[уі]?|аниме|аніме|фильм[аеу]?|фільм[уі]?|мультфильм\w*|"
-    r"экранизаци[яию]|екранізаці[яїю]|ремастер|ремейк|дорам[аыу]|экшн|экшен|лайфсим|симулятор|приключени[ея]"
-)
-# the serial «серии» after «известн… по» is not part of the marker: a name after it keeps its weight
-_MARKERS = (
-    r"смес\w*|как в|как у|вроде|наподобие|аналог\w*|в духе|похож\w*|наследник\w*|наступник\w*|преемник\w*|"
-    r"известн\w* по|відом\w* за|вытеснив|помимо|кроме|после|на основе|по мотивам|от|від|from|студи\w*|студі\w*|"
-    r"компани\w*|компані\w*|издател\w*|видав\w*|разработчик\w*|розробник\w*|выходцами из|из|магазин\w*|фестивал\w*"
-)
-_AFTER_KIND_WORD = re.compile(rf"\b(?:{_KIND_WORDS})\s*$", re.I)
-_AFTER_MARKER = re.compile(rf"\b(?:{_MARKERS})\s*$", re.I)
-_CYRILLIC_NAME = re.compile(rf"\b(?:{_KIND_WORDS})\s+((?-i:[А-ЯЁІЇЄҐ])[^.,!?:;—–(]*)", re.I)
-
-STOP_NAMES = (
-    "Steam", "PC", "ПК", "PS4", "PS5", "PlayStation", "Xbox", "Xbox One", "Xbox Series", "Xbox Series X|S", "Nintendo",
-    "Nintendo Switch", "Nintendo Switch 2", "Switch", "Switch 2", "Quest", "Meta", "Meta Horizon", "Netflix", "HBO",
-    "Apple TV+", "Disney+", "Amazon Prime Video", "YouTube", "Twitch", "Telegram", "IGN", "Metacritic", "Opencritic",
-    "VR", "AR", "XR", "NPC", "AI", "DLC", "RU", "EU", "US", "UA", "Hard", "Easy", "Normal", "MAPPA", "A24", "Sony",
-    "Microsoft", "Epic Games Store", "GOG", "itch.io",
-)
-
+_AFTER_KIND_WORD = re.compile(rf"\b(?:{KIND_WORDS})\s*$", re.I)
+_AFTER_MARKER = re.compile(rf"\b(?:{MARKERS})\s*$", re.I)
+_CYRILLIC_NAME = re.compile(rf"\b(?:{KIND_WORDS})\s+((?-i:[А-ЯЁІЇЄҐ])[^.,!?:;—–(]*)", re.I)
 
 @dataclass(frozen=True)
 class Candidate:

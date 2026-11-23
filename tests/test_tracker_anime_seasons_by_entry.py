@@ -17,7 +17,7 @@ from app.tracker.db import create_session_factory
 from app.tracker.models import EpisodeRecord, Event, PartRecord, SeasonRecord, Title
 from app.tracker.seasons import Episode, Season
 from app.tracker.series_events import ShowState, detect_events
-from app.tracker import anime_events
+from app.tracker import anime_events, series_messages
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
 from season_helpers import season_id
 
@@ -309,4 +309,4 @@ def test_the_keys_of_a_season_with_a_source_entry_name_the_entry_and_a_series_ke
 
     assert keys("77", flavored) == ["anime:5:src77:e2:out"]
     assert keys(None, flavored) == ["anime:5:s2:e2:out"]
-    assert keys(None, anime_events.series_events.SERIES) == ["series:5:s2:e2:out"]
+    assert keys(None, series_messages.SERIES) == ["series:5:s2:e2:out"]

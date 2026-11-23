@@ -15,7 +15,8 @@ from app.tracker.cards import FollowUpsView, ParentGame
 from app.tracker.core import Tracker, UnknownKind
 from app.tracker.db import create_session_factory
 from app.tracker.follow_ups import FollowUp, FollowUpsSnapshot
-from app.tracker.games import FULL, GameDate, GameState, Parent, Release
+from app.tracker.games import FULL, GameState, Parent, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import ARCHIVE_STATUSES, TitleKind, TitleStatus
 from test_tracker_follow_ups import TABLE, snapshot
 from test_tracker_game_follow_ups import PC, T0, FakeClock, FakeFollowUps, FakeSender, MadeUpGames, add, run
@@ -55,7 +56,7 @@ def tracker_without_follow_ups(session_factory, igdb):
 
 
 def follow_up(id_, name, year=None, month=None, day=None, standalone=False):
-    releases = (Release(PC, WORLD, FULL, GameDate(year, month, day)),) if year else ()
+    releases = (Release(PC, WORLD, FULL, ReleaseDate(year, month, day)),) if year else ()
     first = date(year, month or 12, day or 31) if year else None
     return FollowUp(id_, name, first=first, platforms=(PC,), releases=releases, standalone=standalone)
 

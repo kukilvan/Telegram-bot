@@ -9,7 +9,8 @@ import pytest
 
 from app.tracker import delivery, game_events, games
 from app.tracker.dedup import moved_key
-from app.tracker.games import GameDate, GameState, Release
+from app.tracker.games import GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.platforms import EUROPE, NORTH_AMERICA, WORLD, Platform
 
 PC, PS4, PS5, SWITCH, SWITCH_2 = 6, 48, 167, 130, 508
@@ -21,7 +22,7 @@ ALL = tuple(Platform)
 def state(*releases, platforms=()):
     """Releases as (IGDB platform, kind, date text) or (…, region); the platforms of the records are the game's."""
     records = tuple(
-        Release(platform=r[0], region=r[3] if len(r) > 3 else WORLD, type=r[1], date=GameDate.parse(r[2]))
+        Release(platform=r[0], region=r[3] if len(r) > 3 else WORLD, type=r[1], date=ReleaseDate.parse(r[2]))
         for r in releases
     )
     return GameState(platforms=tuple(sorted(set(platforms) | {r.platform for r in records})), releases=records)

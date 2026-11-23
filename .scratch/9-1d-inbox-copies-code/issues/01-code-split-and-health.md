@@ -1,6 +1,6 @@
 # 01: The code split and code health — KI-56, KI-63, KI-71, F4, F5
 
-Status: open
+Status: in review
 Complexity: medium (many files touched, no new behaviour; the same tests pass with their imports changed)
 Blocked by: —
 

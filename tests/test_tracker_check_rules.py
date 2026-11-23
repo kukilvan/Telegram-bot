@@ -13,7 +13,8 @@ from app.tracker import anime_events, game_events, movie_events, series_events
 from app.tracker.checks import still_checked
 from app.tracker.context import CoreContext
 from app.tracker.db import create_session_factory
-from app.tracker.games import GameDate, GameState, Release
+from app.tracker.games import GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import EpisodeTiming, Event, ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
 from app.tracker.movie_events import DetectedEvent, MovieDates, day_start
 from app.tracker.platforms import WORLD, Platform
@@ -21,7 +22,7 @@ from app.tracker.pollers.base import DueTitle, Poller
 from app.tracker.queue import EventQueue
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.sources.anilist_schedule import PartSchedule
-from app.tracker.sources.shikimori_anime import SeasonPart, SourceIds
+from app.tracker.sources.shikimori_chain import SeasonPart, SourceIds
 
 NOW = datetime(2026, 11, 20, 12, 0)
 
@@ -207,7 +208,7 @@ PC = 6  # IGDB's platform id
 
 def game(*releases):
     """Releases as (kind, date text) on PC, worldwide."""
-    records = tuple(Release(platform=PC, region=WORLD, type=kind, date=GameDate.parse(text)) for kind, text in releases)
+    records = tuple(Release(platform=PC, region=WORLD, type=kind, date=ReleaseDate.parse(text)) for kind, text in releases)
     return GameState(platforms=(PC,), releases=records)
 
 

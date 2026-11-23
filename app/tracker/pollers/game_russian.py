@@ -38,11 +38,11 @@ from sqlalchemy import or_, select
 from app.providers.steam import MAX_ITEMS
 from app.tracker import failures, games, russian, russian_events, storage
 from app.tracker.sources import zog_pages
-from app.tracker.cards import RussianView, local_moment
+from app.tracker.cards import RussianView
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
-from app.tracker.moment_words import moment_in_words
+from app.tracker.moment_words import moment_in_words, local_moment
 from app.tracker.movie_events import RETRY_AFTER_FAILURE, DetectedEvent
 from app.tracker.pollers.base import DueTitle
 from app.tracker.queue import EventQueue, Queued

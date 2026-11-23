@@ -13,7 +13,8 @@ from app.tracker import game_rows
 from app.tracker.cards import format_card
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
-from app.tracker.games import CANCELLED, EARLY, FULL, GameDate, GameState, Release
+from app.tracker.games import CANCELLED, EARLY, FULL, GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import Event, SourceSnapshot, TitleKind
 from app.tracker.platforms import REGION_WORDS, STORE_COUNTRIES, Platform
 from test_tracker_game_prices import FakeClock, FakePrices, FakeSender, MadeUpGames, T0, add, igdb_says, run
@@ -27,7 +28,7 @@ BOTH = (Platform.PC, Platform.PS5)
 
 def state(*records, platforms=None):
     """Records as (IGDB platform, region, type, date text)."""
-    releases = tuple(Release(p, region, kind, GameDate.parse(text)) for p, region, kind, text in records)
+    releases = tuple(Release(p, region, kind, ReleaseDate.parse(text)) for p, region, kind, text in records)
     return GameState(platforms=tuple(platforms or sorted({r.platform for r in releases})), releases=releases)
 
 

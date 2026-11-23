@@ -14,7 +14,8 @@ from sqlalchemy import event, select
 from app.tracker.cards import format_card
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
-from app.tracker.games import GameDate, GameState, Release
+from app.tracker.games import GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import SourceSnapshot, TitleKind, TitleStatus
 from app.tracker.platforms import WORLD
 from app.tracker.prices import PRICE, Price, PriceLook
@@ -286,7 +287,7 @@ def test_the_bot_card_before_the_first_check_says_so(tracker, igdb):
 
 def test_the_feed_is_the_same_before_and_after_the_prices_come(tracker, igdb, prices):
     def pc_game(steam_id, day):
-        release = Release(platform=PC, region=WORLD, type="full", date=GameDate.parse(day))
+        release = Release(platform=PC, region=WORLD, type="full", date=ReleaseDate.parse(day))
         return GameState(steam_id=steam_id, platforms=(PC,), releases=(release,))
 
     add(tracker, igdb, pc_game(HADES, "2026-11-12"), "1", "Hades II")

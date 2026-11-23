@@ -9,7 +9,8 @@ from sqlalchemy import select
 
 from app.tracker.core import Tracker
 from app.tracker.db import create_session_factory
-from app.tracker.games import FULL, GameDate, GameState, Release
+from app.tracker.games import FULL, GameState, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import Event, TitleKind
 from app.tracker.platforms import WORLD
 from test_tracker_game_prices import T0, FakeClock, FakePrices, FakeSender, MadeUpGames, add, igdb_says, run
@@ -18,7 +19,7 @@ PC = 6
 
 
 def released(text):
-    return GameState(platforms=(PC,), releases=(Release(PC, WORLD, FULL, GameDate.parse(text)),))
+    return GameState(platforms=(PC,), releases=(Release(PC, WORLD, FULL, ReleaseDate.parse(text)),))
 
 
 @pytest.fixture

@@ -13,9 +13,10 @@ from collections.abc import Collection, Iterable, Mapping, Sequence
 from datetime import date, datetime, timedelta
 from typing import Any
 
-from app.tracker.cards import format_date, format_day_month
+from app.tracker.moment_words import format_date, format_day_month
 from app.tracker.dedup import moved_key
-from app.tracker.games import NOT_ANNOUNCED, GameDate, GameState, PlatformDate, platform_dates, released_by
+from app.tracker.games import GameState, PlatformDate, platform_dates, released_by
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent, day_start
@@ -49,12 +50,12 @@ def older_tells(platform: Platform, told: Collection[Platform]) -> bool:
     return older is not None and any(PLATFORMS[other].igdb_id == older.igdb_id for other in told)
 
 
-def _news(game_date: GameDate, today: date, since: date) -> bool:
+def _news(game_date: ReleaseDate, today: date, since: date) -> bool:
     """An exact day not later than today and not earlier than 30 days before the tracker began following the game."""
     return released_by(game_date, today) and game_date.start >= since - BEFORE_FOLLOWING
 
 
-def _late(game_date: GameDate, today: date) -> dict[str, str]:
+def _late(game_date: ReleaseDate, today: date) -> dict[str, str]:
     """The payload of a release whose day is earlier than yesterday: `late` the day, `seen` the day it was found (the
     message names the year when they are of different years); nothing for one on time."""
     if game_date.start >= today - LATE_AFTER:
@@ -62,7 +63,7 @@ def _late(game_date: GameDate, today: date) -> dict[str, str]:
     return {"late": game_date.text, "seen": today.isoformat()}
 
 
-def _date_of(dated: PlatformDate | None) -> GameDate:
+def _date_of(dated: PlatformDate | None) -> ReleaseDate:
     return dated.date if dated is not None else NOT_ANNOUNCED
 
 
@@ -82,7 +83,7 @@ def platforms_text(entries: Iterable[tuple[Platform, str]]) -> str:
     return labels[0] if len(labels) == 1 else f"{', '.join(labels[:-1])} и {labels[-1]}"
 
 
-def moved_text(old: GameDate, new: GameDate) -> str:
+def moved_text(old: ReleaseDate, new: ReleaseDate) -> str:
     """«12 марта → 9 июня 2027» in one year; «15 декабря 2026 → 22 января 2027», «12 марта 2027 → 2027»,
     «12 марта 2027 → дата не объявлена» otherwise."""
     if old.exact and new.exact and old.year == new.year:
@@ -96,7 +97,7 @@ def late_words(data: Mapping[str, Any]) -> str:
     late = data.get("late")
     if not late:
         return ""
-    day = GameDate.parse(late)
+    day = ReleaseDate.parse(late)
     seen = data.get("seen")
     if seen and parse_date(seen).year == day.year:
         return f" {format_day_month(day.start)}"
@@ -112,8 +113,8 @@ def message(event_type: str, name: str, entries: Iterable[tuple[Platform, str]],
     if event_type == EARLY_ACCESS:
         return f"{_ICON} {name} вышла в раннем доступе на {where}{late_words(data)}"
     if event_type == DATE_ANNOUNCED:
-        return f"{_ICON} {name}: на {where} объявлена дата — {GameDate.parse(data['date']).label}"
-    moved = moved_text(GameDate.parse(data["old"]), GameDate.parse(data["new"]))
+        return f"{_ICON} {name}: на {where} объявлена дата — {ReleaseDate.parse(data['date']).label}"
+    moved = moved_text(ReleaseDate.parse(data["old"]), ReleaseDate.parse(data["new"]))
     return f"{_ICON} {name}: на {where} дата перенесена — {moved}"
 
 
@@ -181,7 +182,7 @@ def detect_events(
             dated: PlatformDate | None,
             data: dict[str, Any],
             earlier: str | None = None,
-            out: GameDate | None = None,
+            out: ReleaseDate | None = None,
         ):
             via = dated.via if dated is not None else None
             if via and older_tells(platform, told):

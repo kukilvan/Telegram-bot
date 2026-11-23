@@ -2,25 +2,29 @@
 
 Version 1 of the shape of spec 3.2 of stage 7.1. The owner's data is exported (titles with their sources, seasons with
 episodes and parts, franchise movies, platforms, the price history, the settings, «Входящие»); the app's working state is
-left out on purpose (source snapshots, events, the delivery queue). Reads only: the caller opened
-the session, so the whole document is one picture of the database.
+left out on purpose (source snapshots, events, the delivery queue). What only a kind knows about its titles (a game's
+base game) is asked of the poller of the kind (`Poller.export_extras`). Reads only: the caller opened the session, so
+the whole document is one picture of the database.
 """
 
 import logging
 from collections import defaultdict
 from datetime import datetime, tzinfo
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select, text
 
-from app.tracker import games, scores, storage
+from app.tracker import scores
 from app.tracker.cards import STATUS_LABELS
 from app.tracker.export_rows import FORMAT, VERSION, day_text, moment_text, zone_name
-from app.tracker.sources.igdb_games import SOURCE_KEY as IGDB
 from app.tracker.models import (
     EpisodeRecord, ExternalId, GamePlatformRecord, InboxRecord, MovieRecord, PartRecord, PriceRecord, SeasonRecord,
     SettingRecord, Title, TitleKind,
 )
+
+if TYPE_CHECKING:
+    from app.tracker.polling import Pollers
+
 
 def _label(value: int | None) -> str | None:
     """The label of a stored score; a value off the scale (a spoiled row) is no score, and the log says so."""
@@ -38,28 +42,6 @@ def _by(rows, key) -> dict[int, list]:
     for row in rows:
         grouped[key(row)].append(row)
     return grouped
-
-
-def _parents(session, names: dict[int, str]) -> dict[int, str]:
-    """The name of the base game of each expansion, as the card shows it: the name in the list when the list has the game,
-    else the name IGDB gave. A game whose stored state cannot be read has none (the log says so)."""
-    states = storage.own_states_of(session, select(Title.id).where(Title.kind == TitleKind.GAME))
-    asked: dict[int, games.Parent] = {}
-    for title_id, state in states.items():
-        try:
-            if games.expansion_of(state) is not None and state.get("parent") is not None:
-                asked[title_id] = games.Parent.from_state(state["parent"])
-        except ValueError as spoiled:
-            logging.warning("export: title %s: the expansion of a game cannot be read, left out: %r", title_id, spoiled)
-    listed: dict[str, int] = {}
-    wanted = {parent.id for parent in asked.values()}
-    for external_id, title_id in session.execute(
-        select(ExternalId.external_id, ExternalId.title_id).where(ExternalId.source == IGDB, ExternalId.external_id.in_(wanted))
-    ):
-        listed[external_id] = min(title_id, listed.get(external_id, title_id))  # the smaller number, as `known_ids`
-    return {
-        title_id: names.get(listed.get(parent.id, -1), parent.name) for title_id, parent in asked.items()
-    }
 
 
 def _seasons(session, tz: tzinfo) -> dict[int, list[dict[str, Any]]]:
@@ -82,14 +64,25 @@ def _seasons(session, tz: tzinfo) -> dict[int, list[dict[str, Any]]]:
     return seasons
 
 
-def _titles(session, tz: tzinfo) -> list[dict[str, Any]]:
+def _extras(session, titles: list[Title], pollers: "Pollers") -> dict[int, dict[str, Any]]:
+    """What the pollers add to their titles' objects (`Poller.export_extras`), asked once of each kind present."""
+    by_kind: dict[TitleKind, list[int]] = defaultdict(list)
+    for title in titles:
+        by_kind[title.kind].append(title.id)
+    extras: dict[int, dict[str, Any]] = {}
+    for kind, title_ids in by_kind.items():
+        extras.update(pollers.reader_of(kind).export_extras(session, title_ids))
+    return extras
+
+
+def _titles(session, tz: tzinfo, pollers: "Pollers") -> list[dict[str, Any]]:
     titles = list(session.scalars(select(Title).order_by(Title.id)))
     seasons = _seasons(session, tz)
     sources = _by(session.scalars(select(ExternalId).order_by(ExternalId.id)), lambda e: e.title_id)
     movies = _by(session.scalars(select(MovieRecord).order_by(MovieRecord.id)), lambda m: m.title_id)
     platforms = _by(session.scalars(select(GamePlatformRecord).order_by(GamePlatformRecord.id)), lambda p: p.title_id)
     prices = _by(session.scalars(select(PriceRecord).order_by(PriceRecord.seen_at, PriceRecord.id)), lambda p: p.title_id)
-    parents = _parents(session, {t.id: t.name for t in titles})
+    extras = _extras(session, titles, pollers)
     return [
         {
             "id": t.id, "kind": t.kind.value, "name": t.name, "original_name": t.original_name, "year": t.year,
@@ -103,7 +96,7 @@ def _titles(session, tz: tzinfo) -> list[dict[str, Any]]:
                 {"name": m.name, "aired_on": day_text(m.aired_on), "released": m.released} for m in movies.get(t.id, [])
             ],
             "platforms": [{"platform": p.platform, "playing": p.playing} for p in platforms.get(t.id, [])],
-            "expansion_of": parents.get(t.id),
+            "expansion_of": extras.get(t.id, {}).get("expansion_of"),
             "price_history": [
                 {
                     "seen_at": moment_text(p.seen_at, tz), "country": p.country, "currency": p.currency,
@@ -129,13 +122,13 @@ def _inbox(session, tz: tzinfo) -> list[dict[str, Any]]:
     ]
 
 
-def document(session, tz: tzinfo, now: datetime) -> dict[str, Any]:
+def document(session, tz: tzinfo, now: datetime, pollers: "Pollers") -> dict[str, Any]:
     """The whole export as plain values (`now`: naive UTC). All reads go through the one session."""
     revision = session.execute(text("SELECT version_num FROM alembic_version")).scalar()
     return {
         "format": FORMAT, "version": VERSION, "exported_at": moment_text(now, tz), "time_zone": zone_name(tz),
         "database_revision": revision,
-        "titles": _titles(session, tz),
+        "titles": _titles(session, tz, pollers),
         "settings": {row.key: row.value for row in session.scalars(select(SettingRecord).order_by(SettingRecord.key))},
         "inbox": _inbox(session, tz),
     }

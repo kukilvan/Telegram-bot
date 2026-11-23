@@ -35,15 +35,16 @@ from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta, timezone, tzinfo
 from typing import Any
 
-from app.tracker import series_events
-from app.tracker.cards import NOT_ANNOUNCED, format_date
+from app.tracker import series_messages
+from app.tracker.moment_words import NOT_ANNOUNCED, format_date
 from app.tracker.kinds import KINDS
 from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.movie_events import DetectedEvent, day_start
 from app.tracker.seasons import Episode, PartCut, Season
-from app.tracker.series_events import Flavor
+from app.tracker.series_messages import Flavor
 from app.tracker.sources.anilist_schedule import PartSchedule
-from app.tracker.sources.shikimori_anime import RELEASED_STATUS, SeasonPart
+from app.tracker.sources.shikimori_anime import RELEASED_STATUS
+from app.tracker.sources.shikimori_chain import SeasonPart
 
 _ICON = KINDS[TitleKind.ANIME].icon
 KEY_PREFIX = TitleKind.ANIME.value  # the keys already stored start with the kind's value
@@ -327,27 +328,27 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
     (
         "anime-announced",
         "Аниме: объявлена дата сезона",
-        series_events.message_announced(_SAMPLE, 4, Episode(1, datetime(2027, 1, 10, 15, 0)), flavor=_FLAVOR),
+        series_messages.message_announced(_SAMPLE, 4, Episode(1, datetime(2027, 1, 10, 15, 0)), flavor=_FLAVOR),
     ),
     (
         "anime-started",
         "Аниме: сезон начался",
-        series_events.message_started(_SAMPLE, _SAMPLE_SEASON, 1, _NEXT, _FLAVOR),
+        series_messages.message_started(_SAMPLE, _SAMPLE_SEASON, 1, _NEXT, _FLAVOR),
     ),
     (
         "anime-episode",
         "Аниме: вышла серия",
-        series_events.message_episode(_SAMPLE, _SAMPLE_SEASON, 6, _NEXT, _FLAVOR),
+        series_messages.message_episode(_SAMPLE, _SAMPLE_SEASON, 6, _NEXT, _FLAVOR),
     ),
     (
         "anime-ended",
         "Аниме: сезон закончился",
-        series_events.message_ended(_SAMPLE, _SAMPLE_SEASON, 12, _FLAVOR),
+        series_messages.message_ended(_SAMPLE, _SAMPLE_SEASON, 12, _FLAVOR),
     ),
     (
         "anime-moved",
         "Аниме: дата серии сдвинулась",
-        series_events.message_moved(
+        series_messages.message_moved(
             _SAMPLE,
             4,
             7,
@@ -360,22 +361,22 @@ TEST_SAMPLES: list[tuple[str, str, str]] = [
     (
         "anime-part-episode",
         "Аниме: вышла серия части",
-        series_events.message_part_episode(_SAMPLE, _PARTS[0], 6, datetime(2026, 11, 10), _NEXT, _FLAVOR),
+        series_messages.message_part_episode(_SAMPLE, _PARTS[0], 6, datetime(2026, 11, 10), _NEXT, _FLAVOR),
     ),
     (
         "anime-part-announced",
         "Аниме: объявлена дата части",
-        series_events.message_announced(_SAMPLE, 3, Episode(13, datetime(2027, 4, 5, 6, 0)), part=2, flavor=_FLAVOR),
+        series_messages.message_announced(_SAMPLE, 3, Episode(13, datetime(2027, 4, 5, 6, 0)), part=2, flavor=_FLAVOR),
     ),
     (
         "anime-part-started",
         "Аниме: началась часть сезона",
-        series_events.message_part_started(_SAMPLE, _PARTS[1], 13, "следующая: пн, 12 апр в 12:00", _FLAVOR),
+        series_messages.message_part_started(_SAMPLE, _PARTS[1], 13, "следующая: пн, 12 апр в 12:00", _FLAVOR),
     ),
     (
         "anime-part-ended",
         "Аниме: закончилась часть сезона",
-        series_events.message_part_ended(_SAMPLE, _PARTS[0], 12, _PARTS[1], _FLAVOR),
+        series_messages.message_part_ended(_SAMPLE, _PARTS[0], 12, _PARTS[1], _FLAVOR),
     ),
     (
         "anime-movie-announced",

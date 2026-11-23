@@ -21,7 +21,8 @@ from typing import Any
 
 from app.tracker import delivery
 from app.tracker.actions import FOLLOW, WATCHED, event_actions
-from app.tracker.cards import episode_when, season_label
+from app.tracker.cards import season_label
+from app.tracker.moment_words import episode_when
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.seasons import Episode, Part, Season
 from app.tracker.text import key as text_key
@@ -141,7 +142,7 @@ class FeedEvent:
 
 
 def day_of(episode: Episode, tz: tzinfo | None) -> tuple[date, time | None]:
-    """The day of a dated episode and its hour, by where its moment comes from (`cards.episode_when`): an exact moment
+    """The day of a dated episode and its hour, by where its moment comes from (`moment_words.episode_when`): an exact moment
     at 00:00 UTC has its hour too (KI-28), a moment found by a check has none (KI-32). `tz`: None for a kind whose source
     gives the day."""
     return episode_when(episode, tz)

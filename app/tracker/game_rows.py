@@ -13,9 +13,8 @@ from urllib.parse import quote
 from app.tracker.cards import PlatformRow, StoreLink
 from app.tracker.feed_rows import FeedTitle, Piece
 from app.tracker.game_events import older_tells, platforms_text
-from app.tracker.games import (
-    FULL, NOT_ANNOUNCED_LABEL, GameDate, GameState, PlatformDates, has_platform, igdb_numbers, platform_dates, released_by,
-)
+from app.tracker.games import FULL, GameState, PlatformDates, has_platform, igdb_numbers, platform_dates, released_by
+from app.tracker.release_dates import NOT_ANNOUNCED_LABEL, ReleaseDate
 from app.tracker.platforms import NO_REGION, PLATFORMS, REGION_WORDS, STORE_COUNTRIES, Platform, steam_url
 
 CANCELLED_LABEL = "отменена"
@@ -62,7 +61,7 @@ def outside_date(game: GameState, mine: Collection[Platform], country: str) -> s
     cancelled (a record of the platform's own IGDB number or of its older one); a platform counts only when that date
     ends earlier than its own date for the country, or it has none. Empty: no such line."""
     regions = STORE_COUNTRIES[country].regions
-    found: list[tuple[GameDate, int]] = []
+    found: list[tuple[ReleaseDate, int]] = []
     for platform in Platform:
         dates = platform_dates(game, platform, country) if platform in mine else None
         if dates is None or dates.cancelled:

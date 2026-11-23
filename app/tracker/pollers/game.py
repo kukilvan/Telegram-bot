@@ -24,10 +24,12 @@ from sqlalchemy import select
 
 from app.tracker import game_events, game_rows, games, price_events, storage
 from app.tracker import seasons as season_logic
-from app.tracker.cards import CardPart, local_moment
+from app.tracker.cards import CardPart
+from app.tracker.moment_words import local_moment
+from app.tracker.feed_released import FeedParts
 from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
 from app.tracker.game_scope import GameScope
-from app.tracker.models import GamePlatformRecord, SeasonRecord, Title
+from app.tracker.models import ExternalId, GamePlatformRecord, SeasonRecord, Title
 from app.tracker.platforms import Platform
 from app.tracker.pollers.base import DueTitle, Poller
 from app.tracker.pollers.game_follow_ups import GameFollowUps
@@ -35,6 +37,7 @@ from app.tracker.pollers.game_prices import GamePrices, steam_number
 from app.tracker.pollers.game_russian import GameRussian
 from app.tracker.pollers.game_steam import GameSteam
 from app.tracker.pollers.game_zog import GameZog
+from app.tracker.sources.igdb_games import SOURCE_KEY as IGDB
 
 
 EXPANSION_TAG = "дополнение"  # the word after the name of an expansion in the List and the Archive
@@ -80,14 +83,15 @@ class GamePoller(Poller):
         """The platforms of the game, each with the mark «играю здесь» where it is one of «Мои платформы» now."""
         _new_rows(session, title_id, snapshot.game, GameScope.read(self.settings, session).mine)
 
-    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
+    def feed(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> FeedParts:
+        """The release dates of the games the owner is told about; a game has no schedule of «Недавно» (no outs)."""
         scope = GameScope.read(self.settings, session, self._active())
         pieces: list[Piece] = []
         for title_id, state in storage.own_states_of(session, self._active()).items():
             if title_id in shown:
                 game = games.GameState.from_state(state)
                 pieces += game_rows.feed_pieces(shown[title_id], game, scope.told(title_id), scope.country, basis.today)
-        return pieces
+        return FeedParts(pieces)
 
     def card_part(self, session, title: Title) -> CardPart:
         game = games.GameState.from_state(storage.own_state(session, title.id))
@@ -122,6 +126,32 @@ class GamePoller(Poller):
             except ValueError as spoiled:
                 logging.warning("title %s: its own state cannot be read for the list: %r", title_id, spoiled)
         return tags
+
+    def export_extras(self, session, title_ids: Collection[int]) -> dict[int, dict[str, Any]]:
+        """`{"expansion_of": <name of the base game>}` for the expansions among the games `title_ids`: the name in the list
+        when the list has the base game (the smaller number when two titles have its id), else the name IGDB gave. A game
+        whose own state cannot be read is left out, with a warning."""
+        states = storage.own_states_of(session, select(Title.id).where(Title.id.in_(list(title_ids)), Title.kind == self.kind))
+        asked: dict[int, games.Parent] = {}
+        for title_id, state in states.items():
+            try:
+                if games.expansion_of(state) is not None and state.get("parent") is not None:
+                    asked[title_id] = games.Parent.from_state(state["parent"])
+            except ValueError as spoiled:
+                logging.warning(
+                    "export: title %s: the expansion of a game cannot be read, left out: %r", title_id, spoiled
+                )
+        listed: dict[str, int] = {}
+        for external_id, title_id in session.execute(
+            select(ExternalId.external_id, ExternalId.title_id).where(
+                ExternalId.source == IGDB, ExternalId.external_id.in_({parent.id for parent in asked.values()})
+            )
+        ):
+            listed[external_id] = min(title_id, listed.get(external_id, title_id))
+        rows = session.execute(select(Title.id, Title.name).where(Title.id.in_(set(listed.values()))))
+        names = {number: name for number, name in rows}
+        base_name = {title_id: names.get(listed.get(parent.id, -1), parent.name) for title_id, parent in asked.items()}
+        return {title_id: {"expansion_of": name} for title_id, name in base_name.items()}
 
     @property
     def offers_follow_ups(self) -> bool:

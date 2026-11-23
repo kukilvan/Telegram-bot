@@ -13,7 +13,8 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.runtime import Health
-from app.tracker.cards import format_past_moment, titles_word
+from app.tracker.cards import titles_word
+from app.tracker.moment_words import format_past_moment
 from app.tracker.core import Overview, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import SourceSnapshot, Title, TitleKind, TitleStatus

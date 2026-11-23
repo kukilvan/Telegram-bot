@@ -33,11 +33,12 @@ from typing import Any
 from sqlalchemy import or_, select
 
 from app.tracker import failures, follow_ups, games, storage
-from app.tracker.cards import FollowLine, FollowUpsView, ParentGame, local_moment
+from app.tracker.cards import FollowLine, FollowUpsView, ParentGame
 from app.tracker.checks import POLLED_STATUSES
 from app.tracker.context import PRIMARY_ROLE, CoreContext
 from app.tracker.game_scope import GameScope
 from app.tracker.models import ExternalId, SourceSnapshot, Title, TitleKind, TitleStatus
+from app.tracker.moment_words import local_moment
 from app.tracker.movie_events import RETRY_AFTER_FAILURE, DetectedEvent
 from app.tracker.pollers.base import DueTitle
 from app.tracker.queue import EventQueue
@@ -392,9 +393,8 @@ def _learn_own_kind(session, title_id: int, snapshot: follow_ups.FollowUpsSnapsh
         state = games.GameState.from_state(own.state)
     except (ValueError, TypeError, KeyError, AttributeError):
         return
-    if (state.expansion, state.parent) == (snapshot.own_expansion, snapshot.own_parent):
+    kind, parent = snapshot.own_expansion, snapshot.own_parent
+    if (state.expansion, state.parent) == (kind, parent):
         return
-    logging.info(
-        "title %s: IGDB gives its own kind of expansion %s, written into its own snapshot", title_id, snapshot.own_expansion
-    )
-    own.state = replace(state, expansion=snapshot.own_expansion, parent=snapshot.own_parent).state()
+    logging.info("title %s: IGDB gives its own kind of expansion %s, written into its own snapshot", title_id, kind)
+    own.state = replace(state, expansion=kind, parent=parent).state()

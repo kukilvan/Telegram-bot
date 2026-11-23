@@ -7,7 +7,7 @@ from datetime import datetime
 import pytest
 from sqlalchemy import select, text
 
-from app.tracker import anime_events, cards, movie_events, series_events
+from app.tracker import anime_events, cards, movie_events, series_messages
 from app.tracker.actions import card_actions
 from app.tracker.db import create_session_factory
 from app.tracker.kinds import KINDS, is_seasonal, seasonal_kinds
@@ -22,7 +22,9 @@ RAW_WORDS = {
 # the enums themselves may spell the words (migrations are skipped by the test: they wrote the data)
 ALLOWED_FILES = {pathlib.PurePath("tracker/models.py")}
 # words of Shikimori's own response, not kinds of title of ours: the `kind` of a catalogue entry and the `anime` field of a relation
-SHIKIMORI_WORDS = {(pathlib.PurePath("tracker/sources/shikimori_anime.py"), word) for word in ("movie", "anime")}
+SHIKIMORI_WORDS = {
+    (pathlib.PurePath(f"tracker/sources/{name}.py"), word) for name in ("shikimori_anime", "shikimori_chain") for word in ("movie", "anime")
+}
 
 
 def test_the_enums_keep_the_values_the_database_already_holds():
@@ -78,12 +80,12 @@ def test_seasonal_kinds_are_series_and_anime():
 
 def test_the_icon_of_the_messages_is_the_icon_of_the_kind():
     assert movie_events.message_released("Дюна").startswith(KINDS[TitleKind.MOVIE].icon)
-    assert series_events.SERIES.icon == KINDS[TitleKind.SERIES].icon
+    assert series_messages.SERIES.icon == KINDS[TitleKind.SERIES].icon
     assert anime_events.flavor(None).icon == KINDS[TitleKind.ANIME].icon
 
 
 def test_the_key_prefixes_of_the_events_are_the_kinds_so_stored_keys_stay_valid():
-    assert series_events.SERIES.key_prefix == "series"
+    assert series_messages.SERIES.key_prefix == "series"
     assert anime_events.flavor(None).key_prefix == "anime"
 
 

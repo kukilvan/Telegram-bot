@@ -20,17 +20,22 @@ MODULES = (
     "context", "settings_store", "storage", "queue", "titles", "statuses", "listing", "feed", "polling", "delivery_service",
     "test_samples", "core", "prices", "price_rows", "sources/steam_prices", "follow_ups", "sources/igdb_follow_ups", "inbox",
     "candidates", "offers", "inbox_answers", "sources/tmdb_find", "backups", "google_drive", "drive_copies", "exports", "login_reports",
-    "checks", "sources/steam_languages", "sources/zog_pages",
+    "checks", "sources/steam_languages", "sources/zog_pages", "export_all",
 )
 POLLERS = sorted((TRACKER / "pollers").glob("*.py"))
+SIZED = sorted(  # every module of the core, found by a glob, so a new one cannot grow unseen (KI-56, KI-63)
+    path for path in TRACKER.rglob("*.py")
+    if path.name not in ("core.py", "__init__.py") and "migrations" not in path.relative_to(TRACKER).parts
+)
 PURE = (
     "dedup", "delivery", "movie_events", "series_events", "anime_events", "sequel_events", "seasons", "progress", "failures",
     "cards", "kinds", "scores", "text", "genres", "feed_rows", "feed_released", "zones", "platforms", "games", "game_events", "game_rows",
     "prices", "price_rows", "follow_ups", "candidates", "posters", "moment_words", "backup_events", "backup_rows",
     "drive_rows", "drive_state", "export_rows", "login_events", "russian", "russian_events", "sources/zog_pages",
+    "release_dates", "series_messages", "sources/shikimori_chain", "offer_cards", "candidate_words",
 )
 MAX_LINES = 400
-FACADE_MAX_LINES = 500  # the facade grows by one pass-through method per feature (rule 7)
+FACADE_MAX_LINES = 470  # the facade grows by one pass-through method per feature (rule 7); the docstrings stay short
 FACADE_MAX_WIDTH = 120
 
 
@@ -48,9 +53,7 @@ def imported_names(path: Path) -> set[str]:
     return names
 
 
-@pytest.mark.parametrize(
-    "path", [TRACKER / f"{name}.py" for name in MODULES if name != "core"] + POLLERS, ids=lambda p: p.name
-)
+@pytest.mark.parametrize("path", SIZED, ids=lambda p: p.relative_to(TRACKER).as_posix())
 def test_no_part_of_the_core_is_longer_than_the_limit(path):
     assert lines(path) <= MAX_LINES
 
@@ -106,8 +109,8 @@ def test_every_kind_has_one_poller_with_the_same_set_of_actions():
     for kind, poller_class in polling.POLLER_CLASSES.items():
         assert issubclass(poller_class, Poller), kind
         for action in (
-            "snapshot_to_add", "first_seasons", "first_check", "store_extras", "apply", "feed_pieces", "feed_released", "card_part",
-            "end_of_pass", "list_marks",
+            "snapshot_to_add", "first_seasons", "first_check", "store_extras", "apply", "feed", "card_part", "end_of_pass",
+            "list_marks", "export_extras",
         ):
             assert callable(getattr(poller_class, action)), (kind, action)
 
@@ -147,3 +150,12 @@ def test_titles_keeps_searching_adding_deleting_and_following_while_marks_and_ro
             assert f"def {name}(" not in titles and f"def _{name}(" not in titles, (module, name)
     for name in ("search", "add_title", "delete_title", "follow", "follow_sequel"):
         assert f"async def {name}(" in titles, name
+
+
+def test_the_glob_of_the_size_test_sees_every_module_of_the_core():
+    names = {path.relative_to(TRACKER).as_posix() for path in SIZED}
+
+    assert {"series_events.py", "games.py", "cards.py", "offers.py", "sources/shikimori_anime.py", "pollers/game.py"} <= names
+    assert not names & {"core.py", "__init__.py", "pollers/__init__.py"}
+    assert not any(name.startswith("migrations/") for name in names)
+    assert set(f"{name}.py" for name in MODULES if name != "core") <= names

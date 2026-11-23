@@ -3,7 +3,8 @@ while the bot is not connected to Telegram, the sentence that says so."""
 
 from datetime import datetime
 
-from app.tracker.cards import format_past_moment, titles_word
+from app.tracker.cards import titles_word
+from app.tracker.moment_words import format_past_moment
 
 NO_DATA = "нет данных из базы"
 TELEGRAM_DOWN = "Бот не подключён к Telegram — сообщения не приходят. Проверьте интернет и токен в файле .env; подробности — в журнале"

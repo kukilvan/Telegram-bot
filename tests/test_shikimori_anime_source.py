@@ -14,14 +14,8 @@ from anime_fakes import FakeAniList, FakeShikimori, load
 
 from app.tracker.cards import season_lines
 from app.tracker.seasons import summarize
-from app.tracker.sources.shikimori_anime import (
-    ShikimoriAnimeSource,
-    build_snapshot,
-    chain_order,
-    collect_entries,
-    parse_entry,
-    parse_search,
-)
+from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource, parse_search
+from app.tracker.sources.shikimori_chain import build_snapshot, chain_order, collect_entries, parse_entry
 
 NOW = datetime(2026, 10, 24, 12, 0)
 

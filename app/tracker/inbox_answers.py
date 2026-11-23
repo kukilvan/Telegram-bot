@@ -16,12 +16,13 @@ from typing import TYPE_CHECKING, Any
 from sqlalchemy.orm import Session
 
 from app.tracker.candidates import Candidate, SourceLink, candidates, is_name_message, source_links, years
-from app.tracker.cards import local_moment
+from app.tracker.moment_words import local_moment
 from app.tracker.context import CoreContext
 from app.tracker.errors import SourceFailed, SourceNotConfigured, TitleNotFound, UnknownInboxItem
 from app.tracker.inbox import existing, move
 from app.tracker.models import InboxReason, InboxRecord, InboxState, TitleKind
-from app.tracker.offers import Found, Offer, OfferSearch, card_text, new_from, shown
+from app.tracker.offers import Found, OfferSearch, new_from
+from app.tracker.offer_cards import Offer, card_text, shown
 from app.tracker.results import InboxOutcome, InboxReply, OfferCard
 from app.tracker.settings_store import SettingsStore
 

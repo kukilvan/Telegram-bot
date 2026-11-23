@@ -1,0 +1,292 @@
+{
+  "format": "release-tracker-export",
+  "version": 1,
+  "exported_at": "2026-10-30T01:30:00+03:00",
+  "time_zone": "Europe/Moscow",
+  "database_revision": "<revision>",
+  "titles": [
+    {
+      "id": 1,
+      "kind": "movie",
+      "name": "Дюна",
+      "original_name": "Dune",
+      "year": 2021,
+      "genres": [
+        "Фантастика"
+      ],
+      "overview": "Песок.",
+      "poster": "/dune.jpg",
+      "status": "watched",
+      "status_label": "Просмотрено",
+      "score": "9+",
+      "tracking": true,
+      "added_at": "2026-10-20T19:02:11+03:00",
+      "status_changed_at": "2026-10-28T21:40:00+03:00",
+      "restored_at": null,
+      "sources": [
+        {
+          "source": "tmdb_movie",
+          "id": "438631"
+        }
+      ],
+      "seasons": [],
+      "franchise_movies": [],
+      "platforms": [],
+      "expansion_of": null,
+      "price_history": []
+    },
+    {
+      "id": 2,
+      "kind": "series",
+      "name": "Одни из нас",
+      "original_name": "The Last of Us",
+      "year": 2023,
+      "genres": [
+        "Драма"
+      ],
+      "overview": null,
+      "poster": null,
+      "status": "in_progress",
+      "status_label": "В процессе",
+      "score": null,
+      "tracking": true,
+      "added_at": "2026-10-01T15:00:00+03:00",
+      "status_changed_at": "2026-10-01T15:00:00+03:00",
+      "restored_at": "2026-10-30T09:00:00+03:00",
+      "sources": [
+        {
+          "source": "tmdb_tv",
+          "id": "100088"
+        }
+      ],
+      "seasons": [
+        {
+          "number": 1,
+          "name": "Сезон 1",
+          "episode_count": 2,
+          "watched": true,
+          "score": "8",
+          "episodes": [
+            {
+              "number": 1,
+              "air_at": "2023-01-15T04:00:00+03:00"
+            },
+            {
+              "number": 2,
+              "air_at": "2023-01-23T04:00:00+03:00"
+            }
+          ],
+          "parts": []
+        }
+      ],
+      "franchise_movies": [],
+      "platforms": [],
+      "expansion_of": null,
+      "price_history": []
+    },
+    {
+      "id": 3,
+      "kind": "anime",
+      "name": "Магическая битва",
+      "original_name": "Jujutsu Kaisen",
+      "year": 2020,
+      "genres": [],
+      "overview": null,
+      "poster": null,
+      "status": "want",
+      "status_label": "Хочу",
+      "score": null,
+      "tracking": true,
+      "added_at": "2026-10-01T15:00:00+03:00",
+      "status_changed_at": "2026-10-01T15:00:00+03:00",
+      "restored_at": null,
+      "sources": [
+        {
+          "source": "shikimori",
+          "id": "40748"
+        }
+      ],
+      "seasons": [
+        {
+          "number": 1,
+          "name": "Сезон 1",
+          "episode_count": 24,
+          "watched": false,
+          "score": null,
+          "episodes": [
+            {
+              "number": 1,
+              "air_at": null
+            }
+          ],
+          "parts": [
+            {
+              "number": 1,
+              "first_episode": 1,
+              "episode_count": 12
+            },
+            {
+              "number": 2,
+              "first_episode": 13,
+              "episode_count": 12
+            }
+          ]
+        }
+      ],
+      "franchise_movies": [
+        {
+          "name": "Фильм 0",
+          "aired_on": "2021-12-24",
+          "released": true
+        }
+      ],
+      "platforms": [],
+      "expansion_of": null,
+      "price_history": []
+    },
+    {
+      "id": 4,
+      "kind": "game",
+      "name": "Ведьмак 3",
+      "original_name": "The Witcher 3",
+      "year": 2015,
+      "genres": [],
+      "overview": null,
+      "poster": null,
+      "status": "want",
+      "status_label": "Хочу",
+      "score": null,
+      "tracking": true,
+      "added_at": "2026-10-01T15:00:00+03:00",
+      "status_changed_at": "2026-10-01T15:00:00+03:00",
+      "restored_at": null,
+      "sources": [
+        {
+          "source": "igdb",
+          "id": "1942"
+        }
+      ],
+      "seasons": [],
+      "franchise_movies": [],
+      "platforms": [
+        {
+          "platform": "pc",
+          "playing": true
+        },
+        {
+          "platform": "ps5",
+          "playing": false
+        }
+      ],
+      "expansion_of": null,
+      "price_history": [
+        {
+          "seen_at": "2026-10-02T12:00:00+03:00",
+          "country": "RU",
+          "currency": "{} руб.",
+          "final": 79900,
+          "original": null,
+          "pct": 0
+        },
+        {
+          "seen_at": "2026-10-09T12:00:00+03:00",
+          "country": "RU",
+          "currency": "{} руб.",
+          "final": 39900,
+          "original": 79900,
+          "pct": 50
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "kind": "game",
+      "name": "Кровь и вино",
+      "original_name": "Blood and Wine",
+      "year": 2016,
+      "genres": [],
+      "overview": null,
+      "poster": null,
+      "status": "want",
+      "status_label": "Хочу",
+      "score": null,
+      "tracking": true,
+      "added_at": "2026-10-01T15:00:00+03:00",
+      "status_changed_at": "2026-10-01T15:00:00+03:00",
+      "restored_at": null,
+      "sources": [
+        {
+          "source": "igdb",
+          "id": "2000"
+        }
+      ],
+      "seasons": [],
+      "franchise_movies": [],
+      "platforms": [],
+      "expansion_of": "Ведьмак 3",
+      "price_history": []
+    },
+    {
+      "id": 6,
+      "kind": "game",
+      "name": "Дополнение без игры",
+      "original_name": "Orphan",
+      "year": null,
+      "genres": [],
+      "overview": null,
+      "poster": null,
+      "status": "want",
+      "status_label": "Хочу",
+      "score": null,
+      "tracking": true,
+      "added_at": "2026-10-01T15:00:00+03:00",
+      "status_changed_at": "2026-10-01T15:00:00+03:00",
+      "restored_at": null,
+      "sources": [
+        {
+          "source": "igdb",
+          "id": "2001"
+        }
+      ],
+      "seasons": [],
+      "franchise_movies": [],
+      "platforms": [],
+      "expansion_of": "Game IGDB Knows",
+      "price_history": []
+    }
+  ],
+  "settings": {
+    "summary_at": "15:00",
+    "workdays": [
+      0,
+      1,
+      2
+    ]
+  },
+  "inbox": [
+    {
+      "id": 2,
+      "state": "waiting",
+      "reason": null,
+      "kind": "movie",
+      "text": "новый пост",
+      "links": [
+        "https://example.test/a"
+      ],
+      "post_url": "https://t.me/c/1",
+      "received_at": "2026-11-06T10:12:00+03:00",
+      "moved_at": null
+    },
+    {
+      "id": 1,
+      "state": "inbox",
+      "reason": "not_found",
+      "kind": null,
+      "text": "старый пост",
+      "links": [],
+      "post_url": null,
+      "received_at": "2026-11-05T10:12:00+03:00",
+      "moved_at": "2026-11-05T22:12:00+03:00"
+    }
+  ]
+}

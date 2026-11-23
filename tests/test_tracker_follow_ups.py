@@ -15,7 +15,8 @@ from app.tracker.follow_ups import (
     EXPANSION_ANNOUNCED, NOT_CHECKED, SEQUEL_ANNOUNCED, TYPES, FollowUp, FollowUps, FollowUpsSnapshot,
     came_out_before, check, expansions_shown, follow_up_date, sequels_shown,
 )
-from app.tracker.games import CANCELLED, EARLY, FULL, GameDate, Release
+from app.tracker.games import CANCELLED, EARLY, FULL, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.platforms import Platform
 from app.tracker.sources.igdb_follow_ups import parse_follow_ups
 
@@ -40,7 +41,7 @@ def shown(name, mine=MINE, country=ISRAEL, today=TODAY):
 
 
 def release(platform, text, kind=FULL):
-    return Release(platform, WORLD, kind, GameDate.parse(text))
+    return Release(platform, WORLD, kind, ReleaseDate.parse(text))
 
 
 def follow_up(id_, name="X", first=None, platforms=(PC,), releases=None, standalone=False):

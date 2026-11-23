@@ -361,7 +361,7 @@ def test_names_are_compared_only_through_the_name_key():
 def test_the_module_is_pure_and_short():
     source = Path(module.__file__).read_text(encoding="utf-8")
     assert sorted(re.findall(r"^(?:from|import) (\S+)", source, re.M)) == [
-        "app.tracker.models", "app.tracker.text", "dataclasses", "re", "urllib.parse"]
+        "app.tracker.candidate_words", "app.tracker.models", "app.tracker.text", "dataclasses", "re", "urllib.parse"]
     assert len(source.splitlines()) <= 400
 
 

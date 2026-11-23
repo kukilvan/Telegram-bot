@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta
 from typing import Any
 
-from app.tracker.cards import format_date, format_short_date
+from app.tracker.moment_words import format_date, format_short_date
 from app.tracker.dedup import moved_key
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind

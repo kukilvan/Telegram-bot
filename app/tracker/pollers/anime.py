@@ -14,7 +14,8 @@ from app.tracker import anime_events, feed_rows
 from app.tracker import seasons as season_logic
 from app.tracker import series_events, storage
 from app.tracker.cards import CardPart, MovieLine
-from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
+from app.tracker.feed_released import FeedParts
+from app.tracker.feed_rows import FeedBasis, FeedTitle
 from app.tracker.models import MovieRecord, PartRecord, SeasonRecord, Title
 from app.tracker.pollers.base import DueTitle
 from app.tracker.pollers.seasonal import SeasonalPoller
@@ -25,9 +26,9 @@ class AnimePoller(SeasonalPoller):
         """An anime's episodes are put together from both its sources."""
         return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now)
 
-    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
-        """The episodes, and the films of the franchises that are not out yet."""
-        pieces = super().feed_pieces(session, shown, basis)
+    def feed(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> FeedParts:
+        """The episodes, and the films of the franchises that are not out yet (their dates are never among the outs)."""
+        parts = super().feed(session, shown, basis, now)
         coming = session.execute(
             select(MovieRecord.title_id, MovieRecord.name, MovieRecord.aired_on).where(
                 MovieRecord.title_id.in_(self._active()), MovieRecord.released.is_(False), MovieRecord.aired_on >= basis.today
@@ -35,8 +36,8 @@ class AnimePoller(SeasonalPoller):
         )
         for title_id, name, aired_on in coming:
             if title_id in shown:
-                pieces += feed_rows.franchise_pieces(shown[title_id], [(name, aired_on)], basis.today)
-        return pieces
+                parts.pieces.extend(feed_rows.franchise_pieces(shown[title_id], [(name, aired_on)], basis.today))
+        return parts
 
     def card_part(self, session, title: Title) -> CardPart:
         """The seasons, and the films of the franchise."""

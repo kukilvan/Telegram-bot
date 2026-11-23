@@ -6,19 +6,19 @@ log alone misses what came out just before it. The poller of each kind hands ove
 the window (`Out`: an episode, or a film date); this module keeps what came out before the baseline and is not logged,
 folds the episodes of one part of one season on one day, and writes the rows: «📺 Одни из нас — Сезон 2, серия 3» with
 the grey line «вышла до добавления в список». Such a row has no hour and no buttons, and stands on the day of the
-schedule (the one rule of `cards.episode_when`), not on the day it was found. Nothing is queued: the rows are made at
+schedule (the one rule of `moment_words.episode_when`), not on the day it was found. Nothing is queued: the rows are made at
 each read of the Feed.
 """
 
 from collections.abc import Iterable, Mapping, Set
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, tzinfo
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 
 from app.tracker import movie_events, series_events
-from app.tracker.cards import episode_when
-from app.tracker.feed_rows import BOTH, DIGITAL, RECENT_DAYS, THEATRICAL, FeedTitle, RecentRow, part_text
+from app.tracker.moment_words import episode_when
+from app.tracker.feed_rows import BOTH, DIGITAL, RECENT_DAYS, THEATRICAL, FeedTitle, Piece, RecentRow, part_text
 from app.tracker.kinds import KINDS
 from app.tracker.models import EpisodeTiming
 from app.tracker.seasons import Part, Season
@@ -26,7 +26,17 @@ from app.tracker.text import key as text_key
 
 # the events that log an episode (anime use the same types) and a film date; the Feed reads them for the matching
 EPISODE_TYPES = (series_events.SEASON_STARTED, series_events.EPISODE_OUT, series_events.SEASON_ENDED)
-FILM_TYPES = {movie_events.RELEASED: THEATRICAL, movie_events.DIGITAL: DIGITAL}
+
+
+class FilmDate(StrEnum):
+    """Which date of a film an `Out` is: its premiere in cinema or its digital release."""
+
+    THEATRICAL = "theatrical"
+    DIGITAL = "digital"
+
+
+FILM_LABELS = {FilmDate.THEATRICAL: THEATRICAL, FilmDate.DIGITAL: DIGITAL}  # the words of a row (`feed_rows`)
+FILM_TYPES = {movie_events.RELEASED: FilmDate.THEATRICAL, movie_events.DIGITAL: FilmDate.DIGITAL}
 LOGGED_TYPES = (*EPISODE_TYPES, *FILM_TYPES)
 
 
@@ -62,7 +72,7 @@ class Out:
     title: FeedTitle
     day: date  # the day it stands on: the episode's day on the owner's clock (or the source's date), the film's date
     moment: datetime  # naive UTC, compared with the baseline: the episode's moment, the start of the film's day
-    film: str = ""  # THEATRICAL or DIGITAL; empty: an episode
+    film: FilmDate | None = None  # which date of a film; None: an episode
     season: int = 0
     episode: int = 0
     part: Part | None = None  # the part of the season the episode belongs to (the card's parts)
@@ -71,7 +81,16 @@ class Out:
     @property
     def logged_as(self) -> tuple[Any, ...]:
         """What an event of the log must name to be this: the title, and the season and episode or the film date."""
-        return (self.title.id, self.film) if self.film else (self.title.id, self.season, self.episode)
+        return (self.title.id, self.film) if self.film is not None else (self.title.id, self.season, self.episode)
+
+
+@dataclass(frozen=True)
+class FeedParts:
+    """What a poller hands the Feed for the titles of its kind: the pieces that come out from today on (`pieces`) and
+    what the schedule says came out in the days of «Недавно» (`outs`)."""
+
+    pieces: list[Piece] = field(default_factory=list)
+    outs: list[Out] = field(default_factory=list)
 
 
 def window(today: date) -> tuple[date, date]:
@@ -97,7 +116,7 @@ def season_outs(
                     continue
                 day, _ = episode_when(episode, tz)
                 if first_day <= day <= last_day:
-                    outs.append(Out(title, day, episode.air_at, "", season.number, episode.number, part, first))
+                    outs.append(Out(title, day, episode.air_at, None, season.number, episode.number, part, first))
     return outs
 
 
@@ -106,7 +125,7 @@ def film_outs(title: FeedTitle, theatrical: date | None, digital: date | None, t
     first_day, last_day = window(today)
     return [
         Out(title, day, movie_events.day_start(day), film)
-        for day, film in ((theatrical, THEATRICAL), (digital, DIGITAL))
+        for day, film in ((theatrical, FilmDate.THEATRICAL), (digital, FilmDate.DIGITAL))
         if day is not None and first_day <= day <= last_day
     ]
 
@@ -127,13 +146,13 @@ def _verb(members: list[Out]) -> str:
     """«вышла» (an episode, a premiere in cinema), «вышли» (several, or both film dates), «вышел» (a digital release)."""
     if len(members) > 1:
         return "вышли"
-    return "вышел" if members[0].film == DIGITAL else "вышла"
+    return "вышел" if members[0].film == FilmDate.DIGITAL else "вышла"
 
 
 def _what(members: list[Out]) -> str:
     first = members[0]
-    if first.film:
-        return BOTH if len(members) > 1 else first.film
+    if first.film is not None:
+        return BOTH if len(members) > 1 else FILM_LABELS[first.film]
     return part_text(first.season, first.part, first.first, sorted(m.episode for m in members))
 
 
@@ -154,10 +173,10 @@ def released_rows(
         if reason is None or out.logged_as in logged_keys:
             continue
         part = out.part.number if out.part is not None else 0
-        groups.setdefault((out.title.id, out.day, reason, bool(out.film), out.season, part), []).append(out)
+        groups.setdefault((out.title.id, out.day, reason, out.film is not None, out.season, part), []).append(out)
     rows = []
     for (_, day, reason, _, _, _), members in groups.items():
-        members.sort(key=lambda m: (m.episode, m.film != THEATRICAL))
+        members.sort(key=lambda m: (m.episode, m.film != FilmDate.THEATRICAL))
         first = members[0]
         headline = f"{KINDS[first.title.kind].icon} {first.title.name} — {_what(members)}"
         order = (text_key(first.title.name), first.title.id, first.season, first.episode)

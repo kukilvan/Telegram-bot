@@ -6,10 +6,10 @@ snapshot with the stored one, queues the events and stores the new state; `after
 of a press of the owner, what the press ends of the checks of the kind (a game: its price check); `end_of_pass` checks what is looked at for all
 the titles of the kind at once, after the pass over the titles (the Steam prices of the games, their expansions and sequels and
 Russian in them). What the owner reads is
-asked of the poller too: `feed_pieces` cuts what comes out of all the titles of the kind, `feed_released` what came out
-in the days of «Недавно» (the Feed keeps what came out before a title's baseline), `card_part` gives what a card
+asked of the poller too: `feed` cuts what comes out of all the titles of the kind and what came out in the days of
+«Недавно» (the Feed keeps what came out before a title's baseline), `card_part` gives what a card
 holds that depends on the kind, `list_marks` the marks of the rows of the list and `list_tags` the words after their
-names; `offers_follow_ups` says whether the kind announces titles to follow. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
+names, `export_extras` the fields the JSON export adds to the titles of the kind; `offers_follow_ups` says whether the kind announces titles to follow. The core never asks «which kind is it?»: it asks the poller of the kind (the table is in `polling`).
 """
 
 import logging
@@ -23,8 +23,8 @@ from sqlalchemy import Select, select
 from app.tracker import seasons as season_logic
 from app.tracker.cards import CardPart
 from app.tracker.context import PRIMARY_ROLE, CoreContext
-from app.tracker.feed_released import Out
-from app.tracker.feed_rows import FeedBasis, FeedTitle, Piece
+from app.tracker.feed_released import FeedParts
+from app.tracker.feed_rows import FeedBasis, FeedTitle
 from app.tracker.models import ARCHIVE_STATUSES, ExternalId, SeasonRecord, Title, TitleKind, TitleStatus
 
 if TYPE_CHECKING:
@@ -119,20 +119,21 @@ class Poller:
         """The numbers of the titles of this kind that are not in the archive: whose dates the feed shows."""
         return select(Title.id).where(Title.kind == self.kind, Title.status.not_in(ARCHIVE_STATUSES))
 
-    def feed_pieces(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis) -> list[Piece]:
-        """What comes out from `basis.today` on, of all the titles of this kind that are not in the archive (`shown`:
-        how their rows show them), in a number of reads that does not grow with the number of titles."""
-        return []
-
-    def feed_released(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> list[Out]:
-        """What the schedule says came out by `now` (naive UTC) in the days of «Недавно», of all the titles of this kind
-        that are not in the archive, in a number of reads that does not grow with the number of titles. The Feed keeps
-        what came out before a title's baseline and is not in the log (`feed_released`). None for a game."""
-        return []
+    def feed(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> FeedParts:
+        """What comes out from `basis.today` on (`pieces`) and what the schedule says came out by `now` (naive UTC) in
+        the days of «Недавно» (`outs`; the Feed keeps what came out before a title's baseline and is not in the log), of
+        all the titles of this kind that are not in the archive (`shown`: how their rows show them), in a number of reads
+        that does not grow with the number of titles — one read for both. Nothing for a kind without dates."""
+        return FeedParts()
 
     def card_part(self, session, title: Title) -> CardPart:
         """What the card of the title holds that depends on its kind."""
         return CardPart()
+
+    def export_extras(self, session, title_ids: Collection[int]) -> dict[int, dict[str, Any]]:
+        """The fields the JSON export adds to the objects of these titles (all of this kind), title → fields, in a number
+        of reads that does not grow with the number of titles (a game: `expansion_of`); a title with none is left out."""
+        return {}
 
     def list_marks(self, session, titles: Sequence[Title]) -> dict[int, str]:
         """The marks at the right of the rows of these titles (all of this kind), title → text; a title with none is

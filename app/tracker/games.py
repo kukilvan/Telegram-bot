@@ -1,4 +1,4 @@
-"""The dates of a game: what a date of IGDB is, which record is ours, backward compatibility and a lost date.
+"""The dates of a game: the release records of IGDB, which one is ours, backward compatibility and a lost date.
 
 Pure: no database, no network. The country of the stores comes as a parameter (rule 2 of `docs/coding-standards.md`):
 whoever needs the dates reads it from the settings. Everything that depends on a platform is read from the table of
@@ -11,18 +11,15 @@ dates: a day only in Japan is none (KI-35, spec 1.1 of stage 9.1b). `GameState` 
 and of which game (spec 3.3 of stage 6.3), and what IGDB says about Russian in it (`russian`, spec 5.5 of stage 9.1b).
 """
 
-import calendar
-import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from typing import Any
 
-from app.tracker.cards import format_date
 from app.tracker.movie_events import INTERVAL_NEAR, INTERVAL_QUIET, INTERVAL_SOON, INTERVAL_WAITING, NEAR, SOON
 from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.russian import NOT_ASKED, IgdbRussian, Support, igdb_from_state, igdb_state
-from app.tracker.sources.dates import parse_date, response_day_of_timestamp
 
 # The types of a release record (`type` in the snapshot); other statuses of IGDB (alpha, beta, offline…) are not taken
 FULL = "full"
@@ -31,150 +28,8 @@ CANCELLED = "cancelled"
 RELEASE_TYPES = (FULL, EARLY, CANCELLED)
 DATED_TYPES = (FULL, EARLY)
 
-_MONTHS = (
-    "январь", "февраль", "март", "апрель", "май", "июнь",
-    "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь",
-)
-NOT_ANNOUNCED_LABEL = "дата не объявлена"
 
-# `date_format` of IGDB: 0 a day, 1 a month, 2 a year, 3–6 the quarters 1–4, 7 «TBD»
-_IGDB_DAY, _IGDB_MONTH, _IGDB_YEAR = 0, 1, 2
-_IGDB_QUARTERS = range(3, 7)
-_IGDB_TBD = 7
-_QUARTER_SHIFT = 2  # quarter = format − 2
-
-_MONTH_TEXT = re.compile(r"(\d{4})-(\d{2})")
-_QUARTER_TEXT = re.compile(r"(\d{4})-Q([1-4])")
-_YEAR_TEXT = re.compile(r"\d{4}")
-_DAY_TEXT = re.compile(r"\d{4}-\d{2}-\d{2}")
-
-
-@dataclass(frozen=True)
-class GameDate:
-    """A year and one of: a day, a month, a quarter or nothing (only the year). No year at all — «not announced»."""
-
-    year: int | None = None
-    month: int | None = None
-    day: int | None = None
-    quarter: int | None = None
-
-    @classmethod
-    def parse(cls, text: str | None) -> "GameDate":
-        """What the tracker stored: «2027-03-12», «2027-03», «2027-Q4», «2027» or None. Strict: garbage raises
-        ValueError (rule 9); the day is read by `parse_date`."""
-        if text is None:
-            return NOT_ANNOUNCED
-        if not isinstance(text, str):
-            raise ValueError(f"not the text of a game date: {text!r}")
-        if match := _QUARTER_TEXT.fullmatch(text):
-            return cls(year=int(match[1]), quarter=int(match[2]))
-        if match := _MONTH_TEXT.fullmatch(text):
-            month = int(match[2])
-            if not 1 <= month <= 12:
-                raise ValueError(f"no such month: {text!r}")
-            return cls(year=int(match[1]), month=month)
-        if _YEAR_TEXT.fullmatch(text):
-            return cls(year=int(text))
-        if not _DAY_TEXT.fullmatch(text):
-            raise ValueError(f"not the text of a game date: {text!r}")
-        day = parse_date(text)
-        return cls(year=day.year, month=day.month, day=day.day)
-
-    @classmethod
-    def from_igdb(cls, release: Mapping[str, Any]) -> "GameDate":
-        """A record of `release_dates` as IGDB sent it. Soft: garbage is «not announced». `y` and `m` are read, and only
-        when they are missing — from `date` (UTC): for a date without a day `date` is not the start of the period (a
-        year is its 31 December, a quarter its last day), but its year and the month of a month are right. A record
-        whose `date_format` is missing or unknown is a year, never a month or a day (KI-38): in the answers of IGDB a
-        year record carries `m: 12`, so `m` cannot tell a month from them."""
-        form = release.get("date_format")
-        day = response_day_of_timestamp(release.get("date"))
-        if form == _IGDB_TBD:
-            return NOT_ANNOUNCED
-        if form == _IGDB_DAY:
-            return cls(year=day.year, month=day.month, day=day.day) if day else NOT_ANNOUNCED
-        year = _whole(release.get("y"), 1, 9999) or (day.year if day else None)
-        if year is None:
-            return NOT_ANNOUNCED
-        if form == _IGDB_MONTH:
-            month = _whole(release.get("m"), 1, 12) or (day.month if day else None)
-            return cls(year=year, month=month) if month else NOT_ANNOUNCED
-        if form == _IGDB_YEAR:
-            return cls(year=year)
-        if form in _IGDB_QUARTERS:
-            return cls(year=year, quarter=form - _QUARTER_SHIFT)
-        return cls(year=year)  # no `date_format` or one IGDB has not had before: only the year is sure
-
-    @property
-    def announced(self) -> bool:
-        return self.year is not None
-
-    @property
-    def exact(self) -> bool:
-        """Only a day is exact; a month, a quarter and a year are an approximate date: seen, but no messages."""
-        return self.day is not None
-
-    @property
-    def text(self) -> str | None:
-        """As the snapshot stores it."""
-        if self.year is None:
-            return None
-        if self.day is not None:
-            return date(self.year, self.month, self.day).isoformat()
-        if self.month is not None:
-            return f"{self.year:04d}-{self.month:02d}"
-        if self.quarter is not None:
-            return f"{self.year:04d}-Q{self.quarter}"
-        return f"{self.year:04d}"
-
-    @property
-    def label(self) -> str:
-        """«12 марта 2027», «март 2027», «4 квартал 2026», «2027», «дата не объявлена»."""
-        if self.year is None:
-            return NOT_ANNOUNCED_LABEL
-        if self.day is not None:
-            return format_date(date(self.year, self.month, self.day))
-        if self.month is not None:
-            return f"{_MONTHS[self.month - 1]} {self.year}"
-        if self.quarter is not None:
-            return f"{self.quarter} квартал {self.year}"
-        return str(self.year)
-
-    @property
-    def start(self) -> date | None:
-        """The first day of the period; None — not announced."""
-        if self.year is None:
-            return None
-        if self.day is not None:
-            return date(self.year, self.month, self.day)
-        if self.month is not None:
-            return date(self.year, self.month, 1)
-        if self.quarter is not None:
-            return date(self.year, 3 * self.quarter - 2, 1)
-        return date(self.year, 1, 1)
-
-    @property
-    def end(self) -> date | None:
-        """The last day of the period; None — not announced."""
-        if self.year is None:
-            return None
-        if self.day is not None:
-            return date(self.year, self.month, self.day)
-        last_month = self.month or (3 * self.quarter if self.quarter else 12)
-        return date(self.year, last_month, calendar.monthrange(self.year, last_month)[1])
-
-
-NOT_ANNOUNCED = GameDate()
-
-
-def _whole(value: Any, low: int, high: int) -> int | None:
-    """A whole number from a service's answer within its bounds; anything else is None."""
-    if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
-        return None
-    return value
-
-
-def _earliest_first(game_date: GameDate) -> tuple[bool, date]:
+def _earliest_first(game_date: ReleaseDate) -> tuple[bool, date]:
     """Sort key: the earlier start first, «not announced» last."""
     return (game_date.start is None, game_date.start or date.max)
 
@@ -186,7 +41,7 @@ class Release:
     platform: int
     region: int
     type: str
-    date: GameDate
+    date: ReleaseDate
 
     def state(self) -> dict[str, Any]:
         return {"platform": self.platform, "region": self.region, "type": self.type, "date": self.date.text}
@@ -198,7 +53,7 @@ class Release:
         if release_type not in RELEASE_TYPES:
             raise ValueError(f"unknown type of a release: {release_type!r}")
         return cls(
-            platform=int(data["platform"]), region=int(data["region"]), type=release_type, date=GameDate.parse(data["date"])
+            platform=int(data["platform"]), region=int(data["region"]), type=release_type, date=ReleaseDate.parse(data["date"])
         )
 
 
@@ -280,7 +135,7 @@ class GameState:
         )
 
 
-def pick(releases: Iterable[Release], igdb_platform: int, release_type: str, regions: Sequence[int]) -> GameDate | None:
+def pick(releases: Iterable[Release], igdb_platform: int, release_type: str, regions: Sequence[int]) -> ReleaseDate | None:
     """The date of one IGDB platform and one type for a country whose regions are `regions` (spec 1.1 of stage 9.1b):
     the record of the first region that has one. A record of another region (Japan, Australia…) is no date of the
     country (KI-35). Two records of one region — the earlier start. None — the platform has no such record of this type."""
@@ -296,7 +151,7 @@ def pick(releases: Iterable[Release], igdb_platform: int, release_type: str, reg
 class PlatformDate:
     """A date of a platform of the tracker; `via` («PS4») when it is the date of the older platform's version."""
 
-    date: GameDate
+    date: ReleaseDate
     via: str | None = None
 
     @property
@@ -328,7 +183,7 @@ def has_platform(game: GameState, platform: Platform) -> bool:
     return any(number in present for number in igdb_numbers(platform))
 
 
-def _better(own: GameDate | None, older: GameDate | None, older_label: str) -> PlatformDate | None:
+def _better(own: ReleaseDate | None, older: ReleaseDate | None, older_label: str) -> PlatformDate | None:
     """The own date or the older platform's, whichever ends earlier («the game can surely be played by this day»: a
     year is no earlier than a day of it); the own one on a tie. «Not announced» of either loses to a date."""
     if older is None:
@@ -391,7 +246,7 @@ def carry_over(previous: GameState, current: GameState) -> GameState:
     return replace(current, releases=releases, platforms=tuple(sorted(set(current.platforms) | back)))
 
 
-def released_by(game_date: GameDate | None, day: date) -> bool:
+def released_by(game_date: ReleaseDate | None, day: date) -> bool:
     """An exact date not later than `day`: out by then. An approximate date is never out."""
     return game_date is not None and game_date.exact and game_date.start <= day
 

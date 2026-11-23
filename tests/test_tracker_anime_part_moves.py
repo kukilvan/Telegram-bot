@@ -13,7 +13,7 @@ from sqlalchemy import select
 from app.tracker.db import create_session_factory
 from app.tracker.models import PartRecord, SeasonRecord, Title
 from app.tracker.pollers.anime import AnimePoller, _free_moves
-from app.tracker.sources.shikimori_anime import SeasonPart, SourceIds
+from app.tracker.sources.shikimori_chain import SeasonPart, SourceIds
 
 NOW = datetime(2026, 11, 20, 12, 0)
 

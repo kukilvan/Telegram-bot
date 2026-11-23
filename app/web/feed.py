@@ -11,7 +11,7 @@ from typing import NamedTuple
 
 from fastapi import APIRouter, Form, Request, Response
 
-from app.tracker.cards import format_date, format_weekday_date
+from app.tracker.moment_words import format_date, format_weekday_date
 from app.tracker.core import DRIVE_REDIRECT, Feed, FeedDay, Redirect, RecentRow, UnknownTitle, UpcomingRow
 from app.tracker.kinds import KINDS
 from app.web import drive_sign_in, pages

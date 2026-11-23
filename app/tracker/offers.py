@@ -1,5 +1,5 @@
 """Offers of an inbox item: the records the sources give for its links and its name candidates, in the order the owner
-sees them, and the text of an offer card (spec 3, 5 and 6.1 of stage 6.4).
+sees them (spec 3 and 5 of stage 6.4); the offer and its card are `offer_cards`.
 
 An offer («предложение») is a record of a source shown as «Это оно?» with «Да» / «Нет»; a search suggestion of the
 source is a `Suggestion`. Every request goes through `Titles` (the search of the kind, or a lookup by the number of a
@@ -18,25 +18,20 @@ link): ahead of the paced polling, and each record marked with its title when it
 import logging
 import re
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import date
 from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Any
 
 from app.tracker.candidates import IMDB, STEAM, WHOLE, Candidate, SourceLink, name_key
-from app.tracker.cards import format_date
 from app.tracker.errors import SourceFailed, SourceNotConfigured
-from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
-from app.tracker.sources.dates import parse_date
+from app.tracker.offer_cards import CORRECTED, HEADING, Offer, offer_of
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
     from app.tracker.titles import Titles
 
-HEADING = "Это оно?"
-CORRECTED = "Возможно, вы имели в виду:"  # the heading of the offers of a corrected typo
-NO_DATE = "дата не объявлена"
 MAX_OFFERS = 3
 MAX_CANDIDATES = 3  # candidates searched
 PER_CANDIDATE = 2  # records a candidate gives
@@ -45,66 +40,6 @@ CLOSE = 0.85  # `difflib` ratio of the keys of a close name (5.4)
 NEW_FOR_YEARS = 2  # a record is new from the same day this many years ago
 
 EXACT, PREFIX = 2, 1
-
-
-@dataclass(frozen=True)
-class Offer:
-    """A record of a source the owner is asked about. `shown`: its card was sent; `title_id`: the title in the list it
-    is, as the search found it (not stored: it is checked again when the card is shown)."""
-
-    kind: TitleKind
-    external_id: str
-    name: str
-    original_name: str
-    released: date | None
-    details: str | None
-    poster: str | None  # as the title stores it (`poster_path`)
-    heading: str
-    shown: bool = False
-    title_id: int | None = None
-
-    def stored(self) -> dict[str, Any]:
-        """As the item keeps it (`inbox_items.offers`)."""
-        return {
-            "kind": self.kind.value,
-            "external_id": self.external_id,
-            "name": self.name,
-            "original_name": self.original_name,
-            "released": self.released.isoformat() if self.released else None,
-            "details": self.details,
-            "poster": self.poster,
-            "heading": self.heading,
-            "shown": self.shown,
-        }
-
-    @classmethod
-    def read(cls, raw: dict[str, Any]) -> "Offer":
-        """What `stored` wrote, strictly: garbage is a bug of ours (rule 9)."""
-        return cls(
-            kind=TitleKind(raw["kind"]),
-            external_id=str(raw["external_id"]),
-            name=raw["name"],
-            original_name=raw.get("original_name") or "",
-            released=parse_date(raw.get("released")),
-            details=raw.get("details"),
-            poster=raw.get("poster"),
-            heading=raw["heading"],
-            shown=bool(raw.get("shown")),
-        )
-
-
-def offer_of(suggestion: Any, heading: str) -> Offer:
-    return Offer(
-        kind=suggestion.kind,
-        external_id=suggestion.external_id,
-        name=suggestion.name,
-        original_name=suggestion.original_name,
-        released=suggestion.released,
-        details=suggestion.details,
-        poster=suggestion.poster_path,
-        heading=heading,
-        title_id=suggestion.title_id,
-    )
 
 
 @dataclass(frozen=True)
@@ -338,28 +273,3 @@ async def _listed(asked: Any) -> list[Any]:
     """A lookup that gives one record or None, as a list."""
     record = await asked
     return [] if record is None else [record]
-
-
-# --- the card -------------------------------------------------------------------------------------
-
-
-def released_line(released: date | None, today: date) -> str:
-    """Out: the year («2026»); in the future: «выйдет 12 февраля 2027»; no date: «дата не объявлена»."""
-    if released is None:
-        return NO_DATE
-    return f"выйдет {format_date(released)}" if released > today else str(released.year)
-
-
-def card_text(offer: Offer, today: date) -> str:
-    """The text of an offer card (6.1): the heading, the icon and the name, the original name when its key differs, the
-    date and the details of the record (the platforms of a game)."""
-    lines = [offer.heading, "", f"{KINDS[offer.kind].icon} {offer.name}"]
-    if offer.original_name and name_key(offer.original_name) != name_key(offer.name):
-        lines.append(offer.original_name)
-    lines.append(" · ".join(part for part in (released_line(offer.released, today), offer.details) if part))
-    return "\n".join(lines)
-
-
-def shown(offers: Sequence[Offer], number: int) -> list[Offer]:
-    """The offers with the card of `number` marked as sent."""
-    return [replace(offer, shown=True) if index == number else offer for index, offer in enumerate(offers)]

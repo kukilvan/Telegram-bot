@@ -19,7 +19,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.tracker.errors import SourceNotConfigured
-from app.tracker.games import CANCELLED, EARLY, EXPANSION, FULL, STANDALONE, GameDate, GameState, Parent, Release
+from app.tracker.games import CANCELLED, EARLY, EXPANSION, FULL, STANDALONE, GameState, Parent, Release
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.models import TitleKind
 from app.tracker.platforms import IGDB_LABELS, NO_REGION
 from app.tracker.russian import Support
@@ -194,7 +195,7 @@ def read_releases(raw: list[dict[str, Any]] | None) -> tuple[Release, ...]:
             platform=entry["platform"],
             region=_region(entry.get("release_region")),
             type=_RELEASE_TYPES[entry.get("status")],
-            date=GameDate.from_igdb(entry),
+            date=ReleaseDate.from_igdb(entry),
         )
         for entry in raw or ()
         if entry.get("platform") in IGDB_LABELS and entry.get("status") in _RELEASE_TYPES
