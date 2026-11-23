@@ -1,0 +1,712 @@
+{
+ "exact_case_insensitive": {
+  "request": "fields name,developed,published; where name ~ \"Ubisoft\" | name ~ \"Mojang\" | name ~ \"Remedy\" | name ~ \"Bethesda\" | name ~ \"CD Projekt Red\" | name ~ \"Dune\" | name ~ \"Hades\" | name ~ \"Fallout\" | name ~ \"Control\" | name ~ \"Journey\" | name ~ \"Portal\" | name ~ \"Doom\" | name ~ \"Halo\" | name ~ \"Batman\" | name ~ \"Witcher\" | name ~ \"Frostpunk\" | name ~ \"Silksong\" | name ~ \"Elden Ring\" | name ~ \"Arcane\" | name ~ \"Marvel\" | name ~ \"Netflix\" | name ~ \"Stalker\" | name ~ \"Cyberpunk\" | name ~ \"Atomic Heart\" | name ~ \"Blizzard\" | name ~ \"Riot\" | name ~ \"Epic\" | name ~ \"Kingdom Come\" | name ~ \"Metro\" | name ~ \"Hitman\"; limit 500;",
+  "answer": [
+   {
+    "name": "Riot",
+    "developed": 16,
+    "published": 2
+   },
+   {
+    "name": "CD Projekt RED",
+    "developed": 46,
+    "published": 25
+   },
+   {
+    "name": "Metro",
+    "developed": 11,
+    "published": 2
+   },
+   {
+    "name": "Netflix",
+    "developed": 9,
+    "published": 151
+   },
+   {
+    "name": "marvel",
+    "developed": 0,
+    "published": 0
+   }
+  ]
+ },
+ "prefix_word": {
+  "request": "fields name,developed,published; where name ~ \"Ubisoft \"* | name ~ \"Mojang \"* | name ~ \"Remedy \"* | name ~ \"Bethesda \"* | name ~ \"CD Projekt Red \"* | name ~ \"Dune \"* | name ~ \"Hades \"* | name ~ \"Fallout \"* | name ~ \"Control \"* | name ~ \"Journey \"* | name ~ \"Portal \"* | name ~ \"Doom \"* | name ~ \"Halo \"* | name ~ \"Batman \"* | name ~ \"Witcher \"* | name ~ \"Frostpunk \"* | name ~ \"Silksong \"* | name ~ \"Elden Ring \"* | name ~ \"Arcane \"* | name ~ \"Marvel \"* | name ~ \"Netflix \"* | name ~ \"Stalker \"* | name ~ \"Cyberpunk \"* | name ~ \"Atomic Heart \"* | name ~ \"Blizzard \"* | name ~ \"Riot \"* | name ~ \"Epic \"* | name ~ \"Kingdom Come \"* | name ~ \"Metro \"* | name ~ \"Hitman \"*; limit 500;",
+  "answer": [
+   {
+    "name": "Ubisoft Philippines",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Nadeo",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Pune",
+    "developed": 19,
+    "published": 0
+   },
+   {
+    "name": "Blizzard North",
+    "developed": 5,
+    "published": 1
+   },
+   {
+    "name": "Remedy Entertainment",
+    "developed": 41,
+    "published": 12
+   },
+   {
+    "name": "Metro 3D",
+    "developed": 1,
+    "published": 16
+   },
+   {
+    "name": "Journey Bound",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Riot Games",
+    "developed": 12,
+    "published": 13
+   },
+   {
+    "name": "Control 9",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Arcane Lorelabs",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Arcane Adventures",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Mojang Studios",
+    "developed": 89,
+    "published": 113
+   },
+   {
+    "name": "Portal in Worlds",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Riot Shield Games",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Metro Team",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Montpellier",
+    "developed": 55,
+    "published": 3
+   },
+   {
+    "name": "Ubisoft Montreal",
+    "developed": 390,
+    "published": 8
+   },
+   {
+    "name": "Ubisoft Odesa",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Korea",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Epic Dragon",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Metro Voices",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Australia",
+    "developed": 0,
+    "published": 2
+   },
+   {
+    "name": "Metro Graphics",
+    "developed": 3,
+    "published": 0
+   },
+   {
+    "name": "Dune Sound",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Marvel Entertainment",
+    "developed": 1,
+    "published": 4
+   },
+   {
+    "name": "Ubisoft Newcastle",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Epic Banana Software",
+    "developed": 2,
+    "published": 2
+   },
+   {
+    "name": "Journey Bound Games Inc.",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Arcane Studios",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Epic Byte Studios",
+    "developed": 3,
+    "published": 3
+   },
+   {
+    "name": "Portal Development",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Cyberpunk Works",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Epic Brain Games",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Stockholm",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Leamington",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Düsseldorf",
+    "developed": 7,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Osaka",
+    "developed": 8,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft North America",
+    "developed": 1,
+    "published": 2
+   },
+   {
+    "name": "Ubisoft Sofia",
+    "developed": 11,
+    "published": 1
+   },
+   {
+    "name": "Control Video Corporation",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Halo Studios",
+    "developed": 17,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Vancouver",
+    "developed": 3,
+    "published": 0
+   },
+   {
+    "name": "Epic Gamer World LLC",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Epic Marketing",
+    "developed": 0,
+    "published": 2
+   },
+   {
+    "name": "Epic Action LLC",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Metro SX",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Hades is copyright Supergiant Games 2018-2020",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Mobile Games",
+    "developed": 4,
+    "published": 7
+   },
+   {
+    "name": "Epic Works",
+    "developed": 4,
+    "published": 0
+   },
+   {
+    "name": "Epic Fire",
+    "developed": 2,
+    "published": 0
+   },
+   {
+    "name": "Arcane Raise",
+    "developed": 3,
+    "published": 8
+   },
+   {
+    "name": "CD Projekt Red Wrocław",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Arcane Entertainment",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Epic Devs LLC",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Pictures",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Epic Story Interactive",
+    "developed": 2,
+    "published": 1
+   },
+   {
+    "name": "Metro Trains Melbourne",
+    "developed": 0,
+    "published": 5
+   },
+   {
+    "name": "Epic Llama Games",
+    "developed": 3,
+    "published": 1
+   },
+   {
+    "name": "Arcane Kids",
+    "developed": 5,
+    "published": 4
+   },
+   {
+    "name": "Riot Forge",
+    "developed": 0,
+    "published": 8
+   },
+   {
+    "name": "Ubisoft Mumbai",
+    "developed": 3,
+    "published": 0
+   },
+   {
+    "name": "Epic MegaGames",
+    "developed": 11,
+    "published": 17
+   },
+   {
+    "name": "Ubisoft San Francisco",
+    "developed": 22,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Sao Paulo",
+    "developed": 4,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Owlient",
+    "developed": 3,
+    "published": 0
+   },
+   {
+    "name": "Metro Corporation",
+    "developed": 10,
+    "published": 4
+   },
+   {
+    "name": "Blizzard Classic Arcade",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Marvel Games",
+    "developed": 2,
+    "published": 14
+   },
+   {
+    "name": "Ubisoft Reflections",
+    "developed": 16,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Bucharest",
+    "developed": 22,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Shanghai",
+    "developed": 37,
+    "published": 3
+   },
+   {
+    "name": "Epic Multimedia Group",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Romania",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Abu Dhabi",
+    "developed": 3,
+    "published": 0
+   },
+   {
+    "name": "Hades Productions",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Epic Games",
+    "developed": 194,
+    "published": 202
+   },
+   {
+    "name": "Ubisoft Blue Byte",
+    "developed": 73,
+    "published": 1
+   },
+   {
+    "name": "Bethesda Softworks",
+    "developed": 37,
+    "published": 342
+   },
+   {
+    "name": "Ubisoft Entertainment",
+    "developed": 64,
+    "published": 1298
+   },
+   {
+    "name": "Ubisoft Massive",
+    "developed": 5,
+    "published": 0
+   },
+   {
+    "name": "Arcane Cabinet",
+    "developed": 2,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Da Nang",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Portal Entertainment",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Red Storm",
+    "developed": 7,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Belgrade",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Epic Inventions",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Craiova",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Saguenay",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Berlin",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Blizzard Albany",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Epic Banana Games",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Stalker Entertainment",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft South Korea",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "RIOT Visualization",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Dune Sound -Paris",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Dune Sound - Paris",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Arcane Four Studios",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Japan",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Tiwak",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Portal Publishing",
+    "developed": 0,
+    "published": 1
+   },
+   {
+    "name": "Epic Quest Games",
+    "developed": 0,
+    "published": 6
+   },
+   {
+    "name": "Epic Backflip",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Ukraine",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Epic Software",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Paris Mobile",
+    "developed": 2,
+    "published": 0
+   },
+   {
+    "name": "Doom Turtle",
+    "developed": 2,
+    "published": 1
+   },
+   {
+    "name": "Control Entertainment",
+    "developed": 9,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Annecy",
+    "developed": 15,
+    "published": 0
+   },
+   {
+    "name": "Portal Studios",
+    "developed": 2,
+    "published": 2
+   },
+   {
+    "name": "Ubisoft China",
+    "developed": 0,
+    "published": 3
+   },
+   {
+    "name": "Ubisoft Milan",
+    "developed": 29,
+    "published": 2
+   },
+   {
+    "name": "Epic Games China",
+    "developed": 1,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Casablanca",
+    "developed": 13,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Nagoya",
+    "developed": 8,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Barcelona",
+    "developed": 16,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Mainz",
+    "developed": 12,
+    "published": 0
+   },
+   {
+    "name": "Blizzard Entertainment SAS",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Control Room Labs",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Europe",
+    "developed": 0,
+    "published": 10
+   },
+   {
+    "name": "Bethesda Game Studios",
+    "developed": 88,
+    "published": 17
+   },
+   {
+    "name": "Ubisoft Paris",
+    "developed": 93,
+    "published": 4
+   },
+   {
+    "name": "Ubisoft Ivory",
+    "developed": 5,
+    "published": 0
+   },
+   {
+    "name": "Blizzard Entertainment",
+    "developed": 218,
+    "published": 196
+   },
+   {
+    "name": "Ubisoft Bordeaux",
+    "developed": 20,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Toronto",
+    "developed": 29,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft Québec",
+    "developed": 70,
+    "published": 3
+   },
+   {
+    "name": "Metro 2031 Dev Team",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "CD Projekt Red North America",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Arcane Square Games",
+    "developed": 1,
+    "published": 1
+   },
+   {
+    "name": "Ubisoft US",
+    "developed": 0,
+    "published": 6
+   },
+   {
+    "name": "Ubisoft Winnipeg",
+    "developed": 0,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Chengdu",
+    "developed": 10,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Kyiv",
+    "developed": 4,
+    "published": 0
+   },
+   {
+    "name": "Ubisoft Singapore",
+    "developed": 11,
+    "published": 0
+   },
+   {
+    "name": "Epic Games Publishing",
+    "developed": 0,
+    "published": 18
+   }
+  ]
+ }
+}

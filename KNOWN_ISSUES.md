@@ -99,6 +99,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-82 | Login report: a report that waits past midnight says «сегодня» of the day before | `app/tracker/login_reports.py` | open | 9.2 |
 | KI-83 | Anime: an episode first seen with an AniList airing earlier than the previous look comes with no message | `app/tracker/anime_events.py` (`assemble`), `series_events._newly_out` | open | 9.1d |
 | KI-84 | Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027» | `app/tracker/series_events.py` (`message_moved`) | open | 9.1d |
+| KI-85 | Anime: a franchise film Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_anime.py`, `MovieRecord.aired_on` | open | 9.2 |
 
 ## Entries
 
@@ -876,3 +877,12 @@ Format of a new entry:
 - Likelihood / impact: rare (an hour move of an anime premiere before it airs); the message is confusing, nothing is lost.
 - Status: open. Fix in 9.1d: when both days are equal, the premiere line shows the hours (`cards.format_episode_when`), with a test.
 - Found: 2026-11-23, review of stage 9.1c (F2).
+
+## KI-85. Anime: a franchise film Shikimori knows by the month or the year stands on a made-up first day
+
+- Where: `app/tracker/sources/shikimori_anime.py` (`FranchiseMovie.aired_on` from `airedOn.date`), `MovieRecord.aired_on`; the Feed («Фильм «…»» in «Скоро» or «Позже») and the message «анонсирован фильм франшизы … премьера: 1 января 2027».
+- What's wrong: as KI-81 for a season, Shikimori fills `airedOn.date` with the first of the month or of January when it knows only the month or the year; a film of the franchise is stored with that day. Spec 9.1d (section 4) fixes the premieres of seasons and parts only: a film's date is a column of its own, and a fix needs its precision stored (a migration).
+- How to reproduce: a followed franchise whose announced film has `airedOn { day: null }` — the Feed shows the film on the 1st.
+- Likelihood / impact: rare (an announced film of a followed franchise without a day); the owner may take the day for real; nothing is lost.
+- Status: open. Fix in 9.2 if met.
+- Found: 2026-11-23, spec 9.1d.

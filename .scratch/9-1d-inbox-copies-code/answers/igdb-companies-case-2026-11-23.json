@@ -1,0 +1,6 @@
+{
+ "request": "fields name,developed,published; where name ~ (\"ubisoft\",\"fromsoftware\",\"capcom\"); limit 50;",
+ "answer": {
+  "error": "IGDB /companies failed (HTTP 400)"
+ }
+}

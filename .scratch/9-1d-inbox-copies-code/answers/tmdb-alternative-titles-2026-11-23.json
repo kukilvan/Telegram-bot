@@ -1,0 +1,295 @@
+{
+ "request": "search/tv language=ru; /tv/{id}/alternative_titles; search/tv language=en-US",
+ "answer": {
+  "search_ru": {
+   "Dead-End Job": [
+    {
+     "id": 289517,
+     "name": "Работа с призрачными перспективами",
+     "original_name": "꿀알바",
+     "first_air_date": "2026-10-30"
+    }
+   ],
+   "Dead-End Jb": [],
+   "Dead-End": [
+    {
+     "id": 158139,
+     "name": "Тупик: парк паранормальных явлений",
+     "original_name": "Dead End: Paranormal Park",
+     "first_air_date": "2022-06-16"
+    },
+    {
+     "id": 85054,
+     "name": "Dead End",
+     "original_name": "Dead End",
+     "first_air_date": "2019-02-26"
+    },
+    {
+     "id": 62530,
+     "name": "Dead End Express",
+     "original_name": "Dead End Express",
+     "first_air_date": "2015-05-07"
+    },
+    {
+     "id": 293387,
+     "name": "Amy's Dead-End Dreamhouse",
+     "original_name": "Amy's Dead-End Dreamhouse",
+     "first_air_date": "2025-07-13"
+    },
+    {
+     "id": 320229,
+     "name": "DEAD ENDー羅刹の刻印ー",
+     "original_name": "DEAD ENDー羅刹の刻印ー",
+     "first_air_date": "2026-05-22"
+    },
+    {
+     "id": 71783,
+     "name": "Dead End Express : Livraisons impossibles",
+     "original_name": "Dead End Express : Livraisons impossibles",
+     "first_air_date": "2015-05-07"
+    },
+    {
+     "id": 289517,
+     "name": "Работа с призрачными перспективами",
+     "original_name": "꿀알바",
+     "first_air_date": "2026-10-30"
+    },
+    {
+     "id": 71061,
+     "name": "В ожидании лета",
+     "original_name": "夏至未至",
+     "first_air_date": "2017-06-11"
+    },
+    {
+     "id": 263151,
+     "name": "树影迷宫",
+     "original_name": "树影迷宫",
+     "first_air_date": "2025-11-01"
+    },
+    {
+     "id": 126524,
+     "name": "末路天堂",
+     "original_name": "末路天堂",
+     "first_air_date": "2007-08-16"
+    },
+    {
+     "id": 214258,
+     "name": "Pewnego razu na krajowej jedynce",
+     "original_name": "Pewnego razu na krajowej jedynce",
+     "first_air_date": "2022-12-01"
+    },
+    {
+     "id": 323722,
+     "name": "Точка взрыва",
+     "original_name": "Räjähdyspiste",
+     "first_air_date": "2026-08-08"
+    },
+    {
+     "id": 254970,
+     "name": "Вкус смерти",
+     "original_name": "Dood Spoor",
+     "first_air_date": "2025-02-11"
+    },
+    {
+     "id": 214656,
+     "name": "繩角",
+     "original_name": "繩角",
+     "first_air_date": "2022-11-14"
+    }
+   ]
+  },
+  "alternative_titles": {
+   "62530": {
+    "id": 62530,
+    "results": []
+   },
+   "85054": {
+    "id": 85054,
+    "results": []
+   },
+   "158139": {
+    "id": 158139,
+    "results": [
+     {
+      "iso_3166_1": "BR",
+      "title": "Guardiões da Mansão do Terror",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "CN",
+      "title": "灵异游乐园：无路可逃",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "CZ",
+      "title": "Dead End: Paranormální park",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "ES",
+      "title": "El Punto Muerto: Un parque paranormal",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "FI",
+      "title": "Dead End: Kauhupuisto",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "FR",
+      "title": "Dead End : Le parc du paranormal",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "GR",
+      "title": "Αδιέξοδο: Το Πάρκο των Παραφυσικών Φαινομένων",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "HU",
+      "title": "Az út vége a paranormális parkban",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "IL",
+      "title": "דד אנד: שומרי הבית הרדוף",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "IR",
+      "title": "بن بست: پارک ماورایی",
+      "type": "Namava title"
+     },
+     {
+      "iso_3166_1": "JP",
+      "title": "デッド・エンド: ようこそ! オカルト遊園地へ",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "KR",
+      "title": "데드 엔드: 오싹한 테마파크",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "MX",
+      "title": "Dead End: El parque del terror",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "NO",
+      "title": "Dødens terminal - Tysengys",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "NO",
+      "title": "Dødens terminal: Tusengys",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "PL",
+      "title": "Martwy punkt: Paranormalny park",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "RO",
+      "title": "Terminus: Parcul paranormal",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "SG",
+      "title": "穷途末路：灵异游乐园",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "TW",
+      "title": "穷途末路：灵异游乐园",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "US",
+      "title": "DeadEndia",
+      "type": "working title"
+     }
+    ]
+   },
+   "289517": {
+    "id": 289517,
+    "results": [
+     {
+      "iso_3166_1": "CN",
+      "title": "甜蜜兼职",
+      "type": "literal name"
+     },
+     {
+      "iso_3166_1": "FR",
+      "title": "Un job mortel",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "RU",
+      "title": "Идеальная работа",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "SA",
+      "title": "وظيفة الكوابيس",
+      "type": ""
+     },
+     {
+      "iso_3166_1": "TH",
+      "title": "งานสนุก จะตาย",
+      "type": "Thai"
+     },
+     {
+      "iso_3166_1": "US",
+      "title": "Dead End Job",
+      "type": ""
+     }
+    ]
+   }
+  },
+  "search_en_typo": [],
+  "search_en_short": [
+   {
+    "id": 289517,
+    "name": "Dead-End Job",
+    "original_name": "꿀알바"
+   },
+   {
+    "id": 158139,
+    "name": "Dead End: Paranormal Park",
+    "original_name": "Dead End: Paranormal Park"
+   },
+   {
+    "id": 263151,
+    "name": "Dead End",
+    "original_name": "树影迷宫"
+   },
+   {
+    "id": 214258,
+    "name": "Dead End",
+    "original_name": "Pewnego razu na krajowej jedynce"
+   },
+   {
+    "id": 323722,
+    "name": "Dead End",
+    "original_name": "Räjähdyspiste"
+   },
+   {
+    "id": 85054,
+    "name": "Dead End",
+    "original_name": "Dead End"
+   },
+   {
+    "id": 126524,
+    "name": "Dead End Heaven",
+    "original_name": "末路天堂"
+   },
+   {
+    "id": 62530,
+    "name": "Dead End Express",
+    "original_name": "Dead End Express"
+   }
+  ]
+ }
+}

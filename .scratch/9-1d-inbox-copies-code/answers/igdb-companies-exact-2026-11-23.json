@@ -1,0 +1,173 @@
+{
+ "request": "fields name,developed,published,parent; where name = (\"Ubisoft\",\"Netflix\",\"Capcom\",\"Remedy\",\"Valve\",\"Bungie\",\"Dune\",\"Hades\",\"Supercell\",\"Mojang\",\"Rockstar Games\",\"FromSoftware\",\"Larian Studios\",\"Devolver Digital\",\"Fallout\",\"Elden Ring\",\"Witcher\",\"Control\",\"Journey\",\"Stalker\",\"Atlus\",\"Sega\",\"Nintendo\",\"Sony\",\"IGN\",\"Steam\",\"Disney\",\"Marvel\",\"Arcane\",\"Portal\",\"Doom\",\"Halo\",\"Minecraft\",\"Tetris\",\"Bethesda\",\"CD Projekt Red\",\"CD Projekt\",\"Square Enix\",\"Kojima Productions\",\"Team Cherry\",\"Hollow Knight\",\"Silksong\",\"Expedition 33\",\"Clair Obscur\",\"Sandfall Interactive\",\"\\u0414\\u044e\\u043d\\u0430\",\"Batman\",\"Frostpunk\",\"11 bit studios\",\"Paradox Interactive\",\"Witchfire\",\"Outer Wilds\",\"Mobius Digital\"); limit 500;",
+ "answer": [
+  {
+   "id": 6209,
+   "name": "Mobius Digital",
+   "developed": 4,
+   "published": 1,
+   "parent": null
+  },
+  {
+   "id": 170,
+   "name": "Kojima Productions",
+   "developed": 45,
+   "published": 3,
+   "parent": null
+  },
+  {
+   "id": 4291,
+   "name": "CD Projekt",
+   "developed": 1,
+   "published": 14,
+   "parent": null
+  },
+  {
+   "id": 4133,
+   "name": "11 bit studios",
+   "developed": 33,
+   "published": 57,
+   "parent": null
+  },
+  {
+   "id": 112,
+   "name": "Sega",
+   "developed": 226,
+   "published": 2160,
+   "parent": 2211
+  },
+  {
+   "id": 55283,
+   "name": "Sandfall Interactive",
+   "developed": 3,
+   "published": 0,
+   "parent": null
+  },
+  {
+   "id": 29774,
+   "name": "IGN",
+   "developed": 0,
+   "published": 0,
+   "parent": null
+  },
+  {
+   "id": 23169,
+   "name": "Disney",
+   "developed": 9,
+   "published": 43,
+   "parent": null
+  },
+  {
+   "id": 10282,
+   "name": "Sony",
+   "developed": 3,
+   "published": 21,
+   "parent": null
+  },
+  {
+   "id": 70,
+   "name": "Nintendo",
+   "developed": 674,
+   "published": 2891,
+   "parent": null
+  },
+  {
+   "id": 37,
+   "name": "Capcom",
+   "developed": 924,
+   "published": 1337,
+   "parent": null
+  },
+  {
+   "id": 26,
+   "name": "Square Enix",
+   "developed": 160,
+   "published": 1130,
+   "parent": null
+  },
+  {
+   "id": 510,
+   "name": "Larian Studios",
+   "developed": 22,
+   "published": 15,
+   "parent": null
+  },
+  {
+   "id": 517,
+   "name": "Paradox Interactive",
+   "developed": 38,
+   "published": 489,
+   "parent": null
+  },
+  {
+   "id": 1012,
+   "name": "FromSoftware",
+   "developed": 148,
+   "published": 83,
+   "parent": 7707
+  },
+  {
+   "id": 4776,
+   "name": "Steam",
+   "developed": 3,
+   "published": 10,
+   "parent": null
+  },
+  {
+   "id": 2483,
+   "name": "Supercell",
+   "developed": 54,
+   "published": 55,
+   "parent": 42
+  },
+  {
+   "id": 620,
+   "name": "Bungie",
+   "developed": 101,
+   "published": 53,
+   "parent": 10100
+  },
+  {
+   "id": 7263,
+   "name": "Team Cherry",
+   "developed": 10,
+   "published": 8,
+   "parent": null
+  },
+  {
+   "id": 29,
+   "name": "Rockstar Games",
+   "developed": 42,
+   "published": 132,
+   "parent": 139
+  },
+  {
+   "id": 818,
+   "name": "Atlus",
+   "developed": 233,
+   "published": 414,
+   "parent": 112
+  },
+  {
+   "id": 56,
+   "name": "Valve",
+   "developed": 92,
+   "published": 96,
+   "parent": null
+  },
+  {
+   "id": 27224,
+   "name": "Netflix",
+   "developed": 9,
+   "published": 151,
+   "parent": null
+  },
+  {
+   "id": 634,
+   "name": "Devolver Digital",
+   "developed": 0,
+   "published": 253,
+   "parent": null
+  }
+ ]
+}

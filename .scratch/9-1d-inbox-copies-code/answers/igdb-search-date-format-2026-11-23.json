@@ -1,0 +1,230 @@
+{
+ "request": "fields name,first_release_date,release_dates.date,release_dates.date_format,release_dates.y,release_dates.m,release_dates.platform,release_dates.release_region,release_dates.status;",
+ "answer": {
+  "The Witcher IV": [
+   {
+    "id": 194662,
+    "first_release_date": 1861833600,
+    "name": "The Witcher IV",
+    "release_dates": [
+     {
+      "id": 956710,
+      "date": 1861833600,
+      "m": 12,
+      "platform": 6,
+      "y": 2028,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 956711,
+      "date": 1861833600,
+      "m": 12,
+      "platform": 167,
+      "y": 2028,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 956712,
+      "date": 1861833600,
+      "m": 12,
+      "platform": 169,
+      "y": 2028,
+      "date_format": 2,
+      "release_region": 8
+     }
+    ]
+   }
+  ],
+  "Intergalactic: The Heretic Prophet": [
+   {
+    "id": 325611,
+    "first_release_date": 1830211200,
+    "name": "Intergalactic: The Heretic Prophet",
+    "release_dates": [
+     {
+      "id": 848675,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 167,
+      "y": 2027,
+      "status": 6,
+      "date_format": 2,
+      "release_region": 8
+     }
+    ]
+   }
+  ],
+  "Marvel 1943": [
+   {
+    "id": 216315,
+    "first_release_date": 1830211200,
+    "name": "Marvel 1943: Rise of Hydra",
+    "release_dates": [
+     {
+      "id": 923177,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 169,
+      "y": 2027,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 923178,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 6,
+      "y": 2027,
+      "date_format": 2,
+      "release_region": 8
+     },
+     {
+      "id": 923179,
+      "date": 1830211200,
+      "m": 12,
+      "platform": 167,
+      "y": 2027,
+      "date_format": 2,
+      "release_region": 8
+     }
+    ]
+   }
+  ],
+  "Fishy Bar": [
+   {
+    "id": 423095,
+    "first_release_date": 1814313600,
+    "name": "Fishy Bar",
+    "release_dates": [
+     {
+      "id": 977360,
+      "date": 1814313600,
+      "m": 6,
+      "platform": 6,
+      "y": 2027,
+      "date_format": 4,
+      "release_region": 8
+     }
+    ]
+   }
+  ],
+  "Hollow Knight: Silksong": [
+   {
+    "id": 372563,
+    "first_release_date": 1627430400,
+    "name": "Hollow Knight Silksong",
+    "release_dates": [
+     {
+      "id": 818340,
+      "date": 1627430400,
+      "m": 7,
+      "platform": 22,
+      "y": 2021,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ]
+   },
+   {
+    "id": 115289,
+    "first_release_date": 1756944000,
+    "name": "Hollow Knight: Silksong",
+    "release_dates": [
+     {
+      "id": 789226,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 3,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789227,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 14,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789229,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 508,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789230,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 6,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789234,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 169,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789228,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 130,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789231,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 48,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789232,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 167,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     },
+     {
+      "id": 789233,
+      "date": 1756944000,
+      "m": 9,
+      "platform": 49,
+      "y": 2025,
+      "status": 6,
+      "date_format": 0,
+      "release_region": 8
+     }
+    ]
+   }
+  ]
+ }
+}
