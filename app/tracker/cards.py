@@ -13,7 +13,7 @@ from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind, TitleStatus
 from app.tracker.moment_words import NOT_ANNOUNCED, episode_when, format_date, format_day_month, format_episode_when
 from app.tracker.scores import ScoreView
-from app.tracker.seasons import RELEASED, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
+from app.tracker.seasons import RELEASED, Episode, SeasonAnnouncement, SeasonProgress, SeasonRow, SeasonsView
 
 if TYPE_CHECKING:
     from app.tracker.sequel_events import Sequels  # it formats its dates here: a plain import would go round
@@ -235,14 +235,27 @@ def progress_line(current: SeasonProgress, tz: tzinfo | None = None, name: str =
         coming = current.next_episode
         line += f", следующая — {format_episode_when(coming, tz) if coming else NOT_ANNOUNCED}"
     elif current.next_part_start is not None:
-        line += f"; часть {current.next_part} — с {format_day_month(episode_when(current.next_part_start, tz)[0])}"
+        line += f"; часть {current.next_part} — {premiere_words(current.next_part_start, tz)}"
     return line
 
 
+def premiere_words(episode: Episode, tz: tzinfo | None = None) -> str:
+    """When a part starts, as the card and the end of a part say it: «с 9 января» for a dated episode (by the rule of
+    `episode_when`), «в январе 2027» or «в 2027» for an approximate premiere (spec 4.5 of 9.1d)."""
+    if episode.rough is not None:
+        return episode.rough.phrase
+    return f"с {format_day_month(episode_when(episode, tz)[0])}"
+
+
 def announced_line(announced: SeasonAnnouncement, tz: tzinfo | None = None, name: str = "") -> str:
-    """«Сезон 4 анонсирован, премьера 3 апреля 2027» (or «дата не объявлена»)."""
+    """«Сезон 4 анонсирован, премьера 3 апреля 2027», «… премьера в январе 2027» (or «дата не объявлена»)."""
     premiere = announced.premiere
-    when = f"премьера {format_date(episode_when(premiere, tz)[0])}" if premiere else "дата не объявлена"
+    if premiere is None:
+        when = "дата не объявлена"
+    elif premiere.rough is not None:
+        when = f"премьера {premiere.rough.phrase}"
+    else:
+        when = f"премьера {format_date(episode_when(premiere, tz)[0])}"
     return f"{season_label(announced.number, name=name)} анонсирован, {when}"
 
 

@@ -72,7 +72,7 @@ def test_an_empty_database_gets_the_table_seeded_with_zero_and_a_second_run_chan
     migrate(engine)
     migrate(engine)
 
-    assert "issued_ids" in tables(engine) and version(engine) == "0017"
+    assert "issued_ids" in tables(engine) and version(engine) == "0018"
     assert issued(engine) == [("titles", 0)]
 
 

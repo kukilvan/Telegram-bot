@@ -95,10 +95,10 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-78 | A send Telegram has not answered within 5 s of a stop can come again after the start | `app/tracker/delivery_service.py` (spec 9.1a, 2.1) | open | 9.2 |
 | KI-79 | Russian: a game added before 9.1b says «Ещё не проверяли» until its own poll (up to a week), with a Steam page up to 6 hours more | `app/tracker/pollers/game_russian.py` (spec 9.1b, 5.5) | open | 9.2 |
 | KI-80 | ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint | `app/tracker/pollers/game_zog.py` (spec 9.1b, 5.6) | open | 9.2 |
-| KI-81 | Anime: a premiere Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_anime.py` (`part_episodes`) | open | 9.1d |
+| KI-81 | Anime: a premiere Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_chain.py` (`part_episodes`) | fixed (test: `tests/test_tracker_anime_approximate.py`, `tests/test_tracker_anime_approximate_polls.py`) | 9.1d |
 | KI-82 | Login report: a report that waits past midnight says «сегодня» of the day before | `app/tracker/login_reports.py` | open | 9.2 |
-| KI-83 | Anime: an episode first seen with an AniList airing earlier than the previous look comes with no message | `app/tracker/anime_events.py` (`assemble`), `series_events._newly_out` | open | 9.1d |
-| KI-84 | Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027» | `app/tracker/series_events.py` (`message_moved`) | open | 9.1d |
+| KI-83 | Anime: an episode first seen with an AniList airing earlier than the previous look comes with no message | `app/tracker/anime_events.py` (`assemble`), `series_events._newly_out` | fixed (test: `tests/test_tracker_anime_late_and_moves.py`) | 9.1d |
+| KI-84 | Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027» | `app/tracker/series_messages.py` (`message_moved`), `series_moves` | fixed (test: `tests/test_tracker_anime_late_and_moves.py`) | 9.1d |
 | KI-85 | Anime: a franchise film Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_anime.py`, `MovieRecord.aired_on` | open | 9.2 |
 
 ## Entries
@@ -848,7 +848,7 @@ Format of a new entry:
 - What's wrong: for an announced entry Shikimori fills `airedOn.date` with the first of the month or of January when it knows only the month or the year (`airedOn.day` is null, sometimes `month` too). The stub is stored as that day, so the Feed and the card show a day nobody announced. Checked live 2026-11-22 (`.scratch/9-1c-feed-web/answers/shikimori-premiere-precision-2026-11-22.json`): «Монолог фармацевта» season 3 part 2 → 2027-04-01 (month only), «Ванпанчмен» season 3 part 2 and «Реинкарнация безработного» season 3 part 2 → 2027-01-01 (month only and year only).
 - How to reproduce: the card of «Ванпанчмен» — «Сезон 3 …; часть 2 — с 1 января»; the Feed, «Позже» — «1 января 2027».
 - Likelihood / impact: every announced part or season without an exact day; the owner may take the day for real. Nothing is lost: the right day comes with the source. A fix: read `airedOn { year month day }`, keep the precision with the stub (the episode timing of spec 9.1c gets one more value, or the stub is not stored) and show it as an approximate date («апрель 2027», «2027»), as games do; together with KI-64 (the same Shikimori day in an offer).
-- Status: open. Fix in 9.1d.
+- Status: fixed (test: `tests/test_tracker_anime_approximate.py`, `tests/test_tracker_anime_approximate_polls.py`). Ticket 9.1d.02: Shikimori is asked `airedOn { date year month day }`; a premiere known by the month or the year is the approximate stub (`EpisodeTiming.MONTH`/`YEAR`, no moment, `Episode.rough`), stored at 00:00 of the first day of its period, never out; it reads «часть 2 — в январе 2027» in the card, «январь 2027» in «Позже»; the stored made-up day is replaced at the first look (migration 0018 makes it come at once), with no message.
 - Found: 2026-11-22, spec 9.1c.
 
 ## KI-82. Login report: a report that waits past midnight says «сегодня» of the day before
@@ -866,7 +866,7 @@ Format of a new entry:
 - What's wrong: since ticket 9.1c.02 an episode found out now keeps the moment AniList says it aired. When that episode was not stored at the previous look and its airing is earlier than that look, `_newly_out` counts it as history and no event is queued. Before 9.1c it got the moment of the look and was reported.
 - How to reproduce: look at 13:00 stores episode 7 as the next one (14:00); look at 14:30 — AniList still says 6 out (counter lag), episodes 8–9 unknown; look at 20:00 — AniList says 9 out with airings of 8 and 9 at 14:00 (a bulk drop). Episodes 8 and 9 are stored at 14:00 `exact`; `_newly_out` gives `[]` — no message about them (review probe: `came == []`).
 - Likelihood / impact: rare — needs an episode AniList did not announce as the next one before it aired, seen first after the following look (a drop of several episodes, a lagging counter, AniList down at the look and Shikimori late). The episode is in the card and the Feed; only its message is missing.
-- Status: open. Fix in 9.1d: an episode not stored before whose `exact` airing comes from the 8-day window counts as news (outside the `history` of new entries), with a test of the case above.
+- Status: fixed (test: `tests/test_tracker_anime_late_and_moves.py`). Ticket 9.1d.02: `assemble` returns `Assembled(seasons, late)`; `late` episodes go to `_newly_out` as news, `happened_at` their airing.
 - Found: 2026-11-23, review of stage 9.1c (F1).
 
 ## KI-84. Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027»
@@ -875,7 +875,7 @@ Format of a new entry:
 - What's wrong: when AniList moves the premiere of an announced season or part by hours within one day, the bot sends «🎌 … — премьера сезона 4 перенесена» with the same day on both sides. Older than 9.1c for moments not at 00:00 UTC; since 9.1c an `exact` moment at 00:00 UTC is a moment too, so its change is a move as well.
 - How to reproduce: the premiere `exact` at 2027-01-09 15:00 UTC, the next look 16:00 the same day → `message_moved(…, premiere=True)` gives «9 янв 2027 → 9 янв 2027» (review probe).
 - Likelihood / impact: rare (an hour move of an anime premiere before it airs); the message is confusing, nothing is lost.
-- Status: open. Fix in 9.1d: when both days are equal, the premiere line shows the hours (`cards.format_episode_when`), with a test.
+- Status: fixed (test: `tests/test_tracker_anime_late_and_moves.py`). Ticket 9.1d.02: equal days read with the hours («9 янв 2027, 18:00 → 9 янв 2027, 19:00»); the same day with and without an hour is no move, both ways (`series_moves`).
 - Found: 2026-11-23, review of stage 9.1c (F2).
 
 ## KI-85. Anime: a franchise film Shikimori knows by the month or the year stands on a made-up first day

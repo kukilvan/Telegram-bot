@@ -19,7 +19,9 @@ of every past episode. The episodes that are out get the day the entry started, 
 an entry with nothing out yet gets its premiere day as a stub for episode 1. The exact schedule is AniList's job.
 Each episode says where its moment comes from (`EpisodeTiming`): the next one's is exact, the premiere stub's and the
 first episode's start day (`airedOn`) is the day only, and every other episode out has no moment of its own (unknown),
-as has each episode of an entry known only by the day it ended (`releasedOn`).
+as has each episode of an entry known only by the day it ended (`releasedOn`). Shikimori may know the premiere only
+by its month or year (`airedOn` without `day`, KI-81): an entry with nothing out then gets the approximate stub
+(`month` or `year`, no moment, `Episode.rough`), and the episodes out of such an entry are all unknown.
 """
 
 import logging
@@ -30,6 +32,7 @@ from datetime import date, datetime, time, timezone
 from typing import Any
 
 from app.tracker.models import EpisodeTiming
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.seasons import Episode, PartCut, Season
 from app.tracker.sources.anilist_schedule import PartSchedule
 from app.tracker.sources.dates import parse_response_date
@@ -70,9 +73,9 @@ class Entry:
     kind: str
     status: str
     episodes: int | None  # announced total; None: unknown
-    aired: int  # episodes out
+    out: int  # episodes out
     next_at: datetime | None  # naive UTC
-    aired_on: date | None
+    aired_on: date | None  # the day Shikimori gives, the first of the period when it knows only the month or the year
     released_on: date | None
     duration: int | None
     franchise: str | None
@@ -80,6 +83,7 @@ class Entry:
     genres: tuple[str, ...]
     chain: tuple[tuple[str, str], ...]  # (relation, other entry id), prequel and sequel only
     english: str | None = None  # an offer of «Входящие» matches by it too
+    aired: ReleaseDate = NOT_ANNOUNCED  # the premiere as precisely as Shikimori knows it: a day, a month or a year
 
     @property
     def display_name(self) -> str:
@@ -88,7 +92,7 @@ class Entry:
     @property
     def size(self) -> int:
         """Episodes the entry has or announces; the next part counts from here."""
-        return self.episodes or self.aired
+        return self.episodes or self.out
 
     def ids(self) -> SourceIds:
         return SourceIds(self.id, self.mal_id)  # AniList ids come later (`assign_anilist_ids`)
@@ -173,7 +177,7 @@ def parse_entry(raw: dict[str, Any]) -> Entry:
         kind=raw.get("kind") or "",
         status=raw.get("status") or "",
         episodes=raw.get("episodes") or None,
-        aired=raw.get("episodesAired") or 0,
+        out=raw.get("episodesAired") or 0,
         next_at=_moment(raw.get("nextEpisodeAt")),
         aired_on=_date(raw.get("airedOn")),
         released_on=_date(raw.get("releasedOn")),
@@ -183,6 +187,7 @@ def parse_entry(raw: dict[str, Any]) -> Entry:
         genres=tuple(g["russian"] for g in raw.get("genres") or [] if g.get("kind") == "genre" and g.get("russian")),
         chain=chain,
         english=raw.get("english") or None,
+        aired=ReleaseDate.from_shikimori(raw.get("airedOn")),
     )
 
 
@@ -273,22 +278,25 @@ def _day(value: date) -> datetime:
 
 def part_episodes(entry: Entry, first_episode: int) -> list[Episode]:
     """Episodes of one entry in the season's numbering, as far as Shikimori tells (see the module note)."""
-    aired = entry.aired
+    aired = entry.out
     if entry.status == "released" and not aired and entry.episodes:
         aired = entry.episodes  # a finished entry whose counter was never filled in
     started = entry.aired_on or entry.released_on
+    known_day = entry.aired_on is not None and entry.aired.exact  # the first of a month is no day of episode 1
     episodes = [
         Episode(
             first_episode + i,
             _day(started) if started else None,
-            EpisodeTiming.DAY if i == 0 and entry.aired_on is not None else EpisodeTiming.UNKNOWN,
+            EpisodeTiming.DAY if i == 0 and known_day else EpisodeTiming.UNKNOWN,
         )
         for i in range(aired)
     ]
     if entry.next_at is not None:
         episodes.append(Episode(first_episode + aired, entry.next_at, EpisodeTiming.EXACT))
-    elif not aired and entry.aired_on is not None:  # premiere day as a stub for episode 1
+    elif not aired and known_day:  # premiere day as a stub for episode 1
         episodes.append(Episode(first_episode, _day(entry.aired_on), EpisodeTiming.DAY))
+    elif not aired and entry.aired.announced:  # known by the month or the year: the approximate stub, no moment
+        episodes.append(Episode(first_episode, None, entry.aired.timing, rough=entry.aired))
     return episodes
 
 

@@ -24,7 +24,7 @@ from app.tracker.pollers.seasonal import SeasonalPoller
 class AnimePoller(SeasonalPoller):
     def first_seasons(self, snapshot: Any, now: datetime) -> Sequence[season_logic.Season]:
         """An anime's episodes are put together from both its sources."""
-        return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now)
+        return anime_events.assemble(snapshot.seasons, snapshot.parts, snapshot.schedules, None, now).seasons
 
     def feed(self, session, shown: Mapping[int, FeedTitle], basis: FeedBasis, now: datetime) -> FeedParts:
         """The episodes, and the films of the franchises that are not out yet (their dates are never among the outs)."""
@@ -112,9 +112,9 @@ class AnimePoller(SeasonalPoller):
         assembled = anime_events.assemble(
             snapshot.seasons, snapshot.parts, snapshot.schedules, previous, now, known, new_entries, observed_at
         )
-        new = series_events.ShowState.of(assembled, {}).keeping_known(old)
+        new = series_events.ShowState.of(assembled.seasons, {}).keeping_known(old)
         detected = series_events.detect_events(
-            due.id, name, old, new, observed_at, now, gap, anime_events.flavor(tz)
+            due.id, name, old, new, observed_at, now, gap, anime_events.flavor(tz), assembled.late
         )
         detected += anime_events.detect_movie_events(due.id, name, films, snapshot.movies, observed_at.date())
         # events first: if storing the state fails, the next poll finds the same facts and the dedup key drops them

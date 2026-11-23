@@ -21,21 +21,23 @@ named it exactly; otherwise it gets the moment of this look, as unknown: it came
 anyone can tell, and that is what makes it news (the first episode of a new season included), though not when (an
 episode AniList says aired in the last 8 days is the exception: it has its own moment). At
 adding there is nothing stored, and what is out is history. So is an entry the title never had when its day by
-Shikimori is not later than the previous look: the chain grew behind the owner's back, nothing came out.
+Shikimori is not later than the previous look: the chain grew behind the owner's back, nothing came out. An episode
+not stored before whose exact airing is behind the previous look is not history but late news (`Assembled.late`, KI-83).
+An approximate premiere (`Episode.rough`) has no moment, so the loops over the episodes out pass it by.
 
 A season is known by the entry it starts with, not by its number: the source numbers the entries of the chain in order,
 and when it adds, removes or regroups an entry the numbers move. `relayout` puts what is stored behind its entries in
 the numbering of the fresh answer before anything is compared.
 
-The events about the films of a franchise (announced, released) are decided here too.
+The events about the films of a franchise (announced, released) are decided here too; their samples and those of the
+episodes for «Тестовое событие» are `anime_samples`.
 """
 
 from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
-from datetime import date, datetime, timedelta, timezone, tzinfo
+from datetime import date, datetime, tzinfo
 from typing import Any
 
-from app.tracker import series_messages
 from app.tracker.moment_words import NOT_ANNOUNCED, format_date
 from app.tracker.kinds import KINDS
 from app.tracker.models import EpisodeTiming, TitleKind
@@ -205,9 +207,9 @@ def assemble(
     anilist_known: Collection[str] = (),
     new_entries: Collection[str] = (),
     observed_at: datetime | None = None,
-) -> tuple[Season, ...]:
-    """The seasons as they are known now. `parts` are the source entries behind the seasons (season, number,
-    first_episode, status, ids), `schedules` AniList's answers by the Shikimori id of the part, `previous` the seasons
+) -> "Assembled":
+    """The seasons as they are known now, and the episodes found out late (`Assembled`). `parts` are the source entries
+    behind the seasons (season, number, first_episode, status, ids), `schedules` AniList's answers by the Shikimori id of the part, `previous` the seasons
     stored at the last look, laid over the fresh chain (None at adding), `anilist_known` the Shikimori ids of the parts
     AniList has an id for, `new_entries` the Shikimori ids of the parts the title never had and `observed_at` the
     moment of the previous look: an episode of a new entry that was out by then is history."""
@@ -217,6 +219,7 @@ def assemble(
         by_season.setdefault(part.season, []).append(part)
 
     result = []
+    late: list[tuple[int, int]] = []
     for season in seasons:
         old = {e.number: e for e in before[season.number].episodes} if season.number in before else {}
         shikimori = {e.number: e for e in season.episodes}
@@ -259,11 +262,24 @@ def assemble(
                         continue  # out before the previous look, in an entry the title never had: its own day stays
                     if episode.timing != EpisodeTiming.EXACT:  # found out now: a moment a source named stays
                         final[number] = Episode(number, now, EpisodeTiming.UNKNOWN)
+                    elif observed_at is not None and episode.air_at <= observed_at:
+                        late.append((season.number, number))  # aired before the previous look, seen only now (KI-83)
             for number, stored in old.items():
                 if number not in final and stored.air_at is not None and stored.air_at <= now:
                     final[number] = stored  # a source that forgets an episode has not un-aired it
         result.append(replace(season, episodes=tuple(final[n] for n in sorted(final))))
-    return tuple(result)
+    return Assembled(tuple(result), frozenset(late))
+
+
+@dataclass(frozen=True)
+class Assembled:
+    """What `assemble` gives: the seasons as they are known now, and `late` — (season, episode) of every episode that
+    was not stored (or stored with no moment), is out now with an exact moment not later than the previous look, and
+    is not in an entry the title never had (KI-83, spec 5 of 9.1d). Such an episode aired while nobody saw it (a drop of
+    several episodes, a lagging counter): its moment is behind the previous look, yet it is news. Empty at adding."""
+
+    seasons: tuple[Season, ...]
+    late: frozenset[tuple[int, int]] = frozenset()
 
 
 # --- the films of a franchise ----------------------------------------------------------------------
@@ -306,86 +322,3 @@ def detect_movie_events(
                 )
             )
     return events
-
-
-# --- samples for «Тестовое событие» ------------------------------------------------------------------
-
-_SAMPLE = "Магическая битва (Jujutsu Kaisen)"
-_SAMPLE_TZ = timezone(timedelta(hours=3))  # a sample shows how an hour reads, not the owner's zone
-_FLAVOR = flavor(_SAMPLE_TZ)
-_SAMPLE_SEASON = Season(4, "Сезон 4", 12)
-_NEXT = "следующая: пн, 12 окт в 18:00"
-# season 3 in two parts of twelve episodes: part 1 in autumn, part 2 after the break
-_PARTS = Season(
-    3,
-    "Сезон 3",
-    24,
-    tuple(Episode(n, datetime(2026, 10, 5, 9, 0) + timedelta(weeks=n - 1)) for n in range(1, 13))
-    + tuple(Episode(n, datetime(2027, 4, 5, 9, 0) + timedelta(weeks=n - 13)) for n in range(13, 25)),
-).parts(timedelta(weeks=6))
-
-TEST_SAMPLES: list[tuple[str, str, str]] = [
-    (
-        "anime-announced",
-        "Аниме: объявлена дата сезона",
-        series_messages.message_announced(_SAMPLE, 4, Episode(1, datetime(2027, 1, 10, 15, 0)), flavor=_FLAVOR),
-    ),
-    (
-        "anime-started",
-        "Аниме: сезон начался",
-        series_messages.message_started(_SAMPLE, _SAMPLE_SEASON, 1, _NEXT, _FLAVOR),
-    ),
-    (
-        "anime-episode",
-        "Аниме: вышла серия",
-        series_messages.message_episode(_SAMPLE, _SAMPLE_SEASON, 6, _NEXT, _FLAVOR),
-    ),
-    (
-        "anime-ended",
-        "Аниме: сезон закончился",
-        series_messages.message_ended(_SAMPLE, _SAMPLE_SEASON, 12, _FLAVOR),
-    ),
-    (
-        "anime-moved",
-        "Аниме: дата серии сдвинулась",
-        series_messages.message_moved(
-            _SAMPLE,
-            4,
-            7,
-            Episode(7, datetime(2026, 10, 12, 15, 0)),
-            Episode(7, datetime(2026, 10, 19, 15, 0)),
-            premiere=False,
-            flavor=_FLAVOR,
-        ),
-    ),
-    (
-        "anime-part-episode",
-        "Аниме: вышла серия части",
-        series_messages.message_part_episode(_SAMPLE, _PARTS[0], 6, datetime(2026, 11, 10), _NEXT, _FLAVOR),
-    ),
-    (
-        "anime-part-announced",
-        "Аниме: объявлена дата части",
-        series_messages.message_announced(_SAMPLE, 3, Episode(13, datetime(2027, 4, 5, 6, 0)), part=2, flavor=_FLAVOR),
-    ),
-    (
-        "anime-part-started",
-        "Аниме: началась часть сезона",
-        series_messages.message_part_started(_SAMPLE, _PARTS[1], 13, "следующая: пн, 12 апр в 12:00", _FLAVOR),
-    ),
-    (
-        "anime-part-ended",
-        "Аниме: закончилась часть сезона",
-        series_messages.message_part_ended(_SAMPLE, _PARTS[0], 12, _PARTS[1], _FLAVOR),
-    ),
-    (
-        "anime-movie-announced",
-        "Аниме: анонсирован фильм франшизы",
-        message_movie_announced(_SAMPLE, "Магическая битва: Фильм", date(2027, 2, 5)),
-    ),
-    (
-        "anime-movie-released",
-        "Аниме: вышел фильм франшизы",
-        message_movie_released(_SAMPLE, "Магическая битва: Фильм"),
-    ),
-]

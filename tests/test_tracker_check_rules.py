@@ -317,7 +317,7 @@ def test_the_first_check_after_the_return_reports_an_episode_anilist_says_aired_
     old = Season(1, "Сезон 1", 12, OUT_BEFORE, cuts, "100")
     fresh = Season(1, "Сезон 1", 12, OUT_BEFORE + (Episode(5, datetime(2026, 10, 2), EpisodeTiming.UNKNOWN),), cuts, "100")
 
-    [new] = anime_events.assemble([fresh], [part], {"100": schedule}, [old], found)
+    [new] = anime_events.assemble([fresh], [part], {"100": schedule}, [old], found).seasons
 
     assert new.episodes[4] == Episode(5, aired, EpisodeTiming.EXACT)  # not the moment of the check
     assert first_check_after_the_return(old.episodes, new.episodes, RESTORED - timedelta(days=1), found) == ["anime:1:s1:e5:out"]

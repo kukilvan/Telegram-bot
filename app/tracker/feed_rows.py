@@ -167,7 +167,8 @@ def season_pieces(
     title: FeedTitle, seasons: Iterable[Season], gap: timedelta, tz: tzinfo | None, today: date
 ) -> list[Piece]:
     """The dated episodes of a series or an anime from today on: one piece per part of a season and day. The parts are
-    the card's: given entries of an anime, cuts by the owner's break for a series."""
+    the card's: given entries of an anime, cuts by the owner's break for a series. The approximate premiere of an anime
+    part stands on the last day of its period with its label («январь 2027»), while that day is today or later."""
     pieces = []
     for season in seasons:
         if not season.episodes:
@@ -176,6 +177,10 @@ def season_pieces(
         for part in season.parts(gap):
             days: dict[date, list[tuple[int, time | None]]] = {}
             for episode in part.episodes:
+                if episode.rough is not None and episode.rough.end >= today:  # an approximate premiere: «Позже» only
+                    text = part_text(season.number, part, first, [episode.number])
+                    order = (season.number, episode.number)
+                    pieces.append(Piece(title, episode.rough.end, None, order, text, episode.rough.label))
                 if episode.air_at is None:
                     continue
                 day, at = day_of(episode, tz)

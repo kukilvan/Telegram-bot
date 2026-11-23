@@ -145,7 +145,7 @@ ENTRY_QUERY = """
 query Entries($ids: String!) {
   animes(ids: $ids, limit: 50) {
     id malId name russian english kind status episodes episodesAired nextEpisodeAt duration
-    airedOn { date year } releasedOn { date } franchise
+    airedOn { date year month day } releasedOn { date } franchise
     poster { originalUrl } genres { russian kind }
     related { relationKind relationText anime { id kind } }
   }
@@ -253,7 +253,7 @@ class ShikimoriClient:
             episodes
             episodesAired
             nextEpisodeAt
-            airedOn { date year }
+            airedOn { date year month day }
             franchise
             poster { originalUrl }
           }
@@ -294,7 +294,7 @@ class ShikimoriClient:
             episodes
             episodesAired
             nextEpisodeAt
-            airedOn { date year }
+            airedOn { date year month day }
             franchise
           }
         }
@@ -321,7 +321,7 @@ class ShikimoriClient:
             episodes
             episodesAired
             nextEpisodeAt
-            airedOn { date }
+            airedOn { date year month day }
             franchise
           }
         }

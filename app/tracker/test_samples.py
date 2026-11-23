@@ -14,7 +14,7 @@ from enum import StrEnum
 from typing import Any
 
 from app.tracker import (
-    anime_events, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, russian_events,
+    anime_samples, backup_events, failures, follow_ups, game_events, login_events, movie_events, price_events, russian_events,
     sequel_events, series_events, series_messages,
 )
 from app.tracker.moment_words import format_weekday_date
@@ -117,7 +117,7 @@ class TestSamples:
             movie_events.TEST_SAMPLES
             + sequel_events.TEST_SAMPLES
             + series_messages.TEST_SAMPLES
-            + anime_events.TEST_SAMPLES
+            + anime_samples.TEST_SAMPLES
             + game_events.TEST_SAMPLES
             + follow_ups.TEST_SAMPLES
             + failures.TEST_SAMPLES

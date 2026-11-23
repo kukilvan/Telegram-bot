@@ -56,6 +56,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/startup_report.py` — Whether a failure before the start is reported to the owner, and the record of it in `data/startup_failure.json`.
 - `app/tracker/actions.py` — Buttons under a message or a card: the core decides which ones, the bot turns them into Telegram buttons.
 - `app/tracker/anime_events.py` — Anime events: the episodes the two sources agree on, and the films of a franchise.
+- `app/tracker/anime_samples.py` — The samples of the anime events for «Тестовое событие» (pure): one message of each kind, with an hour on a sample clock.
 - `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the messages of both places (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
 - `app/tracker/backup_rows.py` — What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
 - `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
@@ -111,6 +112,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/migrations/versions/0015_issued_ids.py` — The table `issued_ids` (spec 5 of stage 9.1a, KI-24): the last number given to a title, so a deleted title's number never comes back.
 - `app/tracker/migrations/versions/0016_drop_failure_notified_at.py` — The column `titles.failure_notified_at` goes (spec 4.4 of stage 9.1a, KI-45).
 - `app/tracker/migrations/versions/0017_episode_timing.py` — The column `episodes.timing`: where the stored moment of an episode comes from (spec 1.1 and 11 of stage 9.1c, KI-28, KI-32, KI-77).
+- `app/tracker/migrations/versions/0018_anime_check_now.py` — Data only: the Shikimori snapshot of every anime title is due at the moment of the migration (spec 4.6 and 12 of stage 9.1d, KI-81).
 - `app/tracker/models.py` — Tables of the tracker database: titles, seasons, episodes, snapshots, events, the delivery queue, settings, game platforms, prices, the inbox and the last number given to a title.
 - `app/tracker/moment_words.py` — Dates and moments in words for the owner (pure): «15 декабря 2026», «пн, 12 окт», «сегодня в 07:58», «вчера в 18:32».
 - `app/tracker/movie_events.py` — Movie events: what changed between two snapshots, how the message reads, how soon to look again.
@@ -146,6 +148,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/sequel_events.py` — Sequel announcements for an archived movie: what is new in its collection, how the message reads.
 - `app/tracker/series_events.py` — Series events: what changed between two looks at a series and how soon to look again; the texts are `series_messages`.
 - `app/tracker/series_messages.py` — The texts of the series events and their samples (pure): the message of each event, the `Flavor` that makes an anime read as itself, and the samples of «Тестовое событие».
+- `app/tracker/series_moves.py` — The move of the next episode of a series or an anime between two looks, and the key of its event (pure).
 - `app/tracker/settings_store.py` — The owner's settings in the `settings` table: the break that splits a season into parts, the delivery rules, the time zone, the platforms of the games and the country of the stores.
 - `app/tracker/sources/anilist_schedule.py` — AniList adapter for anime: the airing schedule of one source entry (a season, or a part of it).
 - `app/tracker/sources/dates.py` — Reading a date from text: two readers, and which one to use depends on who wrote the text.

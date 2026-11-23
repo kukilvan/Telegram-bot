@@ -1,5 +1,7 @@
 """Series events: what changed between two looks at a series and how soon to look again; the texts are `series_messages`.
 
+The move of the next episode is found by `series_moves`.
+
 Pure functions, no database and no network. Moments are naive UTC, like everywhere in the tracker.
 
 The six events: season date announced, season started, episode out, season ended, next episode moved,
@@ -23,7 +25,7 @@ has its start and end told per part: «началась часть 2 сезон�
 such a season carry the part (`s3:p1:ended`); a season without a break keeps the keys and texts it always had.
 """
 
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable
 from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from typing import Any
@@ -40,6 +42,7 @@ from app.tracker.movie_events import (
 )
 from app.tracker.models import EpisodeTiming
 from app.tracker.seasons import DEFAULT_PART_GAP, RELEASED as SEASON_RELEASED, Episode, Part, Season
+from app.tracker.series_moves import moment_key, moved as moved_episode
 from app.tracker.series_messages import (
     CANCELED_STATUS,
     ENDED_STATUS,
@@ -106,7 +109,10 @@ def _keep_season(new: Season, old: Season) -> Season:
     if not new.episodes:
         return replace(new, expected=expected, episodes=old.episodes, cuts=cuts)
     known = {e.number: e for e in old.episodes}  # a stored episode is taken whole: its moment and where it came from
-    episodes = tuple(known[e.number] if e.air_at is None and e.number in known else e for e in new.episodes)
+    # an approximate premiere is the source's word, not a gap: it replaces a stored (made-up) day, with no message
+    episodes = tuple(
+        known[e.number] if e.air_at is None and e.rough is None and e.number in known else e for e in new.episodes
+    )
     return replace(new, expected=expected, episodes=episodes, cuts=cuts)
 
 
@@ -114,11 +120,14 @@ def _episode(season: Season, number: int) -> Episode | None:
     return next((e for e in season.episodes if e.number == number), None)
 
 
-def _newly_out(old: Season | None, new: Season, observed_at: datetime, now: datetime) -> list[int]:
+def _newly_out(
+    old: Season | None, new: Season, observed_at: datetime, now: datetime, late: Collection[tuple[int, int]] = ()
+) -> list[int]:
     """Numbers of the episodes whose moment came after the previous look.
 
     An episode the source lists for the first time with a date already behind the previous look is a
-    backfill of history, not an event."""
+    backfill of history, not an event — unless it is `late`: an anime episode found out now with an airing behind the
+    previous look (KI-83, `anime_events.Assembled`)."""
     out = []
     for episode in new.episodes:
         if episode.air_at is None or episode.air_at > now:
@@ -127,7 +136,7 @@ def _newly_out(old: Season | None, new: Season, observed_at: datetime, now: date
         if before is not None:
             was_out = before.air_at is not None and before.air_at <= observed_at
         else:
-            was_out = episode.air_at <= observed_at
+            was_out = episode.air_at <= observed_at and (new.number, episode.number) not in late
         if not was_out:
             out.append(episode.number)
     return sorted(out)
@@ -170,10 +179,11 @@ def _season_events(
     now: datetime,
     gap: timedelta,
     flavor: Flavor,
+    late: Collection[tuple[int, int]] = (),
 ):
     events: list[DetectedEvent] = []
     number = new.number
-    came = _newly_out(old, new, observed_at, now)
+    came = _newly_out(old, new, observed_at, now, late)
     # an anime season is known by the entry it starts with: its number may move, its keys must not
     season_key = f"{prefix}:src{new.source_id}" if new.source_id else f"{prefix}:s{number}"
     parts = new.parts(gap)
@@ -190,7 +200,7 @@ def _season_events(
                 events.append(
                     DetectedEvent(
                         DATE_ANNOUNCED,
-                        f"{season_key}:date_announced",
+                        _announced_key(f"{season_key}:date_announced", old, None, observed_at),
                         message_announced(name, number, premiere, None, flavor),
                         {"season": number, "date": premiere.air_at.date().isoformat()},
                     )
@@ -206,18 +216,18 @@ def _season_events(
                 events.append(
                     DetectedEvent(
                         DATE_ANNOUNCED,
-                        f"{season_key}:p{part.number}:date_announced",
+                        _announced_key(f"{season_key}:p{part.number}:date_announced", old, part.numbers, observed_at),
                         message_announced(name, number, premiere, part.number, flavor),
                         {"season": number, "part": part.number, "date": premiere.air_at.date().isoformat()},
                     )
                 )
 
-    moved = _moved(old, new, observed_at, now)
+    moved = moved_episode(old, new, observed_at, now, flavor)
     if moved is not None:
         episode, old_at, new_at = moved
         part = next(p for p in parts if episode in p.numbers)
         premiere = episode == min(part.numbers) and part.released(now) == 0
-        earlier_key = f"{season_key}:e{episode}:moved:{_moment_key(new_at.air_at)}"
+        earlier_key = f"{season_key}:e{episode}:moved:{moment_key(new_at.air_at)}"
         events.append(
             DetectedEvent(
                 DATE_MOVED,
@@ -309,6 +319,15 @@ def _part_events(
     return events
 
 
+def _announced_key(key: str, old: Season | None, numbers: frozenset[int] | None, observed_at: datetime) -> str:
+    """The key of «объявлена дата»: the plain one, or — when the previous look had an approximate premiere for the
+    season (`numbers` None) or the part — the one seen from that look, so a message about a made-up day sent before 9.1d
+    under the plain key does not swallow the real day (spec 4.4 of 9.1d)."""
+    if old is not None and any(e.rough is not None and (numbers is None or e.number in numbers) for e in old.episodes):
+        return moved_key(key, observed_at)
+    return key
+
+
 def _aired_at(season: Season, number: int) -> datetime | None:
     """When the episode came out, for an event about it: its exact moment or 00:00 UTC of its day; None when the moment
     is unknown (the moment of the check that found it, KI-77)."""
@@ -316,39 +335,6 @@ def _aired_at(season: Season, number: int) -> datetime | None:
     if episode is None or episode.timing == EpisodeTiming.UNKNOWN:
         return None
     return episode.air_at
-
-
-def _moment_key(moment: datetime) -> str:
-    """The day for a source that knows only the day (midnight), the day and the minute for one that knows the hour,
-    so that a second move of an episode within the same day is a new fact."""
-    if moment.time() == datetime.min.time():
-        return moment.date().isoformat()
-    return moment.strftime("%Y-%m-%dT%H%M")
-
-
-def _only_the_hour_learned(before: Episode, after: Episode) -> bool:
-    """A day-only date that a finer source has now given an hour on the same day: nothing was moved. (An exact moment
-    at 00:00 UTC is a moment: a change of it is a move.)"""
-    return before.timing == EpisodeTiming.DAY and before.air_at.date() == after.air_at.date()
-
-
-def _moved(
-    old: Season | None, new: Season, observed_at: datetime, now: datetime
-) -> tuple[int, Episode, Episode] | None:
-    """The next dated episode of the previous look that is still ahead, when its date changed.
-
-    An episode that has come out meanwhile is skipped: it is reported as out, and the move of the one after
-    it is still news."""
-    if old is None:
-        return None
-    for before in sorted((e for e in old.episodes if e.air_at is not None and e.air_at > observed_at), key=lambda e: e.number):
-        current = _episode(new, before.number)
-        if current is None or current.air_at is None or current.air_at <= now:
-            continue
-        if current.air_at == before.air_at or _only_the_hour_learned(before, current):
-            return None
-        return before.number, before, current
-    return None
 
 
 def detect_events(
@@ -360,17 +346,21 @@ def detect_events(
     now: datetime,
     gap: timedelta = DEFAULT_PART_GAP,
     flavor: Flavor = SERIES,
+    late: Collection[tuple[int, int]] = (),
 ) -> list[DetectedEvent]:
     """Events between the previous look (taken at `observed_at`) and the new one (taken at `now`).
 
     `new` must already keep what the source dropped (`ShowState.keeping_known`). `gap` is the owner's break
-    between two episodes after which a season counts as two parts; `flavor` says whose events these are.
+    between two episodes after which a season counts as two parts; `flavor` says whose events these are; `late` the
+    (season, episode) an anime found out late (KI-83: news though behind the previous look; series pass nothing).
     """
     prefix = f"{flavor.key_prefix}:{title_id}"
     before = {s.number: s for s in old.seasons}
     events: list[DetectedEvent] = []
     for season in new.seasons:
-        events.extend(_season_events(prefix, name, before.get(season.number), season, observed_at, now, gap, flavor))
+        events.extend(
+            _season_events(prefix, name, before.get(season.number), season, observed_at, now, gap, flavor, late)
+        )
 
     if new.status in _CLOSED_STATUSES and old.status is not None and old.status not in _CLOSED_STATUSES:
         last = max((s.number for s in new.seasons), default=None)

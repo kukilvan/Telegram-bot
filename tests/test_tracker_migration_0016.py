@@ -82,7 +82,7 @@ def test_an_empty_database_has_no_column_and_a_second_run_changes_nothing(engine
     migrate(engine)
     migrate(engine)
 
-    assert "failure_notified_at" not in columns(engine) and version(engine) == "0017"
+    assert "failure_notified_at" not in columns(engine) and version(engine) == "0018"
 
 
 def test_the_column_goes_and_the_titles_and_their_children_keep_every_row(engine):

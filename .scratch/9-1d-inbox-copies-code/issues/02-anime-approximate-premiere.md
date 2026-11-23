@@ -1,6 +1,6 @@
 # 02: Anime — the approximate premiere, late airings, hour moves — KI-81, KI-83, KI-84
 
-Status: open
+Status: in review
 Complexity: complex (a migration, a new timing through storage, events, cards, Лента and export; changed event detection)
 Blocked by: 01
 

@@ -45,6 +45,14 @@ class EpisodeTiming(StrEnum):
     EXACT = "exact"  # the source named the moment: the day and the hour on the owner's clock
     DAY = "day"  # the source knows the day only, stored as 00:00 UTC of it: the stored date as it is, no hour
     UNKNOWN = "unknown"  # the source gave no moment: the moment of the check that found it, or the start day of its entry
+    # the premiere of an announced anime entry known only by its month or year (spec 4.2 of 9.1d): stored at 00:00 UTC
+    # of the first day of the period, read back with no moment (`Episode.rough`); never out, no messages
+    MONTH = "month"
+    YEAR = "year"
+
+    @property
+    def approximate(self) -> bool:
+        return self in (EpisodeTiming.MONTH, EpisodeTiming.YEAR)
 
 
 def _stored_as_text(enum: type[StrEnum], length: int = 16) -> Enum:

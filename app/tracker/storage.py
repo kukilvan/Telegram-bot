@@ -1,11 +1,13 @@
 """What the parts of the core read and write together in one session: a title's seasons and episodes, its stored
 snapshots, and its status that follows from them. Helpers on a session someone else opened; the caller commits.
 
-An episode is written and read with its moment and where that moment comes from (`timing`), always together."""
+An episode is written and read with its moment and where that moment comes from (`timing`), always together. This is
+the one place an approximate premiere stub (`month`, `year`) turns into a row and back: written at 00:00 UTC of the first
+day of its period, read with no moment and its period (`Episode.rough`, spec 4.2 of 9.1d)."""
 
 import logging
 from collections.abc import Iterable, Mapping, Sequence
-from datetime import datetime
+from datetime import datetime, time
 from typing import Any
 
 from sqlalchemy import Select, select
@@ -15,6 +17,21 @@ from app.tracker import seasons as season_logic
 from app.tracker.context import PRIMARY_ROLE
 from app.tracker.kinds import is_seasonal
 from app.tracker.models import EpisodeRecord, ExternalId, PartRecord, SeasonRecord, SourceSnapshot, Title
+from app.tracker.release_dates import ReleaseDate
+
+
+def _stored_moment(episode: season_logic.Episode) -> datetime | None:
+    """The `air_at` of a row: the moment, or 00:00 UTC of the first day of an approximate premiere's period."""
+    if episode.rough is not None:
+        return datetime.combine(episode.rough.start, time.min)
+    return episode.air_at
+
+
+def _episode(row: EpisodeRecord) -> season_logic.Episode:
+    """A stored row as the rules see it: an approximate premiere has no moment, only its period."""
+    if row.timing.approximate and row.air_at is not None:
+        return season_logic.Episode(row.number, None, row.timing, ReleaseDate.of_period(row.air_at.date(), row.timing))
+    return season_logic.Episode(row.number, row.air_at, row.timing)
 
 
 def store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]) -> dict[int, SeasonRecord]:
@@ -28,7 +45,8 @@ def store_seasons(session, title_id: int, seasons: Sequence[season_logic.Season]
         session.add(record)
         session.flush()
         session.add_all(
-            EpisodeRecord(season_id=record.id, number=e.number, air_at=e.air_at, timing=e.timing) for e in season.episodes
+            EpisodeRecord(season_id=record.id, number=e.number, air_at=_stored_moment(e), timing=e.timing)
+            for e in season.episodes
         )
         records[season.number] = record
     return records
@@ -41,7 +59,7 @@ def _season(record: SeasonRecord, episodes: Iterable[EpisodeRecord], parts: Sequ
         name=record.name,
         expected=record.episode_count,
         episodes=tuple(
-            sorted((season_logic.Episode(e.number, e.air_at, e.timing) for e in episodes), key=lambda e: e.number)
+            sorted((_episode(e) for e in episodes), key=lambda e: e.number)
         ),
         cuts=tuple(season_logic.PartCut(p.first_episode, p.episode_count, p.shikimori_id) for p in parts),
         source_id=parts[0].shikimori_id if parts else None,  # the first part (smallest number) starts the season
@@ -122,11 +140,13 @@ def sync_seasons(session, title_id: int, seasons: Sequence[season_logic.Season])
         stored = {e.number: e for e in session.scalars(select(EpisodeRecord).where(EpisodeRecord.season_id == record.id))}
         for episode in season.episodes:
             if episode.number in stored:
-                stored[episode.number].air_at = episode.air_at
+                stored[episode.number].air_at = _stored_moment(episode)
                 stored[episode.number].timing = episode.timing
             else:
                 session.add(
-                    EpisodeRecord(season_id=record.id, number=episode.number, air_at=episode.air_at, timing=episode.timing)
+                    EpisodeRecord(
+                        season_id=record.id, number=episode.number, air_at=_stored_moment(episode), timing=episode.timing
+                    )
                 )
         listed = {e.number for e in season.episodes}
         for number, row in stored.items():

@@ -9,13 +9,13 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, tzinfo
 from typing import Any
 
+from app.tracker.cards import premiere_words
 from app.tracker.kinds import KINDS
 from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.moment_words import (
     NOT_ANNOUNCED,
     episode_when,
     format_date,
-    format_day_month,
     format_episode_when,
     format_short_date,
 )
@@ -90,8 +90,8 @@ def message_part_ended(name: str, part: Part, episode: int, following: Part | No
     head = f"{flavor.icon} {name} — закончилась часть {part.number} сезона {part.season}\n"
     if following is None:
         return f"{head}Вышла последняя серия — {episode}"
-    start = following.first_episode()
-    when = f"с {format_day_month(flavor.day(start))}" if start else NOT_ANNOUNCED
+    start = following.premiere()
+    when = premiere_words(start, flavor.tz) if start else NOT_ANNOUNCED
     return f"{head}Вышла последняя серия части — {episode}; часть {following.number} — {when}"
 
 
@@ -105,7 +105,10 @@ def message_moved(
     part: int | None = None,
     flavor: Flavor = SERIES,
 ) -> str:
-    days = f"{format_short_date(flavor.day(old))} → {format_short_date(flavor.day(new))}"
+    if flavor.day(old) == flavor.day(new):  # moved by hours within the day (KI-84): each side with its hour
+        days = f"{_short_when(old, flavor)} → {_short_when(new, flavor)}"
+    else:
+        days = f"{format_short_date(flavor.day(old))} → {format_short_date(flavor.day(new))}"
     if premiere and part:
         return f"{flavor.icon} {name} — премьера части {part} сезона {season} перенесена\n{days}"
     if premiere:
@@ -114,6 +117,12 @@ def message_moved(
         f"{flavor.icon} {name} — дата серии {episode} сдвинулась\n"
         f"Сезон {season} · {format_episode_when(old, flavor.tz)} → {format_episode_when(new, flavor.tz)}"
     )
+
+
+def _short_when(episode: Episode, flavor: Flavor) -> str:
+    """«9 янв 2027, 18:00»: the short date with the hour on the owner's clock where the moment has one."""
+    day, hour = episode_when(episode, flavor.tz)
+    return format_short_date(day) + (f", {hour:%H:%M}" if hour is not None else "")
 
 
 def message_closed(name: str, status: str | None, last_season: int | None, flavor: Flavor = SERIES) -> str:

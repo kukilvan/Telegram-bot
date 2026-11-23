@@ -13,7 +13,7 @@ import pytest
 
 from anime_fakes import FakeShikimori, load
 
-from app.tracker import anime_events, cards, feed_rows, series_events, series_messages
+from app.tracker import anime_events, cards, feed_rows, series_events, series_messages, series_moves
 from app.tracker.models import EpisodeTiming
 from app.tracker.seasons import Episode, PartCut, Season, SeasonAnnouncement, SeasonProgress, AIRING, RELEASED
 from app.tracker.sources.anilist_schedule import PartSchedule
@@ -224,7 +224,7 @@ def assemble(fresh, stored, schedule=None, now=NOW, **rest):
     schedules = {"100": schedule} if schedule else {}
     [season] = anime_events.assemble(
         [season_of(fresh)], [PART], schedules, [season_of(stored)] if stored is not None else None, now, **rest
-    )
+    ).seasons
     return {e.number: e for e in season.episodes}
 
 
@@ -413,8 +413,8 @@ def test_example_an_airing_found_by_a_later_check_keeps_its_hour():
 
 
 def test_the_key_of_a_move_keeps_its_midnight_rule():
-    assert series_events._moment_key(datetime(2026, 11, 25)) == "2026-11-25"
-    assert series_events._moment_key(datetime(2026, 11, 25, 14, 0)) == "2026-11-25T1400"
+    assert series_moves.moment_key(datetime(2026, 11, 25)) == "2026-11-25"
+    assert series_moves.moment_key(datetime(2026, 11, 25, 14, 0)) == "2026-11-25T1400"
 
 
 @pytest.mark.parametrize(
@@ -427,4 +427,4 @@ def test_the_key_of_a_move_keeps_its_midnight_rule():
     ],
 )
 def test_only_a_day_only_date_given_its_hour_on_the_same_day_is_no_move(before, after, learned):
-    assert series_events._only_the_hour_learned(before, after) is learned
+    assert series_moves.same_day_one_without_hour(before, after, series_messages.SERIES) is learned

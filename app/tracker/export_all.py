@@ -21,6 +21,7 @@ from app.tracker.models import (
     EpisodeRecord, ExternalId, GamePlatformRecord, InboxRecord, MovieRecord, PartRecord, PriceRecord, SeasonRecord,
     SettingRecord, Title, TitleKind,
 )
+from app.tracker.release_dates import ReleaseDate
 
 if TYPE_CHECKING:
     from app.tracker.polling import Pollers
@@ -44,6 +45,14 @@ def _by(rows, key) -> dict[int, list]:
     return grouped
 
 
+def _episode(row: EpisodeRecord, tz: tzinfo) -> dict[str, Any]:
+    """An episode: its moment; an approximate premiere has none, only its period («2027-01», «2027»; spec 4.5 of 9.1d)."""
+    if row.timing.approximate and row.air_at is not None:
+        period = ReleaseDate.of_period(row.air_at.date(), row.timing)
+        return {"number": row.number, "air_at": None, "approximate": period.text}
+    return {"number": row.number, "air_at": moment_text(row.air_at, tz)}
+
+
 def _seasons(session, tz: tzinfo) -> dict[int, list[dict[str, Any]]]:
     """The seasons of every title with their episodes and parts: title number → seasons by number."""
     episodes = _by(session.scalars(select(EpisodeRecord).order_by(EpisodeRecord.season_id, EpisodeRecord.number)),
@@ -55,7 +64,7 @@ def _seasons(session, tz: tzinfo) -> dict[int, list[dict[str, Any]]]:
         seasons[s.title_id].append({
             "number": s.number, "name": s.name, "episode_count": s.episode_count, "watched": s.watched,
             "score": _label(s.score),
-            "episodes": [{"number": e.number, "air_at": moment_text(e.air_at, tz)} for e in episodes.get(s.id, [])],
+            "episodes": [_episode(e, tz) for e in episodes.get(s.id, [])],
             "parts": [
                 {"number": p.number, "first_episode": p.first_episode, "episode_count": p.episode_count}
                 for p in parts.get(s.id, [])

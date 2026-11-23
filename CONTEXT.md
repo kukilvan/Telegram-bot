@@ -39,9 +39,9 @@ _Avoid_: cour, Part как отдельный сезон
 In code: `part`.
 
 **Серия** (episode):
-The number of an episode inside a season, as in the source. The bot does not track watching single episodes, only their release. Its moment is known in one of three ways: «точное время» (the source named the moment: the day and the hour on the owner's clock), «только день» (the source knows the day: the date as the source gives it, no hour) or «неизвестно» (no moment from the source: the moment of the check that found it, or the start day of its entry; the day, no hour, and no news after «Вернуть в список»).
+The number of an episode inside a season, as in the source. The bot does not track watching single episodes, only their release. Its moment is known in one of three ways: «точное время» (the source named the moment: the day and the hour on the owner's clock), «только день» (the source knows the day: the date as the source gives it, no hour) or «неизвестно» (no moment from the source: the moment of the check that found it, or the start day of its entry; the day, no hour, and no news after «Вернуть в список»). The first episode of an announced anime season or part whose premiere the source knows only by the month or the year has no moment at all: it holds the «Примерная дата» of the premiere and is never out.
 _Avoid_: эпизод
-In code: `episode`; where its moment comes from — `EpisodeTiming` (`episodes.timing`).
+In code: `episode`; where its moment comes from — `EpisodeTiming` (`episodes.timing`); the approximate premiere — `EpisodeTiming.MONTH`/`YEAR` with `Episode.rough`.
 
 ## Statuses and archive
 
@@ -150,9 +150,9 @@ _Avoid_: альфа, бета, предзаказ (not early access)
 In code: `early access` (date kind — `early`; full release — `full`).
 
 **Примерная дата** (approximate date):
-A game's release date without a day: month, quarter or year («март 2027», «4 квартал 2026», «2027»). Visible in the card and in «Позже» but gives no messages: messages come only about an exact day.
+A game's release date without a day: month, quarter or year («март 2027», «4 квартал 2026», «2027»); also the premiere of an anime season or part known by the month or the year («в январе 2027» in the card, «январь 2027» in «Позже»). Visible in the card and in «Позже» but gives no messages: messages come only about an exact day.
 _Avoid_: неточная дата, TBD (that is "date not announced")
-In code: `ReleaseDate` without a day.
+In code: `ReleaseDate` without a day (`release_dates`; `label` alone, `phrase` inside a sentence); for an anime premiere `EpisodeTiming.MONTH`/`YEAR` and `Episode.rough`.
 
 **Дата вне страны** (date outside the country):
 A release date of a game in a region that is not the store country's (Japan, Australia…). It is not a release for the owner: no message, no piece of the Feed, no effect on the check interval. The card shows it in a line of its own after the platforms («в Японии — 12 марта 2027») when it ends earlier than the platform's own date.
