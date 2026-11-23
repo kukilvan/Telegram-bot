@@ -60,7 +60,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/backup_events.py` — The event «copy not made» (pure): the reasons, the messages of both places (on this PC, to Google Drive), the once-a-day key and the samples of «Тестовое событие».
 - `app/tracker/backup_rows.py` — What the owner reads about the copies (pure): the lines of the Settings block and the notice after «Сделать копию сейчас».
 - `app/tracker/backups.py` — The copies of the database for the owner: the Settings block, «Сделать копию сейчас» and the hourly job, with the report of a failed daily copy.
-- `app/tracker/candidate_words.py` — The word lists of the candidate rules (pure): kind words, name markers and the names that are never a title.
+- `app/tracker/candidate_words.py` — The word lists of the candidate rules (pure): kind words, name markers, the names that are never a title and the common capitalised words.
 - `app/tracker/candidates.py` — Name candidates of an inbox item and the links of sources it carries (spec 3 and 4 of stage 6.4), pure: no database, no network, no clock.
 - `app/tracker/cards.py` — Text card of a title: what the owner reads in the bot, and the views of its parts.
 - `app/tracker/checks.py` — Whether a check of a title still runs: the one rule every write of a poll asks before it queues what it found.
@@ -152,6 +152,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/tracker/settings_store.py` — The owner's settings in the `settings` table: the break that splits a season into parts, the delivery rules, the time zone, the platforms of the games and the country of the stores.
 - `app/tracker/sources/anilist_schedule.py` — AniList adapter for anime: the airing schedule of one source entry (a season, or a part of it).
 - `app/tracker/sources/dates.py` — Reading a date from text: two readers, and which one to use depends on who wrote the text.
+- `app/tracker/sources/igdb_companies.py` — The companies of IGDB asked about the candidates of an inbox item (pure): the text of the request and which names the answer says are companies (7.3 of stage 9.1d).
 - `app/tracker/sources/igdb_follow_ups.py` — IGDB adapter of the follow-up check: one request a game for its expansions and the games of its series, parsed into a `FollowUpsSnapshot`.
 - `app/tracker/sources/igdb_games.py` — IGDB adapter for games: search suggestions and the game snapshot, with the Russian texts of Steam when a game is added.
 - `app/tracker/sources/shikimori_anime.py` — Shikimori adapter for anime: search suggestions and the source of the tracker core.

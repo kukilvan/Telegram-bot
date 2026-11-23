@@ -210,7 +210,7 @@ def test_a_source_failing_before_the_first_offer_ends_with_source_failed(tracker
 
 
 def test_a_source_failing_after_the_first_offer_is_only_logged(tracker, clients, caplog):
-    clients.igdb.fail_from = 2
+    clients.igdb.fail_from = 3  # the first request is the one about the companies
 
     with caplog.at_level(logging.WARNING):
         item, reply = analysed(tracker, samples()[5], GAME)

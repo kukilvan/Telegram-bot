@@ -17,14 +17,14 @@ EXPECTED = {
     1: ("Ghost in the SQL Data", 14, []),
     2: ("Dead-End Job", 14, [("Игры в кальмара", 3), ("Разделения", 0.5)]),
     3: ("Petit Planet", 6, [("Animal Crossing от HoYoverse", 4), ("Геншине", 0.5)]),
-    4: ("Death Stranding: Isolations", 14, [("E&H production", 1)]),
+    4: ("Death Stranding: Isolations", 14, [("Сэмом", 2), ("E&H production", 1)]),  # 9.1d: a middle name, weight 2
     5: ("Phantom Blade Zero", 10, [("Black Myth: Wukong", 6), ("Elden Ring", 6)]),
     6: ("Блич", 4, []),
     7: ("EXODUS", 10, [("Mass Effect", 5)]),
     8: ("Silent Hill: Townfall", 10, []),
     9: ("Alien: Isolation 2", 10, []),
     10: ("The Wolf Among Us Remastered", 10, []),
-    11: ("Fishy", 24, [("Scary Baboon", 6), ("Enver", 2), ("Animal Company", 1)]),
+    11: ("Fishy", 24, [("Scary Baboon", 6), ("Enver", 2), ("России", 2), ("Animal Company", 1)]),  # 9.1d: «России»
     12: ("Fabula Rasa", 18, [("Pixel Ripped", 6), ("XR Experience", 6), ("Best of Tech", 6),
                               ("Miami Filmgate Interactive", 6), ("Arvore Immersive", 1), ("SXSW", 1)]),
     13: ("Магия вернувшегося должна быть особенной", 50, [("kikansha no mahou", 50)]),
@@ -184,7 +184,7 @@ def test_a_run_joins_words_with_a_colon_a_dash_and_inner_hyphens():
     assert "Sonic - Mania Plus" in names("Хочу Sonic - Mania Plus" + PAD)
     assert "Tom Clancy's Rainbow Six" in names("Хочу Tom Clancy's Rainbow Six" + PAD)
     assert "Alien: Isolation 2" in names("Хочу Alien: Isolation 2" + PAD)
-    assert rest("Вышел Bleach: 3 вот") == ["Bleach"]  # a bare number after a colon is no part of the name
+    assert rest("Вышел Bleach: 3 вот") == ["Bleach: 3"]  # a number after a colon joins the name (KI-60)
 
 
 def test_a_quote_weighs_3_plus_1_at_the_start_of_the_first_line_and_half_after_a_marker():
@@ -205,15 +205,15 @@ def test_a_quote_is_1_to_80_characters_and_a_latin_run_inside_it_belongs_to_it()
 
 def test_a_cyrillic_name_after_a_kind_word_weighs_5():
     assert pairs(later("Вышел сериал Игра престолов, второй сезон")) == [("Игра престолов", 5)]
-    assert pairs(later("Вышла игра Ведьмак Три: Дикая охота")) == [("Ведьмак Три", 5)]
+    assert pairs(later("Вышла игра Ведьмак Три: Дикая охота")) == [("Ведьмак Три", 5), ("Дикая", 2)]  # the rest: a middle name
     assert pairs(later("Вышел фильм Дюна часть вторая большая новая")) == [("Дюна часть вторая большая новая", 5)]
     assert pairs(later("Вышел фильм Дюна один два три четыре пять шесть семь")) == [("Дюна один два три четыре пять", 5)]
 
 
 def test_a_cyrillic_name_needs_a_capital_and_a_kind_word_right_before_it():
     assert rest("Вышла игра очень хорошая и всё тут вообще") == []
-    assert rest("Вышел сериал, Дюна по нему и тут слова") == []
-    assert rest("Вышла хорошая Дюна и тут слова") == []
+    assert pairs(later("Вышел сериал, Дюна по нему и тут слова")) == [("Дюна", 2)]  # no kind word: only a middle name
+    assert pairs(later("Вышла хорошая Дюна и тут слова")) == [("Дюна", 2)]
     assert weight(later("Вышел сериал Dune тут и ещё слова слова"), "Dune") == 9  # a Latin name is the Latin rule's
 
 

@@ -21,6 +21,7 @@ from app.tracker.sources.tmdb_movies import TmdbMovieSource
 from app.tracker.sources.tmdb_series import TmdbSeriesSource
 
 ANSWERS = json.loads((Path(__file__).parent / "fixtures" / "inbox" / "answers.json").read_text(encoding="utf-8"))
+COMPANIES = json.loads((Path(__file__).parent / "fixtures" / "igdb" / "companies.json").read_text(encoding="utf-8"))["answer"]
 SAMPLES_FILE = Path(__file__).parent / "fixtures" / "inbox_samples.md"
 NOW = datetime(2026, 11, 5, 12, 0, tzinfo=timezone.utc)  # the day the answers were saved
 
@@ -143,6 +144,14 @@ class FakeIgdb(_Fake):
         return [record] if record else []
 
 
+    async def companies(self, body):
+        """`/companies` on the saved answers: the companies whose name is one of the quoted names of the request
+        (`~` of IGDB is equality without case); the request is noted as it came."""
+        self._note(f"companies:{body}")
+        asked = {name.casefold() for name in re.findall(r'name ~ "(.*?)"', body)}
+        return [company for company in COMPANIES if company["name"].casefold() in asked]
+
+
 class FakeSteam(_Fake):
     service = "steam"
 
@@ -173,6 +182,7 @@ class Clients:
 
 
 def tracker_on(clients: Clients, url: str = "sqlite://", clock=lambda: NOW) -> Tracker:
+    games = IgdbGameSource(clients.igdb, clients.steam)
     return Tracker(
         create_session_factory(url),
         clock=clock,
@@ -181,7 +191,8 @@ def tracker_on(clients: Clients, url: str = "sqlite://", clock=lambda: NOW) -> T
             TitleKind.MOVIE: TmdbMovieSource(clients.tmdb),
             TitleKind.SERIES: TmdbSeriesSource(clients.tmdb),
             TitleKind.ANIME: ShikimoriAnimeSource(clients.shikimori),
-            TitleKind.GAME: IgdbGameSource(clients.igdb, clients.steam),
+            TitleKind.GAME: games,
         },
         imdb_source=TmdbFindSource(clients.tmdb),
+        company_source=games,
     )

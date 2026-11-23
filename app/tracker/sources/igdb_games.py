@@ -15,6 +15,7 @@ Russian says «no Russian», no list says nothing (`russian_support`).
 
 import html
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -25,6 +26,7 @@ from app.tracker.models import TitleKind
 from app.tracker.platforms import IGDB_LABELS, NO_REGION
 from app.tracker.russian import Support
 from app.tracker.sources.dates import response_day_of_timestamp
+from app.tracker.sources.igdb_companies import askable, companies_query, company_keys
 from app.tracker.sources.tmdb_movies import Suggestion
 
 SOURCE_KEY = "igdb"
@@ -326,6 +328,15 @@ class IgdbGameSource:
         one, none for an app IGDB does not know. Goes at once."""
         self._check_keys()
         return parse_records(await self._provider.games(BY_STEAM_QUERY.format(uid=int(app_id)), at_once=True))
+
+    async def companies(self, names: Sequence[str]) -> frozenset[str]:
+        """The name keys of those `names` that are companies of IGDB (`igdb_companies`), in one request that goes at
+        once; none to ask (a name with a quote is not asked) — no request."""
+        self._check_keys()
+        asked = list(dict.fromkeys(name for name in names if askable(name)))
+        if not asked:
+            return frozenset()
+        return company_keys(asked, await self._provider.companies(companies_query(asked)))
 
     async def steam_name(self, app_id: str) -> str | None:
         """The name Steam gives its app (`appdetails`): what the bot searches by when IGDB does not know the number.

@@ -3,20 +3,20 @@ no network, no clock.
 
 The rules pick the names that may be the title out of what the owner sent: cleaning line by line, the kinds of
 candidates with their weights (a name message, an episode line, a bold piece, a Latin run, a quote, a Cyrillic name after
-a kind word, the fallback of the first line), the stop list, merging into a longer name, the years, and the query
-«Найти» searches by. One name key (`name_key`) compares every two names here. The links of an item are read into typed
-values here; looking them up is the work of `offers`.
+a kind word, a capitalised Russian name in the middle of a sentence, the fallback of the first line), the stop list,
+merging into a longer name, the years, and the query «Найти» searches by. One name key (`name_key`) compares every two
+names here. The links of an item are read into typed values here; looking them up is the work of `offers`.
 
-Counting: a weight is added to a name every time a rule finds it. A name found again in the text by a Latin run, a quote
-or a Cyrillic name after a kind word adds 2 per extra time; a bold piece, a name message, an episode head, a slug and
-the fallback are the same occurrence as the text they come from and add only their weight.
+Counting: a weight is added to a name every time a rule finds it. A name found again in the text by a Latin run, a quote,
+a Cyrillic name after a kind word or a middle name adds 2 per extra time; a bold piece, a name message, an episode head,
+a slug and the fallback are the same occurrence as the text they come from and add only their weight.
 """
 
 import re
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-from app.tracker.candidate_words import KIND_WORDS, MARKERS, STOP_NAMES
+from app.tracker.candidate_words import COMMON_WORDS, KIND_WORDS, MARKERS, STOP_NAMES
 from app.tracker.models import TitleKind
 from app.tracker.text import key
 
@@ -24,9 +24,10 @@ NAME_MESSAGE_WORDS = 8  # a name message is one line of at most this many words;
 QUERY_LENGTH = 60  # characters of the text «Найти» searches by when no candidate was found, cut at a word
 MAX_LINKS = 3  # links of sources an item reads
 MAX_CYRILLIC_WORDS = 6
+MAX_MIDDLE_WORDS = 4  # a run of capitalised Russian words in the middle of a sentence
 
-WHOLE, EPISODE_HEAD, SLUG, BOLD, QUOTE, QUOTE_AFTER_MARKER, LATIN, CYRILLIC, FALLBACK = (
-    100, 50, 50, 8, 3, 0.5, 6, 5, 1,
+WHOLE, EPISODE_HEAD, SLUG, BOLD, QUOTE, QUOTE_AFTER_MARKER, LATIN, CYRILLIC, MIDDLE, FALLBACK = (
+    100, 50, 50, 8, 3, 0.5, 6, 5, 2, 1,
 )
 FIRST_LINE_BONUS = 4  # a Latin run, or a quote that starts the line
 AFTER_KIND_WORD_BONUS = 4
@@ -42,9 +43,12 @@ _SCORE_LINE = re.compile(r"\d+(?:[.,]\d+)?\s*/\s*10\b|\b(?:бал|балл|ба�
 _YEAR = re.compile(r"(?<!\d)(19[5-9]\d|20\d\d)(?!\d)")
 
 _LATIN_WORD = r"[A-Za-z0-9][A-Za-z0-9'’.&+]*(?:-[A-Za-z0-9'’]+)*"
-# words join by a space, `: ` (not before a bare number: «Bleach: 3 серия») and ` - `
-_LATIN_RUN = re.compile(rf"{_LATIN_WORD}(?:(?::\s+(?!\d+(?!\w))|\s+[-–]\s+|\s+){_LATIN_WORD})*")
+_EPISODE_WORD = r"(?i:сери|сері|епізод|эпизод|episode|ep(?![A-Za-z]))"
+# words join by a space, `: ` (a number joins too, «Fallout: 76», unless an episode word follows it: «Bleach: 3 серия»)
+# and ` - `
+_LATIN_RUN = re.compile(rf"{_LATIN_WORD}(?:(?::\s+(?!\d+\s*{_EPISODE_WORD})|\s+[-–]\s+|\s+){_LATIN_WORD})*")
 _LATIN_WORDS = re.compile(_LATIN_WORD)
+_FROM = re.compile(r"from(?::\s+|\s+[-–]\s+|\s+)", re.I)
 _QUOTE = re.compile(r"[«\"“„]([^«»\"“”„]{1,80})[»\"”“]")
 _EPISODE_HEAD = re.compile(r"^(.+?):\s*\d+\s*(?:сери\w*|сері[яюї]\w*|епізод\w*|эпизод\w*)", re.I)
 _PLATFORM_WORD = re.compile(r"xbox|nintendo|playstation|ps\d+|switch", re.I)
@@ -53,6 +57,11 @@ _SHOP_WORD = re.compile(r"steam|quest", re.I)  # dropped as the start of a run o
 _AFTER_KIND_WORD = re.compile(rf"\b(?:{KIND_WORDS})\s*$", re.I)
 _AFTER_MARKER = re.compile(rf"\b(?:{MARKERS})\s*$", re.I)
 _CYRILLIC_NAME = re.compile(rf"\b(?:{KIND_WORDS})\s+((?-i:[А-ЯЁІЇЄҐ])[^.,!?:;—–(]*)", re.I)
+# a capitalised Russian word, then lower case: «АНОНС» is no name; a run is such words one space apart
+_CAPITAL_WORD = r"[А-ЯЁІЇЄҐ](?:[а-я\u0451іїєґ]|['’ʼ](?=[а-я\u0451іїєґ]))+"
+_CAPITAL_RUN = re.compile(rf"(?<!\w){_CAPITAL_WORD}(?: {_CAPITAL_WORD})*(?!\w)")
+_CAPITAL_WORDS = re.compile(_CAPITAL_WORD)
+_SENTENCE_START = re.compile(r"(?:^|[.!?…])[\W_]*$")  # nothing but emoji, dashes, quotes and spaces after a stop
 
 @dataclass(frozen=True)
 class Candidate:
@@ -83,6 +92,7 @@ def name_key(name: str) -> str:
 
 
 _STOP_KEYS = frozenset(name_key(name) for name in STOP_NAMES)
+_COMMON_KEYS = frozenset(name_key(word) for word in COMMON_WORDS)
 
 
 def years(text: str) -> tuple[int, ...]:
@@ -149,7 +159,7 @@ class _Pool:
         return sorted(found, key=lambda c: (-c.weight, c.first))
 
 
-def _scan_line(pool: _Pool, line: str, at: int, first_line: bool) -> None:
+def _scan_line(pool: _Pool, line: str, at: int, first_line: bool, bold_spans: list[tuple[int, int]] | tuple = ()) -> None:
     head = _EPISODE_HEAD.match(line)
     if head:
         pool.add(head.group(1), EPISODE_HEAD, at, again=False)
@@ -165,17 +175,51 @@ def _scan_line(pool: _Pool, line: str, at: int, first_line: bool) -> None:
     for run in _LATIN_RUN.finditer(line):
         if any(start <= run.start() < end for start, end in spans):
             continue
-        weight = _latin_weight(line, run, first_line)
+        text, start = _without_from(run.group(0), run.start())
+        weight = _latin_weight(line, text, start, first_line) if text else None
         if weight is not None:
-            pool.add(run.group(0), weight, at + run.start())
+            pool.add(text, weight, at + start)
+    blocked = [*spans, *((start - at, end - at) for start, end in bold_spans)]  # what other rules have: no middle name
     for named in _CYRILLIC_NAME.finditer(line):
         words = named.group(1).split()[:MAX_CYRILLIC_WORDS]
         pool.add(" ".join(words), CYRILLIC, at + named.start(1))
+        blocked.append((named.start(1), named.start(1) + len(" ".join(words))))
+    for text, start in _middle_names(line, blocked):
+        pool.add(text, MIDDLE, at + start)
 
 
-def _latin_weight(line: str, run: re.Match, first_line: bool) -> float | None:
+def _middle_names(line: str, blocked: list[tuple[int, int]]) -> list[tuple[str, int]]:
+    """The runs of capitalised Russian words of a line that are names in the middle of a sentence (7.1 of 9.1d), each
+    with its place: not the first word of a sentence, no common word (it ends a run), not inside a place `blocked` (a
+    quote, a bold piece, a name after a kind word), not right after a marker; at most `MAX_MIDDLE_WORDS` words."""
+    found = []
+    for run in _CAPITAL_RUN.finditer(line):
+        words = [(word.group(0), run.start() + word.start()) for word in _CAPITAL_WORDS.finditer(run.group(0))]
+        if _SENTENCE_START.search(line[: run.start()]):
+            words = words[1:]
+        piece: list[tuple[str, int]] = []
+        for word, start in [*words, ("", -1)]:  # the empty word at the end closes the last piece
+            if word and name_key(word) not in _COMMON_KEYS:
+                piece.append((word, start))
+                continue
+            first = piece[0][1] if piece else -1
+            blocking = any(begin <= first < end for begin, end in blocked)
+            if piece and not blocking and not _AFTER_MARKER.search(line[:first]):
+                found.append((" ".join(w for w, _ in piece[:MAX_MIDDLE_WORDS]), first))
+            piece = []
+    return found
+
+
+def _without_from(text: str, start: int) -> tuple[str, int]:
+    """A Latin run without its leading «from» (7.2 of 9.1d) and the place where the rest starts; «from» alone is
+    nothing. The rest is weighed as after a marker: the line before it ends with «from»."""
+    while (lead := _FROM.match(text)) is not None:
+        text, start = text[lead.end():], start + lead.end()
+    return ("" if text.lower() == "from" else text), start
+
+
+def _latin_weight(line: str, text: str, start: int, first_line: bool) -> float | None:
     """The weight of a Latin run, `None` for a dropped one (4.3)."""
-    text = run.group(0)
     words = _LATIN_WORDS.findall(text)
     if not re.search(r"[A-Za-z]", text):
         return None  # digits and punctuation: «2027», «1.6.0»
@@ -183,7 +227,7 @@ def _latin_weight(line: str, run: re.Match, first_line: bool) -> float | None:
         return None
     if len(words) == 1 and not first_line and len(_trim(text)) <= 3:
         return None  # «UG», «One», «NPC»
-    before = line[: run.start()]
+    before = line[:start]
     weight = LATIN + (FIRST_LINE_BONUS if first_line else 0)
     weight += AFTER_KIND_WORD_BONUS if _AFTER_KIND_WORD.search(before) else 0
     weight -= AFTER_MARKER_PENALTY if _AFTER_MARKER.search(before) else 0
@@ -277,16 +321,17 @@ def candidates(
     pool = _Pool()
     if _is_name_message(lines, forwarded):
         pool.add(lines[0], WHOLE, 0, again=False)
+    joined = "\n".join(lines)
+    pieces = [" ".join(_INVISIBLE.sub("", piece).split()) for piece in bold]
+    bold_spans = [(found, found + len(piece)) for piece in pieces if piece and (found := joined.find(piece)) >= 0]
     at = 0
     for number, line in enumerate(lines):
         if _readable(line):
-            _scan_line(pool, line, at, number == 0)
+            _scan_line(pool, line, at, number == 0, bold_spans)
         at += len(line) + 1
-    joined = "\n".join(lines)
     for slug in _slugs(text, links):
         pool.add(slug, SLUG, len(joined), again=False)
-    for piece in bold:
-        piece = " ".join(_INVISIBLE.sub("", piece).split())
+    for piece in pieces:
         found = joined.find(piece)
         pool.add(piece, BOLD, found if found >= 0 else len(joined), again=False)
     if not pool.names:

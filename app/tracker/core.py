@@ -121,6 +121,7 @@ class Tracker:
     language_source: Any = None  # Steam's languages of the games (`SteamLanguageSource`); None — Russian not checked
     zog_source: Any = None  # the ZoG pages of the games (`ZogProvider`); None — fan Russian not checked
     imdb_source: Any = None  # the IMDb links sent to the bot (`TmdbFindSource`); None — they give no offer
+    company_source: Any = None  # which names are companies (`IgdbGameSource`); None — the candidates are not asked
     playstation_source: Any = None  # PlayStation Store (`PlayStationProvider`), asked at a click; None: no check
     database_url: str | None = None  # the database whose copies the core makes and lists; None — no copies
     drive_settings: DriveSettings = field(default_factory=DriveSettings)  # the Google Drive copy (.env); off by default
@@ -170,7 +171,9 @@ class Tracker:
         self._deliveries = DeliveryService(ctx, self._settings)
         self._samples = TestSamples(ctx, self._queue, self._deliveries, self._settings)
         self._inbox = Inbox(ctx, self._settings)
-        self._answers = InboxAnswers(ctx, self._settings, pollers, self._titles, self.imdb_source)
+        self._answers = InboxAnswers(
+            ctx, self._settings, pollers, self._titles, self.imdb_source, self.company_source
+        )
         database = database_file(self.database_url) if self.database_url else None
         self._drive = GoogleDrive(ctx, self.drive_settings, self.drive_api, database.parent if database else None)
         self._backups = Backups(ctx, self._settings, self._queue, self.database_url, self._drive)

@@ -262,9 +262,9 @@ _Avoid_: очередь (that is the delivery queue), черновики
 In code: `inbox`; an entry — `inbox item` (table `inbox_items`, `InboxRecord`; what the core hands out — `InboxEntry`; the message it is made of — `IncomingMessage`; what the bot says next about it — `InboxReply`). Its states (`InboxState`): `waiting` «ждёт ответа» (the question «Что это?» or an offer waits in the chat; at most one) and `inbox` (in the tab). Its reasons (`InboxReason`): `not_found` «не нашёл», `no_answer` «без ответа», `no_text` «нет текста», `source_failed` «источник не ответил», `not_connected` «игры не подключены». A resolved, not saved or removed item is deleted.
 
 **Кандидат** (candidate):
-A name the rules pick from what the owner sent to the bot (a name message, a Latin run, a quote, a bold piece…), with a weight; the most likely ones are searched in the source of the kind.
+A name the rules pick from what the owner sent to the bot (a name message, a Latin run, a quote, a bold piece, a capitalised Russian name in the middle of a sentence…), with a weight; the most likely ones are searched in the source of the kind. A name that is a company of IGDB (at least 20 games) is dropped before the search.
 _Avoid_: вариант
-In code: `candidate` (`Candidate` of `candidates`).
+In code: `candidate` (`Candidate` of `candidates`); the companies — `companies` (`IgdbGameSource.companies`, `sources/igdb_companies`).
 
 **Предложение** (offer):
 A record of a source the bot shows for an inbox item as a card «Это оно?» (or «Возможно, вы имели в виду:» after a typo) with «Да» / «Нет»; «Да» adds it to the list. Not a search suggestion of the web or of a source.

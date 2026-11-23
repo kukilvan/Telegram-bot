@@ -1,6 +1,6 @@
 # 03: Candidates — the middle name, «from» and `: N`, the companies of IGDB — KI-58, KI-60, KI-59
 
-Status: open
+Status: in review
 Complexity: medium (one rule module and one request; the samples of 6.4 guard it)
 Blocked by: 01
 

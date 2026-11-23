@@ -159,6 +159,8 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
     def clock() -> dt:  # the core's clock, shared with the anime source (the airings of the last 8 days)
         return dt.now(tz=timezone.utc)
 
+    games = IgdbGameSource(igdb, steam)  # the source of the games and the one that knows the companies
+
     return Tracker(
         create_session_factory(),
         clock=clock,
@@ -168,7 +170,7 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
             TitleKind.SERIES: TmdbSeriesSource(tmdb),
             TitleKind.ANIME: ShikimoriAnimeSource(ShikimoriClient(), AniListProvider(), clock),
             # without the keys of IGDB both sources of it are «not connected»: they ask nothing and say so
-            TitleKind.GAME: IgdbGameSource(igdb, steam),
+            TitleKind.GAME: games,
         },
         sequel_sources={TitleKind.MOVIE: TmdbSequelSource(tmdb)},
         default_tz=time_zone_of(settings),
@@ -177,6 +179,7 @@ def build_tracker(settings: Settings, bot: Bot | None, links: AppLinks | None = 
         zog_source=ZogProvider(),  # fan Russian in the games: their pages on ZoG
         follow_up_source=IgdbFollowUpSource(igdb),
         imdb_source=TmdbFindSource(tmdb),  # the IMDb links sent to the bot
+        company_source=games,  # the companies among the names of a post are not searched
         playstation_source=PlayStationProvider(),  # the page of a concept, asked at a click on the web link
         database_url=TRACKER_DATABASE_URL,  # the copies of this database are made and listed
         drive_settings=DriveSettings(

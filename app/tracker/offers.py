@@ -11,6 +11,8 @@ link): ahead of the paced polling, and each record marked with its title when it
   by the name key — exact, then prefix — at most 2, new first (5.3); the first candidate alone, with no match, takes the
   source's first record as a weak offer. A name message of 2 words or more with no match is searched again without one
   word at a time to correct a typo (5.4).
+- Companies: before the searches the candidates are asked about once, and the companies of IGDB are dropped (7.3 of
+  9.1d), so the next name moves up.
 - At most 3 offers in all, each record once. A source failing before the first offer fails the analysis; after it,
   the failure goes to the log and what was found is shown.
 """
@@ -38,6 +40,8 @@ PER_CANDIDATE = 2  # records a candidate gives
 MAX_TYPO_SEARCHES = 3  # searches of the name without one word
 CLOSE = 0.85  # `difflib` ratio of the keys of a close name (5.4)
 NEW_FOR_YEARS = 2  # a record is new from the same day this many years ago
+MAX_COMPANY_ASKED = 10  # candidates asked about at once: which of them are companies of IGDB
+_LATIN_LETTER = re.compile(r"[A-Za-z]")
 
 EXACT, PREFIX = 2, 1
 
@@ -141,10 +145,13 @@ class _Gathered:
 class OfferSearch:
     """The searches of an item through the sources of the core."""
 
-    def __init__(self, titles: "Titles", pollers: "Pollers", imdb_source: Any = None) -> None:
+    def __init__(
+        self, titles: "Titles", pollers: "Pollers", imdb_source: Any = None, company_source: Any = None
+    ) -> None:
         self.titles = titles
         self.pollers = pollers
         self.imdb_source = imdb_source
+        self.company_source = company_source
 
     async def by_kind(
         self, kind: TitleKind, candidates: Sequence[Candidate], *, name_message: bool, years: Sequence[int],
@@ -152,6 +159,7 @@ class OfferSearch:
     ) -> Found:
         """The offers of the name candidates in the source of the kind the owner chose."""
         gathered = _Gathered(years, new_since)
+        candidates = await self._without_companies(candidates)
         try:
             await self._of_candidates(kind, candidates, name_message, gathered)
         except SourceNotConfigured:
@@ -167,6 +175,7 @@ class OfferSearch:
         """The offers of the links, then of the name candidates in the source of the kind of the first one. A link that
         fails or that nobody knows gives nothing; no offer at all — the item goes on as one without links."""
         gathered = _Gathered(years, new_since)
+        candidates = await self._without_companies(candidates)
         named: list[tuple[Candidate, TitleKind]] = []  # the names Steam gives the numbers IGDB does not know
         kind: TitleKind | None = None
         not_connected = False
@@ -230,6 +239,20 @@ class OfferSearch:
         return None
 
     # --- the candidates -------------------------------------------------------------------------
+
+    async def _without_companies(self, candidates: Sequence[Candidate]) -> list[Candidate]:
+        """The candidates but the companies of IGDB (7.3 of 9.1d): one request for the first `MAX_COMPANY_ASKED` with a
+        Latin letter, none to ask — none sent; a name message and a name Steam gave (weight `WHOLE`) are not asked. No
+        keys, a failure or a 429: the warning goes to the log and the candidates stay as they are."""
+        asked = [c.name for c in candidates if c.weight < WHOLE and _LATIN_LETTER.search(c.name)][:MAX_COMPANY_ASKED]
+        if self.company_source is None or not asked:
+            return list(candidates)
+        try:
+            companies = await self.company_source.companies(asked)
+        except Exception as exc:  # the answer of a service never fails the analysis
+            logging.warning("asking IGDB which candidates of an inbox item are companies failed: %r", exc)
+            return list(candidates)
+        return [c for c in candidates if name_key(c.name) not in companies]
 
     async def _of_candidates(
         self, kind: TitleKind, candidates: Sequence[Candidate], name_message: bool, gathered: _Gathered

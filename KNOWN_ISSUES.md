@@ -72,9 +72,9 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-56 | The size test of the core misses the pure modules: `series_events.py` 547 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
 | KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | open | 9.1 |
-| KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | open | 9.1 |
-| KI-59 | «Входящие»: the stop list of candidates is a fixed list | `app/tracker/candidates.py` | open | 9.1 |
-| KI-60 | «Входящие»: a Latin run keeps a leading «from», and a bare number after a colon is cut off the name | `app/tracker/candidates.py` | open | 9.1 |
+| KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | fixed (test: `tests/test_tracker_candidates_middle.py`) | 9.1d.03 |
+| KI-59 | «Входящие»: the stop list of candidates is a fixed list | `app/tracker/candidates.py` | fixed (test: `tests/test_tracker_companies.py`) | 9.1d.03 |
+| KI-60 | «Входящие»: a Latin run keeps a leading «from», and a bare number after a colon is cut off the name | `app/tracker/candidates.py` | fixed (test: `tests/test_tracker_candidates_middle.py`) | 9.1d.03 |
 | KI-61 | «Входящие»: a typo in a name is not corrected when the source answers in another language | `app/tracker/offers.py` | open | 9.1 |
 | KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | open | 9.1 |
 | KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
@@ -638,7 +638,7 @@ Format of a new entry:
 - What's wrong: a Cyrillic name is a candidate only in quotes, in bold, right after a kind word («сериал», «игра»…), at the head of an episode line, or as a whole name message. A Cyrillic title elsewhere in a post («Вчера вышла новая Дюна, и все рады») is not found; the fallback takes the first line only when nothing else was found.
 - How to reproduce: `candidates("Вот и вышла новая Дюна вчера, все рады и довольны")` gives the first words of the line (the fallback, weight 1), not «Дюна».
 - Likelihood / impact: common for posts about Russian-titled films and series with no kind word, but the owner still answers «Что это?» with a kind and a post with no candidate goes on to «не нашёл» / «Входящие»; nothing is lost. A fix: score capitalised Cyrillic words in the middle of a sentence, against a list of common words.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_candidates_middle.py`). Ticket 9.1d.03: a run of capitalised Russian words (at most 4) that is not the first word of a sentence, not a quote, a bold piece, a name after a kind word or after a marker, and has no word of `COMMON_WORDS`, is a candidate of weight `MIDDLE` = 2. A post of at most 8 words typed in one line is still a name message (4.2 of 6.4): it is searched as typed.
 - Found: 2026-11-06, spec of stage 6.4 (13), ticket 02.
 
 ## KI-59. «Входящие»: the stop list of candidates is a fixed list
@@ -647,7 +647,7 @@ Format of a new entry:
 - What's wrong: stores, platforms, outlets and studios are dropped only by the fixed list of spec 4.5. A studio, outlet or store that is not on it and stands in a post without a Latin title or a marker before it can come first.
 - How to reproduce: `candidates("Ubisoft анонсировала новую игру, и все очень этому рады сегодня")` — «Ubisoft» is a candidate (weight 10, first line), as nothing marks it as a studio.
 - Likelihood / impact: moderate; the offers of ticket 03–04 show up to three candidates, so a studio wastes one, and a post with no real Latin title offers the studio first. A fix: grow the list by use, or read the names of studios from IGDB.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_companies.py`). Ticket 9.1d.03: before the searches the first 10 candidates with a Latin letter (not a name message, not a name Steam gave) are asked in one request to IGDB `/companies` (`IgdbGameSource.companies`, `sources/igdb_companies.py`); a name that, alone or with a word of `COMPANY_WORDS`, is a company with at least 20 games is dropped. No keys, a failure or a 429 — a warning, the candidates stay. The stop list grew by the services IGDB does not know.
 - Found: 2026-11-06, spec of stage 6.4 (13), ticket 02.
 
 ## KI-60. «Входящие»: a Latin run keeps a leading «from», and a bare number after a colon is cut off the name
@@ -656,7 +656,7 @@ Format of a new entry:
 - What's wrong: a run of Latin words is one name, so the marker «from» (spec 4.4) cannot lower the name after it: «from Software» is one candidate with «from» in it. And a name written with a number after a colon («Fallout: 76», «Bleach: 3 серия») loses the number: a bare number after `: ` ends the run, because `Name: N серия` is the head of an episode line.
 - How to reproduce: `candidates("Игра from Software вышла вчера и все очень этому рады сегодня")` gives «from Software»; `candidates("Вышел Fallout: 76 вчера и все очень этому рады сегодня вечером")` gives «Fallout».
 - Likelihood / impact: rare; a name that is searched in the source anyway (the source matches «Fallout» to the series) — a wrong first offer at worst, the owner presses «Нет». A fix: drop a leading «from» of a run; read `: <number>` as part of the name unless an episode word follows.
-- Status: open.
+- Status: fixed (test: `tests/test_tracker_candidates_middle.py`). Ticket 9.1d.03: a Latin run loses a leading «from» (the rest weighs as after a marker, «from» alone is nothing); `: <number>` joins the run unless an episode word follows («Fallout: 76» is one name, «Bleach: 3 серия» stays the episode line).
 - Found: 2026-11-06, ticket 02 of stage 6.4.
 
 ## KI-61. «Входящие»: a typo in a name is not corrected when the source answers in another language

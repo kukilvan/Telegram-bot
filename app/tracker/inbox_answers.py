@@ -61,13 +61,14 @@ def _without_offer(found: Found) -> InboxOutcome:
 
 class InboxAnswers:
     def __init__(
-        self, ctx: CoreContext, settings: SettingsStore, pollers: "Pollers", titles: "Titles", imdb_source: Any = None
+        self, ctx: CoreContext, settings: SettingsStore, pollers: "Pollers", titles: "Titles", imdb_source: Any = None,
+        company_source: Any = None,
     ) -> None:
         self.ctx = ctx
         self.settings = settings
         self.pollers = pollers
         self.titles = titles
-        self.search = OfferSearch(titles, pollers, imdb_source)
+        self.search = OfferSearch(titles, pollers, imdb_source, company_source)
 
     # --- the pause ------------------------------------------------------------------------------
 

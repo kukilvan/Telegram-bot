@@ -33,7 +33,7 @@ PURE = (
     "prices", "price_rows", "follow_ups", "candidates", "posters", "moment_words", "backup_events", "backup_rows",
     "drive_rows", "drive_state", "export_rows", "login_events", "russian", "russian_events", "sources/zog_pages",
     "release_dates", "series_messages", "sources/shikimori_chain", "offer_cards", "candidate_words",
-    "series_moves", "anime_samples",
+    "series_moves", "anime_samples", "sources/igdb_companies",
 )
 MAX_LINES = 400
 FACADE_MAX_LINES = 470  # the facade grows by one pass-through method per feature (rule 7); the docstrings stay short

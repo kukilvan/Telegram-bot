@@ -71,6 +71,11 @@ class IGDBProvider:
         429 up to `backoff_max_retries` times. A 401 takes a new token and repeats the request once."""
         return await self._post("/games", body, at_once=at_once)
 
+    async def companies(self, body: str) -> list[dict[str, Any]]:
+        """The records of `/companies` for the query `body` (which names are companies, 7.3 of 9.1d). It goes at once,
+        like the search the owner waits for, and a 429 fails at once."""
+        return await self._post("/companies", body, at_once=True)
+
     async def _post(self, endpoint: str, body: str, *, at_once: bool) -> list[dict[str, Any]]:
         self.hit_429 = False
         backoff = self.backoff_base_seconds
