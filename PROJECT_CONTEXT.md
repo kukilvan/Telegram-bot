@@ -34,7 +34,7 @@ Session «Описание 9.1d»: part d of stage 9.1 — «Входящие»,
 | 9.1a | Known issues: start, stop, polling and delivery (17) | done | — | — |
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
-| 9.1d | Known issues: «Входящие», copies and code health (15; with KI-81, 83, 84 of 9.1c) | not started | 6 | — |
+| 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | description | 9 | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | not started | 3 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
