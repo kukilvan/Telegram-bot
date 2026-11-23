@@ -2,6 +2,10 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-23 — Slicing 9.1d
+
+- `.scratch/9-1d-inbox-copies-code/issues/`: five tickets as section 17 of the spec proposed — 01 the code split and health (medium), 02 anime approximate premiere with migration 0018 (complex, after 01), 03 candidates and IGDB companies (medium, after 01), 04 offers and the bot with migration 0019 (complex, after 02 and 03), 05 copies and `.env` (medium, after 01). Each names its spec sections, ADRs and fixtures from `answers/` (02 reads the 9.1c Shikimori answer), updates its own docs and closes its own KI entries. `ReleaseDate.phrase` and `of_period` are added by 02 (01 only renames `GameDate`); `Tracker.company_source` is assembled by 03; `inbox_unanswered` by 04, so `core.py` stays at most 470 lines. Ticket 04 has two halves (A offers, B restart) that can be cut apart if its session runs long. Accepted by the owner («ОК»).
+
 ## 2026-11-23 — Spec 9.1d
 
 - `.scratch/9-1d-inbox-copies-code/spec.md` with the live answers in `answers/` (IGDB `/companies`: `name = (…)` is case-sensitive and «Ubisoft», «Mojang», «Remedy» are no company names, `~` with an array answers 400, `~` joined by `|` works and finds «Ubisoft Entertainment», «Mojang Studios»…; IGDB search with `release_dates.date_format`: The Witcher IV a year, Fishy Bar a quarter; TMDb: «Dead-End Jb» nothing, «Dead-End» in English gives «Dead-End Job» first, `alternative_titles` for comparison). The owner's base read once, read-only: `inbox_items` empty; three anime premieres on a made-up first day.
