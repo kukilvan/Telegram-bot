@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-23 — Review 9.1c
+
+- Stage 9.1c done (`.scratch/9-1c-feed-web/review.md`): the five tickets against the spec and the coding standards, with the `code-review` skill (effort high) and live checks — the owner's database after migration 0017 (1446 anime episodes: 21 `day`, 6 `exact`, 1419 `unknown`; 185 series `day`), a scratch web app on its copy (the Feed, the Archive genre row and the old `?genre=` bookmarks), the bot in Docker (a clean poll pass).
+- Findings: F1 — an anime episode first seen with an AniList airing earlier than the previous look comes with no message (`assemble` keeps the exact moment, `_newly_out` takes it for history) → KI-83, fix in 9.1d (the owner chose 9.1d over a fix round); F2 — an anime premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027» → KI-84, 9.1d; F3 — `series_events.py` 547 lines, `cards.py` 400 → KI-56 figures; F4, F5 — the Feed loads the seasons twice, a film date is known by its text → wishes for 9.1d; F6 — a blank line in `app/main.py`, fixed. No fix round.
+- Tests: 5048 passed, 3 skipped, the two known Windows failures.
+
 ## 2026-11-22 — Ticket 9.1c.05
 
 - KI-73: `DeliveryRules.due` gives the two login reports (`login_events.TYPES`, `delivery.is_report`) in its first list in every case, in front of the others; `DeliveryService.summary_now` sends them apart before the summary; they never expire. Never twice: the passes run under `delivery_lock` and a send marks its items in one step (`tests/test_tracker_login_report_rules.py`).

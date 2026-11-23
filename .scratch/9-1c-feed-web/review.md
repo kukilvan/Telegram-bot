@@ -1,6 +1,6 @@
 # Review 9.1c: Лента, web and login — the known issues
 
-Status: in review
+Status: accepted
 
 One session (2026-11-23).
 
@@ -24,7 +24,7 @@ One session (2026-11-23).
 
 ## Findings
 
-- **F1 — an anime episode first seen with an AniList airing earlier than the previous look comes with no message.** `anime_events.assemble` keeps the fresh `exact` moment of an episode found now (spec 1.1, ticket 02); when that episode was not stored at the previous look and its airing is earlier than that look, `series_events._newly_out` counts it as a backfill of history and queues nothing. Before the stage it got the moment of the look and was reported. Needs an episode AniList did not announce as the next one, seen first one look late (a drop of several episodes, a lagging counter, AniList down at the look) — rare; the episode is in the card and the Feed, only the message is missing. Probed: `came == []`. Decision: **defer `KI-83`, fix in 9.1d** (a rule of what is news plus a test: a design choice, not minutes; a fix round would cost five sessions for a rare case). The owner may choose a fix round instead.
+- **F1 — an anime episode first seen with an AniList airing earlier than the previous look comes with no message.** `anime_events.assemble` keeps the fresh `exact` moment of an episode found now (spec 1.1, ticket 02); when that episode was not stored at the previous look and its airing is earlier than that look, `series_events._newly_out` counts it as a backfill of history and queues nothing. Before the stage it got the moment of the look and was reported. Needs an episode AniList did not announce as the next one, seen first one look late (a drop of several episodes, a lagging counter, AniList down at the look) — rare; the episode is in the card and the Feed, only the message is missing. Probed: `came == []`. Decision: **defer `KI-83`, fix in 9.1d** (a rule of what is news plus a test: a design choice, not minutes; a fix round would cost five sessions for a rare case). The owner chose 9.1d over a fix round (2026-11-23).
 - **F2 — an anime premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027».** `message_moved` writes the days only for a premiere, while `_moved` reports any change of an `exact` moment. Older than the stage for moments not at 00:00 UTC; the stage extends it to `exact` moments at 00:00. Decision: **defer `KI-84`, fix in 9.1d** (what the line says is a small text decision).
 - **F3 — rule 7: `series_events.py` grew from 534 to 547 lines, `cards.py` reached 400.** The size test misses the pure modules (KI-56, open, 9.1). Decision: **defer** — the figures of KI-56 updated.
 - **F4 — the Feed loads the seasons and episodes of series and anime twice** (`feed_pieces` and the new `feed_released` each call `storage.load_seasons_of`). The number of reads stays constant, so the rule of the Feed holds; it is double work on the heaviest part of the page (One Piece has 1180 episodes). Decision: a wish (below).
