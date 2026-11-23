@@ -70,7 +70,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-53 | Follow-ups: «Бросил» and «Вернуть в список» within one minute keep the old reference point | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
-| KI-56 | The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | open | 9.1 |
+| KI-56 | The size test of the core misses the pure modules: `series_events.py` 547 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | open | 9.1 |
 | KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | open | 9.1 |
 | KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | open | 9.1 |
 | KI-59 | «Входящие»: the stop list of candidates is a fixed list | `app/tracker/candidates.py` | open | 9.1 |
@@ -97,6 +97,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-80 | ZoG: while its layout cannot be read, a game whose page is not known yet shows no ZoG hint | `app/tracker/pollers/game_zog.py` (spec 9.1b, 5.6) | open | 9.2 |
 | KI-81 | Anime: a premiere Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_anime.py` (`part_episodes`) | open | 9.1d |
 | KI-82 | Login report: a report that waits past midnight says «сегодня» of the day before | `app/tracker/login_reports.py` | open | 9.2 |
+| KI-83 | Anime: an episode first seen with an AniList airing earlier than the previous look comes with no message | `app/tracker/anime_events.py` (`assemble`), `series_events._newly_out` | open | 9.1d |
+| KI-84 | Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027» | `app/tracker/series_events.py` (`message_moved`) | open | 9.1d |
 
 ## Entries
 
@@ -611,10 +613,10 @@ Format of a new entry:
 - Status: fixed (test: `tests/test_tracker_follow_up_known_issues.py::test_an_unreadable_own_snapshot_fails_before_igdb_and_reports_once_a_day`, `…::test_an_unreadable_own_snapshot_counts_by_status_alone`), ticket 03 of stage 9.1b. The reconciliation judges such a game by its status alone (in «Хочу», «В процессе», «Пройдено» its snapshot is made and never dropped); the check reads the own snapshot before IGDB: unreadable — a failure at once, no request, 30 minutes, «could not check» once a day by the window. The log line comes once a day per game (`failures.DailyLog`, shared by the reconciliation and the check).
 - Found: 2026-11-05, review of stage 6.3.
 
-## KI-56. The size test of the core misses the pure modules: `series_events.py` 521 lines, `games.py` 406
+## KI-56. The size test of the core misses the pure modules: `series_events.py` 547 lines, `games.py` 406
 
 - Where: `tests/test_tracker_core_split.py` (`MODULES` and `pollers/` only).
-- What's wrong: rule 7 of `docs/coding-standards.md` says no module of the core is longer than ~400 lines, and its check names this test. The test covers only the modules listed in `MODULES` and the pollers; the pure modules (`games`, `cards`, `series_events`, `feed_rows`, `follow_ups`…) are not checked. `series_events.py` has 521 lines (before stage 6.3); `games.py` went from 360 to 406 in stage 6.3 (the expansion of a game).
+- What's wrong: rule 7 of `docs/coding-standards.md` says no module of the core is longer than ~400 lines, and its check names this test. The test covers only the modules listed in `MODULES` and the pollers; the pure modules (`games`, `cards`, `series_events`, `feed_rows`, `follow_ups`…) are not checked. `series_events.py` has 521 lines (before stage 6.3); `games.py` went from 360 to 406 in stage 6.3 (the expansion of a game). Stage 9.1c: `series_events.py` 534 → 547 lines (the timing of an episode), `cards.py` 393 → 400 (review 9.1c, F3).
 - How to reproduce: `wc -l app/tracker/*.py`.
 - Likelihood / impact: no effect on the owner; long modules cost more to read in every session. A fix: the test takes every `app/tracker/*.py`; `series_events.py` and `games.py` split (e.g. `GameDate` into a module of its own).
 - Status: open.
@@ -856,3 +858,21 @@ Format of a new entry:
 - Likelihood / impact: very rare after KI-73 (the report goes at the first delivery pass once Telegram answers); the time is right, only the day word is off.
 - Status: open. Fix in 9.2 only if met (e.g. the payload keeps the moment and the words are made at the send).
 - Found: 2026-11-22, spec 9.1c.
+
+## KI-83. Anime: an episode first seen with an AniList airing earlier than the previous look comes with no message
+
+- Where: `app/tracker/anime_events.py` (`assemble`: a new episode keeps a fresh `exact` moment, spec 1.1 of 9.1c) and `app/tracker/series_events.py` (`_newly_out`: an episode not stored before whose moment is behind the previous look is «a backfill of history»).
+- What's wrong: since ticket 9.1c.02 an episode found out now keeps the moment AniList says it aired. When that episode was not stored at the previous look and its airing is earlier than that look, `_newly_out` counts it as history and no event is queued. Before 9.1c it got the moment of the look and was reported.
+- How to reproduce: look at 13:00 stores episode 7 as the next one (14:00); look at 14:30 — AniList still says 6 out (counter lag), episodes 8–9 unknown; look at 20:00 — AniList says 9 out with airings of 8 and 9 at 14:00 (a bulk drop). Episodes 8 and 9 are stored at 14:00 `exact`; `_newly_out` gives `[]` — no message about them (review probe: `came == []`).
+- Likelihood / impact: rare — needs an episode AniList did not announce as the next one before it aired, seen first after the following look (a drop of several episodes, a lagging counter, AniList down at the look and Shikimori late). The episode is in the card and the Feed; only its message is missing.
+- Status: open. Fix in 9.1d: an episode not stored before whose `exact` airing comes from the 8-day window counts as news (outside the `history` of new entries), with a test of the case above.
+- Found: 2026-11-23, review of stage 9.1c (F1).
+
+## KI-84. Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027»
+
+- Where: `app/tracker/series_events.py` (`message_moved`: a premiere shows the days only; `_moved` reports any change of an `exact` moment).
+- What's wrong: when AniList moves the premiere of an announced season or part by hours within one day, the bot sends «🎌 … — премьера сезона 4 перенесена» with the same day on both sides. Older than 9.1c for moments not at 00:00 UTC; since 9.1c an `exact` moment at 00:00 UTC is a moment too, so its change is a move as well.
+- How to reproduce: the premiere `exact` at 2027-01-09 15:00 UTC, the next look 16:00 the same day → `message_moved(…, premiere=True)` gives «9 янв 2027 → 9 янв 2027» (review probe).
+- Likelihood / impact: rare (an hour move of an anime premiere before it airs); the message is confusing, nothing is lost.
+- Status: open. Fix in 9.1d: when both days are equal, the premiere line shows the hours (`cards.format_episode_when`), with a test.
+- Found: 2026-11-23, review of stage 9.1c (F2).
