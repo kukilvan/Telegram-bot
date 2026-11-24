@@ -1,6 +1,6 @@
 # 04: Offers and the bot — the date of an offer, English names, links again, «Что это?» after a restart — KI-64, KI-61, KI-62, KI-57
 
-Status: in review
+Status: accepted
 Complexity: complex (a migration, four sources, the analysis of an item, the start of the bot; two independent halves)
 Blocked by: 02, 03
 

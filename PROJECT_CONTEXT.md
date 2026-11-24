@@ -1,10 +1,10 @@
 # Project context
 
-Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-23.
+Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-24.
 
 ## Next step
 
-Session «Тикет 9.1d.04»: offers and the bot — the date of an offer, English names for a typo, links looked up again, «Что это?» after a restart (KI-64, 61, 62, 57), `.scratch/9-1d-inbox-copies-code/issues/04-*.md`. Complex ticket (migration 0019): model Opus 5.5, effort high (`docs/models.md`). Then ticket 05 and the review of 9.1d, then 7.3, 9.2, 8.
+Session «Тикет 9.1d.05»: copies and `.env` — UTC names of the copies, the zone of Settings, Drive pages and duplicates, the restore note, the six unread names (KI-66, 67, 68, 69, 49), `.scratch/9-1d-inbox-copies-code/issues/05-*.md`. Medium ticket: model Sonnet 5.5, effort high (`docs/models.md`). Then the review of 9.1d, then 7.3, 9.2, 8.
 
 ## State
 
@@ -12,7 +12,7 @@ Session «Тикет 9.1d.04»: offers and the bot — the date of an offer, Eng
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0019. Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The bot menu is «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие»; «➕ Добавить» is gone (6.4.01): any other message is an inbox item.
 - Games: 6.1 (IGDB, platforms, release events, «Пройдено»), 6.2 (Steam prices, `pollers/game_prices.py`, `price_events.py`; no PlayStation prices, ADR 0009), 6.3 (weekly expansions and sequels, `pollers/game_follow_ups.py`, ADR 0011) done. **Stage 6.4 «Входящие» done**: any message to the bot is an inbox item (`app/tracker/inbox.py`), a source link gives its card, else «Что это?» and up to three offers «Это оно?»; the rest in the web tab «Входящие». Details of all four in `docs/history.md`.
-- **Stage 7 split** (2026-11-07, `.scratch/7-1-backups-export/description.md`; changed 2026-11-15 by `.scratch/7-2-access-phone/description.md` and ADR 0013): 7.1 backups and export, 7.2 the app address, the phone, bot links, a safer login, 7.3 NAS readiness and the move guide. Outside access (the owner's domain, Cloudflare Tunnel, Cloudflare Access) and the NAS move itself are the owner's separate NAS project for two apps; Tailscale dropped. Order (changed 2026-11-17): 7.1 → 7.2 → 9.1 every open known issue (9.1a–d, `.scratch/9-1-known-issues/description.md`) → 7.3 NAS → 9.2 real use → 8. **Stage 9.1a done** (2026-11-20, ADR 0015; details in `docs/history.md`): 17 known issues fixed; KI-78 (9.2) the rest. **Stage 9.1c done** (2026-11-23; migration 0017; KI-48, 72 won't fix). **9.1d spec accepted and sliced** (2026-11-23, `.scratch/9-1d-inbox-copies-code/`: five tickets in `issues/`, migrations 0018 and 0019; `docs/history.md`); **tickets 01–03 done** (01 the code split, every module of `app/tracker/` within 400 lines, `core.py` 470; 02 the approximate anime premiere, migration 0018; 03 candidates, the companies of IGDB). **Stage 9.1b done** (2026-11-22, ADR 0016): 12 fixed, KI-43, 46 won't fix; Russian in games (idea 002); KI-79, 80 open (9.2). **Stages 7.1 and 7.2 done** (2026-11-15, 11-17; ADR 0012, 0014; `docs/history.md`).
+- **Stage 7 split** (2026-11-07, `.scratch/7-1-backups-export/description.md`; changed 2026-11-15 by `.scratch/7-2-access-phone/description.md` and ADR 0013): 7.1 backups and export, 7.2 the app address, the phone, bot links, a safer login, 7.3 NAS readiness and the move guide. Outside access (the owner's domain, Cloudflare Tunnel, Cloudflare Access) and the NAS move itself are the owner's separate NAS project for two apps; Tailscale dropped. Order (changed 2026-11-17): 7.1 → 7.2 → 9.1 every open known issue (9.1a–d, `.scratch/9-1-known-issues/description.md`) → 7.3 NAS → 9.2 real use → 8. **Stage 9.1a done** (2026-11-20, ADR 0015; details in `docs/history.md`): 17 known issues fixed; KI-78 (9.2) the rest. **Stage 9.1c done** (2026-11-23; migration 0017; KI-48, 72 won't fix). **9.1d spec accepted and sliced** (2026-11-23, `.scratch/9-1d-inbox-copies-code/`: five tickets in `issues/`, migrations 0018 and 0019; `docs/history.md`); **tickets 01–04 done** (01 the code split, every module of `app/tracker/` within 400 lines, `core.py` 470; 02 the approximate anime premiere, migration 0018; 03 candidates, the companies of IGDB; 04 offers and the bot, migration 0019). **Stage 9.1b done** (2026-11-22, ADR 0016; KI-79, 80 open for 9.2). **Stages 7.1 and 7.2 done** (2026-11-15, 11-17; ADR 0012, 0014; `docs/history.md`).
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.2 (on the NAS).
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
 - Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`); cleaned in stage 8. `.env` has six names the code does not read: KI-49, ticket 9.1d.05.
@@ -34,7 +34,7 @@ Session «Тикет 9.1d.04»: offers and the bot — the date of an offer, Eng
 | 9.1a | Known issues: start, stop, polling and delivery (17) | done | — | — |
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
-| 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | tickets 3/5 | 8 | — |
+| 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | tickets 4/5 | 8 | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | not started | 3 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
@@ -44,7 +44,7 @@ Rows in the order of work. Status values: not started · description · spec · 
 ## Environment
 
 - Windows 11, PowerShell (Git Bash also available), Python 3.12.10 in `.venv/`, Docker 29.x. Runs in Docker on the owner's PC; later on a UGREEN DXP2800 NAS, moved and opened from outside (own domain, Cloudflare Tunnel and Access) by the owner's separate NAS project (ADR 0013).
-- Tests: about 4900 in total. On the owner's PC (checked 2026-11-22): 4933 pass, 3 skipped; two process-launch tests (`test_app_main`, `test_runtime`) fail on Windows without any change (`test_runtime`'s not on every run) — known, do not count.
+- Tests: about 5400 in total. On the owner's PC (checked 2026-11-24): 5412 pass, 3 skipped; two process-launch tests (`test_app_main`, `test_runtime`) fail on Windows without any change (`test_runtime`'s not on every run) — known, do not count.
 - `.env` (values never printed; read by `Settings` in `app/config.py` unless noted):
 
 | Variable | Required | Meaning |
