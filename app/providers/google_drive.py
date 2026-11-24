@@ -12,6 +12,7 @@ made, its listing, the resumable upload in one piece and the delete. Every reque
 bodies or the `Authorization` header, never in an address, so no log line holds them.
 """
 
+import logging
 from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlencode
@@ -27,7 +28,8 @@ SCOPE = "https://www.googleapis.com/auth/drive.file"  # the app sees only the fi
 FOLDER_TYPE = "application/vnd.google-apps.folder"
 ARCHIVE_TYPE = "application/x-7z-compressed"
 TIMEOUT_SECONDS = 30.0
-PAGE_SIZE = 1000  # files of one listing: the folder keeps 30 archives
+PAGE_SIZE = 1000  # files of one page of a listing (the most Drive gives)
+MAX_PAGES = 50  # pages of one listing: more is a folder that is not ours, the listing stops with a warning
 DEFAULT_LIFE_SECONDS = 3600  # an access token's life when Google does not say it
 
 
@@ -186,15 +188,26 @@ class GoogleDriveApi:
         await self._send("DELETE", f"{FILES_URL}/{file_id}", access)
 
     async def _files(self, access: str, query: str) -> list[DriveFile]:
-        response = await self._send(
-            "GET", FILES_URL, access,
-            params={"q": query, "fields": "files(id,name,size,createdTime)", "pageSize": str(PAGE_SIZE), "spaces": "drive"},
-        )
-        body = self._json(response)
-        files = body.get("files") if isinstance(body, dict) else None
-        if not isinstance(files, list):
-            raise GoogleError(f"{FILES_URL} answered a listing without files")
-        return [_drive_file(item) for item in files]
+        """Every file of the search: the pages followed by `nextPageToken` (KI-67), at most `MAX_PAGES`, then a warning."""
+        found: list[DriveFile] = []
+        token: str | None = None
+        for _ in range(MAX_PAGES):
+            params = {
+                "q": query, "fields": "nextPageToken,files(id,name,size,createdTime)", "pageSize": str(PAGE_SIZE),
+                "spaces": "drive",
+            }
+            if token is not None:
+                params["pageToken"] = token
+            body = self._json(await self._send("GET", FILES_URL, access, params=params))
+            files = body.get("files") if isinstance(body, dict) else None
+            if not isinstance(files, list):
+                raise GoogleError(f"{FILES_URL} answered a listing without files")
+            found.extend(_drive_file(item) for item in files)
+            token = body.get("nextPageToken")
+            if not isinstance(token, str) or not token:
+                return found
+        logging.warning("The listing of Google Drive has more than %d pages: it works with the first %d files", MAX_PAGES, len(found))
+        return found
 
     # --- one request -----------------------------------------------------------------------------
 

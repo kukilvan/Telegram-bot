@@ -9,7 +9,7 @@ import pathlib
 import re
 import sqlite3
 import threading
-from datetime import datetime
+from datetime import datetime, timezone, tzinfo
 
 from alembic import command
 from alembic.config import Config
@@ -25,6 +25,7 @@ MIGRATIONS_DIR = pathlib.Path(__file__).resolve().parent / "migrations"
 
 BACKUP_FOLDER = "backups"  # next to the database file
 BACKUP_STAMP_FORMAT = "%Y%m%d_%H%M%S"  # the time in the name of a backup
+UTC_MARK = "Z"  # written after the time of every name made since 9.1d: it is UTC; an older name is the container's clock
 
 
 def database_file(url: str = TRACKER_DATABASE_URL) -> pathlib.Path | None:
@@ -131,9 +132,29 @@ def migrate(engine: Engine) -> None:
         command.upgrade(config, "head")
 
 
+def utc_now() -> datetime:
+    """The clock of the names of the copies: the moment now, naive UTC."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 def backup_name(now: datetime, suffix: str = "") -> str:
-    """The name of a backup made at `now`: `tracker_db_<time>.db`, or `tracker_db_<time>_<suffix>.db`."""
-    return f"tracker_db_{now.strftime(BACKUP_STAMP_FORMAT)}{'_' + suffix if suffix else ''}.db"
+    """The name of a backup made at `now` (naive UTC): `tracker_db_<time>Z.db`, or `tracker_db_<time>Z_<suffix>.db`."""
+    return f"tracker_db_{now.strftime(BACKUP_STAMP_FORMAT)}{UTC_MARK}{'_' + suffix if suffix else ''}.db"
+
+
+def name_moment(stamp: str, mark: str | None, old_zone: tzinfo | None = None) -> datetime:
+    """The moment written in a name as naive UTC: the time `stamp` as it is when it carries the `Z` (`mark`); else it is the
+    clock of the process that wrote it (a name made before 9.1d), `old_zone` — None is the zone of this process — turned
+    into UTC, the earlier moment at the hour the clocks go back. `ValueError` — no such date."""
+    moment = datetime.strptime(stamp, BACKUP_STAMP_FORMAT)
+    if mark:
+        return moment
+    try:
+        if old_zone is None:
+            return moment.astimezone(timezone.utc).replace(tzinfo=None)
+        return moment.replace(tzinfo=old_zone, fold=0).astimezone(timezone.utc).replace(tzinfo=None)
+    except (OSError, OverflowError):  # a clock that cannot take this date: the name as written
+        return moment
 
 
 def copy_database(source: pathlib.Path, target: pathlib.Path) -> None:
@@ -181,9 +202,11 @@ def _dump_hash(file: pathlib.Path) -> str:
         connection.close()
 
 
-def _newest_copy_before(folder: pathlib.Path, revision: str) -> pathlib.Path | None:
-    """The newest `tracker_db_<time>_before-<revision>.db` in the folder, by the time in its name."""
-    name = re.compile(rf"^tracker_db_(\d{{8}}_\d{{6}})_before-{re.escape(revision)}\.db$")
+def _newest_copy_before(
+    folder: pathlib.Path, revision: str, old_zone: tzinfo | None = None
+) -> pathlib.Path | None:
+    """The newest `tracker_db_<time>[Z]_before-<revision>.db` in the folder, by the time in its name (in UTC)."""
+    name = re.compile(rf"^tracker_db_(\d{{8}}_\d{{6}})({UTC_MARK})?_before-{re.escape(revision)}\.db$")
     found = []
     if folder.is_dir():
         for path in folder.iterdir():
@@ -191,7 +214,7 @@ def _newest_copy_before(folder: pathlib.Path, revision: str) -> pathlib.Path | N
             if match is None:
                 continue
             try:
-                found.append((datetime.strptime(match.group(1), BACKUP_STAMP_FORMAT), path))
+                found.append((name_moment(match.group(1), match.group(2), old_zone), path))
             except ValueError:  # no such date
                 continue
     return max(found)[1] if found else None
@@ -207,7 +230,7 @@ def _same_content(file: pathlib.Path, copy: pathlib.Path) -> bool:
 
 def _backup_before_migration(file: pathlib.Path, now: datetime) -> None:
     """If the existing database file has migrations still to run, copy it first to `backups` next to it as
-    `tracker_db_<time>_before-<revision>.db`. A failed copy is raised: the migration must not run without it.
+    `tracker_db_<time>Z_before-<revision>.db`. A failed copy is raised: the migration must not run without it.
 
     A migration that failed is rolled back whole, and Docker starts the process again every minute: when the newest
     copy before the same revision holds what the database holds, it is the copy, and no new one is made."""
@@ -230,10 +253,10 @@ def _backup_before_migration(file: pathlib.Path, now: datetime) -> None:
 
 def create_session_factory(url: str = TRACKER_DATABASE_URL, now: datetime | None = None) -> sessionmaker:
     """Open the tracker database, migrate it and return a session factory. A database that already exists and has
-    migrations to run is copied first (`now` is the clock of the copy's name; local time)."""
+    migrations to run is copied first (`now` is the clock of the copy's name; naive UTC)."""
     file = database_file(url)
     if file is not None and file.exists():  # before the engine opens (and so creates) the file
-        _backup_before_migration(file, now or datetime.now())
+        _backup_before_migration(file, now or utc_now())
     engine = create_tracker_engine(url)
     migrate(engine)
     return sessionmaker(bind=engine, expire_on_commit=False)

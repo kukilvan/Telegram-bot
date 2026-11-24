@@ -1,6 +1,6 @@
 # 05: Copies and `.env` — UTC names, the zone of Settings, Drive pages and duplicates, the restore note, the six names — KI-66, KI-67, KI-68, KI-69, KI-49
 
-Status: open
+Status: in review
 Complexity: medium (names, one zone rule, two Drive fixes, a test on `.env.example`; no migration)
 Blocked by: 01
 

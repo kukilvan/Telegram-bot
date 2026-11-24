@@ -63,7 +63,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-46 | Цены Steam: короткая скидка может пройти без сообщения или с неверным «до» | `app/tracker/pollers/game_prices.py` | won't fix (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
 | KI-47 | Цены Steam: сообщение о скидке может уйти в ту минуту, когда игра ушла из «Хочу» | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_press.py`) | 9.1b |
 | KI-48 | Anime card: no episode or schedule data for an announced season (Jujutsu Kaisen) | `app/tracker/sources/` | won't fix (test: `tests/test_shikimori_anime_source.py`) | 9.1 |
-| KI-49 | `.env` holds variables the code does not read | `.env` | open | 9.1 |
+| KI-49 | `.env` holds variables the code does not read | `.env` | fixed (test: `tests/test_env_example.py`) | 9.1d.05 |
 | KI-50 | Steam prices: a spoiled price snapshot stops the price check of every game | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_known_issues.py`) | 9.1b |
 | KI-51 | Steam prices: the discounts of one check can come as separate messages | `app/tracker/pollers/game_prices.py` | fixed (test: `tests/test_tracker_price_batch.py`) | 9.1b |
 | KI-52 | Expansions: a standalone expansion completed before 6.3 never learns it is one | `app/tracker/sources/igdb_games.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
@@ -80,10 +80,10 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
 | KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | fixed (test: `tests/test_inbox_offer_dates.py`) | 9.1d.04 |
 | KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | fixed (test: `tests/test_web_inbox.py`) | 9.1c |
-| KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | open | 9.1 |
-| KI-67 | Google Drive copy: a folder of over 1000 files is listed only in part | `app/providers/google_drive.py` | open | 9.1 |
-| KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | open | 9.1 |
-| KI-69 | Restore: the note «ещё одна копия» of an older copy is not always true | `app/utils/restore.py` | open | 9.1 |
+| KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | fixed (test: `tests/test_copy_names_utc.py`) | 9.1d.05 |
+| KI-67 | Google Drive copy: a folder of over 1000 files is listed only in part | `app/providers/google_drive.py` | fixed (test: `tests/test_copy_names_utc.py`) | 9.1d.05 |
+| KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | fixed (test: `tests/test_drive_copies.py`) | 9.1d.05 |
+| KI-69 | Restore: the note «ещё одна копия» of an older copy is not always true | `app/utils/restore.py` | fixed (test: `tests/test_restore.py`) | 9.1d.05 |
 | KI-70 | Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`) | `restore-bot.ps1` | open | 7.3 |
 | KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | fixed (test: `tests/test_tracker_split_health.py`) | 9.1d.01 |
 | KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | won't fix (test: `tests/test_web_devices.py`) | 9.1c |
@@ -557,7 +557,7 @@ Format of a new entry:
 - What's wrong: `PSN_API_KEY` and `SHIKIMORI_CLIENT_ID` / `SHIKIMORI_CLIENT_SECRET` are not read by any code; `psn_api_key` is written in lower case.
 - How to reproduce: search `app/` for these names — no reader.
 - Likelihood / impact: harmless; confusing for someone who deploys their own instance.
-- Status: open (bring to one form in stage 9.1, before the move).
+- Status: fixed (test: `tests/test_env_example.py`). Ticket 9.1d.05 (section 11 of 9.1d): `.env.example` lists every name the code reads (`Settings`, `docker-compose.yml`, `container_start.ID_NAMES`) and the test fails on a missing or an alien one; `SHIKIMORI_BASE_URL` and `SHIKIMORI_USER_AGENT` are in it, commented out. The six unread names (`KINOPUB_ACCESS_TOKEN`, `PS_STORE_REGION`, `SHIKIMORI_CLIENT_ID`, `SHIKIMORI_CLIENT_SECRET`, `psn_api_key`, `rawg_api_key`) were removed from the owner's `.env` on 2026-11-24.
 - Found: 2026-11-01, while moving the docs (carried over from the old bug table).
 
 ## KI-50. Steam prices: a spoiled price snapshot stops the price check of every game
@@ -710,7 +710,7 @@ Format of a new entry:
 - What's wrong: when the zone chosen in Settings differs from `BOT_TIMEZONE`, the times of copies are off by the difference of the zones, while the time of the Google Drive copy (stored in UTC) is shown in the Settings zone — the two lines of the block can disagree.
 - How to reproduce: `BOT_TIMEZONE=UTC`, Settings zone Europe/Moscow; «Сделать копию сейчас» at 16:21 Moscow — the notice and the list say «в 13:21».
 - Likelihood / impact: rare (the owner sets one zone in both places); the order and the content of copies are right, only the hour shown. A fix: names in UTC with a marker (old names kept readable), or reading `BOT_TIMEZONE` for the names' clock.
-- Status: open.
+- Status: fixed (test: `tests/test_copy_names_utc.py`). Ticket 9.1d.05 (10.1 of 9.1d): every writer names a copy by the UTC time with a `Z` (`tracker_db_20261123_132100Z.db`, the archive too); a name without `Z` is read in the zone of the process (`db.name_moment`, `old_zone`), the earlier moment at the hour the clocks go back; `Copy.moment` is naive UTC, old and new names mix in one order and one rotation. The Settings block, the notice after «Сделать копию сейчас», the report of a failed copy and the restore list show the zone of Settings (the restore reads it from the base being replaced, else the zone of the process).
 - Found: 2026-11-07, spec of stage 7.1.
 
 ## KI-67. Google Drive copy: a folder of over 1000 files is listed only in part
@@ -719,7 +719,7 @@ Format of a new entry:
 - What's wrong: when the owner puts over 1000 files into «Трекер — копии», the archives on the later pages are neither counted nor rotated, and «already there» may miss a file.
 - How to reproduce: 1001 files in the folder, the app's archives among the last ones listed.
 - Likelihood / impact: very rare (the app keeps 30; the folder is the app's own); at worst a few archives over 30 and a duplicate. A fix: follow `nextPageToken`.
-- Status: open.
+- Status: fixed (test: `tests/test_copy_names_utc.py`). Ticket 9.1d.05 (10.2 of 9.1d): `GoogleDriveApi._files` follows `nextPageToken` (`pageToken`) up to 50 pages, then a warning and what it has; `list_folder` and `find_folder` both go through it.
 - Found: 2026-11-08, ticket 7.1.04.
 
 ## KI-68. Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out
@@ -728,7 +728,7 @@ Format of a new entry:
 - What's wrong: if a file of the archive's name but another size is in the folder (an archive made before `BACKUP_PASSWORD` changed is the same size, so this needs a copy file changed on the PC, or a file put there by hand), the new archive is sent next to it; both have one name and both count among the 30.
 - How to reproduce: upload by hand a file `tracker_db_<time of the newest copy>.7z` of a few bytes, wait for the hourly job.
 - Likelihood / impact: very rare; one extra file of the same name in the folder until it rotates out. A fix: delete the same-name file of another size after the upload.
-- Status: open.
+- Status: fixed (test: `tests/test_drive_copies.py`). Ticket 9.1d.05 (10.3 of 9.1d): once the archive is in the folder (sent now or found by name and size) every other file of that name is deleted for good, a failed delete a warning; the kept count does not include what was deleted.
 - Found: 2026-11-08, ticket 7.1.04.
 
 ## KI-69. Restore: the note «ещё одна копия» of an older copy is not always true
@@ -737,7 +737,7 @@ Format of a new entry:
 - What's wrong: the confirmation of a copy of an older revision says «перед этим сделается ещё одна копия», but the start makes no copy before the migration when the newest copy before that revision already holds the same content — for instance when the owner restores that very copy «перед обновлением базы».
 - How to reproduce: `.\restore-bot.ps1`, choose a copy «перед обновлением базы», «да»: after the start `data\backups` has no new `…_before-<revision>.db` (checked live 2026-11-08 on a copy of the project: 0013 → 0014).
 - Likelihood / impact: whenever a before-update copy is restored; nothing is lost (the same content is in the copy already, and the restore made its «перед восстановлением» copy), only the promise of the text is wrong. A fix: «перед этим сохранится копия» or no promise at all.
-- Status: open.
+- Status: fixed (test: `tests/test_restore.py`). Ticket 9.1d.05 (10.4 of 9.1d): `OLDER` says «Копия от более старой версии: при запуске база обновится сама.» with no promise of a copy; the line «Нынешняя база сохранена…» after «да» stays.
 - Found: 2026-11-08, ticket 7.1.05.
 
 ## KI-70. Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`)

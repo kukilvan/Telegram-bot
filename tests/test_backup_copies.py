@@ -24,7 +24,7 @@ from app.utils import backup
 
 MOSCOW = ZoneInfo("Europe/Moscow")
 NOW = datetime(2026, 10, 29, 19, 10, tzinfo=timezone.utc)  # Thursday 22:10 in Moscow
-WALL = datetime(2026, 10, 29, 22, 10, 5)  # the container's clock at that moment
+WALL = datetime(2026, 10, 29, 19, 10, 5)  # the clock of the names of the copies (naive UTC) at that moment
 FULL_DISK = "⚠️ Копия базы не сделана: на диске нет места."
 
 
@@ -67,7 +67,7 @@ def sender():
 def tracker(tmp_path, clock, sender):
     url = f"sqlite:///{(tmp_path / 'tracker.db').as_posix()}"
     core = Tracker(create_session_factory(url), clock=clock, sender=sender, default_tz=MOSCOW, database_url=url)
-    core._backups.wall_clock = lambda: WALL
+    core._backups.utc_clock = lambda: WALL
     return core
 
 
@@ -79,7 +79,7 @@ def put(folder: Path, name: str) -> Path:
 
 
 def stamp(moment: datetime, suffix: str = "") -> str:
-    return f"tracker_db_{moment:%Y%m%d_%H%M%S}{'_' + suffix if suffix else ''}.db"
+    return f"tracker_db_{moment:%Y%m%d_%H%M%S}Z{'_' + suffix if suffix else ''}.db"
 
 
 def names(folder: Path) -> list[str]:
@@ -158,7 +158,7 @@ def test_a_manual_copy_is_named_manual_and_the_10_newest_stay(tmp_path):
 
     kept = [c.moment for c in backup.copies(folder)]
 
-    assert len(kept) == 10 and kept[0] == datetime(2026, 10, 29, 22, 10, 16) and kept[-1] == datetime(2026, 10, 29, 22, 10, 7)
+    assert len(kept) == 10 and kept[0] == datetime(2026, 10, 29, 19, 10, 16) and kept[-1] == datetime(2026, 10, 29, 19, 10, 7)
     assert all(p.name.endswith("_manual.db") for p in folder.iterdir())
 
 
@@ -239,7 +239,7 @@ def test_a_second_press_in_the_same_second_is_already_working(tracker, tmp_path)
 
 def test_a_press_in_the_next_second_makes_the_next_copy(tracker, tmp_path):
     run(tracker.make_backup_now())
-    tracker._backups.wall_clock = lambda: WALL + timedelta(seconds=1)
+    tracker._backups.utc_clock = lambda: WALL + timedelta(seconds=1)
 
     assert run(tracker.make_backup_now()) == "Копия сделана: сегодня в 22:10."
     assert len(names(tmp_path / "backups")) == 2
@@ -367,7 +367,7 @@ def failing_hourly(tracker, error):
 
 
 def test_a_failed_daily_copy_queues_the_event_with_the_reason_and_the_last_copy(tracker, tmp_path):
-    put(tmp_path / "backups", stamp(datetime(2026, 10, 28, 18, 32)))
+    put(tmp_path / "backups", stamp(datetime(2026, 10, 28, 15, 32)))  # 18:32 in Moscow
 
     failing_hourly(tracker, OSError(errno.ENOSPC, "No space left on device"))
 
@@ -470,10 +470,10 @@ def test_the_sample_of_the_report_is_in_the_test_event_list(tracker, sender):
 
 def test_the_block_says_how_many_copies_and_when_the_newest_is(tracker, tmp_path):
     folder = tmp_path / "backups"
-    put(folder, stamp(datetime(2026, 10, 28, 7, 58)))
-    put(folder, stamp(datetime(2026, 10, 29, 7, 58)))
-    put(folder, stamp(datetime(2026, 10, 29, 7, 58), "manual"))
-    put(folder, stamp(datetime(2026, 10, 20, 7, 58), "before-0014"))
+    put(folder, stamp(datetime(2026, 10, 28, 4, 58)))
+    put(folder, stamp(datetime(2026, 10, 29, 4, 58)))  # 07:58 in Moscow
+    put(folder, stamp(datetime(2026, 10, 29, 4, 58), "manual"))
+    put(folder, stamp(datetime(2026, 10, 20, 4, 58), "before-0014"))
     put(folder, "tracker_db_junk.db")
 
     block = run(tracker.backup_block())
@@ -513,8 +513,28 @@ def test_the_block_is_read_in_a_worker_thread(tracker, tmp_path):
     assert run(read()) is not seen[0]
 
 
-def test_the_block_counts_the_time_of_a_name_as_written_whatever_the_zone(tracker, clock, tmp_path):
-    put(tmp_path / "backups", stamp(datetime(2026, 10, 29, 7, 58)))
+def test_the_block_shows_the_time_of_a_name_in_the_zone_of_settings(tracker, clock, tmp_path):
+    put(tmp_path / "backups", stamp(datetime(2026, 10, 29, 4, 58)))
     clock.now = datetime(2026, 10, 29, 21, 30, tzinfo=timezone.utc)  # 30 October, 00:30 in Moscow
 
     assert run(tracker.backup_block()).copies_line.endswith("последняя — вчера в 07:58.")
+
+    run(tracker.set_delivery_rules(tz_name="Asia/Tokyo"))  # 13:58 on the 29th, and now 06:30 on the 30th
+
+    assert run(tracker.backup_block()).copies_line.endswith("последняя — вчера в 13:58.")
+
+
+def test_the_notice_after_the_press_is_in_the_zone_of_settings(tracker):
+    run(tracker.set_delivery_rules(tz_name="Asia/Tokyo"))  # the copy is made at 19:10 UTC: 04:10 the next day in Tokyo
+
+    assert run(tracker.make_backup_now()) == "Копия сделана: сегодня в 04:10."
+
+
+def test_the_report_of_a_failed_copy_names_the_last_one_in_the_zone_of_settings(tracker, tmp_path):
+    put(tmp_path / "backups", stamp(datetime(2026, 10, 28, 15, 32)))  # 00:32 on the 29th in Tokyo, now 04:10 on the 30th
+    run(tracker.set_delivery_rules(tz_name="Asia/Tokyo"))
+
+    failing_hourly(tracker, OSError(errno.ENOSPC, "No space left on device"))
+
+    [event] = events(tracker)
+    assert event.payload["text"] == f"{FULL_DISK} Последняя — вчера в 00:32. Попробую снова через час."

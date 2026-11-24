@@ -6,7 +6,7 @@ import hashlib
 import re
 import shutil
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import py7zr
@@ -20,7 +20,7 @@ from app.utils.archive import make_archive
 
 ROOT = Path(__file__).resolve().parent.parent
 BOM = b"\xef\xbb\xbf"
-NOW = datetime(2026, 11, 8, 12, 0, 0)
+NOW = restore.Clock(datetime(2026, 11, 8, 12, 0, 0), timezone.utc, timezone.utc)  # shown and old names read in UTC
 PASSWORD = "Пароль копий 2026"
 STAMP = "20261108_075800"
 
@@ -216,8 +216,7 @@ def test_an_older_revision_is_accepted_with_the_note(template, tmp_path):
     outcome = restore.check(copy, "", NOW)
 
     assert outcome.code == 0
-    assert outcome.lines[1] == ("Копия от более старой версии: при запуске база обновится сама "
-                                "(перед этим сделается ещё одна копия).")
+    assert outcome.lines[1] == "Копия от более старой версии: при запуске база обновится сама."
 
 
 def test_a_newer_revision_is_refused(template, tmp_path):
@@ -346,8 +345,8 @@ def test_apply_saves_the_current_base_with_its_wal_then_replaces_it(template, tm
 
     outcome = restore.apply(copy, data, "", NOW)
 
-    before = data / "backups" / "tracker_db_20261108_120000_before-restore.db"
-    assert outcome == restore.Outcome(0, ["Нынешняя база сохранена: data\\backups\\tracker_db_20261108_120000_before-restore.db",
+    before = data / "backups" / "tracker_db_20261108_120000Z_before-restore.db"
+    assert outcome == restore.Outcome(0, ["Нынешняя база сохранена: data\\backups\\tracker_db_20261108_120000Z_before-restore.db",
                                           "База восстановлена из копии от сегодня в 07:58."])
     assert _marker(before) == "current"  # the content of the `-wal` is in the copy
     assert _marker(data / "tracker.db") == "restored"
@@ -366,7 +365,7 @@ def test_apply_from_a_downloaded_archive(template, tmp_path):
 
     assert outcome.code == 0
     assert _marker(data / "tracker.db") == "from drive"
-    assert _marker(data / "backups" / "tracker_db_20261108_120000_before-restore.db") == "current"
+    assert _marker(data / "backups" / "tracker_db_20261108_120000Z_before-restore.db") == "current"
 
 
 def test_apply_without_a_current_base_just_puts_the_copy(template, tmp_path):
@@ -383,13 +382,13 @@ def test_a_before_restore_copy_can_be_restored_too(template, tmp_path):
     data = _data_folder(template, tmp_path)
     copy = _database(template, data / "backups" / f"tracker_db_{STAMP}.db", marker="restored")
     restore.apply(copy, data, "", NOW)
-    back = data / "backups" / "tracker_db_20261108_120000_before-restore.db"
+    back = data / "backups" / "tracker_db_20261108_120000Z_before-restore.db"
 
-    outcome = restore.apply(back, data, "", datetime(2026, 11, 8, 12, 5))
+    outcome = restore.apply(back, data, "", restore.Clock(datetime(2026, 11, 8, 12, 5), timezone.utc, timezone.utc))
 
     assert outcome.code == 0 and outcome.lines[-1] == "База восстановлена из копии от сегодня в 12:00."
     assert _marker(data / "tracker.db") == "current"
-    assert _marker(data / "backups" / "tracker_db_20261108_120500_before-restore.db") == "restored"
+    assert _marker(data / "backups" / "tracker_db_20261108_120500Z_before-restore.db") == "restored"
 
 
 def _assert_base_whole(data: Path, dump: str) -> None:
@@ -509,7 +508,7 @@ def test_an_older_copy_is_migrated_at_the_start_with_its_own_copy(tmp_path):
 
     assert restore.check(data / "tracker.db", "", NOW).lines == ["Копия из файла tracker.db в порядке, тайтлов в ней: 0.",
                                                                  "@when из файла tracker.db"]
-    assert (data / "backups" / "tracker_db_20261108_120100_before-0013.db").exists()
+    assert (data / "backups" / "tracker_db_20261108_120100Z_before-0013.db").exists()
 
 
 # ---- the command line -------------------------------------------------------

@@ -7,7 +7,7 @@ import shutil
 import sqlite3
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -30,7 +30,7 @@ from app.utils import backup
 from app.utils.backup import backup_database, backup_if_due, create_backup
 from app.utils.logging_config import setup_logging
 
-DAILY = re.compile(r"^tracker_db_\d{8}_\d{6}\.db$")
+DAILY = re.compile(r"^tracker_db_\d{8}_\d{6}Z\.db$")
 NOW = datetime(2026, 10, 27, 12, 0, 0)  # the clock of the tests: they do not depend on today's date
 
 
@@ -54,7 +54,7 @@ def names_in(path: Path) -> list[str]:
 
 
 def daily_name(moment: datetime) -> str:
-    return f"tracker_db_{moment:%Y%m%d_%H%M%S}.db"
+    return f"tracker_db_{moment:%Y%m%d_%H%M%S}Z.db"
 
 
 def daily_files(folder: Path) -> list[str]:
@@ -100,7 +100,7 @@ def test_backup_copies_the_database_into_a_dated_file(tmp_path):
 def test_the_copy_is_named_by_the_clock_it_is_given(tmp_path):
     result = create_backup(make_database(tmp_path / "tracker.db"), NOW)
 
-    assert result.name == "tracker_db_20261027_120000.db"
+    assert result.name == "tracker_db_20261027_120000Z.db"
 
 
 def test_the_backups_lie_in_a_folder_next_to_the_database_wherever_it_is(tmp_path):
@@ -210,8 +210,8 @@ def test_only_the_newest_daily_copy_counts_and_other_files_do_not(tmp_path):
 def test_the_clock_defaults_to_the_current_time(tmp_path):
     result = backup_if_due(make_database(tmp_path / "tracker.db"))
 
-    stamp = datetime.strptime(result.name, "tracker_db_%Y%m%d_%H%M%S.db")
-    assert abs(stamp - datetime.now()) < timedelta(minutes=1)
+    stamp = datetime.strptime(result.name, "tracker_db_%Y%m%d_%H%M%SZ.db")
+    assert abs(stamp - datetime.now(timezone.utc).replace(tzinfo=None)) < timedelta(minutes=1)
 
 
 def test_a_database_without_a_file_gives_no_copy(tmp_path):
@@ -335,7 +335,7 @@ def test_a_database_with_pending_migrations_is_copied_first_and_then_migrated(tm
 
     create_session_factory(url, now=NOW)
 
-    copy = tmp_path / "backups" / f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db"
+    copy = tmp_path / "backups" / f"tracker_db_{NOW:%Y%m%d_%H%M%S}Z_before-0007.db"
     assert copy.exists()
     assert revision_of(copy) == "0007"  # the copy is the database as it was
     assert revision_of(tmp_path / "tracker.db") == head_revision()
@@ -403,7 +403,7 @@ def test_a_migration_that_fails_on_every_start_is_copied_before_once(tmp_path, c
     with caplog.at_level(logging.INFO):
         start_with_a_failing_migration(url, NOW + timedelta(minutes=1))
 
-    assert copies_before(tmp_path / "backups", "0007") == [f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db"]
+    assert copies_before(tmp_path / "backups", "0007") == [f"tracker_db_{NOW:%Y%m%d_%H%M%S}Z_before-0007.db"]
     assert "копия перед миграцией с 0007 уже есть" in caplog.text and "база с тех пор не менялась" in caplog.text
 
 
@@ -423,18 +423,18 @@ def test_a_database_written_to_between_the_starts_is_copied_again(tmp_path):
 
 def test_a_spoiled_copy_before_the_same_revision_does_not_count(tmp_path):
     url = migrated_file(tmp_path / "tracker.db", "0007")
-    spoiled = put_copy(tmp_path / "backups", f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}_before-0007.db")
+    spoiled = put_copy(tmp_path / "backups", f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}Z_before-0007.db")
     spoiled.write_bytes(b"not a database " * 100)
 
     create_session_factory(url, now=NOW)
 
-    assert (tmp_path / "backups" / f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db").exists()
+    assert (tmp_path / "backups" / f"tracker_db_{NOW:%Y%m%d_%H%M%S}Z_before-0007.db").exists()
 
 
 def test_only_the_newest_copy_before_the_revision_is_compared(tmp_path):
     url = migrated_file(tmp_path / "tracker.db", "0007")
     start_with_a_failing_migration(url, NOW - timedelta(hours=2))  # the same content, but older
-    newer = put_copy(tmp_path / "backups", f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}_before-0007.db")
+    newer = put_copy(tmp_path / "backups", f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}Z_before-0007.db")
     newer.write_bytes(b"not a database " * 100)
 
     start_with_a_failing_migration(url, NOW)
@@ -444,13 +444,13 @@ def test_only_the_newest_copy_before_the_revision_is_compared(tmp_path):
 
 def test_a_copy_before_another_revision_does_not_stand_for_this_one(tmp_path):
     url = migrated_file(tmp_path / "tracker.db", "0007")
-    other = tmp_path / "backups" / f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}_before-0006.db"
+    other = tmp_path / "backups" / f"tracker_db_{NOW - timedelta(hours=1):%Y%m%d_%H%M%S}Z_before-0006.db"
     other.parent.mkdir()
     shutil.copyfile(tmp_path / "tracker.db", other)  # even with the very same content
 
     create_session_factory(url, now=NOW)
 
-    assert copies_before(tmp_path / "backups", "0007") == [f"tracker_db_{NOW:%Y%m%d_%H%M%S}_before-0007.db"]
+    assert copies_before(tmp_path / "backups", "0007") == [f"tracker_db_{NOW:%Y%m%d_%H%M%S}Z_before-0007.db"]
 
 
 # --- the scheduler job ---------------------------------------------------------------------------
@@ -510,7 +510,7 @@ def test_the_job_logs_what_it_made_or_that_there_was_nothing(tmp_path, caplog):
 
 def test_the_job_makes_no_copy_and_says_nothing_when_the_last_one_is_fresh(tmp_path, caplog):
     url = make_database(tmp_path / "tracker.db")
-    put_copy(tmp_path / "backups", daily_name(datetime.now() - timedelta(hours=1)))
+    put_copy(tmp_path / "backups", daily_name(datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=1)))
 
     with caplog.at_level(logging.INFO):
         asyncio.run(backup_database(url))

@@ -6,12 +6,13 @@ changed; 2 for an unknown command); nothing here asks the owner: the script asks
 script, not the owner: `@copy <n> <path>` (a copy of the list) and `@when <phrase>` (the copy in words, for the question
 and the last line).
 `list` and `check` change nothing; `apply` is run only while the bot is stopped and touches only `tracker.db` and its
-`-wal`/`-shm`: the current base goes first to `tracker_db_<now>_before-restore.db` (SQLite's online backup, so the
+`-wal`/`-shm`: the current base goes first to `tracker_db_<now>Z_before-restore.db` (SQLite's online backup, so the
 content of its `-wal` too), and a failure before the final `os.replace` leaves the base as it was.
 """
 
 import contextlib
 import errno
+import json
 import os
 import re
 import sqlite3
@@ -19,28 +20,33 @@ import sys
 import tempfile
 from collections.abc import Iterator
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone, tzinfo
 from pathlib import Path
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import py7zr
 
 from app.tracker.db import (
     BACKUP_FOLDER,
-    BACKUP_STAMP_FORMAT,
+    UTC_MARK,
     backup_name,
     copy_database,
     database_file,
     head_revision,
     is_known_revision,
+    name_moment,
+    utc_now,
 )
-from app.tracker.moment_words import moment_in_words
+from app.tracker.moment_words import local_moment, moment_in_words
+from app.tracker.zones import known_names
 from app.utils import backup
 from app.utils.secrets_mask import mask_secrets
 
 BASE_NAME = "tracker.db"
 RESTORING_SUFFIX = ".restoring"  # the copy is written next to the base under this name, then replaces it
 SIDE_FILES = ("-wal", "-shm")
-NAME_TIME = re.compile(r"^tracker_db_(\d{8}_\d{6})")  # the time at the start of the name of a copy or of its archive
+NAME_TIME = re.compile(rf"^tracker_db_(\d{{8}}_\d{{6}})({UTC_MARK})?")  # the time at the start of the name of a copy or of its archive
+ZONE_SETTING = "timezone"  # the row of the `settings` table that holds the zone chosen in Settings
 NEEDED_TABLES = {"alembic_version", "titles"}
 
 HEADER = "Копии базы в data\\backups (новые сверху):"
@@ -63,7 +69,7 @@ DAMAGED = "Копия повреждена (проверка SQLite не про�
 NOT_TRACKER = "Этот файл не похож на копию базы трекера. Ничего не изменено."
 NEWER = ("Эта копия сделана более новой версией трекера (база {revision}, а эта версия знает до {head}). "
          "Обновите трекер и запустите снова. Ничего не изменено.")
-OLDER = "Копия от более старой версии: при запуске база обновится сама (перед этим сделается ещё одна копия)."
+OLDER = "Копия от более старой версии: при запуске база обновится сама."
 CHECKED = "Копия {phrase} в порядке, тайтлов в ней: {titles}."
 
 SAVED = "Нынешняя база сохранена: data\\backups\\{name}"
@@ -72,6 +78,27 @@ RESTORE_FAILED = "Не удалось восстановить ({reason}). Ба�
 RESTORED = "База восстановлена из копии {phrase}."
 USAGE = "Команды: list, check <путь>, apply <путь>."
 NO_SPACE = "на диске нет места"
+
+
+@dataclass(frozen=True)
+class Clock:
+    """The moments of one run: `now` (naive UTC; it names the copy before a restore), the zone every moment is shown in
+    (`shown_in`: the zone of Settings of the base being replaced; None — the zone of this process) and the zone the names
+    without `Z` were written in (`old_zone`; None — the zone of this process)."""
+
+    now: datetime
+    shown_in: tzinfo | None = None
+    old_zone: tzinfo | None = None
+
+    def local(self, moment: datetime) -> datetime:
+        """A naive UTC moment on the wall clock of `shown_in`."""
+        if self.shown_in is None:
+            return moment.replace(tzinfo=timezone.utc).astimezone().replace(tzinfo=None)
+        return local_moment(moment, self.shown_in)
+
+    def words(self, moment: datetime) -> str:
+        """A naive UTC moment in words against now, both on the wall clock of `shown_in`."""
+        return moment_in_words(self.local(moment), self.local(self.now))
 
 
 class Refusal(Exception):
@@ -102,10 +129,27 @@ def origin_words(copy: backup.Copy) -> str:
     return ORIGIN_WORDS.get(copy.origin, "")
 
 
-def list_copies(folder: Path, now: datetime) -> Outcome:
+def zone_of_settings(base: Path) -> tzinfo | None:
+    """The zone chosen in Settings of the base at `base`, read without a change to it; None when the base cannot be read,
+    holds none or holds one that is not a zone (the zone of this process then)."""
+    if not base.is_file():
+        return None
+    try:
+        connection = _read_only(base)
+        try:
+            row = connection.execute("SELECT value FROM settings WHERE key = ?", (ZONE_SETTING,)).fetchone()
+        finally:
+            connection.close()
+        name = json.loads(row[0]) if row else None
+        return ZoneInfo(name) if isinstance(name, str) and name in known_names() else None
+    except (sqlite3.Error, ValueError, TypeError, OSError, ZoneInfoNotFoundError):
+        return None
+
+
+def list_copies(folder: Path, clock: Clock) -> Outcome:
     """The numbered list of the copies in `folder`, newest first (spec 5.2), with a `@copy` line for each."""
     try:
-        found = backup.copies(folder)
+        found = backup.copies(folder, clock.old_zone)
     except OSError as exc:
         return Outcome(1, [UNREADABLE.format(reason=reason_of(exc))])
     if not found:
@@ -113,17 +157,18 @@ def list_copies(folder: Path, now: datetime) -> Outcome:
     lines = [HEADER]
     for number, copy in enumerate(found, start=1):
         words = origin_words(copy)
-        lines.append(f"{number:>3}) {moment_in_words(copy.moment, now)}{' — ' + words if words else ''}")
+        lines.append(f"{number:>3}) {clock.words(copy.moment)}{' — ' + words if words else ''}")
         lines.append(f"@copy {number} {copy.path.as_posix()}")
     return Outcome(0, lines)
 
 
-def phrase_of(name: str, now: datetime) -> str:
-    """The copy in words by the time at the start of its file name; a name without one is named as it is."""
+def phrase_of(name: str, clock: Clock) -> str:
+    """The copy in words by the time at the start of its file name (UTC with `Z`, else the clock of the old names); a
+    name without one is named as it is."""
     match = NAME_TIME.match(name)
     if match:
         try:
-            return f"от {moment_in_words(datetime.strptime(match.group(1), BACKUP_STAMP_FORMAT), now)}"
+            return f"от {clock.words(name_moment(match.group(1), match.group(2), clock.old_zone))}"
         except ValueError:  # no such date
             pass
     return f"из файла {name}"
@@ -136,7 +181,7 @@ def reason_of(exc: BaseException) -> str:
     return mask_secrets(f"{type(exc).__name__}: {exc}")
 
 
-def check(path: Path, password: str, now: datetime) -> Outcome:
+def check(path: Path, password: str, now: Clock) -> Outcome:
     """The checks of spec 5.3 and 5.4 of a copy or an archive, with its description and a `@when` line; changes
     nothing."""
     try:
@@ -150,7 +195,7 @@ def check(path: Path, password: str, now: datetime) -> Outcome:
 
 
 @contextlib.contextmanager
-def examined(path: Path, password: str, now: datetime) -> Iterator[Examined]:
+def examined(path: Path, password: str, now: Clock) -> Iterator[Examined]:
     """The copy at `path` checked (an archive opened into a temporary folder that goes when the block ends); `Refusal`
     with the owner's text when it does not pass."""
     if not path.is_file():
@@ -260,7 +305,7 @@ def _checkpoint(base: Path) -> None:
         _side(base, suffix).unlink(missing_ok=True)
 
 
-def apply(path: Path, data_dir: Path, password: str, now: datetime) -> Outcome:
+def apply(path: Path, data_dir: Path, password: str, now: Clock) -> Outcome:
     """Replace `data_dir/tracker.db` by the copy at `path` (spec 5.5, steps 2–5); only while the bot is stopped."""
     try:
         with examined(path, password, now) as copy:
@@ -269,11 +314,11 @@ def apply(path: Path, data_dir: Path, password: str, now: datetime) -> Outcome:
         return Outcome(1, [str(refusal)])
 
 
-def _replace(copy: Examined, data_dir: Path, now: datetime) -> Outcome:
+def _replace(copy: Examined, data_dir: Path, now: Clock) -> Outcome:
     base = data_dir / BASE_NAME
     lines = []
     if base.exists():
-        before = data_dir / BACKUP_FOLDER / backup_name(now, backup.BEFORE_RESTORE_SUFFIX)
+        before = data_dir / BACKUP_FOLDER / backup_name(now.now, backup.BEFORE_RESTORE_SUFFIX)
         try:
             copy_database(base, before)  # the online backup reads through the `-wal`: its content is in the copy
         except Exception as exc:
@@ -297,14 +342,18 @@ def _replace(copy: Examined, data_dir: Path, now: datetime) -> Outcome:
     return Outcome(0, [*lines, RESTORED.format(phrase=copy.phrase)])
 
 
-def run(args: list[str], data_dir: Path, password: str, now: datetime) -> Outcome:
-    """The command of `args` on the base in `data_dir`."""
+def run(
+    args: list[str], data_dir: Path, password: str, now: datetime, process_zone: tzinfo | None = None
+) -> Outcome:
+    """The command of `args` on the base in `data_dir`; `now` is naive UTC. The moments are shown in the zone of Settings
+    of that base, else in `process_zone` (None — the zone of this process, which is also the zone of the old names)."""
+    clock = Clock(now, zone_of_settings(data_dir / BASE_NAME) or process_zone, process_zone)
     if args == ["list"]:
-        return list_copies(data_dir / BACKUP_FOLDER, now)
+        return list_copies(data_dir / BACKUP_FOLDER, clock)
     if len(args) == 2 and args[0] == "check":
-        return check(Path(args[1]), password, now)
+        return check(Path(args[1]), password, clock)
     if len(args) == 2 and args[0] == "apply":
-        return apply(Path(args[1]), data_dir, password, now)
+        return apply(Path(args[1]), data_dir, password, clock)
     return Outcome(2, [USAGE])
 
 
@@ -312,7 +361,7 @@ def main(argv: list[str] | None = None) -> int:
     file = database_file()
     data_dir = file.parent if file is not None else Path("data")
     password = os.environ.get("BACKUP_PASSWORD", "").strip()  # stripped as `Settings` strips it
-    outcome = run(sys.argv[1:] if argv is None else argv, data_dir, password, datetime.now())
+    outcome = run(sys.argv[1:] if argv is None else argv, data_dir, password, utc_now())
     for line in outcome.lines:
         print(line, flush=True)
     return outcome.code

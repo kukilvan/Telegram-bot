@@ -42,8 +42,8 @@ class PressOutcome(Enum):
 
 
 def copies_block(moments: Sequence[datetime], now: datetime) -> BackupBlock:
-    """The block for the copies found, newest first (`moments`, naive as written in their names) and the owner's
-    wall clock `now`."""
+    """The block for the copies found, newest first (`moments`, naive, on the owner's wall clock: the zone of Settings)
+    and the owner's wall clock `now`."""
     if not moments:
         return BackupBlock(NO_COPIES, COPIES_HINT)
     line = f"Копии базы на этом ПК: {len(moments)}, последняя — {moment_in_words(moments[0], now)}."

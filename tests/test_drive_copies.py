@@ -28,7 +28,7 @@ from app.utils.archive import archive_name, make_archive
 
 MOSCOW = ZoneInfo("Europe/Moscow")
 NOW = datetime(2026, 11, 8, 9, 0, tzinfo=timezone.utc)  # Sunday 12:00 in Moscow
-WALL = datetime(2026, 11, 8, 12, 0, 5)  # the container's clock at that moment
+WALL = datetime(2026, 11, 8, 12, 0, 5)  # the clock of the names of the copies (naive UTC) at that moment
 CLIENT_ID = "1234-abcd.apps.googleusercontent.com"
 CLIENT_SECRET = "GOCSPX-fake-client-secret-value"
 PASSWORD = "Тест-пароль копий 123"
@@ -181,7 +181,7 @@ def make_tracker(tmp_path, google, clock, drive=DRIVE) -> Tracker:
         create_session_factory(url), clock=clock, sender=FakeSender(), default_tz=MOSCOW, database_url=url,
         drive_settings=drive, drive_api=api,
     )
-    core._backups.wall_clock = lambda: WALL
+    core._backups.utc_clock = lambda: WALL
     return core
 
 
@@ -197,7 +197,7 @@ def connect(tmp_path, folder_id: str | None = None, at: datetime = datetime(2026
 def copy_on_pc(tmp_path, moment: datetime = datetime(2026, 11, 8, 11, 30), suffix: str = "") -> Path:
     folder = tmp_path / "backups"
     folder.mkdir(parents=True, exist_ok=True)
-    path = folder / f"tracker_db_{moment:%Y%m%d_%H%M%S}{'_' + suffix if suffix else ''}.db"
+    path = folder / f"tracker_db_{moment:%Y%m%d_%H%M%S}Z{'_' + suffix if suffix else ''}.db"
     path.write_bytes(b"SQLite format 3\x00" + bytes(range(256)) * 40)
     return path
 
@@ -230,7 +230,7 @@ def test_the_archive_opens_by_its_cyrillic_password_and_holds_the_copy_under_its
     copy = copy_on_pc(tmp_path, suffix="manual")
     archive = make_archive(copy, tmp_path / "upload" / archive_name(copy), PASSWORD)
 
-    assert archive.name == "tracker_db_20261108_113000_manual.7z"
+    assert archive.name == "tracker_db_20261108_113000Z_manual.7z"
     with py7zr.SevenZipFile(archive, "r", password=PASSWORD) as opened:
         assert opened.getnames() == [copy.name]
         opened.extractall(tmp_path / "out")
@@ -276,7 +276,7 @@ def test_the_first_copy_makes_the_folder_sends_the_archive_and_writes_the_state(
 
     [folder_id] = google.folders
     assert google.folders[folder_id]["name"] == FOLDER
-    assert google.names_in(folder_id) == ["tracker_db_20261108_113000_manual.7z"]
+    assert google.names_in(folder_id) == ["tracker_db_20261108_113000Z_manual.7z"]
     assert token(tmp_path).folder_id == folder_id and token(tmp_path).refresh_token == REFRESH
     assert state(tmp_path) == DriveState(
         datetime(2026, 11, 8, 9, 0), datetime(2026, 11, 8, 9, 0), copy.name, 1, None, 0
@@ -375,7 +375,7 @@ def test_a_file_of_the_same_name_but_another_size_is_sent_again(tracker, tmp_pat
 
 
 def stamped(day: int, hour: int = 4, suffix: str = "") -> str:
-    return f"tracker_db_202610{day:02d}_{hour:02d}0000{suffix}.7z"
+    return f"tracker_db_202610{day:02d}_{hour:02d}0000Z{suffix}.7z"
 
 
 def test_the_rotation_keeps_the_30_newest_of_its_own_names_only(tracker, tmp_path, google):
@@ -383,7 +383,7 @@ def test_the_rotation_keeps_the_30_newest_of_its_own_names_only(tracker, tmp_pat
     connect(tmp_path, folder_id)
     for day in range(1, 31):  # 30 old ones, the manual ones among them
         google.put_file(stamped(day, suffix="_manual" if day % 7 == 0 else ""), parent=folder_id)
-    others = ["notes.txt", "tracker_db_20261001_040000.7z.bak", "tracker_db_20261399_000000.7z", "фото.jpg"]
+    others = ["notes.txt", "tracker_db_20261001_040000Z.7z.bak", "tracker_db_20261399_000000Z.7z", "фото.jpg"]
     for name in others:
         google.put_file(name, parent=folder_id)
     copy_on_pc(tmp_path)
@@ -407,7 +407,7 @@ def test_a_failed_delete_is_a_warning_and_the_copy_counts_as_sent(tracker, tmp_p
     with caplog.at_level(logging.WARNING):
         assert send(tracker) is None
 
-    assert "was not deleted: tracker_db_20261001_040000.7z" in caplog.text
+    assert "was not deleted: tracker_db_20261001_040000Z.7z" in caplog.text
     assert state(tmp_path).error is None and state(tmp_path).kept == 31
 
 
@@ -488,7 +488,7 @@ def test_a_copy_before_an_update_is_not_sent(tracker, tmp_path):
     copy_on_pc(tmp_path, datetime(2026, 11, 8, 11, 0))
     copy_on_pc(tmp_path, datetime(2026, 11, 8, 11, 59), suffix="before-0014")
 
-    assert tracker._backups.copies.newest().path.name == "tracker_db_20261108_110000.db"
+    assert tracker._backups.copies.newest().path.name == "tracker_db_20261108_110000Z.db"
 
 
 def test_a_failed_archive_is_unknown(tracker, tmp_path, monkeypatch):
@@ -717,14 +717,14 @@ def test_the_pc_that_was_off_sends_at_its_start(tracker, tmp_path, google):
     connect(tmp_path)
     copy_on_pc(tmp_path, datetime(2026, 11, 2, 4, 0))
     DriveFiles(tmp_path).write_state(
-        DriveState(datetime(2026, 11, 2, 1, 0), datetime(2026, 11, 2, 1, 0), "tracker_db_20261101_040000.db", 5)
+        DriveState(datetime(2026, 11, 2, 1, 0), datetime(2026, 11, 2, 1, 0), "tracker_db_20261101_040000Z.db", 5)
     )
 
     run(tracker.backup_database())  # the first run of the job is at the start
 
     # The daily copy is named by the real clock (`backup_if_due`), so the test finds it in the folder, whatever the date
     newest = backup.daily_backups(tmp_path / "backups")[-1][1].name
-    assert newest != "tracker_db_20261102_040000.db"
+    assert newest != "tracker_db_20261102_040000Z.db"
     assert state(tmp_path).last_success_name == newest
 
 
@@ -786,7 +786,7 @@ def test_the_press_sends_its_manual_copy(tracker, tmp_path, google):
     assert press(tracker) == SENT
 
     [folder_id] = google.folders
-    assert google.names_in(folder_id) == ["tracker_db_20261108_120005_manual.7z"]
+    assert google.names_in(folder_id) == ["tracker_db_20261108_120005Z_manual.7z"]
 
 
 @pytest.mark.parametrize("answer, notice", [
@@ -800,7 +800,7 @@ def test_a_press_whose_sending_failed_says_why(tracker, tmp_path, google, answer
     google.answers["put"] = [answer]
 
     assert press(tracker) == notice
-    assert (tmp_path / "backups" / "tracker_db_20261108_120005_manual.db").exists()
+    assert (tmp_path / "backups" / "tracker_db_20261108_120005Z_manual.db").exists()
 
 
 def test_a_press_refused_by_google_asks_to_connect_and_promises_no_retry(tracker, tmp_path, google):
@@ -818,7 +818,7 @@ def test_a_press_without_the_google_drive_copy_only_makes_the_copy(tmp_path, goo
     if connected:
         connect(tmp_path)
 
-    assert run(core.make_backup_now()) == "Копия сделана: сегодня в 12:00."
+    assert run(core.make_backup_now()) == "Копия сделана: сегодня в 15:00."
     assert google.requests == []
 
 
@@ -865,7 +865,7 @@ def test_a_press_while_the_sending_of_the_hourly_job_goes_waits_for_it(tracker, 
 
     assert run(scenario()) == SENT
     [folder_id] = google.folders
-    assert "tracker_db_20261108_120005_manual.7z" in google.names_in(folder_id)
+    assert "tracker_db_20261108_120005Z_manual.7z" in google.names_in(folder_id)
     assert state(tmp_path).error is None and not tracker._backups.ctx.backup_lock.locked()
 
 
@@ -883,7 +883,7 @@ def write_state(tmp_path, **fields) -> None:
 def test_the_line_of_a_copy_that_works(tracker, tmp_path):
     connect(tmp_path)
     write_state(tmp_path, last_attempt_at=datetime(2026, 11, 8, 4, 58), last_success_at=datetime(2026, 11, 8, 4, 58),
-                last_success_name="tracker_db_20261108_075800.db", kept=12)
+                last_success_name="tracker_db_20261108_075800Z.db", kept=12)
 
     part = line_of(tracker)
 
@@ -938,3 +938,51 @@ def test_an_unknown_reason_key_reads_as_the_unknown_one(tracker, tmp_path):
     write_state(tmp_path, last_attempt_at=datetime(2026, 11, 8, 8, 0), error="from_a_newer_version", failures_in_row=1)
 
     assert "неизвестная ошибка, подробности в журнале" in line_of(tracker).line
+
+
+# ---- KI-68: a second archive of the same name ----------------------------------------------------
+
+
+def test_two_archives_of_the_same_name_leave_the_one_of_the_right_size(tracker, tmp_path, google):
+    folder_id = google.put_folder()
+    connect(tmp_path, folder_id)
+    copy = copy_on_pc(tmp_path)
+    name = archive_name(copy)
+    twin = google.put_file(name, 1, folder_id)  # a lost answer left a half-sent one
+    size = make_archive(copy, tmp_path / "probe.7z", PASSWORD).stat().st_size
+    right = google.put_file(name, size, folder_id)
+
+    assert send(tracker) is None
+
+    assert "start" not in google.steps()  # the one of the right size counts as sent
+    assert [i for i, f in google.files.items() if f["name"] == name] == [right]
+    assert twin not in google.files
+    assert state(tmp_path).kept == 1
+
+
+def test_a_sent_archive_is_the_only_one_of_its_name_afterwards(tracker, tmp_path, google):
+    folder_id = google.put_folder()
+    connect(tmp_path, folder_id)
+    copy = copy_on_pc(tmp_path)
+    old = google.put_file(archive_name(copy), 1, folder_id)  # the same name, another size
+
+    assert send(tracker) is None
+
+    assert [f["name"] for f in google.files.values()].count(archive_name(copy)) == 1
+    assert old not in google.files
+    assert state(tmp_path).kept == 1
+
+
+def test_a_failed_delete_of_the_twin_is_a_warning_and_does_not_fail_the_sending(tracker, tmp_path, google, caplog):
+    folder_id = google.put_folder()
+    connect(tmp_path, folder_id)
+    copy = copy_on_pc(tmp_path)
+    old = google.put_file(archive_name(copy), 1, folder_id)
+    google.answers["delete"] = [(500, {})]
+
+    with caplog.at_level(logging.WARNING):
+        assert send(tracker) is None
+
+    assert "second archive of the same name" in caplog.text
+    assert old in google.files and state(tmp_path).error is None
+    assert state(tmp_path).kept == 2  # the twin that could not be deleted still counts

@@ -19,6 +19,7 @@ APP_DIR = Path("/app")
 DATA_DIR = APP_DIR / "data"
 ZONEINFO_DIR = Path("/usr/share/zoneinfo")
 DEFAULT_ID = 1000
+ID_NAMES = ("PUID", "PGID")  # the environment names of the user and the group (`.env.example` lists them)
 APP_MODULE = "app.main"
 MODULE_NAME = re.compile(r"^app(\.[A-Za-z_]\w*)+$")  # only a module of the application may be run
 
@@ -41,7 +42,7 @@ class Identity:
 def read_identity(environ: Mapping[str, str]) -> Identity:
     """PUID and PGID from the environment (1000 by default). Not a whole number or below zero is an error."""
     numbers = []
-    for name in ("PUID", "PGID"):
+    for name in ID_NAMES:
         text = environ.get(name, "").strip()
         if not text:
             numbers.append(DEFAULT_ID)

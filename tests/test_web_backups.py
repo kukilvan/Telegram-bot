@@ -22,7 +22,7 @@ from app.web import create_web_app
 PASSWORD = "correct horse battery"
 MOSCOW = ZoneInfo("Europe/Moscow")
 NOW = datetime(2026, 10, 29, 19, 10, tzinfo=timezone.utc)  # Thursday 22:10 in Moscow
-WALL = datetime(2026, 10, 29, 22, 10, 5)
+WALL = datetime(2026, 10, 29, 19, 10, 5)  # the clock of the names of the copies (naive UTC)
 SAME_SECOND = "Копия уже делается — подождите несколько секунд."
 
 
@@ -40,7 +40,7 @@ def folder(tmp_path):
 def tracker(tmp_path):
     url = f"sqlite:///{(tmp_path / 'tracker.db').as_posix()}"
     core = Tracker(create_session_factory(url), clock=lambda: NOW, sender=FakeSender(), default_tz=MOSCOW, database_url=url)
-    core._backups.wall_clock = lambda: WALL
+    core._backups.utc_clock = lambda: WALL
     return core
 
 
@@ -75,7 +75,7 @@ def words(text: str) -> str:
 
 
 def test_the_block_is_the_last_one_on_the_page_under_the_bot_in_telegram(client, folder):
-    put(folder, "tracker_db_20261029_075800.db")
+    put(folder, "tracker_db_20261029_045800Z.db")
 
     page = client.get("/settings").text
 
@@ -91,7 +91,7 @@ def test_the_block_without_copies(client):
 
 
 def test_the_block_when_the_folder_cannot_be_read_and_the_rest_of_the_page_stays(client, folder):
-    put(folder, "tracker_db_20261029_075800.db")
+    put(folder, "tracker_db_20261029_045800Z.db")
 
     with patch.object(Path, "iterdir", side_effect=PermissionError("denied")):
         response = client.get("/settings")
@@ -103,7 +103,7 @@ def test_the_block_when_the_folder_cannot_be_read_and_the_rest_of_the_page_stays
 
 
 def test_the_block_is_not_lost_when_a_form_is_refused(client, folder):
-    put(folder, "tracker_db_20261029_075800.db")
+    put(folder, "tracker_db_20261029_045800Z.db")
 
     response = client.post("/settings", data={"timezone": "Nowhere/Land", "summary_at": "16:00"})
 
@@ -118,7 +118,7 @@ def test_the_press_makes_a_copy_and_the_page_says_so_once(client, folder):
     page = client.get("/settings").text
     assert "Копия сделана: сегодня в 22:10." in page
     assert "Копии базы на этом ПК: 1, последняя — сегодня в 22:10." in block_text(page)
-    assert [p.name for p in folder.iterdir()] == ["tracker_db_20261029_221005_manual.db"]
+    assert [p.name for p in folder.iterdir()] == ["tracker_db_20261029_191005Z_manual.db"]
     assert "Копия сделана" not in client.get("/settings").text  # a notice is shown once
 
 

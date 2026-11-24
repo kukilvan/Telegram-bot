@@ -7,11 +7,15 @@ archive by hand, and how to bring the database back from a copy. Rules behind it
 
 | What | Where | When | Kept |
 |---|---|---|---|
-| Daily copy `tracker_db_<time>.db` | `data\backups\` on this PC | by itself, once a day (checked every hour) | 14 newest and one for each of 12 months |
-| Manual copy `tracker_db_<time>_manual.db` | `data\backups\` | the button «Сделать копию сейчас» in Settings | 10 newest |
-| Copy before an update `…_before-<revision>.db` | `data\backups\` | before every change of the database structure | never deleted |
-| Copy before a restore `…_before-restore.db` | `data\backups\` | by `.\restore-bot.ps1`, just before it replaces the database | never deleted |
-| Google Drive copy `tracker_db_<time>[_manual].7z` | the folder «Трекер — копии» in your Google Drive | after each daily copy and each «Сделать копию сейчас», and at once after «Подключить Google Drive» (off by default); a copy that did not go is tried again every hour | 30 newest |
+| Daily copy `tracker_db_<time>Z.db` | `data\backups\` on this PC | by itself, once a day (checked every hour) | 14 newest and one for each of 12 months |
+| Manual copy `tracker_db_<time>Z_manual.db` | `data\backups\` | the button «Сделать копию сейчас» in Settings | 10 newest |
+| Copy before an update `…Z_before-<revision>.db` | `data\backups\` | before every change of the database structure | never deleted |
+| Copy before a restore `…Z_before-restore.db` | `data\backups\` | by `.\restore-bot.ps1`, just before it replaces the database | never deleted |
+| Google Drive copy `tracker_db_<time>Z[_manual].7z` | the folder «Трекер — копии» in your Google Drive | after each daily copy and each «Сделать копию сейчас», and at once after «Подключить Google Drive» (off by default); a copy that did not go is tried again every hour | 30 newest |
+
+The time in a name is UTC («время в UTC», the `Z` after it): `tracker_db_20261123_132100Z.db` is 16:21 in Moscow. The
+app and the restore show every copy in the zone chosen in Settings. A copy made before stage 9.1d has no `Z`: its time is
+the clock of the PC that wrote it, and it is read that way; old and new names stay in one order.
 
 The Google Drive copy is an archive 7-Zip opens: the copy of the database inside, encrypted with AES-256 by the password
 `BACKUP_PASSWORD` from `.env` (even the file name inside is hidden). The app sees only the files it made itself in your
@@ -133,10 +137,10 @@ and starts the bot again (also when the bot was stopped before).
 3. Type the number of the copy and press Enter. Enter alone — «Отменено. Ничего не изменено.».
 4. The script checks the copy («Копия от … в порядке, тайтлов в ней: …») and asks «Вернуть базу к копии от …?».
    Type `да` and press Enter; anything else cancels.
-5. The bot stops, «Нынешняя база сохранена: data\backups\…_before-restore.db», «База восстановлена из копии от …»,
+5. The bot stops, «Нынешняя база сохранена: data\backups\…Z_before-restore.db», «База восстановлена из копии от …»,
    the bot starts, and the last line is «Готово: бот работает на копии от …».
 
-A copy made by an older version of the tracker is restored too: the line «Копия от более старой версии…» says so, and
+A copy made by an older version of the tracker is restored too: the line «Копия от более старой версии: при запуске база обновится сама.» says so, and
 the start brings the database up to date by itself. A copy of a newer version is refused: update the tracker first.
 
 ### From a downloaded archive (Google Drive)

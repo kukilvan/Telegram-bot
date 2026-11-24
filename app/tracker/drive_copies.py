@@ -5,7 +5,7 @@ Rules: sections 4.4–4.6 of the spec of stage 7.1, ADR 0012. What goes is the n
 The requests are `GoogleDriveApi`'s: the access token from the refresh token, kept in memory until a minute before it
 ends; a 401 refreshes it once and repeats the request once, a second 401 means Google no longer accepts the sign-in.
 The folder is the one of the token file, else found by its name, else made; a file of the same name and size in it
-counts as sent, so a retry after a lost answer makes no duplicate. Only the app's own archive names are rotated, to the
+counts as sent, so a retry after a lost answer makes no duplicate, and a twin of its name is deleted. Only the app's own archive names are rotated, to the
 30 newest; a failed delete is a warning. One attempt is never over 5 minutes. Each attempt writes the state file
 (`drive_state`); a failure's reason (`backup_events`) is reported by the event `backup_failed:drive:<owner's date>`
 at once or at the 2nd failure in a row. One attempt at a time: `hourly` and `send_newest` take `CoreContext.backup_lock`,
@@ -17,7 +17,7 @@ import dataclasses
 import logging
 import re
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 from pathlib import Path
 from typing import TypeVar
 
@@ -25,7 +25,7 @@ from app.providers.google_drive import DriveFile, GoogleError
 from app.tracker import backup_events
 from app.tracker.backup_events import CONNECTION, DOWN, FULL, NO_COPY, SIGN_IN, UNKNOWN
 from app.tracker.context import CoreContext
-from app.tracker.db import BACKUP_STAMP_FORMAT, database_file
+from app.tracker.db import UTC_MARK, database_file, name_moment
 from app.tracker.drive_state import KEPT_IN_DRIVE, DriveState
 from app.tracker.google_drive import DriveToken, GoogleDrive
 from app.tracker.moment_words import moment_in_words
@@ -38,7 +38,7 @@ FOLDER_NAME = "Трекер — копии"
 UPLOAD_FOLDER = "upload"  # in `data/backups`: the archive lives there only during its attempt
 ATTEMPT_SECONDS = 300  # one attempt, whatever its requests
 TOKEN_MARGIN = timedelta(minutes=1)  # an access token is renewed this long before it ends
-ARCHIVE_NAME = re.compile(r"^tracker_db_(\d{8}_\d{6})(?:_manual)?\.7z$")  # the app's own archives in the folder
+ARCHIVE_NAME = re.compile(rf"^tracker_db_(\d{{8}}_\d{{6}})({UTC_MARK})?(?:_manual)?\.7z$")  # the app's own archives in the folder
 SENDABLE = (backup.DAILY, backup.MANUAL)  # the copies made before an update or a restore are not sent
 RATE_LIMITS = frozenset({"rateLimitExceeded", "userRateLimitExceeded"})
 
@@ -74,15 +74,16 @@ def reason_of(exc: BaseException) -> str:
     return UNKNOWN
 
 
-def own_archives(files: list[DriveFile]) -> list[DriveFile]:
-    """The app's own archives of the folder, newest first by the time in their names; other files are not in it."""
+def own_archives(files: list[DriveFile], old_zone: tzinfo | None = None) -> list[DriveFile]:
+    """The app's own archives of the folder, newest first by the time in their names in UTC (a name without `Z` is read
+    in `old_zone`, None — the zone of this process); other files are not in it."""
     found = []
     for file in files:
         match = ARCHIVE_NAME.match(file.name)
         if match is None:
             continue
         try:
-            moment = datetime.strptime(match.group(1), BACKUP_STAMP_FORMAT)
+            moment = name_moment(match.group(1), match.group(2), old_zone)
         except ValueError:  # no such date: not one of the app's
             continue
         found.append((moment, file.name, file))
@@ -197,12 +198,28 @@ class DriveCopies:
     async def _upload(self, token: DriveToken, name: str, content: bytes) -> int:
         folder = await self._folder(token)
         files = await self._call(token, lambda access: self.api.list_folder(access, folder))
-        if not any(file.name == name and file.size == len(content) for file in files):
-            sent = await self._call(token, lambda access: self.api.upload(access, folder, name, content))
-            files = [file for file in files if file.id != sent.id] + [sent]
+        kept = next((file for file in files if file.name == name and file.size == len(content)), None)
+        if kept is None:
+            kept = await self._call(token, lambda access: self.api.upload(access, folder, name, content))
+            files = [file for file in files if file.id != kept.id] + [kept]
         else:
             logging.info("Google Drive already has %s: it is not sent again", name)
-        return await self._rotate(token, files)
+        return await self._rotate(token, await self._without_twins(token, files, kept))
+
+    async def _without_twins(self, token: DriveToken, files: list[DriveFile], kept: DriveFile) -> list[DriveFile]:
+        """The folder without the other files of the name of `kept` (an older upload of a lost answer, KI-68): each one
+        is deleted for good, a failed delete is a warning and the file stays in the list."""
+        left = []
+        for file in files:
+            if file.name != kept.name or file.id == kept.id:
+                left.append(file)
+                continue
+            try:
+                await self._call(token, lambda access, file=file: self.api.delete(access, file.id))
+            except Exception as exc:
+                logging.warning("A second archive of the same name in Google Drive was not deleted: %s (%r)", file.name, exc)
+                left.append(file)
+        return left
 
     async def _folder(self, token: DriveToken) -> str:
         """The folder «Трекер — копии»: the one of the token file while Google has it, else found by its name, else

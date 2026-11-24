@@ -77,9 +77,9 @@ def format_day_month(value: date) -> str:
 
 
 def moment_in_words(moment: datetime, now: datetime) -> str:
-    """`moment` (naive, as written) in words, counted against `now`, the owner's wall clock (naive). Today and yesterday
-    are named by the day on that clock; another day gives its date, with the year when it is not this year's. The time of
-    a copy is read as it stands in its name (the container's clock, KI-66): the zone of the owner changes `now`, not it."""
+    """`moment` (naive, on the owner's wall clock) in words, counted against `now`, the owner's wall clock (naive). Today and yesterday
+    are named by the day on that clock; another day gives its date, with the year when it is not this year's. Both are on
+    the same wall clock: a stored moment goes through `local_moment` (a copy's through `DeliveryRules.local`) first."""
     today = now.date()
     day = moment.date()
     clock = moment.strftime("%H:%M")
