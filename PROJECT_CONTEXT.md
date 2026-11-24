@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Тикет 9.1d.05»: copies and `.env` — UTC names of the copies, the zone of Settings, Drive pages and duplicates, the restore note, the six unread names (KI-66, 67, 68, 69, 49), `.scratch/9-1d-inbox-copies-code/issues/05-*.md`. Medium ticket: model Sonnet 5.5, effort high (`docs/models.md`). Then the review of 9.1d, then 7.3, 9.2, 8.
+Session «Ревью 9.1d»: the whole stage 9.1d (five tickets) against its spec (`.scratch/9-1d-inbox-copies-code/spec.md`) and `docs/coding-standards.md`, with the `code-review` skill, into `review.md`. Five tickets: model Opus 5.5, effort xhigh (`docs/models.md`). Then 7.3, 9.2, 8.
 
 ## State
 
@@ -12,10 +12,10 @@ Session «Тикет 9.1d.05»: copies and `.env` — UTC names of the copies, t
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0019. Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The bot menu is «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие»; «➕ Добавить» is gone (6.4.01): any other message is an inbox item.
 - Games: 6.1 (IGDB, platforms, release events, «Пройдено»), 6.2 (Steam prices, `pollers/game_prices.py`, `price_events.py`; no PlayStation prices, ADR 0009), 6.3 (weekly expansions and sequels, `pollers/game_follow_ups.py`, ADR 0011) done. **Stage 6.4 «Входящие» done**: any message to the bot is an inbox item (`app/tracker/inbox.py`), a source link gives its card, else «Что это?» and up to three offers «Это оно?»; the rest in the web tab «Входящие». Details of all four in `docs/history.md`.
-- **Stage 7 split** (2026-11-07, changed 11-15, ADR 0013; `.scratch/7-1-backups-export/`, `.scratch/7-2-access-phone/`): 7.1 backups and export, 7.2 the app address, phone, bot links, safer login, 7.3 NAS readiness and the move guide; outside access and the NAS move are the owner's separate NAS project, Tailscale dropped. Order (2026-11-17): 7.1 → 7.2 → 9.1 every open known issue (9.1a–d, `.scratch/9-1-known-issues/description.md`) → 7.3 → 9.2 real use → 8. **Done:** 7.1, 7.2 (ADR 0012, 0014), 9.1a (ADR 0015), 9.1b (ADR 0016; KI-79, 80 for 9.2), 9.1c (KI-48, 72 won't fix); details in `docs/history.md`. **9.1d** (`.scratch/9-1d-inbox-copies-code/`, migrations 0018, 0019): tickets 01–04 done, **05 in review** (copies and `.env`).
+- **Stage 7 split** (2026-11-07, changed 11-15, ADR 0013; `.scratch/7-1-backups-export/`, `.scratch/7-2-access-phone/`): 7.1 backups and export, 7.2 the app address, phone, bot links, safer login, 7.3 NAS readiness and the move guide; outside access and the NAS move are the owner's separate NAS project, Tailscale dropped. Order (2026-11-17): 7.1 → 7.2 → 9.1 every open known issue (9.1a–d, `.scratch/9-1-known-issues/description.md`) → 7.3 → 9.2 real use → 8. **Done:** 7.1, 7.2 (ADR 0012, 0014), 9.1a (ADR 0015), 9.1b (ADR 0016; KI-79, 80 for 9.2), 9.1c (KI-48, 72 won't fix); details in `docs/history.md`. **9.1d** (`.scratch/9-1d-inbox-copies-code/`, migrations 0018, 0019): all five tickets done (05: UTC copy names, Drive pages and twins, `.env`), review next.
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.2 (on the NAS).
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
-- Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`); cleaned in stage 8. `.env` is clean of the unread names (KI-49, 9.1d.05).
+- Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `shikimori_anilist_agent_prompt.md`, `egg-info`); cleaned in stage 8. `.env` is clean of the unread names (KI-49).
 - The bot token and the TMDb key leaked in a chat and a console; **replace all keys once, at the end, before publishing** (stage 8).
 - The code map `docs/code-map.md` is built from the module docstrings by `tools/code_map.py` (rule 11).
 
@@ -34,7 +34,7 @@ Session «Тикет 9.1d.05»: copies and `.env` — UTC names of the copies, t
 | 9.1a | Known issues: start, stop, polling and delivery (17) | done | — | — |
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
-| 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | tickets 4/5 | 8 | — |
+| 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | review | 8 | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | not started | 3 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
