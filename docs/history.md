@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-24 — Description 7.3
+
+- `.scratch/7-3-nas-readiness/description.md`: this project prepares the move and never touches the NAS; the owner's NAS project moves the app by the guide `docs/nas-move.md` (English, for its agent) and writes a report back (the NAS, Docker versions, folders, compose files, `PUID`/`PGID`, network and `cloudflared`, commands, SSH access without keys, checks, problems, what stayed on the PC). The guide lists 12 foreseeable problems with solutions (two instances, network share, owner of `data`, older Docker, `.env` from Windows, busy port, tunnel, Google Drive sign-in without a browser, the HDD woken hourly, old copy names, getting the code, NAS restarts).
+- Decisions: the restore on the NAS is three `docker compose` commands with an asking mode of `app.utils.restore`; `data/backups` may be mounted from the HDD by a NAS-only compose file; two instances — only the rule in the guide, no code guard (the owner's choice); KI-15 and KI-70 pulled in. After the move a session sends its branch to the NAS by SSH and restarts the bot there, the PC runs tests only: written by the new stage 7.4 «Приём переезда» (one session) from the report. `docs/project-spec.md` updated (7.3 changed, 7.4 added, 7.3 estimated at 6 sessions). Accepted by the owner («ОК»); next is the spec of 7.3.
+
 ## 2026-11-24 — Review 9.1d (stage 9.1d done)
 
 - `.scratch/9-1d-inbox-copies-code/review.md`: commits `114c522..ec987fb` against the spec and the standards (`code-review` at effort xhigh, then a pass per spec section). Run: the owner's base read-only (the three stubs of 4.6, migration 0019, old and `Z` copy names), the real core on a copy (card lines «часть 2 — в январе 2027» / «в 2027», «Позже» «январь 2027» and «2027», the JSON `approximate`, the Settings block), the candidate rules before and after 9.1d on posts, the bot in Docker.

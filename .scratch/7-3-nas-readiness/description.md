@@ -1,6 +1,6 @@
 # Stage 7.3: NAS readiness and the move guide
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. The stage is the last part of stage 7 (`docs/project-spec.md`). ADRs it leans on: 0001 (one instance), 0005 (SQLite with WAL), 0006 (Docker on the PC until the NAS), 0007 (one process), 0012 (Drive copies with the owner's client, the sign-in returns to `localhost`), 0013 (outside access by the owner's domain; the move is the NAS project's), 0015 (the health check ends a hung app). `docs/outside-access.md` (stage 7.2) already says what the app needs behind a domain; this stage does not repeat it, the guide points to it.
 
