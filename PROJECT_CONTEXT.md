@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Спека 7.3»: the spec of stage 7.3 from `.scratch/7-3-nas-readiness/description.md` (accepted 2026-11-24: this project prepares, the NAS project moves and reports back) into `spec.md` there. Model Opus 5.5, effort high (`docs/models.md`). Then 7.4, 9.2, 8.
+Session «Тикеты 7.3»: the tickets of stage 7.3 from `.scratch/7-3-nas-readiness/spec.md` (accepted 2026-11-24; section 8 proposes three: the asking restore and KI-70, the container for the NAS and KI-15, the guide `docs/nas-move.md`) into `issues/` there. Model Sonnet 5.5, effort high (`docs/models.md`). Then 7.4, 9.2, 8.
 
 ## State
 
@@ -35,7 +35,7 @@ Session «Спека 7.3»: the spec of stage 7.3 from `.scratch/7-3-nas-readine
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
 | 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | done | — | — |
-| 7.3 | NAS readiness and the move guide (the move — the NAS project) | spec | 6 | — |
+| 7.3 | NAS readiness and the move guide (the move — the NAS project) | tickets 0/3 | 5 | — |
 | 7.4 | The move taken in: the NAS project's report, sessions check on the NAS | not started | 1 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |

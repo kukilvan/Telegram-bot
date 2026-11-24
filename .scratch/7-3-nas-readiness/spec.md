@@ -1,6 +1,6 @@
 # Spec 7.3: NAS readiness and the move guide
 
-Status: in review
+Status: accepted
 
 From `description.md` (accepted 2026-11-24). Terms of `CONTEXT.md`. ADRs: 0001, 0005, 0006, 0007, 0012, 0013, 0015. Nothing here runs on the NAS: every check of this stage runs on the PC (decision 1).
 

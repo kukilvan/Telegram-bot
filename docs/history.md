@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-24 — Spec 7.3
+
+- `.scratch/7-3-nas-readiness/spec.md`: the asking restore (`app.utils.restore` with no arguments, or a path) — the restore on the NAS is `docker compose stop`, `docker compose run --rm tracker python -m app.container_start app.utils.restore`, `docker compose up -d`; answers read line by line, piped answers work. It refuses while the bot runs: the one-off container resolves the service name `tracker` only while the bot's container runs (checked live: running — resolves, stopped — `Name or service not known`); the script's `apply` gets the same guard. Texts with `/`; `restore-bot.ps1` builds with `docker compose build --quiet` and runs without `--build --quiet-build` (KI-70). KI-15: not as root, `PUID`/`PGID` are not read. The `Dockerfile` gets `# syntax=docker/dockerfile:1` (an Engine before 25 builds; needed at least Engine 23, Compose v2). The copies on the HDD by `docker-compose.override.example.yml` → `docker-compose.override.yml` (out of git). The outline of `docs/nas-move.md` with 18 problems and the report template.
+- Checked: `.env` with a BOM and `
+
+` reads right in Compose v5.4 (the guide still asks for neither); the repository is public (clone by `https`); nothing renames across `data` and `data/backups`. New: KI-90 (the hourly listing may wake the HDD), KI-91 (a missing HDD folder is created on the system disk). Tickets: 01 the restore (medium), 02 the container (simple), 03 the guide (medium, after 01 and 02). Accepted by the owner («ОК»).
+
 ## 2026-11-24 — Description 7.3
 
 - `.scratch/7-3-nas-readiness/description.md`: this project prepares the move and never touches the NAS; the owner's NAS project moves the app by the guide `docs/nas-move.md` (English, for its agent) and writes a report back (the NAS, Docker versions, folders, compose files, `PUID`/`PGID`, network and `cloudflared`, commands, SSH access without keys, checks, problems, what stayed on the PC). The guide lists 12 foreseeable problems with solutions (two instances, network share, owner of `data`, older Docker, `.env` from Windows, busy port, tunnel, Google Drive sign-in without a browser, the HDD woken hourly, old copy names, getting the code, NAS restarts).
