@@ -1,6 +1,6 @@
 # Review 9.1d: «Входящие», copies and code health — the known issues
 
-Status: in review
+Status: accepted
 
 One session (2026-11-24).
 

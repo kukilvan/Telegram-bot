@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-24 — Review 9.1d (stage 9.1d done)
+
+- `.scratch/9-1d-inbox-copies-code/review.md`: commits `114c522..ec987fb` against the spec and the standards (`code-review` at effort xhigh, then a pass per spec section). Run: the owner's base read-only (the three stubs of 4.6, migration 0019, old and `Z` copy names), the real core on a copy (card lines «часть 2 — в январе 2027» / «в 2027», «Позже» «январь 2027» and «2027», the JSON `approximate`, the Settings block), the candidate rules before and after 9.1d on posts, the bot in Docker.
+- Fixed now: F1 — `candidates._PIECE_WORD` (was `_EPISODE_WORD`) also takes «сезон», «season», «част…», «part»: «The Boys: 5 сезон» gives «The Boys» again (KI-60 had glued the number); F2 — `InboxAnswers._ask` answers NOTHING for an item that no longer waits (a newer message moved it); F3 — `OfferSearch.by_links` asks the companies only after a link gave a kind; F6 — the Russian clause of the rule 7 check in English.
+- Deferred to 9.2: KI-86 (other counting words after `: N`: «Hades: 2 дня…»), KI-87 (the offer card of the pause for an item moved during its link lookups, older than 9.1d), KI-88 (the series «From» alone is no candidate, spec 7.2), KI-89 (a hyphenated Russian name cut at the hyphen). Wishes: split `pollers/game_follow_ups.py` (400 lines) at its next change; `docs/coding-standards.md` in English in stage 8.
+- Tests: 12 new (`test_tracker_candidates_middle`, `test_inbox_after_restart`, `test_tracker_companies`). Full run: 5450 passed, 3 skipped, the two known Windows failures. No fix round. Accepted by the owner («ОК»); next is the description of 7.3.
+
 ## 2026-11-24 — Ticket 9.1d.05
 
 - KI-66: `db.backup_name` writes the UTC time and `Z` (`utc_now`, `UTC_MARK`); every writer (`create_backup`, `create_manual_backup`, `backup_if_due`, `_backup_before_migration`, the restore's copy) takes naive UTC; `Backups.utc_clock` replaces `wall_clock`. `db.name_moment(stamp, mark, old_zone)` reads a name: with `Z` as written, without it in `old_zone` (None — the zone of the process, `astimezone`; `fold=0` at the hour the clocks go back). `COPY_NAME`, `ARCHIVE_NAME`, `NAME_TIME` take an optional `Z`; `copies`, `daily_backups`, `rotate`, `rotate_manual`, `own_archives`, `_newest_copy_before` take `old_zone`. Shown in the zone of Settings: `Backups.block`, the press notice, the failure report (`rules.local`); the restore has `Clock(now, shown_in, old_zone)`, `zone_of_settings(base)` (read-only, settings row `timezone` — the spec wrote `time_zone`, the real key is `timezone`), `run(..., now, process_zone)` with `now` naive UTC.
