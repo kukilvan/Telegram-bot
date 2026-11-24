@@ -11,6 +11,7 @@ import pytest
 from app.providers.tmdb import TMDbProvider, TmdbHttpError
 from app.tracker.errors import SourceNotConfigured
 from app.tracker.models import TitleKind
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.sources import igdb_games, shikimori_anime, tmdb_movies, tmdb_series
 from app.tracker.sources.igdb_games import IgdbGameSource
 from app.tracker.sources.shikimori_anime import ShikimoriAnimeSource
@@ -33,18 +34,18 @@ def clients():
 
 
 def test_every_search_gives_the_date_of_its_answer():
-    assert tmdb_movies.parse_search(ANSWERS["movie:ELDEN RING"])[0].released == date(2028, 3, 3)
-    assert tmdb_series.parse_search(ANSWERS["series:Dead-End Job"])[0].released == date(2026, 10, 30)
-    assert shikimori_anime.parse_search(ANSWERS["anime:Блич"])[0].released == date(2004, 10, 5)
+    assert tmdb_movies.parse_search(ANSWERS["movie:ELDEN RING"])[0].released == ReleaseDate.of_day(date(2028, 3, 3))
+    assert tmdb_series.parse_search(ANSWERS["series:Dead-End Job"])[0].released == ReleaseDate.of_day(date(2026, 10, 30))
+    assert shikimori_anime.parse_search(ANSWERS["anime:Блич"])[0].released == ReleaseDate.of_day(date(2004, 10, 5))  # the old shape of `airedOn`: a day
     alien = igdb_games.parse_search(ANSWERS["game:Alien: Isolation 2"])
-    assert [(s.external_id, s.released) for s in alien][:1] == [("319082", None)]  # announced: no date
+    assert [(s.external_id, s.released) for s in alien][:1] == [("319082", NOT_ANNOUNCED)]  # announced: no date
 
 
 def test_a_date_that_is_garbage_is_no_date():
     raw = [{"id": 1, "title": "X", "release_date": "скоро"}, {"id": 2, "title": "Y", "release_date": ""}]
 
-    assert [s.released for s in tmdb_movies.parse_search(raw)] == [None, None]
-    assert igdb_games.parse_search([{"id": 3, "name": "Z", "game_type": 0, "first_release_date": "x"}])[0].released is None
+    assert [s.released for s in tmdb_movies.parse_search(raw)] == [NOT_ANNOUNCED, NOT_ANNOUNCED]
+    assert igdb_games.parse_search([{"id": 3, "name": "Z", "game_type": 0, "first_release_date": "x"}])[0].released == NOT_ANNOUNCED
 
 
 def test_the_other_names_are_the_alternatives_of_igdb_and_the_english_name_of_shikimori():
@@ -62,7 +63,7 @@ def test_tmdb_gives_a_movie_and_a_series_by_their_numbers(clients):
     movie = run(TmdbMovieSource(clients.tmdb).suggest_by_id("1485839"))
     show = run(TmdbSeriesSource(clients.tmdb).suggest_by_id("289517"))
 
-    assert (movie.kind, movie.name, movie.released) == (TitleKind.MOVIE, "Elden Ring", date(2028, 3, 3))
+    assert (movie.kind, movie.name, movie.released.text) == (TitleKind.MOVIE, "Elden Ring", "2028-03-03")
     assert (show.kind, show.name, show.original_name) == (TitleKind.SERIES, "Работа с призрачными перспективами", "꿀알바")
     assert run(TmdbMovieSource(clients.tmdb).suggest_by_id("7")) is None
 
@@ -83,7 +84,7 @@ def test_shikimori_gives_the_entry_of_a_link_not_its_franchise(clients):
     found = run(ShikimoriAnimeSource(clients.shikimori).suggest_by_id("57612"))
 
     assert (found.external_id, found.name) == ("57612", "Магия вернувшегося должна быть особенной 2")
-    assert found.released == date(2026, 10, 8)
+    assert found.released == ReleaseDate.of_day(date(2026, 10, 8))
     assert run(ShikimoriAnimeSource(clients.shikimori).suggest_by_id("1")) is None
 
 

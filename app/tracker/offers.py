@@ -6,11 +6,14 @@ source is a `Suggestion`. Every request goes through `Titles` (the search of the
 link): ahead of the paced polling, and each record marked with its title when it is in the list.
 
 - Links: each of the first 3 links of a source is looked up (a Steam number IGDB does not know gives the name Steam
-  calls it, a name candidate of the game); the item's kind is the kind of the first offer.
+  calls it, a name candidate of the game); the item's kind is the kind of the first offer. A kind press looks the
+  links of that kind up again, before its candidates (8.3 of 9.1d).
 - Candidates: those whose weight is at least half of the first one's, at most 3; a candidate's records that match it
   by the name key — exact, then prefix — at most 2, new first (5.3); the first candidate alone, with no match, takes the
   source's first record as a weak offer. A name message of 2 words or more with no match is searched again without one
-  word at a time to correct a typo (5.4).
+  word at a time to correct a typo (5.4); a source that searches in English (TMDb) is asked the shortened name in
+  English too when its own language gives no close name, and the offer is then the record of the same id in the
+  source's language (8.2 of 9.1d, KI-61).
 - Companies: before the searches the candidates are asked about once, and the companies of IGDB are dropped (7.3 of
   9.1d), so the next name moves up.
 - At most 3 offers in all, each record once. A source failing before the first offer fails the analysis; after it,
@@ -44,6 +47,7 @@ MAX_COMPANY_ASKED = 10  # candidates asked about at once: which of them are comp
 _LATIN_LETTER = re.compile(r"[A-Za-z]")
 
 EXACT, PREFIX = 2, 1
+_IMDB_KINDS = (TitleKind.MOVIE, TitleKind.SERIES)  # what TMDb's `/find` of an IMDb link may answer
 
 
 @dataclass(frozen=True)
@@ -107,6 +111,17 @@ def _close_name(name: str, record: Any) -> tuple[float, str]:
     return best
 
 
+def _closest(name: str, records: Sequence[Any]) -> tuple[str, Any] | None:
+    """The corrected name and its record: the closest name to `name` at a ratio of `CLOSE` or more (the earlier record
+    on a tie); None — nothing close."""
+    scored = [(_close_name(name, record), index, record) for index, record in enumerate(records)]
+    close = [s for s in scored if s[0][0] >= CLOSE]
+    if not close:
+        return None
+    (_, corrected), _, record = max(close, key=lambda s: (s[0][0], -s[1]))
+    return corrected, record
+
+
 class _Gathered:
     """The offers so far, each record once, at most `MAX_OFFERS`, and the order of 5.3 for the records of a group."""
 
@@ -126,13 +141,14 @@ class _Gathered:
                 self.offers.append(offer_of(record, heading))
 
     def group(self, record: Any) -> int:
-        """0 a year of the item, 1 new with a date, 2 without a date (counted as new), 3 the rest."""
-        day = record.released
-        if day is not None and day.year in self.years:
+        """0 a year of the item, 1 new with a date (its period starts after `new_since`), 2 without a date (counted as
+        new), 3 the rest."""
+        released = record.released
+        if not released.announced:
+            return 2
+        if released.year in self.years:
             return 0
-        if day is not None and day >= self.new_since:
-            return 1
-        return 2 if day is None else 3
+        return 1 if released.start >= self.new_since else 3
 
     def matching(self, name: str, records: Sequence[Any]) -> list[Any]:
         """The records that match `name`: exact first, then prefix, each group new first, then the order of the source;
@@ -154,19 +170,25 @@ class OfferSearch:
         self.company_source = company_source
 
     async def by_kind(
-        self, kind: TitleKind, candidates: Sequence[Candidate], *, name_message: bool, years: Sequence[int],
-        new_since: date,
+        self, kind: TitleKind, candidates: Sequence[Candidate], *, links: Sequence[SourceLink] = (),
+        name_message: bool, years: Sequence[int], new_since: date,
     ) -> Found:
-        """The offers of the name candidates in the source of the kind the owner chose."""
+        """The offers of the links of the kind the owner chose, looked up again (8.3 of 9.1d: an IMDb link for a movie
+        or a series; a link of another kind is not looked up), then of the name candidates in the source of the kind."""
         gathered = _Gathered(years, new_since)
         candidates = await self._without_companies(candidates)
+        ours = [link for link in links if link.kind is kind or (link.source == IMDB and kind in _IMDB_KINDS)]
+        _, named, not_connected = await self._of_links(ours, gathered, kind)
+        ranked = [*(candidate for candidate, _ in named), *candidates]  # a Steam name weighs `WHOLE`: it comes first
         try:
-            await self._of_candidates(kind, candidates, name_message, gathered)
+            await self._of_candidates(kind, ranked, name_message, gathered)
         except SourceNotConfigured:
             return Found(kind=kind, not_connected=True)
         except SourceFailed as exc:
             logging.warning("searching the offers of an inbox item failed: %r", exc)
             return Found(kind=kind, failed=True)
+        if not gathered.offers and not_connected:
+            return Found(kind=kind, not_connected=True)
         return Found(tuple(gathered.offers), kind)
 
     async def by_links(
@@ -176,23 +198,7 @@ class OfferSearch:
         fails or that nobody knows gives nothing; no offer at all — the item goes on as one without links."""
         gathered = _Gathered(years, new_since)
         candidates = await self._without_companies(candidates)
-        named: list[tuple[Candidate, TitleKind]] = []  # the names Steam gives the numbers IGDB does not know
-        kind: TitleKind | None = None
-        not_connected = False
-        for link in links:
-            try:
-                records, steam_name = await self._look_up(link)
-            except SourceNotConfigured:
-                not_connected = True
-                continue
-            except SourceFailed as exc:
-                logging.warning("looking up a link of an inbox item failed: %r", exc)
-                continue
-            gathered.add(records, HEADING)
-            if records and kind is None:
-                kind = records[0].kind
-            if steam_name:
-                named.append((Candidate(steam_name, WHOLE, -1), link.kind))
+        kind, named, not_connected = await self._of_links(links, gathered)
         # the kind of the first link that gave an offer; none did — the kind of a Steam name, searched below
         kind = kind or next((of_kind for _, of_kind in named), None)
         if kind is None:
@@ -204,6 +210,32 @@ class OfferSearch:
         except (SourceFailed, SourceNotConfigured) as exc:  # no offer yet: the item goes on as one without links
             logging.warning("searching the names of an inbox item with links failed: %r", exc)
         return Found(tuple(gathered.offers), kind if gathered.offers else None)
+
+    async def _of_links(
+        self, links: Sequence[SourceLink], gathered: _Gathered, only: TitleKind | None = None
+    ) -> tuple[TitleKind | None, list[tuple[Candidate, TitleKind]], bool]:
+        """The records of the links into `gathered` (`only`: those of this kind), and what the lookups say: the kind of
+        the first record, the names Steam gives the numbers IGDB does not know (with the kind of their link), and
+        whether a source had no keys. A link that fails goes to the log and gives nothing."""
+        named: list[tuple[Candidate, TitleKind]] = []
+        kind: TitleKind | None = None
+        not_connected = False
+        for link in links:
+            try:
+                records, steam_name = await self._look_up(link)
+            except SourceNotConfigured:
+                not_connected = True
+                continue
+            except SourceFailed as exc:
+                logging.warning("looking up a link of an inbox item failed: %r", exc)
+                continue
+            records = [record for record in records if only is None or record.kind is only]
+            gathered.add(records, HEADING)
+            if records and kind is None:
+                kind = records[0].kind
+            if steam_name:
+                named.append((Candidate(steam_name, WHOLE, -1), link.kind))
+        return kind, named, not_connected
 
     # --- the requests ---------------------------------------------------------------------------
 
@@ -223,11 +255,11 @@ class OfferSearch:
         records = await self.titles.look_up(source, lambda: source.suggest_by_steam(link.ref))
         return records, (None if records else await source.steam_name(link.ref))
 
-    async def _search(self, kind: TitleKind, query: str, tolerated: bool) -> list[Any] | None:
-        """The search of the kind. A failure raises, unless `tolerated` (something was found already): then it goes to
-        the log and the answer is None — no more searches."""
+    async def _search(self, kind: TitleKind, query: str, tolerated: bool, english: bool = False) -> list[Any] | None:
+        """The search of the kind (`english`: the English names). A failure raises, unless `tolerated` (something was
+        found already): then it goes to the log and the answer is None — no more searches."""
         try:
-            return await self.titles.search(kind, query)
+            return await self.titles.search(kind, query, english)
         except KeyError as exc:  # the core has no source of that kind: as if it failed
             failure = SourceFailed(kind.value)
             failure.__cause__ = exc
@@ -274,22 +306,39 @@ class OfferSearch:
 
     async def _corrected(self, kind: TitleKind, name: str, gathered: _Gathered, tolerated: bool) -> list[Any]:
         """A typo of a name message (5.4): the name without one word, from the last word to the first, until a search
-        gives a close record; then its corrected name is searched. Nothing close: no offers."""
+        gives a close record — in the source's language, then in English when the source can (8.2 of 9.1d); then its
+        corrected name is searched in the source's language. Nothing close: no offers."""
         words = name.split()
+        english = self._searches_in_english(kind)
         for dropped in list(reversed(range(len(words))))[:MAX_TYPO_SEARCHES]:
-            records = await self._search(kind, " ".join(words[:dropped] + words[dropped + 1:]), tolerated)
+            shortened = " ".join(words[:dropped] + words[dropped + 1:])
+            records = await self._search(kind, shortened, tolerated)
             if records is None:
                 return []
-            scored = [(_close_name(name, record), index, record) for index, record in enumerate(records)]
-            close = [s for s in scored if s[0][0] >= CLOSE]
-            if not close:
+            close, in_english = _closest(name, records), False
+            if close is None and english:
+                records = await self._search(kind, shortened, tolerated, english=True)
+                if records is None:
+                    return []
+                close, in_english = _closest(name, records), True
+            if close is None:
                 continue
-            (_, corrected), _, record = max(close, key=lambda s: (s[0][0], -s[1]))
+            corrected, record = close
             found = await self._search(kind, corrected, tolerated)
             if found is None:
                 return [record]
+            if in_english:  # the record of the same id has the name of the source's language; none — the English one
+                return [next((r for r in found if r.external_id == record.external_id), record)]
             return gathered.matching(corrected, found) or [record]
         return []
+
+    def _searches_in_english(self, kind: TitleKind) -> bool:
+        """Whether the source of the kind gives English names by one more search (TMDb); Shikimori and IGDB give them in
+        their answers already."""
+        try:
+            return bool(getattr(self.pollers.of(kind).source, "searches_in_english", False))
+        except KeyError:
+            return False
 
 
 async def _listed(asked: Any) -> list[Any]:

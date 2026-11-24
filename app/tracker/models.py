@@ -262,6 +262,8 @@ class InboxRecord(TrackerBase):
     received_at: Mapped[datetime] = mapped_column(DateTime)  # the 12 hours of waiting count from it
     last_message_at: Mapped[datetime] = mapped_column(DateTime)  # a message joins within 2 seconds of it
     moved_at: Mapped[datetime | None] = mapped_column(DateTime)  # when it went to «Входящие»
+    # when its pause got its answer (the question or the first offer card); empty and waiting — asked at the start
+    answered_at: Mapped[datetime | None] = mapped_column(DateTime)
 
 
 class SettingRecord(TrackerBase):

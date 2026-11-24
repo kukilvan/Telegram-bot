@@ -150,7 +150,7 @@ _Avoid_: альфа, бета, предзаказ (not early access)
 In code: `early access` (date kind — `early`; full release — `full`).
 
 **Примерная дата** (approximate date):
-A game's release date without a day: month, quarter or year («март 2027», «4 квартал 2026», «2027»); also the premiere of an anime season or part known by the month or the year («в январе 2027» in the card, «январь 2027» in «Позже»). Visible in the card and in «Позже» but gives no messages: messages come only about an exact day.
+A game's release date without a day: month, quarter or year («март 2027», «4 квартал 2026», «2027»); also the premiere of an anime season or part known by the month or the year («в январе 2027» in the card, «январь 2027» in «Позже»), and the date of an offer of «Входящие» («выйдет в 4 квартале 2027»). Visible in the card and in «Позже» but gives no messages: messages come only about an exact day.
 _Avoid_: неточная дата, TBD (that is "date not announced")
 In code: `ReleaseDate` without a day (`release_dates`; `label` alone, `phrase` inside a sentence); for an anime premiere `EpisodeTiming.MONTH`/`YEAR` and `Episode.rough`.
 
@@ -259,7 +259,7 @@ In code: `search`.
 **Входящие** (inbox):
 An app tab with what the owner sent to the bot (a forwarded post, a name, an album, a forward with its comment) and the bot could not resolve: found nothing, got no answer, a post without text, the source did not answer. An entry leaves the tab when the title is added or the owner removes it. One entry is an **inbox item** («запись Входящих»).
 _Avoid_: очередь (that is the delivery queue), черновики
-In code: `inbox`; an entry — `inbox item` (table `inbox_items`, `InboxRecord`; what the core hands out — `InboxEntry`; the message it is made of — `IncomingMessage`; what the bot says next about it — `InboxReply`). Its states (`InboxState`): `waiting` «ждёт ответа» (the question «Что это?» or an offer waits in the chat; at most one) and `inbox` (in the tab). Its reasons (`InboxReason`): `not_found` «не нашёл», `no_answer` «без ответа», `no_text` «нет текста», `source_failed` «источник не ответил», `not_connected` «игры не подключены». A resolved, not saved or removed item is deleted.
+In code: `inbox`; an entry — `inbox item` (table `inbox_items`, `InboxRecord`; what the core hands out — `InboxEntry`; the message it is made of — `IncomingMessage`; what the bot says next about it — `InboxReply`). Its states (`InboxState`): `waiting` «ждёт ответа» (the question «Что это?» or an offer waits in the chat; at most one) and `inbox` (in the tab). The answer to its pause — the question or the first offer card — is marked (`answered_at`): a waiting item a restart left without it gets the question after the start too, in the owner's chat. Its reasons (`InboxReason`): `not_found` «не нашёл», `no_answer` «без ответа», `no_text` «нет текста», `source_failed` «источник не ответил», `not_connected` «игры не подключены». A resolved, not saved or removed item is deleted.
 
 **Кандидат** (candidate):
 A name the rules pick from what the owner sent to the bot (a name message, a Latin run, a quote, a bold piece, a capitalised Russian name in the middle of a sentence…), with a weight; the most likely ones are searched in the source of the kind. A name that is a company of IGDB (at least 20 games) is dropped before the search.
@@ -267,7 +267,7 @@ _Avoid_: вариант
 In code: `candidate` (`Candidate` of `candidates`); the companies — `companies` (`IgdbGameSource.companies`, `sources/igdb_companies`).
 
 **Предложение** (offer):
-A record of a source the bot shows for an inbox item as a card «Это оно?» (or «Возможно, вы имели в виду:» after a typo) with «Да» / «Нет»; «Да» adds it to the list. Not a search suggestion of the web or of a source.
+A record of a source the bot shows for an inbox item as a card «Это оно?» (or «Возможно, вы имели в виду:» after a typo) with «Да» / «Нет»; «Да» adds it to the list. Its date is as precise as the source knows it: «выйдет 12 февраля 2027», «выйдет в 4 квартале 2027», «выйдет в 2028», the year once out. Not a search suggestion of the web or of a source.
 _Avoid_: подсказка, результат поиска
 In code: `offer` (`Offer` of `offers`, the card — `OfferCard`); a search suggestion is `Suggestion`. Not the «Следить» of an announcement (`FollowOffer`, `offers_follow_ups` — «Продолжение»): there `offer` is part of a longer name, never alone.
 

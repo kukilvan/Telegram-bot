@@ -74,7 +74,7 @@ def test_an_empty_database_gets_the_column_and_a_second_run_changes_nothing(engi
     migrate(engine)
     migrate(engine)
 
-    assert "timing" in columns(engine) and version(engine) == "0018"
+    assert "timing" in columns(engine) and version(engine) == "0019"
 
 
 def test_the_old_rows_are_filled_by_the_table_of_the_spec(engine):

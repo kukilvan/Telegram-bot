@@ -185,14 +185,14 @@ def _kind_of(raw: str) -> TitleKind | None:
 
 def register_tracker_handlers(
     dp: Dispatcher, tracker: Tracker, allowed_user_ids: list[int], links: AppLinks | None = None,
-    poster_site: str | None = None,
+    poster_site: str | None = None, owner_chat: int | None = None,
 ) -> Router:
     """Put every tracker handler on one router behind the owner filter and include it in `dp`.
 
     The filter is the second line of defence behind `AccessMiddleware`: an update from anyone else, or from nobody
     (no sender), matches no handler. A new handler goes on this router and never checks the owner itself. `links`
     set is link mode, `None` is chat mode (module description). `poster_site` is the site of Shikimori now (a card
-    shows its posters from it, `shikimori_site`).
+    shows its posters from it, `shikimori_site`). `owner_chat` gets the answers of the inbox items asked at the start.
     """
     router = Router(name="tracker")
     owner = F.from_user.id.in_(frozenset(allowed_user_ids))
@@ -487,6 +487,6 @@ def register_tracker_handlers(
 
     # last: every message the handlers above did not take is an inbox item
     menu = {TEST_EVENT_BUTTON, MY_TITLES_BUTTON, SUMMARY_BUTTON, ADD_BUTTON}
-    register_inbox_handlers(router, tracker, menu, TitleCards(show_title, ask_seasons_in), poster_site)
+    register_inbox_handlers(router, tracker, menu, TitleCards(show_title, ask_seasons_in), poster_site, owner_chat)
     dp.include_router(router)
     return router

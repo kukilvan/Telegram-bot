@@ -5,7 +5,16 @@ fetches the picture itself; when it cannot, the message comes without a preview 
 no poster address carries a disabled preview, the plain text card.
 """
 
-from aiogram.types import InlineKeyboardMarkup, LinkPreviewOptions, Message
+from typing import Any, Protocol
+
+from aiogram.types import InlineKeyboardMarkup, LinkPreviewOptions
+
+
+class Chat(Protocol):
+    """Where a message goes: the message of the owner it answers (`Message.answer`), or the owner's chat itself when
+    nothing was asked (the start of the bot, `inbox_handlers.OwnerChat`)."""
+
+    async def answer(self, text: str, **kwargs: Any) -> Any: ...
 
 
 def poster_preview(address: str | None) -> LinkPreviewOptions:
@@ -16,7 +25,7 @@ def poster_preview(address: str | None) -> LinkPreviewOptions:
 
 
 async def send_card_message(
-    message: Message, text: str, poster: str | None, reply_markup: InlineKeyboardMarkup | None = None
+    message: Chat, text: str, poster: str | None, reply_markup: InlineKeyboardMarkup | None = None
 ) -> None:
     """Send `text` with `reply_markup` and the poster at address `poster` (None: no picture). Any card goes through
     here: a title card, and a card that is not one (an offer of the inbox) gives its own address, text and keyboard."""

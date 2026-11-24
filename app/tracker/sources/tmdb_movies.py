@@ -13,11 +13,13 @@ from datetime import date
 from typing import Any
 
 from app.tracker.models import TitleKind
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.sources.dates import parse_response_date, response_year
 
 THEATRICAL = 3
 DIGITAL = 4
 
+ENGLISH = "en-US"  # the language of the English search of a typo (KI-61)
 SOURCE_KEY = "tmdb_movie"  # TMDb shares one id space between movies and series, so ids are namespaced by kind
 
 
@@ -33,7 +35,7 @@ class Suggestion:
     poster_path: str | None = None  # as the title stores it: a TMDb file name or a whole Shikimori or IGDB address
     title_id: int | None = None  # the title in the list this suggestion already is; the core fills it in
     details: str | None = None  # a line under the name: the platforms of a game («ПК, PS5»); None for the other kinds
-    released: date | None = None  # the date the search answer gives (read softly): which record is new for an offer
+    released: ReleaseDate = NOT_ANNOUNCED  # the date the search answer gives, as precise as the source (read softly)
     other_names: tuple[str, ...] = ()  # the other names the source knows (IGDB alternatives, Shikimori's English one)
 
 
@@ -68,10 +70,16 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             original_name=item.get("original_title") or item.get("title") or "",
             year=response_year(item.get("release_date")),
             poster_path=item.get("poster_path") or None,
-            released=parse_response_date(item.get("release_date")),
+            released=day_of(item.get("release_date")),
         )
         for item in results
     ]
+
+
+def day_of(raw: Any) -> ReleaseDate:
+    """A day of a TMDb answer as a release date (soft): garbage or nothing is «not announced»."""
+    day = parse_response_date(raw)
+    return ReleaseDate.of_day(day) if day else NOT_ANNOUNCED
 
 
 def _earliest(release_dates: dict[str, Any], release_type: int) -> date | None:
@@ -103,11 +111,15 @@ class TmdbMovieSource:
     """Movie source of the tracker core, on top of a `TMDbProvider`-like client."""
 
     source_key = SOURCE_KEY
+    searches_in_english = True  # TMDb answers in Russian; its English names are one more search (KI-61)
 
     def __init__(self, provider) -> None:
         self._provider = provider
 
-    async def suggest(self, query: str) -> list[Suggestion]:
+    async def suggest(self, query: str, english: bool = False) -> list[Suggestion]:
+        """The search; `english`: the English names (`language=en-US`), for the typo of an inbox item (KI-61)."""
+        if english:
+            return parse_search(await self._provider.search_movie(query, strict=True, language=ENGLISH))
         return parse_search(await self._provider.search_movie(query, strict=True))
 
     async def suggest_by_id(self, external_id: str) -> Suggestion | None:

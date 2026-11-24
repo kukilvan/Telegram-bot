@@ -4,8 +4,9 @@ and their buttons.
 A message that no other handler took (not a command, not a menu button) is written as an inbox item at once
 (`Tracker.take_in`), before anything is answered. Two seconds after the last message of an item (a message that joins
 it — an album, a forward after its comment — starts the pause again) the core is asked what comes: the offers of its
-links of sources, «Что это?», or that a message without text went to «Входящие». The pause lives in memory: after a
-restart in the middle of it the item waits without the question until the next post or 12 hours (KI-57).
+links of sources, «Что это?», or that a message without text went to «Входящие». The pause lives in memory; the core
+marks its answer (`answered_at`), so when polling starts the bot gives the items a restart cut off from it their answer
+in the owner's chat (`OWNER_CHAT_ID`), once (KI-57).
 
 A kind press runs the analysis of the core; its answer is an offer card «Это оно?» with the poster above the text
 (through `card_message`, as every card) and «✅ Да» / «❌ Нет», «Уже в списке» with the card of the title, or the
@@ -18,11 +19,12 @@ import asyncio
 import logging
 from collections.abc import Awaitable, Callable, Collection
 from dataclasses import dataclass
+from typing import Any
 
-from aiogram import F, Router
+from aiogram import Bot, F, Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from app.bot.card_message import send_card_message
+from app.bot.card_message import Chat, send_card_message
 from app.bot.inbox_message import incoming
 from app.tracker.core import CARD_SIZE, InboxOutcome, InboxReply, Tracker, UnknownInboxItem, poster_url
 from app.tracker.kinds import KINDS
@@ -58,8 +60,19 @@ class TitleCards:
     """How the tracker handlers show a title of the list: its card after a heading, and the question about the watched
     seasons of a series or an anime (False: nothing to ask)."""
 
-    show: Callable[[Message, int, str], Awaitable[None]]
-    ask_seasons: Callable[[Message, int], Awaitable[bool]]
+    show: Callable[[Chat, int, str], Awaitable[None]]
+    ask_seasons: Callable[[Chat, int], Awaitable[bool]]
+
+
+@dataclass(frozen=True)
+class OwnerChat:
+    """The owner's chat as the place of an answer that answers no message (the start of the bot, KI-57)."""
+
+    bot: Bot
+    chat_id: int
+
+    async def answer(self, text: str, **kwargs: Any) -> Any:
+        return await self.bot.send_message(self.chat_id, text, **kwargs)
 
 
 @dataclass(frozen=True)
@@ -123,12 +136,15 @@ class _Pause:
 
 
 def register_inbox_handlers(
-    router: Router, tracker: Tracker, not_taken_in: Collection[str], titles: TitleCards, poster_site: str | None = None
+    router: Router, tracker: Tracker, not_taken_in: Collection[str], titles: TitleCards, poster_site: str | None = None,
+    owner_chat: int | None = None,
 ) -> None:
-    """Put the taking-in handler and the `inb:` presses on the owner router. Call it after every other message
-    handler: the taking in takes whatever is left, except commands and the texts of `not_taken_in` (menu buttons)."""
+    """Put the taking-in handler and the `inb:` presses on the owner router, and the answers of the start (to
+    `owner_chat`; None — none). Call it after every other message handler: the taking in takes whatever is left, except
+    commands and the texts of `not_taken_in` (menu buttons)."""
     pauses: dict[int, _Pause] = {}  # item id -> its latest pause, until it has answered
     running: set[asyncio.Task] = set()  # every pause task until it ends, so none is collected half-way
+    started: set[int] = set()  # the items the starts of this process took: polling that starts again asks none twice
 
     def is_taken_in(message: Message) -> bool:
         text = message.text
@@ -176,8 +192,33 @@ def register_inbox_handlers(
             if mine is not None and pauses.get(item_id) is mine:
                 del pauses[item_id]
 
-    async def say(message: Message, item_id: int, reply: InboxReply, first: str = "") -> None:
-        """What the core answered, as messages; `first` starts the first of them (the line «Предыдущий…»)."""
+    async def ask_unanswered(bot: Bot) -> None:
+        """Polling starts: the items a restart cut off from the answer to their pause get it now, in the owner's chat,
+        without the line «Предыдущий…» (spec 9 of 9.1d). The answers go in a task: polling does not wait for them."""
+        if owner_chat is None:
+            return
+        try:
+            items = [item_id for item_id in await tracker.inbox_unanswered() if item_id not in started]
+        except Exception as exc:  # the database: the items go to «Входящие» after their 12 hours anyway
+            logging.warning("reading the unanswered inbox items failed: %r", exc)
+            return
+        if not items:
+            return
+        started.update(items)
+        task = asyncio.create_task(answer_after_start(OwnerChat(bot, owner_chat), items))
+        running.add(task)
+        task.add_done_callback(running.discard)
+
+    async def answer_after_start(chat: Chat, items: list[int]) -> None:
+        for item_id in items:
+            try:
+                await say(chat, item_id, await tracker.inbox_pause_over(item_id))
+            except Exception as exc:  # a task of its own: nobody above it would see the error
+                logging.warning("answering an inbox item after the start failed: %r", exc)
+
+    async def say(message: Chat, item_id: int, reply: InboxReply, first: str = "") -> None:
+        """What the core answered, as messages to `message` (the message answered, or the owner's chat); `first` starts
+        the first of them (the line «Предыдущий…»)."""
         outcome = reply.outcome
         source = KINDS[reply.kind].source_name if reply.kind is not None else ""
         if outcome == InboxOutcome.NOTHING:
@@ -260,5 +301,6 @@ def register_inbox_handlers(
             return
         await say(callback.message, pressed.item_id, reply)
 
+    router.startup.register(ask_unanswered)
     router.message.register(take_in, is_taken_in)
     router.callback_query.register(press, F.data.startswith(PREFIX))

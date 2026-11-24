@@ -10,7 +10,8 @@ An inbox item is written before the bot answers anything (KI-9: a restart in the
 one write session (rule 9): «move the waiting ones and write the new one» together, «read the state, change it»
 together. A resolved, not saved or removed item is deleted; its number never comes back (`AUTOINCREMENT`). How the bot
 reads a Telegram message into an `IncomingMessage` is the bot's (`app/bot/inbox_message.py`); this module gets it ready.
-The answers to an item — the pause, the analysis, «Да» and «Нет» — are `inbox_answers`, which calls `offers`.
+The answers to an item — the pause, the analysis, «Да» and «Нет» — are `inbox_answers`, which calls `offers`; the
+answer to the pause is marked (`answered_at`), so an item a restart cut off from it is asked when the bot starts.
 """
 
 import asyncio
@@ -171,6 +172,23 @@ class Inbox:
                 move(item, InboxReason.NO_ANSWER, now)
             session.commit()
         return len(overdue)
+
+    async def unanswered(self) -> list[int]:
+        """The items that wait with no answer to their pause (a restart in the middle of it, KI-57) and came within
+        the last 12 hours, oldest first: the bot asks about them when it starts."""
+        return await asyncio.to_thread(self._unanswered)
+
+    def _unanswered(self) -> list[int]:
+        now = self.ctx.now()
+        with self.ctx.session_factory() as session:
+            return list(session.scalars(
+                select(InboxRecord.id)
+                .where(
+                    InboxRecord.state == InboxState.WAITING, InboxRecord.answered_at.is_(None),
+                    InboxRecord.received_at > now - WAIT_FOR,
+                )
+                .order_by(InboxRecord.received_at, InboxRecord.id)
+            ))
 
     # --- reading --------------------------------------------------------------------------------
 

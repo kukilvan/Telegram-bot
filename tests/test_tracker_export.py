@@ -258,7 +258,7 @@ def test_json_has_the_shape_of_version_one(tracker, session_factory):
     doc = json.loads(file.content)
     assert list(doc) == ["format", "version", "exported_at", "time_zone", "database_revision", "titles", "settings", "inbox"]
     assert doc["exported_at"] == "2026-10-30T01:30:00+03:00" and doc["time_zone"] == "Europe/Moscow"
-    assert doc["database_revision"] == "0018"
+    assert doc["database_revision"] == "0019"
     assert [t["name"] for t in doc["titles"]] == ["Дюна", "Одни из нас", "Магическая битва", "Ведьмак 3", "Кровь и вино", "Дополнение без игры"]
     movie, series, anime, base, expansion, orphan = doc["titles"]
     assert list(movie) == [

@@ -427,6 +427,10 @@ class Tracker:
         """The pause after the last message of an item is over: its offers, or «Что это?»."""
         return await self._answers.pause_over(item_id)
 
+    async def inbox_unanswered(self) -> list[int]:
+        """The waiting items of the last 12 hours whose pause got no answer (a restart): asked at the bot's start."""
+        return await self._inbox.unanswered()
+
     async def answer_kind(self, item_id: int, kind: TitleKind) -> InboxReply:
         """The kind the owner chose for an item: its first offer, «Уже в списке», or «Входящие»."""
         return await self._answers.answer_kind(item_id, kind)

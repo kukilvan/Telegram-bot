@@ -17,7 +17,7 @@ from typing import Any
 from app.tracker.models import EpisodeTiming, TitleKind
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.dates import parse_response_date, response_year
-from app.tracker.sources.tmdb_movies import Suggestion
+from app.tracker.sources.tmdb_movies import ENGLISH, Suggestion, day_of
 
 SOURCE_KEY = "tmdb_tv"  # TMDb shares one id space between movies and series, so ids are namespaced by kind
 KIND = TitleKind.SERIES
@@ -54,7 +54,7 @@ def parse_search(results: list[dict[str, Any]]) -> list[Suggestion]:
             original_name=item.get("original_name") or item.get("name") or "",
             year=response_year(item.get("first_air_date")),
             poster_path=item.get("poster_path") or None,
-            released=parse_response_date(item.get("first_air_date")),
+            released=day_of(item.get("first_air_date")),
         )
         for item in results
     ]
@@ -104,11 +104,15 @@ class TmdbSeriesSource:
     """Series source of the tracker core, on top of a `TMDbProvider`-like client."""
 
     source_key = SOURCE_KEY
+    searches_in_english = True  # TMDb answers in Russian; its English names are one more search (KI-61)
 
     def __init__(self, provider) -> None:
         self._provider = provider
 
-    async def suggest(self, query: str) -> list[Suggestion]:
+    async def suggest(self, query: str, english: bool = False) -> list[Suggestion]:
+        """The search; `english`: the English names (`language=en-US`), for the typo of an inbox item (KI-61)."""
+        if english:
+            return parse_search(await self._provider.search_tv(query, strict=True, language=ENGLISH))
         return parse_search(await self._provider.search_tv(query, strict=True))
 
     async def suggest_by_id(self, external_id: str) -> Suggestion | None:

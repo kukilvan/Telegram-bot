@@ -69,13 +69,15 @@ def _record(answers: dict, prefix: str, number: str) -> dict | None:
 class FakeTmdb(_Fake):
     service = "tmdb"
 
-    async def search_movie(self, query, strict=False):
-        self._note(f"movie:{query}")
-        return self.answers.get(f"movie:{query}") or []
+    async def search_movie(self, query, strict=False, language="ru"):
+        key = f"movie:{query}" if language == "ru" else f"movie-en:{query}"  # the English search of a typo (KI-61)
+        self._note(key)
+        return self.answers.get(key) or []
 
-    async def search_tv(self, query, strict=False):
-        self._note(f"series:{query}")
-        return self.answers.get(f"series:{query}") or []
+    async def search_tv(self, query, strict=False, language="ru"):
+        key = f"series:{query}" if language == "ru" else f"series-en:{query}"
+        self._note(key)
+        return self.answers.get(key) or []
 
     async def get_movie_with_release_dates(self, movie_id):
         self._note(f"movie-details:{movie_id}")
@@ -178,7 +180,8 @@ class Clients:
 
     def searches(self) -> list[str]:
         """The searches by name (not the lookups of links)."""
-        return [what for _, what in self.requests if what.split(":")[0] in ("movie", "series", "anime", "game")]
+        names = ("movie", "series", "anime", "game", "movie-en", "series-en")  # with the English searches of a typo
+        return [what for _, what in self.requests if what.split(":")[0] in names]
 
 
 def tracker_on(clients: Clients, url: str = "sqlite://", clock=lambda: NOW) -> Tracker:

@@ -73,7 +73,7 @@ def test_the_shikimori_snapshots_of_anime_are_due_and_the_rest_is_untouched(engi
     migrate(engine)
 
     after = checks(engine)
-    assert version(engine) == "0018"
+    assert version(engine) == "0019"
     for key in ((1, "shikimori"), (2, "shikimori")):
         due = datetime.fromisoformat(str(after[key]))
         assert start - timedelta(seconds=1) <= due <= datetime.now(timezone.utc).replace(tzinfo=None)
@@ -86,7 +86,7 @@ def test_an_empty_database_migrates_and_a_second_run_changes_nothing(engine):
     migrate(engine)
     migrate(engine)
 
-    assert version(engine) == "0018"
+    assert version(engine) == "0019"
 
 
 def test_down_leaves_the_checks_as_they_are(engine):

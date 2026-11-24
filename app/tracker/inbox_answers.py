@@ -88,8 +88,19 @@ class InboxAnswers:
             except UnknownInboxItem:  # removed on the web while the links were looked up
                 return InboxReply(InboxOutcome.NOTHING)
         if look.has_text:
-            return InboxReply(InboxOutcome.ASK)
+            return await asyncio.to_thread(self._ask, item_id)
         return await asyncio.to_thread(self._no_text, item_id)
+
+    def _ask(self, item_id: int) -> InboxReply:
+        """«Что это?»: an item that still waits is marked answered (KI-57: not asked again after a restart)."""
+        with self.ctx.write_session() as session:
+            item = session.get(InboxRecord, item_id)
+            if item is None:  # removed on the web meanwhile
+                return InboxReply(InboxOutcome.NOTHING)
+            if item.state == InboxState.WAITING:
+                item.answered_at = item.answered_at or self.ctx.now()
+                session.commit()
+        return InboxReply(InboxOutcome.ASK)
 
     def _pause_look(self, item_id: int) -> _Look | InboxReply:
         with self.ctx.write_session() as session:
@@ -129,10 +140,12 @@ class InboxAnswers:
     # --- the kind ---------------------------------------------------------------------------------
 
     async def answer_kind(self, item_id: int, kind: TitleKind) -> InboxReply:
-        """The analysis of the name candidates in the source of the kind. UnknownInboxItem when the item is gone."""
+        """The analysis of the links of the kind (looked up again) and the name candidates in the source of the kind.
+        UnknownInboxItem when the item is gone."""
         look = await asyncio.to_thread(self._read_look, item_id)
         found = await self.search.by_kind(
-            kind, look.candidates, name_message=look.name_message, years=look.years, new_since=look.new_since
+            kind, look.candidates, links=look.links, name_message=look.name_message, years=look.years,
+            new_since=look.new_since,
         )
         return await asyncio.to_thread(self._finish, item_id, kind, found, None)
 
@@ -166,6 +179,7 @@ class InboxAnswers:
             session.commit()
             return InboxReply(InboxOutcome.IN_LIST, offer.kind, title_id=listed)
         item.offers = [o.stored() for o in shown(offers, number)]
+        item.answered_at = item.answered_at or self.ctx.now()  # the first card answers the pause (KI-57)
         card = OfferCard(item.id, number, card_text(offer, self._today(session)), offer.poster)
         session.commit()
         return InboxReply(InboxOutcome.OFFER, offer.kind, offer=card)

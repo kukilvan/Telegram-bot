@@ -71,14 +71,14 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-54 | Follow-ups: an announcement taken out by «Бросил» never comes from another game of the series | `app/tracker/queue.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-55 | Follow-ups: a game whose own snapshot cannot be read logs a line every minute; never told if it had no check yet | `app/tracker/pollers/game_follow_ups.py` | fixed (test: `tests/test_tracker_follow_up_known_issues.py`) | 9.1b |
 | KI-56 | The size test of the core misses the pure modules: `series_events.py` 547 lines, `games.py` 406 | `tests/test_tracker_core_split.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
-| KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | open | 9.1 |
+| KI-57 | «Входящие»: a restart within the 2-second pause leaves the item without «Что это?» | `app/bot/inbox_handlers.py` | fixed (test: `tests/test_inbox_after_restart.py`) | 9.1d.04 |
 | KI-58 | «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate | `app/tracker/candidates.py` | fixed (test: `tests/test_tracker_candidates_middle.py`) | 9.1d.03 |
 | KI-59 | «Входящие»: the stop list of candidates is a fixed list | `app/tracker/candidates.py` | fixed (test: `tests/test_tracker_companies.py`) | 9.1d.03 |
 | KI-60 | «Входящие»: a Latin run keeps a leading «from», and a bare number after a colon is cut off the name | `app/tracker/candidates.py` | fixed (test: `tests/test_tracker_candidates_middle.py`) | 9.1d.03 |
-| KI-61 | «Входящие»: a typo in a name is not corrected when the source answers in another language | `app/tracker/offers.py` | open | 9.1 |
-| KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | open | 9.1 |
+| KI-61 | «Входящие»: a typo in a name is not corrected when the source answers in another language | `app/tracker/offers.py` | fixed (test: `tests/test_inbox_offer_dates.py`) | 9.1d.04 |
+| KI-62 | «Входящие»: a kind press does not look the links of the item up again | `app/tracker/inbox_answers.py` | fixed (test: `tests/test_inbox_offer_dates.py`) | 9.1d.04 |
 | KI-63 | The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it | `app/tracker/sources/shikimori_anime.py` | fixed (test: `tests/test_tracker_core_split.py`) | 9.1d.01 |
-| KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | open | 9.1 |
+| KI-64 | «Входящие»: an offer of a title announced for a year or a quarter shows a made-up day («выйдет 31 декабря 2028») | `app/tracker/offers.py` | fixed (test: `tests/test_inbox_offer_dates.py`) | 9.1d.04 |
 | KI-65 | «Входящие»: «Найти» cannot remove an item whose title is in the list already | `app/web/templates/suggestions.html` | fixed (test: `tests/test_web_inbox.py`) | 9.1c |
 | KI-66 | Copies: the time of a copy is the container's clock, not the zone of Settings | `app/utils/backup.py` | open | 9.1 |
 | KI-67 | Google Drive copy: a folder of over 1000 files is listed only in part | `app/providers/google_drive.py` | open | 9.1 |
@@ -629,7 +629,7 @@ Format of a new entry:
 - What's wrong: the item is written at once, but the question comes 2 seconds after its last message. When the bot stops in those 2 seconds, nothing asks after the start: the item waits silently.
 - How to reproduce: send a message to the bot and run `.\stop-bot.ps1` within 2 seconds, then `.\start-bot.ps1`.
 - Likelihood / impact: rare (a stop exactly then); nothing is lost — the item goes to «Входящие» «без ответа» with the next post or after 12 hours, and the web tab shows it (ticket 05). Spec 13 of stage 6.4 accepts it.
-- Status: open.
+- Status: fixed (test: `tests/test_inbox_after_restart.py`). Ticket 9.1d.04 (spec 9 of 9.1d, migration 0019): the answer to the pause is marked in `inbox_items.answered_at` (the question and the first offer card); once polling starts, the bot gives each waiting item of the last 12 hours without it its pause answer in the owner's chat (`OWNER_CHAT_ID`), without the line «Предыдущий…». Not asked twice: an item asked before the stop has `answered_at`, and a start of polling again in the same process skips the items it took. The rest of the window: a stop between the write of `answered_at` and Telegram's answer to the send (milliseconds), or a send that fails, leaves the item without the question until its 12 hours (it is in «Входящие» then).
 - Found: 2026-11-06, spec of stage 6.4.
 
 ## KI-58. «Входящие»: a Cyrillic name in the middle of a post without quotes, kind word or bold is not a candidate
@@ -665,7 +665,7 @@ Format of a new entry:
 - What's wrong: the correction looks for a close name among the names a search answers; TMDb answers a series in Russian and in its original language, so an English name with a typo of a series whose original is not English finds no close name: «Dead-End Jb» (the English name of the Korean «꿀알바», «Работа с призрачными перспективами») gives nothing to correct by.
 - How to reproduce: send the bot «Dead-End Jb», press «Сериал»: «Не нашёл — сохранил во «Входящие»…» (the saved answers of `search-typos-links.json`).
 - Likelihood / impact: rare (an English name of a non-English series typed with a typo); the item is in «Входящие», «Найти» on the web finds it with the name fixed by hand. A fix would need the English names of TMDb (`alternative_titles`), one more request a record.
-- Status: open.
+- Status: fixed (test: `tests/test_inbox_offer_dates.py`). Ticket 9.1d.04 (8.2 of 9.1d): when the shortened name finds no close name in the source's language and the source searches in English (TMDb movies and series, `searches_in_english`), the same name is searched once more with `language=en-US`; the corrected name is then searched in Russian and the offer is the record of the same id (its Russian name), else the English record. One search instead of `alternative_titles` (one per record). A correctly typed English name of a series whose Russian name differs now gets «Возможно, вы имели в виду:» with its Russian name too (the typo path ran before as well, and gave only the weak offer).
 - Found: 2026-11-06, spec of stage 6.4 (section 13); written by ticket 04.
 
 ## KI-62. «Входящие»: a kind press does not look the links of the item up again
@@ -674,7 +674,7 @@ Format of a new entry:
 - What's wrong: the links of sources are looked up once, at the end of the pause. When they gave nothing (the source failed, an unknown number) the bot asks «Что это?», and a kind press then searches only the name candidates of the text: a link whose source failed a moment ago is not tried again.
 - How to reproduce: a Steam link while IGDB does not answer; «Что это?» comes; IGDB is back; «Игра» searches the text only (for a bare link: nothing — «Не нашёл…»).
 - Likelihood / impact: rare (a failure of a source exactly then); the item is in «Входящие», and sending the link again gives its card. A fix: look the links of the chosen kind up again in `answer_kind` (within the budget of 5.5).
-- Status: open.
+- Status: fixed (test: `tests/test_inbox_offer_dates.py`). Ticket 9.1d.04 (8.3 of 9.1d): `answer_kind` looks the links of the chosen kind up again before the name candidates (an IMDb link for a movie or a series, its records of that kind only); a Steam number IGDB does not know gives Steam's name; a link that fails again goes to the log. A link of another kind is not looked up. The budget is 8.4 of 9.1d (17 requests at a kind press).
 - Found: 2026-11-06, ticket 04 of stage 6.4.
 
 ## KI-63. The Shikimori adapter is over the 400 lines of rule 7, and the size test does not see it
@@ -692,7 +692,7 @@ Format of a new entry:
 - What's wrong: the card of an offer says «выйдет <day> <month> <year>» for any date in the future (spec 6.1 has this form only «with a day»), but the sources fill a day they do not know: IGDB gives the last day of the year or of the quarter, Shikimori the first of January. Checked live 2026-11-06: The Witcher IV → «выйдет 31 декабря 2028», Intergalactic: The Heretic Prophet and Marvel 1943 → «31 декабря 2027», Fishy Bar → «30 июня 2027» (a quarter), «Выход смерти: Изоляция» → «выйдет 1 января 2027». The web card of the same game, once added, shows the date right (`games.GameDate` by `release_dates`).
 - How to reproduce: send the bot «The Witcher IV», press «Игра».
 - Likelihood / impact: often — posts are mostly about announcements; the owner may take the day for real. Nothing is stored wrong: adding the title reads its dates anew. A fix: the adapters say whether the day is known (IGDB: `release_dates.date_format` of the record of `first_release_date`, as `sources/igdb_follow_ups` reads it; Shikimori: `airedOn { day }`), the stored offer keeps it, and a future date without a day shows the year alone («2028») — or the precision of `games.GameDate` («IV квартал 2027»), a choice for the fix.
-- Status: open.
+- Status: fixed (test: `tests/test_inbox_offer_dates.py`). Ticket 9.1d.04 (8.1 of 9.1d): `Suggestion.released` and `Offer.released` are a `ReleaseDate`, stored as its text («2027-Q4»; an offer stored before reads as a day). IGDB: the least precise record of `release_dates` whose `date` is `first_release_date`, none — the year alone; Shikimori: `airedOn` with its precision; TMDb: a day. The card: «выйдет в 2028», «выйдет во 2 квартале 2027», «выйдет в январе 2027» while the period has not ended. An answer without `release_dates` (the saved answers of 6.4) gives the year alone: a game out this year then reads «выйдет в 2026».
 - Found: 2026-11-06, review of stage 6.4 (F9).
 
 ## KI-65. «Входящие»: «Найти» cannot remove an item whose title is in the list already

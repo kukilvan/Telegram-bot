@@ -46,11 +46,14 @@ class Titles:
 
     # --- adding ---------------------------------------------------------------------------------
 
-    async def search(self, kind: TitleKind, query: str) -> list[Any]:
+    async def search(self, kind: TitleKind, query: str, english: bool = False) -> list[Any]:
         """Suggestions for `query` from the source of this kind, each with the number of its title when the title is in
-        the list already (found after the source answered, in one read). Raises KeyError for an unknown kind,
+        the list already (found after the source answered, in one read). `english`: the English names of a source that
+        `searches_in_english` (the typo of an inbox item, KI-61). Raises KeyError for an unknown kind,
         SourceNotConfigured when the source has no keys and SourceFailed when it fails."""
         source = self.pollers.of(kind).source
+        if english:
+            return await self.look_up(source, lambda: source.suggest(query, english=True))
         return await self.look_up(source, lambda: source.suggest(query))
 
     async def look_up(self, source: Any, ask: Callable[[], Awaitable[list[Any]]]) -> list[Any]:

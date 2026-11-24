@@ -141,18 +141,18 @@ class TMDbProvider:
         )
         return None
 
-    async def search_movie(self, query: str, page: int = 1, strict: bool = False) -> list[dict]:
+    async def search_movie(self, query: str, page: int = 1, strict: bool = False, language: str = "ru") -> list[dict]:
         """Search movies by title (RU or EN). Returns raw TMDb results. Goes at once, ahead of the paced requests
         (only the suggestions search), and is not repeated on a 429.
 
         Endpoint: GET /search/movie?language=ru&include_adult=false&query={query}
         Auth: api_key as query param (standard TMDb REST auth).
         With `strict=True` a failed request raises instead of returning [], so "TMDb is down" is not
-        mistaken for "nothing found".
+        mistaken for "nothing found". `language="en-US"`: the English names, for the typo of an inbox item (KI-61).
         """
         params = {
             "api_key": self._api_key,
-            "language": "ru",  # prefer Russian titles in response
+            "language": language,  # Russian titles by default
             "include_adult": "false",
             "page": page,
             "query": query,
@@ -166,18 +166,18 @@ class TMDbProvider:
         data = resp.json()
         return data.get("results", [])
 
-    async def search_tv(self, query: str, page: int = 1, strict: bool = False) -> list[dict]:
+    async def search_tv(self, query: str, page: int = 1, strict: bool = False, language: str = "ru") -> list[dict]:
         """Search TV series by title (RU or EN). Returns raw TMDb results. Goes at once, ahead of the paced requests
         (only the suggestions search), and is not repeated on a 429.
 
         Endpoint: GET /search/tv?language=ru&include_adult=false&query={query}
         Auth: api_key as query param (standard TMDb REST auth).
         With `strict=True` a failed request raises instead of returning [], so "TMDb is down" is not
-        mistaken for "nothing found".
+        mistaken for "nothing found". `language="en-US"`: the English names, for the typo of an inbox item (KI-61).
         """
         params = {
             "api_key": self._api_key,
-            "language": "ru",
+            "language": language,
             "include_adult": "false",
             "page": page,
             "query": query,

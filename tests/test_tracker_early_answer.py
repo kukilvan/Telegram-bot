@@ -18,6 +18,7 @@ from app.bot.tracker_handlers import register_tracker_handlers
 from app.tracker.core import IncomingMessage, Tracker
 from app.tracker.db import create_session_factory
 from app.tracker.models import TitleKind
+from app.tracker.release_dates import ReleaseDate
 from app.tracker.seasons import Episode, Season
 from app.tracker.sources.tmdb_movies import MovieSnapshot, Suggestion
 from app.tracker.sources.tmdb_sequels import CollectionPart, SequelSnapshot
@@ -122,7 +123,7 @@ def series(journal):
 
 @pytest.fixture
 def movies(journal):
-    found = [Suggestion(TitleKind.MOVIE, DUNE, "Дюна", "Dune", 2021, released=date(2021, 9, 15))]
+    found = [Suggestion(TitleKind.MOVIE, DUNE, "Дюна", "Dune", 2021, released=ReleaseDate.of_day(date(2021, 9, 15)))]
     return SlowSource(
         "tmdb_movie", journal, {DUNE_3: movie(DUNE_3, "Дюна: Часть третья"), DUNE: movie(DUNE, "Дюна")}, {"Дюна": found}
     )

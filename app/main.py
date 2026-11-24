@@ -235,7 +235,9 @@ async def main() -> int:
     if bot is not None:  # the web's line «Бот не подключён к Telegram» follows the answers to getUpdates (KI-33)
         bot.session.middleware(GetUpdatesWatch(telegram_down))
     running = RunningUpdates()
-    dispatcher = build_dispatcher(tracker, allowed_ids, links, settings.shikimori_base_url, running)
+    dispatcher = build_dispatcher(
+        tracker, allowed_ids, links, settings.shikimori_base_url, running, owner_chat=settings.owner_chat
+    )
     runtime = Runtime(
         web=server, scheduler=scheduler, bot=TelegramPart(bot, dispatcher, running, tracker.finish_sends), health=health,
     )

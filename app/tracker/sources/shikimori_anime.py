@@ -65,7 +65,7 @@ def suggestion(entry: Entry) -> Suggestion:
         original_name=entry.name,
         year=entry.aired_on.year if entry.aired_on else None,
         poster_path=entry.poster,
-        released=entry.aired_on,
+        released=entry.aired,
         other_names=tuple(name for name in (entry.russian, entry.english) if name),
     )
 

@@ -97,7 +97,8 @@ def test_a_kind_press_sends_the_offer_card_with_the_poster_above_and_yes_no(trac
     talk(tracker, samples()[10], "inb:1:k:game")
 
     _, text, rows, preview = telegram.messages()[-1]
-    assert text == "Это оно?\n\n🎮 The Wolf Among Us Remastered\n2026 · ПК, PS5, Xbox One, Switch"
+    # the saved answer of 6.4 has no `release_dates`: the year alone, whose period has not ended (8.1 of 9.1d)
+    assert text == "Это оно?\n\n🎮 The Wolf Among Us Remastered\nвыйдет в 2026 · ПК, PS5, Xbox One, Switch"
     assert rows == [[("✅ Да", "inb:1:y:0"), ("❌ Нет", "inb:1:n:0")]]
     assert preview.url.startswith("https://images.igdb.com/igdb/image/upload/t_cover_big_2x/")
     assert preview.show_above_text and preview.prefer_large_media

@@ -15,6 +15,7 @@ from app.tracker.core import IncomingMessage, InboxOutcome, InboxReason, InboxSt
 from app.tracker.models import GamePlatformRecord, InboxRecord, TitleKind
 from app.tracker.offers import new_from, searched
 from app.tracker.offer_cards import Offer, card_text
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from inbox_fakes import ANSWERS, Clients, samples, tracker_on
 
 GAME, SERIES, ANIME, MOVIE = TitleKind.GAME, TitleKind.SERIES, TitleKind.ANIME, TitleKind.MOVIE
@@ -105,7 +106,7 @@ TYPOS = [
     ("Ведьмак 3 Дикая охта", GAME, ["1942"], 3),  # The Witcher 3: Wild Hunt, by «Ведьмак 3: Дикая охота»
     ("Cyberpnk 2077", GAME, ["1877", "397607"], 4),  # Cyberpunk 2077, Cyberpunk 2077: Turf Wars
     ("Игра в кальмра", SERIES, ["93405", "204082"], 3),
-    ("Eldn Ring", MOVIE, ["1485839"], 4),
+    ("Eldn Ring", MOVIE, ["1485839"], 5),  # «Eldn» in English too (KI-61): TMDb finds nothing close in Russian
 ]
 
 
@@ -123,7 +124,10 @@ def test_dead_end_job_is_not_corrected_and_keeps_its_weak_offer(tracker, clients
     item, reply = analysed(tracker, "Dead-End Job", SERIES, forwarded=False)
 
     assert [(o.external_id, o.heading) for o in stored(tracker, item)] == [("289517", HEADING)]
-    assert clients.searches() == ["series:Dead-End Job", "series:Dead-End", "series:Job"]
+    # the saved answers of 6.4 have no English searches: the English «Dead-End» and «Job» find nothing (KI-61)
+    assert clients.searches() == [
+        "series:Dead-End Job", "series:Dead-End", "series-en:Dead-End", "series:Job", "series-en:Job",
+    ]
 
 
 def test_the_weak_offer_comes_after_the_corrected_ones(tracker):
@@ -147,10 +151,17 @@ def test_a_post_is_no_name_message_and_is_not_corrected(tracker, clients):
 # --- the order and the limits (made-up records) ----------------------------------------------------------
 
 
+def dated(released):
+    """A day given as `date` is an exact `ReleaseDate`; None is «not announced»; a `ReleaseDate` stays."""
+    if isinstance(released, date):
+        return ReleaseDate.of_day(released)
+    return NOT_ANNOUNCED if released is None else released
+
+
 def record(number, name, released=None, other=()):
     return SimpleNamespace(
-        kind=GAME, external_id=str(number), name=name, original_name=name, other_names=tuple(other), released=released,
-        details=None, poster_path=None, title_id=None,
+        kind=GAME, external_id=str(number), name=name, original_name=name, other_names=tuple(other),
+        released=dated(released), details=None, poster_path=None, title_id=None,
     )
 
 
@@ -243,7 +254,8 @@ def test_games_without_the_keys_of_igdb_are_not_connected():
 def test_no_item_makes_more_requests_than_the_budget(tracker, clients, text, kind):
     analysed(tracker, text, kind, forwarded=False)
 
-    assert len(clients.requests) <= 10 and len(clients.searches()) <= 1 + 4
+    # 8.4 of 9.1d: a kind press — at most 17 requests; a name message searches itself, 4 for a typo, 3 in English
+    assert len(clients.requests) <= 17 and len(clients.searches()) <= 1 + 4 + 3
 
 
 # --- links (section 3) -----------------------------------------------------------------------------------
@@ -342,7 +354,8 @@ def test_a_link_without_a_source_and_no_name_is_asked_about(tracker):
 def offer(**fields):
     base = dict(kind=GAME, external_id="1", name="The Wolf Among Us Remastered", original_name="The Wolf Among Us Remastered",
                 released=date(2026, 10, 29), details="ПК, PS5, Xbox Series X|S", poster=None, heading=HEADING)
-    return Offer(**{**base, **fields})
+    merged = {**base, **fields}
+    return Offer(**{**merged, "released": dated(merged["released"])})
 
 
 def test_the_card_text_of_a_game_out_this_year():

@@ -21,7 +21,7 @@ from typing import Any
 
 from app.tracker.errors import SourceNotConfigured
 from app.tracker.games import CANCELLED, EARLY, EXPANSION, FULL, STANDALONE, GameState, Parent, Release
-from app.tracker.release_dates import ReleaseDate
+from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.models import TitleKind
 from app.tracker.platforms import IGDB_LABELS, NO_REGION
 from app.tracker.russian import Support
@@ -37,7 +37,8 @@ _ONLY_GAMES = f"where game_type = ({','.join(map(str, GAME_TYPES))}) & version_p
 
 _SUGGESTION_FIELDS = (
     "fields name,game_type,version_parent,first_release_date,platforms,cover.image_id,"
-    "alternative_names.name,alternative_names.comment; "
+    "alternative_names.name,alternative_names.comment,release_dates.date,release_dates.date_format,release_dates.y,"
+    "release_dates.m; "
 )
 SEARCH_QUERY = 'search "{query}"; ' + _SUGGESTION_FIELDS + f"{_ONLY_GAMES}; limit 10;"
 # a link sent to the bot names the record itself, so any type of record counts (an expansion is followed too, ADR 0011)
@@ -154,6 +155,29 @@ def _release_year(item: dict[str, Any]) -> int | None:
     return day.year if day else None
 
 
+def _precision(released: ReleaseDate) -> int:
+    """0 a year, 1 a quarter, 2 a month, 3 a day: the least precise of the records of one date wins."""
+    if released.day is not None:
+        return 3
+    return 2 if released.month is not None else (1 if released.quarter is not None else 0)
+
+
+def first_release(item: dict[str, Any]) -> ReleaseDate:
+    """The date of a suggestion as precise as IGDB knows it (8.1 of 9.1d): the records of `release_dates` whose `date`
+    is `first_release_date`, the least precise of them (one approximate platform never makes a day); none — the year of
+    `first_release_date` alone, never a made-up day. Soft: garbage is «not announced»."""
+    first = item.get("first_release_date")
+    day = response_day_of_timestamp(first)
+    if day is None:
+        return NOT_ANNOUNCED
+    records = [
+        ReleaseDate.from_igdb(record) for record in item.get("release_dates") or []
+        if isinstance(record, dict) and record.get("date") == first
+    ]
+    announced = [released for released in records if released.announced]
+    return min(announced, key=_precision) if announced else ReleaseDate(year=day.year)
+
+
 def _suggestion(item: dict[str, Any]) -> Suggestion:
     return Suggestion(
         kind=TitleKind.GAME,
@@ -163,7 +187,7 @@ def _suggestion(item: dict[str, Any]) -> Suggestion:
         year=_release_year(item),
         poster_path=cover_url(item),
         details=platform_line(item.get("platforms")),
-        released=response_day_of_timestamp(item.get("first_release_date")),
+        released=first_release(item),
         other_names=tuple(
             alternative["name"] for alternative in item.get("alternative_names") or []
             if isinstance(alternative, dict) and isinstance(alternative.get("name"), str) and alternative["name"]
