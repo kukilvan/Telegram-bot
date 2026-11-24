@@ -104,6 +104,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-87 | «Входящие»: an item a newer message moved to «Входящие» while its links were looked up still gets its offer card | `app/tracker/inbox_answers.py` (`pause_over`, `_finish`) | open | 9.2 |
 | KI-88 | «Входящие»: the series «From» as a lone Latin word of a post is no candidate | `app/tracker/candidates.py` (`_without_from`) | open | 9.2 |
 | KI-89 | «Входящие»: a Russian name with a hyphen in the middle of a sentence is cut at the hyphen («Человек-паук» → «Человек») | `app/tracker/candidates.py` (`_CAPITAL_WORD`) | open | 9.2 |
+| KI-90 | Copies on the HDD: the hourly job lists their folder every hour and may wake the disk | `app/utils/backup.py` (`backup_if_due`), `app/tracker/drive_copies.py` (`_due`) | open | 9.2 |
+| KI-91 | Copies on the HDD: a folder missing at the container's start is created on the system disk | `docker-compose.override.yml` (NAS only) | open | 9.2 |
 
 ## Entries
 
@@ -926,3 +928,21 @@ Format of a new entry:
 - Likelihood / impact: rare, and the weight 2 is the lowest but one, so a quote, bold or Latin name wins; when it is the only name, a search by «Человек» gives a wrong offer, one «Нет».
 - Status: open. Fix in 9.2 if met: a word may go on after a hyphen with lower-case letters.
 - Found: 2026-11-24, review of stage 9.1d (F5).
+
+## KI-90. Copies on the HDD: the hourly job lists their folder every hour and may wake the disk
+
+- Where: `app/utils/backup.py` (`backup_if_due` → `daily_backups`), `app/tracker/drive_copies.py` (`_due` → `newest`); both read `data/backups` in every run of the hourly job.
+- What's wrong: with `data/backups` on the NAS's HDD (spec 3.3 of 7.3, `docker-compose.override.yml`) the listing may spin the disk up every hour when the system no longer holds the folder in memory; the disk then never sleeps for long.
+- How to reproduce: only on the NAS — the HDD's sleep set in UGOS, the copies on it; see whether the disk wakes at the tracker's hourly runs.
+- Likelihood / impact: unknown until the NAS; more wear and noise, no data at risk.
+- Status: open. The NAS project reports it (`docs/nas-move.md`, «Report back»). If met: the copies back on the SSD (delete the override), or 9.2 keeps the newest copy's moment in memory and lists the folder only at start and when a copy is due.
+- Found: 2026-11-24, spec of stage 7.3.
+
+## KI-91. Copies on the HDD: a folder missing at the container's start is created on the system disk
+
+- Where: `docker-compose.override.yml` of the NAS (from `docker-compose.override.example.yml`): a bind mount of the copies folder on the HDD.
+- What's wrong: when the HDD is not mounted yet (or is gone) as the container starts, Docker creates the missing folder where the path then lies — on the system disk — and the copies go there unnoticed; once the HDD is back, it hides them.
+- How to reproduce: on the NAS, start the container with the HDD's volume unmounted; `df <copies folder>` shows the system disk.
+- Likelihood / impact: rare (Docker of UGOS starts after the volumes); the copies on the NAS are then in the wrong place, the Google Drive copy still goes; a dead HDD does not stop the bot (a missing folder must not).
+- Status: open. The guide checks `df <copies folder>` after a restart of the NAS and says how to move what landed on the system disk; 9.2 decides on a guard in code if it is met.
+- Found: 2026-11-24, spec of stage 7.3.
