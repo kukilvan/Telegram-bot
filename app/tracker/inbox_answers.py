@@ -92,14 +92,14 @@ class InboxAnswers:
         return await asyncio.to_thread(self._no_text, item_id)
 
     def _ask(self, item_id: int) -> InboxReply:
-        """«Что это?»: an item that still waits is marked answered (KI-57: not asked again after a restart)."""
+        """«Что это?» for an item that still waits, marked answered (KI-57: not asked again after a restart); nothing for
+        one removed on the web or moved to «Входящие» by a newer message meanwhile (review 9.1d, F2)."""
         with self.ctx.write_session() as session:
             item = session.get(InboxRecord, item_id)
-            if item is None:  # removed on the web meanwhile
+            if item is None or item.state != InboxState.WAITING:
                 return InboxReply(InboxOutcome.NOTHING)
-            if item.state == InboxState.WAITING:
-                item.answered_at = item.answered_at or self.ctx.now()
-                session.commit()
+            item.answered_at = item.answered_at or self.ctx.now()
+            session.commit()
         return InboxReply(InboxOutcome.ASK)
 
     def _pause_look(self, item_id: int) -> _Look | InboxReply:

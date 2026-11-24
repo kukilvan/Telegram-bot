@@ -100,6 +100,10 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-83 | Anime: an episode first seen with an AniList airing earlier than the previous look comes with no message | `app/tracker/anime_events.py` (`assemble`), `series_events._newly_out` | fixed (test: `tests/test_tracker_anime_late_and_moves.py`) | 9.1d |
 | KI-84 | Anime: a premiere moved by hours within its day reads «9 янв 2027 → 9 янв 2027» | `app/tracker/series_messages.py` (`message_moved`), `series_moves` | fixed (test: `tests/test_tracker_anime_late_and_moves.py`) | 9.1d |
 | KI-85 | Anime: a franchise film Shikimori knows by the month or the year stands on a made-up first day | `app/tracker/sources/shikimori_anime.py`, `MovieRecord.aired_on` | open | 9.2 |
+| KI-86 | «Входящие»: a number after a colon joins a Latin name before a counting word other than an episode, a season or a part («Hades: 2 дня…», «Elden Ring: 10 из 10») | `app/tracker/candidates.py` (`_LATIN_RUN`) | open | 9.2 |
+| KI-87 | «Входящие»: an item a newer message moved to «Входящие» while its links were looked up still gets its offer card | `app/tracker/inbox_answers.py` (`pause_over`, `_finish`) | open | 9.2 |
+| KI-88 | «Входящие»: the series «From» as a lone Latin word of a post is no candidate | `app/tracker/candidates.py` (`_without_from`) | open | 9.2 |
+| KI-89 | «Входящие»: a Russian name with a hyphen in the middle of a sentence is cut at the hyphen («Человек-паук» → «Человек») | `app/tracker/candidates.py` (`_CAPITAL_WORD`) | open | 9.2 |
 
 ## Entries
 
@@ -886,3 +890,39 @@ Format of a new entry:
 - Likelihood / impact: rare (an announced film of a followed franchise without a day); the owner may take the day for real; nothing is lost.
 - Status: open. Fix in 9.2 if met.
 - Found: 2026-11-23, spec 9.1d.
+
+## KI-86. «Входящие»: a number after a colon joins a Latin name before a counting word other than an episode, a season or a part
+
+- Where: `app/tracker/candidates.py` (`_LATIN_RUN`: `: <number>` joins a run unless a piece word follows — `_PIECE_WORD`).
+- What's wrong: KI-60 (9.1d.03) made a number after a colon part of the name («Вышел Fallout: 76 вчера» → «Fallout: 76») unless an episode word follows; the review of 9.1d added the season and part words (F1). Any other counting word after the number still glues it to the name: «Hades: 2 дня до релиза» → «Hades: 2», «Elden Ring: 10 из 10» → «Elden Ring: 10», «Stalker 2: 1 место в чарте» → «Stalker 2: 1». Before 9.1d such a number never joined. The search by the glued name may find no exact or prefix match: then only the first candidate gives the weak offer (the source's first record).
+- How to reproduce: a forwarded post «Hades: 2 дня до релиза второй части и все очень этому рады сегодня вечером» → the first candidate «Hades: 2» (review probe).
+- Likelihood / impact: medium for game news headlines «Name: N <noun>»; a wrong or missing offer, the owner finds the title with «Найти».
+- Status: open. Fix in 9.2 with real posts: a list of counting words, or the number joined only when nothing Cyrillic follows it in its sentence part (keeping «Fallout: 76 вчера»).
+- Found: 2026-11-24, review of stage 9.1d (F1).
+
+## KI-87. «Входящие»: an item a newer message moved to «Входящие» while its links were looked up still gets its offer card
+
+- Where: `app/tracker/inbox_answers.py` (`pause_over` → `_finish`: `existing` reads the item in any state).
+- What's wrong: the end of the pause of an item with links of sources looks them up (one to three requests, seconds). A message that comes meanwhile is a new item and moves the first one to «Входящие» «без ответа» (its answer says «Предыдущий…»); the lookups of the first one then finish, and `_finish` stores the offers and sends its card anyway. The question path checks the state since the review of 9.1d (F2); this path is older (stage 6.4).
+- How to reproduce: forward a post with a TMDb link and, within the seconds of its lookups, another post: the first post's card comes after the second post's «Предыдущий…» line.
+- Likelihood / impact: possible when several posts with links are forwarded in a row; a confusing order of messages, the card's buttons still work on the item in «Входящие»; nothing is lost.
+- Status: open. Fix in 9.2 if met: the pause path answers nothing for an item that no longer waits (a parameter of `_finish`), as the question does.
+- Found: 2026-11-24, review of stage 9.1d (F2).
+
+## KI-88. «Входящие»: the series «From» as a lone Latin word of a post is no candidate
+
+- Where: `app/tracker/candidates.py` (`_without_from`, spec 7.2 of 9.1d: «from» leaves a Latin run, «from» alone is nothing).
+- What's wrong: «Вышел трейлер 4 сезона сериала From» gave the candidate «From» (a Latin run of the first line after a kind word, weight 14) before 9.1d; now «From» is dropped as the marker of «from Software» and the post has no candidate but the fallback. A run «From Dusk Till Dawn» becomes «Dusk Till Dawn» with the low weight of a name after a marker.
+- How to reproduce: a forwarded post «Вышел трейлер 4 сезона сериала From и все очень этому рады сегодня» + «Сериал» → no offer «Извне» (review probe: only the fallback of the first line).
+- Likelihood / impact: rare (one title, «Извне»), but it is a followed kind; the owner types «From» as a name message, which is searched as typed.
+- Status: open. Fix in 9.2 if met: keep a lone «From» after a kind word.
+- Found: 2026-11-24, review of stage 9.1d (F4).
+
+## KI-89. «Входящие»: a Russian name with a hyphen in the middle of a sentence is cut at the hyphen
+
+- Where: `app/tracker/candidates.py` (`_CAPITAL_WORD` of the middle name, spec 7.1 of 9.1d: a capital, then lower-case letters).
+- What's wrong: «Вчера вышел Человек-паук, и все рады» gives the middle name «Человек» (weight 2), not «Человек-паук»; «Санкт-Петербург» gives «Санкт». A name after a kind word («мультфильм Человек-паук») is the older rule and stays whole.
+- How to reproduce: a forwarded post «Вчера вышел новый Человек-паук и все очень этому рады сегодня» → the candidate «Человек» (review probe).
+- Likelihood / impact: rare, and the weight 2 is the lowest but one, so a quote, bold or Latin name wins; when it is the only name, a search by «Человек» gives a wrong offer, one «Нет».
+- Status: open. Fix in 9.2 if met: a word may go on after a hyphen with lower-case letters.
+- Found: 2026-11-24, review of stage 9.1d (F5).

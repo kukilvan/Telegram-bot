@@ -246,6 +246,18 @@ def test_a_name_steam_gave_a_link_is_not_asked_but_a_name_of_the_text_is():
     assert clients.searches() == ["game:ELDEN RING NIGHTREIGN"]  # the company is dropped, Steam's name is searched
 
 
+def test_links_that_give_nothing_ask_no_companies():
+    """Review 9.1d, F3: the names are not searched when no link gave a kind, so the companies are not asked either."""
+    clients = Clients()
+    tracker = tracker_on(clients)
+    item = take(tracker, "Ubisoft анонсировала новую игру и все очень этому рады https://www.imdb.com/title/tt0000001/")
+
+    reply = run(tracker.inbox_pause_over(item))
+
+    assert requests_of(clients, "find:") == ["find:tt0000001"]
+    assert requests_of(clients, "companies:") == [] and reply.outcome == InboxOutcome.ASK
+
+
 def test_nothing_is_asked_without_a_latin_candidate():
     clients = Clients()
     tracker = tracker_on(clients)

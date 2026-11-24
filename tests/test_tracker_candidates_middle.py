@@ -146,6 +146,18 @@ def test_a_number_before_an_episode_word_stays_the_episode_line(episode):
     assert "Bleach: 3" not in found and "Bleach" in found
 
 
+@pytest.mark.parametrize("piece", ["сезон", "сезона", "Сезон", "season", "Season", "часть", "части", "частина", "part"])
+def test_a_number_before_a_season_or_a_part_word_is_no_part_of_the_name(piece):
+    """Review 9.1d, F1: «The Boys: 5 сезон», «Arcane: 2 часть» — the number counts the season or the part."""
+    found = dict(later(f"Вышел трейлер The Boys: 5 {piece} и все рады"))
+
+    assert "The Boys: 5" not in found and "The Boys" in found
+
+
+def test_a_word_that_only_starts_like_part_is_no_piece_word():
+    assert later("Вышел Fallout: 76 party вчера и все рады")[0][0] == "Fallout: 76 party"
+
+
 def test_the_episode_line_of_the_spec_keeps_its_head():
     assert [name for name, _ in pairs("Bleach: 3 серия")] == ["Bleach"]
     assert later("Bleach: 3 серия") == [("Bleach", 55)]  # the head of an episode line 50 and the lone Latin word 6 - 1

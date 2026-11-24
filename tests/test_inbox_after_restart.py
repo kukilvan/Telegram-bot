@@ -77,6 +77,16 @@ def test_a_question_for_an_item_removed_meanwhile_says_nothing(tracker):
     assert run(tracker.inbox_pause_over(item)).outcome == InboxOutcome.NOTHING
 
 
+def test_no_question_for_an_item_a_newer_message_moved_after_its_pause_was_read(tracker):
+    """Review 9.1d, F2: the question is decided after the links were looked up (seconds); a message that comes meanwhile
+    moves the item to «Входящие», and the question then says nothing and marks nothing."""
+    item = take(tracker, "Первый пост")
+    take(tracker, "Второй пост")  # the first one goes to «Входящие» «без ответа»
+
+    assert tracker._answers._ask(item).outcome == InboxOutcome.NOTHING
+    assert answered_at(tracker, item) is None
+
+
 # --- inbox_unanswered ----------------------------------------------------------------------------------------
 
 

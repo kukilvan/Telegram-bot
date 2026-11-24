@@ -197,12 +197,12 @@ class OfferSearch:
         """The offers of the links, then of the name candidates in the source of the kind of the first one. A link that
         fails or that nobody knows gives nothing; no offer at all — the item goes on as one without links."""
         gathered = _Gathered(years, new_since)
-        candidates = await self._without_companies(candidates)
         kind, named, not_connected = await self._of_links(links, gathered)
         # the kind of the first link that gave an offer; none did — the kind of a Steam name, searched below
         kind = kind or next((of_kind for _, of_kind in named), None)
         if kind is None:
             return Found(not_connected=not_connected)
+        candidates = await self._without_companies(candidates)  # asked only when the names are searched (review 9.1d, F3)
         ours = [candidate for candidate, of_kind in named if of_kind is kind]  # a Steam name is a name of a game
         ranked = sorted([*ours, *candidates], key=lambda c: (-c.weight, c.first))
         try:

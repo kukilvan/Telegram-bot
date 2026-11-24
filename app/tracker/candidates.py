@@ -43,10 +43,11 @@ _SCORE_LINE = re.compile(r"\d+(?:[.,]\d+)?\s*/\s*10\b|\b(?:бал|балл|ба�
 _YEAR = re.compile(r"(?<!\d)(19[5-9]\d|20\d\d)(?!\d)")
 
 _LATIN_WORD = r"[A-Za-z0-9][A-Za-z0-9'’.&+]*(?:-[A-Za-z0-9'’]+)*"
-_EPISODE_WORD = r"(?i:сери|сері|епізод|эпизод|episode|ep(?![A-Za-z]))"
-# words join by a space, `: ` (a number joins too, «Fallout: 76», unless an episode word follows it: «Bleach: 3 серия»)
-# and ` - `
-_LATIN_RUN = re.compile(rf"{_LATIN_WORD}(?:(?::\s+(?!\d+\s*{_EPISODE_WORD})|\s+[-–]\s+|\s+){_LATIN_WORD})*")
+# an episode, a season or a part: the number before it counts the piece, it is no part of the name (review 9.1d, F1)
+_PIECE_WORD = r"(?i:сери|сері|епізод|эпизод|episode|ep(?![A-Za-z])|сезон|season|част|part(?![A-Za-z]))"
+# words join by a space, `: ` (a number joins too, «Fallout: 76», unless a piece word follows it: «Bleach: 3 серия»,
+# «The Boys: 5 сезон») and ` - `
+_LATIN_RUN = re.compile(rf"{_LATIN_WORD}(?:(?::\s+(?!\d+\s*{_PIECE_WORD})|\s+[-–]\s+|\s+){_LATIN_WORD})*")
 _LATIN_WORDS = re.compile(_LATIN_WORD)
 _FROM = re.compile(r"from(?::\s+|\s+[-–]\s+|\s+)", re.I)
 _QUOTE = re.compile(r"[«\"“„]([^«»\"“”„]{1,80})[»\"”“]")
