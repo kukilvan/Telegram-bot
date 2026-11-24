@@ -22,7 +22,7 @@ One owner per instance (ADR 0001). The web is protected by a password (`WEB_PASS
 ## Features
 
 - **Done:** everything in scenarios 1–4 and 6 for movies, series, anime, games (stages 0–6.1); prices, discounts and bundles of Steam for games in «Хочу» with the PC checkmark (6.2).
-- **Next** (in this order; changed 2026-11-17: the known issues and the move come before real use): 9.1 every open known issue fixed before the move; 7.3 NAS readiness and the move guide (the move itself and outside access — the owner's separate NAS project, ADR 0013); 9.2 fixes after real use on the NAS; 8 template for GitHub. Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010), 7.1 backups and export, 7.2 the app address, the phone, bot links and a safer login.
+- **Next** (in this order; changed 2026-11-17: the known issues and the move come before real use): 9.1 every open known issue fixed before the move; 7.3 NAS readiness and the move guide (the move itself and outside access — the owner's separate NAS project, ADR 0013); 7.4 the NAS project's report taken in; 9.2 fixes after real use on the NAS; 8 template for GitHub. Done since 6.1: 6.3 expansions and sequels, 6.4 «Входящие» (ADR 0010), 7.1 backups and export, 7.2 the app address, the phone, bot links and a safer login.
 - **Never:** notes and tags, the commands `/add`, `/remove`, `/watchlist`, `/note`, `/notes`, `/events`, `/search`, `/searchgame`, inline search, the events «Русская озвучка» and «KinoPub», RAWG and the unofficial PSN request, PlayStation prices (ADR 0009), anything hard-coded for one owner.
 
 ## Interface
@@ -68,7 +68,7 @@ Finished (details — `docs/history.md`, `.scratch/`):
 
 ### Stage 7. Backups, NAS and phone — split into 7.1, 7.2, 7.3
 
-Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `.scratch/7-2-access-phone/description.md` (2026-11-15, ADR 0013): outside access by the owner's domain, Cloudflare Tunnel and Cloudflare Access instead of Tailscale, and the NAS move itself are done by the owner's separate NAS project for two apps; 7.3 here only prepares the move. Order: 7.1 → 7.2 → 9.1 → 7.3 → 9.2 → 8 (changed 2026-11-17 by the owner: every known issue fixed and the app on the NAS before real use, so the fixes after real use are made where the app lives).
+Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `.scratch/7-2-access-phone/description.md` (2026-11-15, ADR 0013): outside access by the owner's domain, Cloudflare Tunnel and Cloudflare Access instead of Tailscale, and the NAS move itself are done by the owner's separate NAS project for two apps; 7.3 here only prepares the move. Order: 7.1 → 7.2 → 9.1 → 7.3 → 7.4 → 9.2 → 8 (7.4 added 2026-11-24; changed 2026-11-17 by the owner: every known issue fixed and the app on the NAS before real use, so the fixes after real use are made where the app lives).
 
 ### Stage 7.1. Backups and export
 
@@ -98,8 +98,15 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 
 - Goal: the owner's separate NAS project can move the app to a UGREEN DXP2800 (Intel N100, NVMe SSD, 3 TB HDD) and everything keeps working; the move itself is not done here (ADR 0013).
 - The owner sees at the end: the app proven to run in its container on the NAS (the same `amd64` image, the database on a local SSD volume, never on a network share; copies may go to the HDD), start, stop and restore by `docker compose` without PowerShell, KI-15, KI-70, and a guide: what to move (`data`, `.env`, the compose file), where, in what order, the one-instance rule, the checks after the move, the Google Drive connection, the app address.
-- Comes after 9.1 and before real use (changed 2026-11-17; it used to come after stage 8). The NAS is ready by then, so the checks run on the NAS itself where that helps; the guide names this repository (stage 8 changes the address).
-- Sessions (est.): 3.
+- Comes after 9.1 and before real use (changed 2026-11-17; it used to come after stage 8). The guide names this repository (stage 8 changes the address).
+- Changed by `.scratch/7-3-nas-readiness/description.md` (2026-11-24): this project does not touch the NAS; the checks run on the PC, and the guide `docs/nas-move.md` names every foreseeable problem with its solution and asks the NAS project for a report back. The copies may go to the HDD by a NAS-only compose file; the restore on the NAS is three `docker compose` commands; no code guard against two instances, only the rule in the guide.
+- Sessions (est.): 6 (spec, slicing, about 3 tickets, review).
+
+### Stage 7.4. The move taken in
+
+- Goal: after the NAS project has moved the app and written its report, the sessions of this project work with the app on the NAS.
+- The owner sees at the end: the NAS in `PROJECT_CONTEXT.md` («Environment»), «Run» of `CLAUDE.md` and «Session on the owner's PC» of `docs/workflow.md` rewritten: a session sends its branch to the NAS by SSH and restarts the bot there, the PC runs tests only; SSH, the health and the log on the NAS checked.
+- Sessions (est.): 1 («Приём переезда»).
 
 ### Stage 9.2. Fixes after real use
 
