@@ -1,6 +1,6 @@
 # 02: The container ready for the NAS — a start not as `root`, the `# syntax` line, the copies on another disk — KI-15
 
-Status: in review
+Status: accepted
 Complexity: simple (one function branch, one Dockerfile line, one example file, one ignore line; one live check)
 Blocked by: —
 

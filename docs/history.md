@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-25 — Ticket 7.3.02
+
+- `app/container_start.py`: not as root (a `user:` line) `start` reads no `PUID`/`PGID` (garbage there is no error), the identity is `os.getuid()`/`os.getgid()`, no warning, no hand-over; `write_refusal_message` and `check_writable` got `user_line` — the refusal names the real `uid:gid` and the `user:` line. As root nothing changed. The walk of `data` goes into a folder mounted in it (a plain folder to `rglob`), so a copies folder on another disk gets the rights too; the write check stays on `data` and `data/logs`.
+- `Dockerfile` first line `# syntax=docker/dockerfile:1` (an Engine before 25). New `docker-compose.override.example.yml` (mounts only `/app/data/backups`), `.gitignore` has `docker-compose.override.yml`; `docker-compose.yml` unchanged.
+- Docs: `docs/backups.md`, `CONTEXT.md` «Копия базы», code map, tests map; KI-15 fixed (KI-90, 91 were already in the index).
+- Tests: `tests/test_container_start.py`, `tests/test_docker_files.py`. Full run: 5452 passed, 2 skipped (the two known Windows files left out). Live (2026-11-25): an override mounting a folder on drive C — the daily copy (sent to Google Drive) and a manual copy landed there, the asking restore listed them, a real restore across the two disks worked (no rename across disks, fact 4 of the spec); override and folder removed, the bot started as before. The build with the `# syntax` line fetches `docker/dockerfile:1` from Docker Hub: in the session's PowerShell `docker-credential-desktop` was not on `PATH` until Docker's `resourcesin` was added (a gap of that shell).
+
 ## 2026-11-25 — Ticket 7.3.01
 
 - `app/utils/restore.py`: the asking restore — `ask_restore` (no arguments: the list without `@` lines, the number prompt, `check`, the question, `apply`; one argument that is not `list`/`check`/`apply`: that file from `check` on), the `Console` (answers read from stdin line by line, piped answers echoed, bad bytes replaced, `Ctrl+C` ends the line), `bot_running` (`getaddrinfo("tracker", 8080)`: `EAI_NONAME`/`EAI_NODATA` — stopped, resolves or any other error — running), the guard in `apply` and again just before the change; `RESTORE_COMMAND`, `SERVICE_NAME` and the new texts; `HEADER`, `UNREADABLE`, `SAVED` with `/`. `restore-bot.ps1`: `Build-Image` (`docker compose build --quiet`, «Готовлю образ бота…», a failure → Docker's lines and «Образ бота не собрать…»), `Invoke-Restore` without `--build --quiet-build` (KI-70 fixed).
