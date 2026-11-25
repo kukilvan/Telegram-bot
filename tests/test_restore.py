@@ -3,9 +3,12 @@ texts and commands of `restore-bot.ps1`."""
 
 import errno
 import hashlib
+import io
 import re
 import shutil
+import socket
 import sqlite3
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -23,6 +26,13 @@ BOM = b"\xef\xbb\xbf"
 NOW = restore.Clock(datetime(2026, 11, 8, 12, 0, 0), timezone.utc, timezone.utc)  # shown and old names read in UTC
 PASSWORD = "Пароль копий 2026"
 STAMP = "20261108_075800"
+REAL_BOT_RUNNING = restore.bot_running
+
+
+@pytest.fixture(autouse=True)
+def _bot_stopped(monkeypatch):
+    """No test depends on what the name `tracker` resolves to where it runs: the bot is stopped unless a test says so."""
+    monkeypatch.setattr(restore, "bot_running", lambda: False)
 
 
 # ---- helpers ----------------------------------------------------------------
@@ -140,7 +150,7 @@ def test_the_list_numbers_the_copies_newest_first_with_their_moments_and_kinds(t
     assert outcome.code == 0
     shown = [line for line in outcome.lines if not line.startswith("@")]
     assert shown == [
-        "Копии базы в data\\backups (новые сверху):",
+        "Копии базы в data/backups (новые сверху):",
         "  1) сегодня в 07:58",
         "  2) вчера в 18:32 — сделана вручную",
         "  3) вчера в 07:58 — перед обновлением базы",
@@ -346,7 +356,7 @@ def test_apply_saves_the_current_base_with_its_wal_then_replaces_it(template, tm
     outcome = restore.apply(copy, data, "", NOW)
 
     before = data / "backups" / "tracker_db_20261108_120000Z_before-restore.db"
-    assert outcome == restore.Outcome(0, ["Нынешняя база сохранена: data\\backups\\tracker_db_20261108_120000Z_before-restore.db",
+    assert outcome == restore.Outcome(0, ["Нынешняя база сохранена: data/backups/tracker_db_20261108_120000Z_before-restore.db",
                                           "База восстановлена из копии от сегодня в 07:58."])
     assert _marker(before) == "current"  # the content of the `-wal` is in the copy
     assert _marker(data / "tracker.db") == "restored"
@@ -520,12 +530,12 @@ def test_main_runs_the_command_on_the_data_folder_and_prints_its_lines(template,
 
     assert restore.main(["list"]) == 0
     printed = capsys.readouterr().out.splitlines()
-    assert printed[0] == "Копии базы в data\\backups (новые сверху):"
+    assert printed[0] == "Копии базы в data/backups (новые сверху):"
     assert printed[2] == f"@copy 1 data/backups/tracker_db_{STAMP}.db"
 
     assert restore.main(["check", f"data/backups/tracker_db_{STAMP}.db"]) == 0
     assert restore.main(["check", "data/restore/gone.7z"]) == 1
-    assert restore.main(["undo"]) == 2
+    assert restore.main(["undo", "x"]) == 2 and restore.main(["check"]) == 2
 
 
 def test_main_reads_the_password_stripped(template, tmp_path, monkeypatch):
@@ -578,8 +588,9 @@ def test_the_script_checks_docker_and_env_with_the_texts_of_the_start_script():
 def test_the_script_calls_the_one_off_container_and_the_bot_scripts():
     script = _script("restore-bot.ps1")
 
-    assert ("docker compose run --rm --no-deps --build --quiet-build --interactive=false -T tracker python -m app.container_start app.utils.restore @Arguments"
+    assert ("docker compose run --rm --no-deps --interactive=false -T tracker python -m app.container_start app.utils.restore @Arguments"
             in script)
+    assert "--build" not in script.replace("docker compose build", "") and "--quiet-build" not in script  # KI-70
     assert 'Invoke-Restore @("list")' in script
     assert 'Invoke-Restore @("check", $copyPath)' in script and 'Invoke-Restore @("apply", $copyPath)' in script
     assert script.index('"check", $copyPath') < script.index("(да/нет)") < script.index("stop-bot.ps1")
@@ -620,3 +631,333 @@ def test_no_variable_of_a_script_runs_into_a_question_mark(name):
     script = (ROOT / name).read_bytes().decode("utf-8-sig")
 
     assert re.findall(r"\$[A-Za-z_][A-Za-z0-9_]*\?", script) == []
+
+
+# ---- the asking restore (stage 7.3, ticket 01) -----------------------------------
+
+class FakeConsole:
+    """Answers from a list (None — the end of input, `KeyboardInterrupt` — Ctrl+C); everything said or asked is kept."""
+
+    def __init__(self, *answers):
+        self.answers = list(answers)
+        self.said: list[str] = []
+        self.asked: list[str] = []
+
+    def say(self, line: str) -> None:
+        self.said.append(line)
+
+    def ask(self, prompt: str):
+        self.asked.append(prompt)
+        answer = self.answers.pop(0) if self.answers else None
+        if answer is KeyboardInterrupt:
+            raise KeyboardInterrupt
+        return answer
+
+
+def _asked(data: Path, console: FakeConsole, path=None, running=lambda: False, password: str = "") -> int:
+    return restore.ask_restore(path, data, password, NOW.now, console, timezone.utc, running)
+
+
+def _two_copies(template: Path, tmp_path: Path) -> Path:
+    data = _data_folder(template, tmp_path)
+    _database(template, data / "backups" / f"tracker_db_{STAMP}.db", marker="newest", titles=2)
+    _database(template, data / "backups" / "tracker_db_20261107_075800_manual.db", marker="older")
+    return data
+
+
+def test_the_asking_restore_lists_asks_checks_asks_again_and_applies(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    console = FakeConsole("1", " Да ")
+
+    assert _asked(data, console) == 0
+
+    assert console.said == [
+        "Копии базы в data/backups (новые сверху):",
+        "  1) сегодня в 07:58",
+        "  2) вчера в 07:58 — сделана вручную",
+        "Копия от сегодня в 07:58 в порядке, тайтлов в ней: 2.",
+        "Нынешняя база сохранена: data/backups/tracker_db_20261108_120000Z_before-restore.db",
+        "База восстановлена из копии от сегодня в 07:58.",
+        "Готово. Запустите бота: docker compose up -d",
+    ]
+    assert console.asked == [
+        "Номер копии (Enter — отмена): ",
+        "Вернуть базу к копии от сегодня в 07:58? Всё, что изменилось позже, пропадёт. "
+        "Нынешняя база сохранится отдельно. (да/нет): ",
+    ]
+    assert _marker(data / "tracker.db") == "newest"
+    assert _marker(data / "backups" / "tracker_db_20261108_120000Z_before-restore.db") == "current"
+
+
+@pytest.mark.parametrize("answers", [[""], ["   "], [None], ["1", "нет"], ["1", ""], ["1", None], ["2", "да, пожалуйста"]])
+def test_enter_the_end_of_input_and_anything_but_yes_cancel_and_change_nothing(template, tmp_path, answers):
+    data = _two_copies(template, tmp_path)
+    before = _files(data)
+
+    console = FakeConsole(*answers)
+
+    assert _asked(data, console) == 0
+    assert console.said[-1] == "Отменено. Ничего не изменено."
+    assert _files(data) == before
+
+
+def test_a_wrong_number_is_asked_again(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    console = FakeConsole("7", "ноль", "0", "02", "да")
+
+    assert _asked(data, console) == 0
+
+    assert [line for line in console.said if line.startswith("Нет копии")] == [
+        "Нет копии с номером 7.", "Нет копии с номером ноль.", "Нет копии с номером 0."]
+    assert _marker(data / "tracker.db") == "older"  # «02» is the second copy
+
+
+@pytest.mark.parametrize("stage", ["number", "question"])
+def test_ctrl_c_at_a_prompt_cancels_with_exit_code_one(template, tmp_path, stage):
+    data = _two_copies(template, tmp_path)
+    before = _files(data)
+    console = FakeConsole(KeyboardInterrupt) if stage == "number" else FakeConsole("1", KeyboardInterrupt)
+
+    assert _asked(data, console) == 1
+    assert console.said[-1] == "Отменено. Ничего не изменено."
+    assert _files(data) == before
+
+
+def test_a_path_argument_goes_straight_to_the_check_and_the_question(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    made = _database(template, tmp_path / "made" / f"tracker_db_{STAMP}.db", marker="from drive")
+    archive = _archive(made, data / "restore" / f"tracker_db_{STAMP}.7z")
+    console = FakeConsole("да")
+
+    assert _asked(data, console, path=str(archive), password=PASSWORD) == 0
+
+    assert not any(line.startswith("Копии базы") for line in console.said)
+    assert console.asked[0].startswith("Вернуть базу к копии от сегодня в 07:58?")
+    assert _marker(data / "tracker.db") == "from drive"
+
+
+@pytest.mark.parametrize("name, text", [
+    ("gone.7z", restore.NOT_FOUND),
+    ("notes.txt", restore.WRONG_KIND),
+    ("copy.7z", restore.NO_PASSWORD),
+])
+def test_a_refused_file_is_said_so_with_exit_code_one_and_no_question(template, tmp_path, name, text):
+    data = _two_copies(template, tmp_path)
+    (data / "restore").mkdir()
+    (data / "restore" / "notes.txt").write_text("x")
+    (data / "restore" / "copy.7z").write_bytes(b"")
+    before = _files(data)
+    target = data / "restore" / name
+    console = FakeConsole("да")
+
+    assert _asked(data, console, path=str(target)) == 1
+
+    assert console.said == [text.format(path=target)]
+    assert console.asked == [] and _files(data) == before
+
+
+def test_a_refused_copy_of_the_list_stops_before_the_question(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    (data / "backups" / f"tracker_db_{STAMP}.db").write_bytes(b"junk")
+    console = FakeConsole("1", "да")
+
+    assert _asked(data, console) == 1
+
+    assert console.said[-1] == restore.DAMAGED and len(console.asked) == 1
+    assert _marker(data / "tracker.db") == "current"
+
+
+def test_a_running_bot_stops_the_asking_restore_at_once_and_nothing_is_read(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    before = _files(data)
+    console = FakeConsole("1", "да")
+
+    assert _asked(data, console, running=lambda: True) == 1
+
+    assert console.said == ["Бот работает, а базу можно заменить только у остановленного. Остановите его: "
+                            "docker compose stop — и запустите восстановление снова. Ничего не изменено."]
+    assert console.asked == [] and console.answers == ["1", "да"] and _files(data) == before
+
+
+def test_a_bot_started_between_the_question_and_the_change_leaves_the_base_alone(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    states = iter([False, True])
+    console = FakeConsole("1", "да")
+    before = _files(data)
+
+    assert _asked(data, console, running=lambda: next(states)) == 1
+
+    assert console.said[-1] == restore.BOT_RUNNING and restore.START_OLD not in console.said
+    assert _files(data) == before
+
+
+def test_a_failed_restore_says_so_and_offers_the_old_base(template, tmp_path, monkeypatch):
+    data = _two_copies(template, tmp_path)
+    monkeypatch.setattr(restore, "copy_database", lambda *_: (_ for _ in ()).throw(OSError(errno.ENOSPC, "full")))
+    console = FakeConsole("1", "да")
+
+    assert _asked(data, console) == 1
+
+    assert console.said[-2:] == ["Не удалось сохранить нынешнюю базу (на диске нет места). Ничего не изменено.",
+                                 "Запустите бота на прежней базе: docker compose up -d"]
+    assert _marker(data / "tracker.db") == "current"
+
+
+def test_no_copies_in_the_asking_restore_name_the_way_by_a_downloaded_file(tmp_path):
+    data = tmp_path / "data"
+    (data / "backups").mkdir(parents=True)
+    console = FakeConsole("1")
+
+    assert _asked(data, console) == 0
+
+    assert console.said == [
+        "В data/backups нет копий базы. Восстановить можно из скачанной копии: положите файл .7z или .db в папку "
+        "data/restore и запустите: docker compose run --rm tracker python -m app.container_start app.utils.restore "
+        "data/restore/<имя файла>"]
+    assert console.asked == []
+
+
+def test_an_unreadable_folder_of_copies_is_said_so(tmp_path, monkeypatch):
+    data = tmp_path / "data"
+    monkeypatch.setattr(restore.backup, "copies", lambda *_: (_ for _ in ()).throw(PermissionError("denied")))
+    console = FakeConsole()
+
+    assert _asked(data, console) == 1
+    assert console.said == ["Папку data/backups не прочитать (PermissionError: denied). Ничего не изменено."]
+
+
+def test_the_apply_of_the_script_refuses_while_the_bot_runs(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+    before = _files(data)
+    copy = data / "backups" / f"tracker_db_{STAMP}.db"
+
+    assert restore.apply(copy, data, "", NOW, lambda: True) == restore.Outcome(1, [restore.BOT_RUNNING])
+    assert restore.run(["apply", str(copy)], data, "", NOW.now, timezone.utc, lambda: True) == restore.Outcome(
+        1, [restore.BOT_RUNNING])
+    assert _files(data) == before
+    assert restore.apply(copy, data, "", NOW, lambda: False).code == 0
+
+
+def test_list_and_check_work_while_the_bot_runs(template, tmp_path):
+    data = _two_copies(template, tmp_path)
+
+    assert restore.run(["list"], data, "", NOW.now, timezone.utc, lambda: True).code == 0
+    assert restore.run(["check", str(data / "backups" / f"tracker_db_{STAMP}.db")], data, "", NOW.now, timezone.utc,
+                       lambda: True).code == 0
+
+
+def test_main_asks_with_no_arguments_or_a_path_and_keeps_the_commands(template, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    _database(template, tmp_path / "data" / "backups" / f"tracker_db_{STAMP}.db")
+    calls = []
+    monkeypatch.setattr(restore, "ask_restore", lambda path, *rest, **kw: calls.append(path) or 0)
+
+    assert restore.main([], FakeConsole()) == 0 and restore.main(["some/file.7z"], FakeConsole()) == 0
+    assert calls == [None, "some/file.7z"]
+    assert restore.main(["list"]) == 0 and restore.main(["check"]) == 2 and restore.main(["apply", "a", "b"]) == 2
+    assert calls == [None, "some/file.7z"]
+
+
+@pytest.mark.parametrize("raised, running", [
+    (socket.gaierror(socket.EAI_NONAME, "no such name"), False),
+    (socket.gaierror(-3, "try again"), True),
+    (OSError("no network"), True),
+    (None, True),
+])
+def test_the_bot_runs_when_its_service_name_resolves_or_the_answer_is_unknown(monkeypatch, raised, running):
+    asked = []
+
+    def getaddrinfo(host, port):
+        asked.append((host, port))
+        if raised is not None:
+            raise raised
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("172.18.0.2", 8080))]
+
+    monkeypatch.setattr(restore.socket, "getaddrinfo", getaddrinfo)
+
+    assert REAL_BOT_RUNNING() is running
+    assert asked == [("tracker", 8080)]
+
+
+def test_no_data_for_the_name_counts_as_stopped_where_the_system_has_that_code(monkeypatch):
+    code = getattr(socket, "EAI_NODATA", None)
+    if code is None:
+        pytest.skip("this system has no EAI_NODATA")
+    monkeypatch.setattr(restore.socket, "getaddrinfo", lambda *_: (_ for _ in ()).throw(socket.gaierror(code, "no data")))
+
+    assert REAL_BOT_RUNNING() is False
+
+
+def test_the_service_name_is_the_service_of_the_compose_file():
+    compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+    assert re.search(rf"^services:\n  {restore.SERVICE_NAME}:\n", compose, re.MULTILINE)
+    assert restore.RESTORE_COMMAND == "docker compose run --rm tracker python -m app.container_start app.utils.restore"
+
+
+def test_the_new_texts_are_exactly_the_spec():
+    assert restore.USAGE == "Команды: без аргументов — спросить копию; <путь> — восстановить файл; list, check <путь>, apply <путь>."
+    assert restore.NUMBER_PROMPT == "Номер копии (Enter — отмена): "
+    assert restore.NO_SUCH_COPY.format(answer="7") == "Нет копии с номером 7."
+    assert restore.CANCELLED == "Отменено. Ничего не изменено."
+    assert restore.QUESTION.format(phrase="от сегодня") == (
+        "Вернуть базу к копии от сегодня? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет): ")
+    assert restore.START_NOW == "Готово. Запустите бота: docker compose up -d"
+    assert restore.START_OLD == "Запустите бота на прежней базе: docker compose up -d"
+    assert restore.UNREADABLE.format(reason="x") == "Папку data/backups не прочитать (x). Ничего не изменено."
+    assert restore.SAVED.format(name="n.db") == "Нынешняя база сохранена: data/backups/n.db"
+    assert restore.NO_COPIES == ('В data\\backups нет копий базы. Восстановить можно из скачанной копии: '
+                                 '.\\restore-bot.ps1 "путь к файлу"')  # the script's text stays
+
+
+class _Pipe(io.TextIOWrapper):
+    def isatty(self):
+        return False
+
+
+def test_the_console_reads_lines_echoes_piped_answers_and_never_crashes_on_bad_bytes(monkeypatch, capsys):
+    data = "1\r\nда\n".encode() + b"\xff\xfe broken\n"
+    monkeypatch.setattr(sys, "stdin", _Pipe(io.BytesIO(data), encoding="ascii", errors="strict"))
+    console = restore.Console()
+
+    assert [console.ask("A: "), console.ask("B: "), console.ask("C: "), console.ask("D: ")] == [
+        "1", "да", "�� broken", None]
+    assert capsys.readouterr().out == "A: 1\nB: да\nC: �� broken\nD: \n"
+
+
+def test_the_console_ends_the_line_at_ctrl_c(monkeypatch, capsys):
+    class Interrupted:
+        def readline(self):
+            raise KeyboardInterrupt
+
+        def isatty(self):
+            return True
+
+    monkeypatch.setattr(sys, "stdin", Interrupted())
+
+    with pytest.raises(KeyboardInterrupt):
+        restore.Console().ask("A: ")
+    assert capsys.readouterr().out == "A: \n"
+
+
+def test_the_commands_are_quoted_in_backups_md():
+    text = (ROOT / "docs" / "backups.md").read_text(encoding="utf-8")
+
+    assert restore.RESTORE_COMMAND in text
+    assert "docker compose stop" in text and "docker compose up -d" in text
+    assert restore.RESTORE_COMMAND + " data/restore/" in text
+
+
+# ---- restore-bot.ps1: the build (KI-70) ---------------------------------------------
+
+def test_the_script_builds_the_image_once_before_the_first_run_and_runs_it_without_build_flags():
+    script = _script("restore-bot.ps1")
+
+    assert script.count("docker compose build --quiet") == 1
+    assert "Готовлю образ бота…" in script
+    assert "Образ бота не собрать — ошибка выше. Ничего не изменено." in script
+    main = script[script.index("function Invoke-Main"):]
+    assert "if (-not (Build-Image)) { return 1 }" in main
+    assert main.index("Build-Image") < main.index("Test-Path -LiteralPath $Path")  # also before a given file
+    assert main.index("Build-Image") < main.index('Invoke-Restore @("list")')
+    assert "--build" not in script.replace("docker compose build", "") and "--quiet-build" not in script

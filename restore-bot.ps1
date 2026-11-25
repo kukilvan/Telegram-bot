@@ -57,12 +57,25 @@ function Clear-RestoreFolder {
     }
 }
 
+# The image is built once, here: the one-off containers below only run it (the build flags of `docker compose run` need a
+# recent Compose, KI-70). Docker's lines are shown only on a failure
+function Build-Image {
+    Write-Host "Готовлю образ бота…"
+    $built = docker compose build --quiet 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        foreach ($line in $built) { Write-Host "$line" }
+        Write-Host "Образ бота не собрать — ошибка выше. Ничего не изменено."
+        return $false
+    }
+    return $true
+}
+
 # One command of app.utils.restore in a one-off container (the bot does not start in it; no stdin, so the answers stay
 # for Read-Host). The lines of Python (stdout) and of Docker (stderr) are kept apart: Docker's are shown only on a failure
 function Invoke-Restore([string[]]$Arguments) {
     $out = New-Object System.Collections.Generic.List[string]
     $err = New-Object System.Collections.Generic.List[string]
-    docker compose run --rm --no-deps --build --quiet-build --interactive=false -T tracker python -m app.container_start app.utils.restore @Arguments 2>&1 | ForEach-Object {
+    docker compose run --rm --no-deps --interactive=false -T tracker python -m app.container_start app.utils.restore @Arguments 2>&1 | ForEach-Object {
         if ($_ -is [System.Management.Automation.ErrorRecord]) { $err.Add("$_") } else { $out.Add("$_") }
     }
     return [pscustomobject]@{ Code = $LASTEXITCODE; Lines = $out; Errors = $err }
@@ -88,6 +101,7 @@ function Show-Failure($result, [string]$fallback) {
 }
 
 function Invoke-Main {
+    if (-not (Build-Image)) { return 1 }
     if ($Path) {
         if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
             Write-Host "Файл не найден: $Path"

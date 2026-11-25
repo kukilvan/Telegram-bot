@@ -10,7 +10,7 @@ archive by hand, and how to bring the database back from a copy. Rules behind it
 | Daily copy `tracker_db_<time>Z.db` | `data\backups\` on this PC | by itself, once a day (checked every hour) | 14 newest and one for each of 12 months |
 | Manual copy `tracker_db_<time>Z_manual.db` | `data\backups\` | the button «Сделать копию сейчас» in Settings | 10 newest |
 | Copy before an update `…Z_before-<revision>.db` | `data\backups\` | before every change of the database structure | never deleted |
-| Copy before a restore `…Z_before-restore.db` | `data\backups\` | by `.\restore-bot.ps1`, just before it replaces the database | never deleted |
+| Copy before a restore `…Z_before-restore.db` | `data\backups\` | by the restore (`.\restore-bot.ps1` or the three commands below), just before it replaces the database | never deleted |
 | Google Drive copy `tracker_db_<time>Z[_manual].7z` | the folder «Трекер — копии» in your Google Drive | after each daily copy and each «Сделать копию сейчас», and at once after «Подключить Google Drive» (off by default); a copy that did not go is tried again every hour | 30 newest |
 
 The time in a name is UTC («время в UTC», the `Z` after it): `tracker_db_20261123_132100Z.db` is 16:21 in Moscow. The
@@ -137,7 +137,7 @@ and starts the bot again (also when the bot was stopped before).
 3. Type the number of the copy and press Enter. Enter alone — «Отменено. Ничего не изменено.».
 4. The script checks the copy («Копия от … в порядке, тайтлов в ней: …») and asks «Вернуть базу к копии от …?».
    Type `да` and press Enter; anything else cancels.
-5. The bot stops, «Нынешняя база сохранена: data\backups\…Z_before-restore.db», «База восстановлена из копии от …»,
+5. The bot stops, «Нынешняя база сохранена: data/backups/…Z_before-restore.db», «База восстановлена из копии от …»,
    the bot starts, and the last line is «Готово: бот работает на копии от …».
 
 A copy made by an older version of the tracker is restored too: the line «Копия от более старой версии: при запуске база обновится сама.» says so, and
@@ -159,10 +159,51 @@ damaged: open it with 7-Zip by hand and the old password (above), then restore t
 `.\restore-bot.ps1 "C:\Users\<you>\Downloads\tracker_db_….db"`: the file is checked as it is, then the same question.
 Without `BACKUP_PASSWORD` in `.env` (on another PC, say) this is the way for an archive: 7-Zip by hand, then this.
 
+### Without PowerShell (the NAS)
+
+Where there is no `.\restore-bot.ps1` (the NAS over SSH), and in PowerShell on the PC as well: three commands in the
+app folder (where `docker-compose.yml` is), one after another.
+
+1. Stop the bot. The restore refuses to run while the bot works («Бот работает, а базу можно заменить только у
+   остановленного…», nothing changed):
+
+```
+docker compose stop
+```
+
+2. The asking restore (the image the bot runs from; nothing is built):
+
+```
+docker compose run --rm tracker python -m app.container_start app.utils.restore
+```
+
+   It shows the copies of `data/backups`, newest first, asks «Номер копии (Enter — отмена):», checks the copy and asks
+   «Вернуть базу к копии от …? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. (да/нет):».
+   Only `да` goes on; Enter, `нет` or anything else gives «Отменено. Ничего не изменено.». After `да` it prints
+   «Нынешняя база сохранена: data/backups/…Z_before-restore.db», «База восстановлена из копии от …» and «Готово.
+   Запустите бота: docker compose up -d». When it says «Не удалось …», the database is as it was: start the bot on it.
+
+3. Start the bot:
+
+```
+docker compose up -d
+```
+
+A downloaded archive (Google Drive) or a `.db`: put the file into the folder `data/restore/` of the app folder (the
+container sees only `data`), then give its path to the same command, with `BACKUP_PASSWORD` in `.env` for a `.7z`:
+
+```
+docker compose run --rm tracker python -m app.container_start app.utils.restore data/restore/<имя файла>
+```
+
+The question is the same. Delete the file from `data/restore/` afterwards: this way does not empty the folder. The
+answers are read line by line, so they can be piped too (`-T` for a command with no terminal):
+`printf '1\nда\n' | docker compose run --rm -T tracker python -m app.container_start app.utils.restore`.
+
 ### The way back
 
 Every restore first saves the database it replaces as the copy «перед восстановлением» (never deleted). To undo a
-restore: `.\restore-bot.ps1`, choose the copy «перед восстановлением» of that minute, `да`. The same when the last line
+restore: `.\restore-bot.ps1` (or the three commands), choose the copy «перед восстановлением» of that minute, `да`. The same when the last line
 is «База восстановлена, но бот не запустился — ошибка выше…»: that copy is the database the bot worked with.
 
 ### What the restore does not touch

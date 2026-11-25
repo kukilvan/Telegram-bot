@@ -84,7 +84,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-67 | Google Drive copy: a folder of over 1000 files is listed only in part | `app/providers/google_drive.py` | fixed (test: `tests/test_copy_names_utc.py`) | 9.1d.05 |
 | KI-68 | Google Drive copy: an archive of the same name but another size stays as a duplicate until it rotates out | `app/tracker/drive_copies.py` | fixed (test: `tests/test_drive_copies.py`) | 9.1d.05 |
 | KI-69 | Restore: the note «ещё одна копия» of an older copy is not always true | `app/utils/restore.py` | fixed (test: `tests/test_restore.py`) | 9.1d.05 |
-| KI-70 | Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`) | `restore-bot.ps1` | open | 7.3 |
+| KI-70 | Restore: `restore-bot.ps1` needs a recent Docker Compose (`--quiet-build`) | `restore-bot.ps1` | fixed (test: `tests/test_restore.py::test_the_script_builds_the_image_once_before_the_first_run_and_runs_it_without_build_flags`) | 7.3.01 |
 | KI-71 | Export: the JSON asks which titles are games and copies the poller's rule of the base game | `app/tracker/export_all.py` | fixed (test: `tests/test_tracker_split_health.py`) | 9.1d.01 |
 | KI-72 | Login report: an iPad on iPadOS 13+ reads as «macOS, Safari» | `app/web/devices.py` (stage 7.2) | won't fix (test: `tests/test_web_devices.py`) | 9.1c |
 | KI-73 | Login report: a report that failed to send waits for the delivery rules | `app/tracker` (stage 7.2) | fixed (test: `tests/test_tracker_login_report_rules.py`) | 9.1c |
@@ -752,7 +752,7 @@ Format of a new entry:
 - What's wrong: `--quiet-build` keeps the build lines out of what the script reads; an older Docker Compose (as a NAS may have) does not know the flag and every command of the restore fails with «unknown flag».
 - How to reproduce: run the script with Docker Compose older than the one of Docker Desktop 29 (Compose v5.4 has the flag).
 - Likelihood / impact: none on the owner's PC; on the NAS (stage 7.3) the restore would not start until the script builds the image separately (`docker compose build --quiet`) and runs without `--build`.
-- Status: open.
+- Status: fixed (test: `tests/test_restore.py::test_the_script_builds_the_image_once_before_the_first_run_and_runs_it_without_build_flags`, `…::test_the_script_calls_the_one_off_container_and_the_bot_scripts`), ticket 01 of stage 7.3. The script builds the image once (`docker compose build --quiet`, «Готовлю образ бота…»; a failure shows Docker's lines and `Образ бота не собрать — ошибка выше. Ничего не изменено.`) and `Invoke-Restore` runs without `--build` and `--quiet-build`.
 - Found: 2026-11-08, ticket 7.1.05.
 
 ## KI-71. Export: the JSON asks which titles are games and copies the poller's rule of the base game

@@ -175,7 +175,7 @@ Stack: Python 3.12, aiogram >= 3.31, FastAPI on uvicorn (upper-bounded, ADR 0007
 - `app/utils/archive.py` — The encrypted archive of a copy of the database: one file in a `.7z`, LZMA2 with AES-256 and the names hidden, that 7-Zip opens by the password.
 - `app/utils/backup.py` — Backups of the tracker database: the daily copy when the last one is over a day old, the manual copy, the reading of the folder as a list of copies, and the rotation of the old ones.
 - `app/utils/logging_config.py` — Logging of the application: the console and the rotated file `data/logs/bot.log`, both with secrets masked.
-- `app/utils/restore.py` — The restore of the database from a copy: the list of the copies on the PC, the checks of a copy or a downloaded archive, and the replacement of `tracker.db`.
+- `app/utils/restore.py` — The restore of the database from a copy: the list of the copies in `data/backups`, the checks of a copy or a downloaded archive, the replacement of `tracker.db`, and the asking restore that does all of it by questions.
 - `app/utils/secrets_mask.py` — Mask secrets (API keys, tokens) in any text that is about to be logged or sent anywhere.
 - `app/web/address_line.py` — The line of Settings about the app address (`APP_URL`) and the hint under it (spec 1.2 of stage 7.2); pure.
 - `app/web/app.py` — The FastAPI app, assembled: the login and the guard in front of every address, the security headers, the pages behind them.

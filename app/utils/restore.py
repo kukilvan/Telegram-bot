@@ -1,13 +1,18 @@
-"""The restore of the database from a copy: the list of the copies on the PC, the checks of a copy or a downloaded archive, and the replacement of `tracker.db`.
+"""The restore of the database from a copy: the list of the copies in `data/backups`, the checks of a copy or a downloaded archive, the replacement of `tracker.db`, and the asking restore that does all of it by questions.
 
-Run in a one-off container by `restore-bot.ps1` (spec 5 of stage 7.1): `python -m app.container_start app.utils.restore
-list | check <path> | apply <path>`. Texts in Russian go to stdout, the exit code is 0 (done) or 1 (refused, nothing
-changed; 2 for an unknown command); nothing here asks the owner: the script asks. Lines that begin with `@` are for the
+Run in a one-off container of the same image (`python -m app.container_start app.utils.restore …`): with no arguments or
+with the path of a file it asks (the NAS: `docker compose run --rm tracker …`, three commands in `RESTORE_COMMAND`'s
+place; answers are read from standard input line by line, so piped ones work too); `list | check <path> | apply <path>`
+are the commands `restore-bot.ps1` calls and does the asking itself. Texts in Russian go to stdout, the exit code is 0
+(done or cancelled) or 1 (refused, nothing changed; 2 for an unknown command). Lines that begin with `@` are for the
 script, not the owner: `@copy <n> <path>` (a copy of the list) and `@when <phrase>` (the copy in words, for the question
 and the last line).
-`list` and `check` change nothing; `apply` is run only while the bot is stopped and touches only `tracker.db` and its
-`-wal`/`-shm`: the current base goes first to `tracker_db_<now>Z_before-restore.db` (SQLite's online backup, so the
-content of its `-wal` too), and a failure before the final `os.replace` leaves the base as it was.
+`list` and `check` change nothing; `apply` touches only `tracker.db` and its `-wal`/`-shm`: the current base goes first
+to `tracker_db_<now>Z_before-restore.db` (SQLite's online backup, so the content of its `-wal` too), and a failure before
+the final `os.replace` leaves the base as it was. The base can be replaced only while the bot is stopped: `bot_running`
+asks the Docker network whether the name of the bot's service resolves (`SERVICE_NAME`, the service of
+`docker-compose.yml`: a one-off container sees that name only while the bot's container exists), and `apply` and the
+asking restore refuse while it does or while the answer is unknown. That guard is a detail of this module, not an ADR.
 """
 
 import contextlib
@@ -15,10 +20,11 @@ import errno
 import json
 import os
 import re
+import socket
 import sqlite3
 import sys
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from datetime import datetime, timezone, tzinfo
 from pathlib import Path
@@ -48,11 +54,18 @@ SIDE_FILES = ("-wal", "-shm")
 NAME_TIME = re.compile(rf"^tracker_db_(\d{{8}}_\d{{6}})({UTC_MARK})?")  # the time at the start of the name of a copy or of its archive
 ZONE_SETTING = "timezone"  # the row of the `settings` table that holds the zone chosen in Settings
 NEEDED_TABLES = {"alembic_version", "titles"}
+SERVICE_NAME = "tracker"  # the service of docker-compose.yml: its name resolves in the network only while the bot's container exists
+COMMANDS = ("list", "check", "apply")  # one argument that is none of them is the path of a file
+SERVICE_PORT = 8080  # asked only to have something to resolve; nothing connects
+NO_SUCH_NAME = {getattr(socket, name) for name in ("EAI_NONAME", "EAI_NODATA") if hasattr(socket, name)}
+RESTORE_COMMAND = f"docker compose run --rm {SERVICE_NAME} python -m app.container_start app.utils.restore"
 
-HEADER = "Копии базы в data\\backups (новые сверху):"
+HEADER = "Копии базы в data/backups (новые сверху):"
 NO_COPIES = ('В data\\backups нет копий базы. Восстановить можно из скачанной копии: '
              '.\\restore-bot.ps1 "путь к файлу"')
-UNREADABLE = "Папку data\\backups не прочитать ({reason}). Ничего не изменено."
+NO_COPIES_ASKING = ("В data/backups нет копий базы. Восстановить можно из скачанной копии: положите файл .7z или .db "
+                    f"в папку data/restore и запустите: {RESTORE_COMMAND} data/restore/<имя файла>")
+UNREADABLE = "Папку data/backups не прочитать ({reason}). Ничего не изменено."
 ORIGIN_WORDS = {backup.MANUAL: "сделана вручную"}
 BEFORE_RESTORE_WORDS = "перед восстановлением"
 BEFORE_UPDATE_WORDS = "перед обновлением базы"
@@ -72,11 +85,21 @@ NEWER = ("Эта копия сделана более новой версией 
 OLDER = "Копия от более старой версии: при запуске база обновится сама."
 CHECKED = "Копия {phrase} в порядке, тайтлов в ней: {titles}."
 
-SAVED = "Нынешняя база сохранена: data\\backups\\{name}"
+SAVED = "Нынешняя база сохранена: data/backups/{name}"
 SAVE_FAILED = "Не удалось сохранить нынешнюю базу ({reason}). Ничего не изменено."
 RESTORE_FAILED = "Не удалось восстановить ({reason}). База не тронута."
 RESTORED = "База восстановлена из копии {phrase}."
-USAGE = "Команды: list, check <путь>, apply <путь>."
+USAGE = "Команды: без аргументов — спросить копию; <путь> — восстановить файл; list, check <путь>, apply <путь>."
+NUMBER_PROMPT = "Номер копии (Enter — отмена): "
+NO_SUCH_COPY = "Нет копии с номером {answer}."
+CANCELLED = "Отменено. Ничего не изменено."
+QUESTION = ("Вернуть базу к копии {phrase}? Всё, что изменилось позже, пропадёт. Нынешняя база сохранится отдельно. "
+            "(да/нет): ")
+BOT_RUNNING = ("Бот работает, а базу можно заменить только у остановленного. Остановите его: docker compose stop — "
+               "и запустите восстановление снова. Ничего не изменено.")
+START_NOW = "Готово. Запустите бота: docker compose up -d"
+START_OLD = "Запустите бота на прежней базе: docker compose up -d"
+YES = "да"
 NO_SPACE = "на диске нет места"
 
 
@@ -146,14 +169,15 @@ def zone_of_settings(base: Path) -> tzinfo | None:
         return None
 
 
-def list_copies(folder: Path, clock: Clock) -> Outcome:
-    """The numbered list of the copies in `folder`, newest first (spec 5.2), with a `@copy` line for each."""
+def list_copies(folder: Path, clock: Clock, asking: bool = False) -> Outcome:
+    """The numbered list of the copies in `folder`, newest first (spec 5.2), with a `@copy` line for each; with no copy
+    it says how to restore a downloaded one, by the script (`asking` False) or by the asking restore."""
     try:
         found = backup.copies(folder, clock.old_zone)
     except OSError as exc:
         return Outcome(1, [UNREADABLE.format(reason=reason_of(exc))])
     if not found:
-        return Outcome(0, [NO_COPIES])
+        return Outcome(0, [NO_COPIES_ASKING if asking else NO_COPIES])
     lines = [HEADER]
     for number, copy in enumerate(found, start=1):
         words = origin_words(copy)
@@ -305,8 +329,27 @@ def _checkpoint(base: Path) -> None:
         _side(base, suffix).unlink(missing_ok=True)
 
 
-def apply(path: Path, data_dir: Path, password: str, now: Clock) -> Outcome:
-    """Replace `data_dir/tracker.db` by the copy at `path` (spec 5.5, steps 2–5); only while the bot is stopped."""
+def bot_running() -> bool:
+    """Whether the bot's container exists, by its name in the network: a stopped or removed one leaves the names, one that
+    is starting (migrations, the web not listening yet) is there. Any answer but «no such name» counts as running."""
+    try:
+        socket.getaddrinfo(SERVICE_NAME, SERVICE_PORT)
+    except socket.gaierror as exc:
+        return exc.errno not in NO_SUCH_NAME
+    except OSError:
+        pass  # no answer we understand: the bot may well be there
+    return True
+
+
+def apply(path: Path, data_dir: Path, password: str, now: Clock, running: Callable[[], bool] | None = None) -> Outcome:
+    """Replace `data_dir/tracker.db` by the copy at `path` (spec 5.5, steps 2–5); refused while the bot runs
+    (`running` — `bot_running` unless a test gives its own)."""
+    if (running or bot_running)():
+        return Outcome(1, [BOT_RUNNING])
+    return _apply(path, data_dir, password, now)
+
+
+def _apply(path: Path, data_dir: Path, password: str, now: Clock) -> Outcome:
     try:
         with examined(path, password, now) as copy:
             return _replace(copy, data_dir, now)
@@ -342,26 +385,138 @@ def _replace(copy: Examined, data_dir: Path, now: Clock) -> Outcome:
     return Outcome(0, [*lines, RESTORED.format(phrase=copy.phrase)])
 
 
+def _clock(data_dir: Path, now: datetime, process_zone: tzinfo | None) -> Clock:
+    return Clock(now, zone_of_settings(data_dir / BASE_NAME) or process_zone, process_zone)
+
+
 def run(
-    args: list[str], data_dir: Path, password: str, now: datetime, process_zone: tzinfo | None = None
+    args: list[str], data_dir: Path, password: str, now: datetime, process_zone: tzinfo | None = None,
+    running: Callable[[], bool] | None = None,
 ) -> Outcome:
     """The command of `args` on the base in `data_dir`; `now` is naive UTC. The moments are shown in the zone of Settings
     of that base, else in `process_zone` (None — the zone of this process, which is also the zone of the old names)."""
-    clock = Clock(now, zone_of_settings(data_dir / BASE_NAME) or process_zone, process_zone)
+    clock = _clock(data_dir, now, process_zone)
     if args == ["list"]:
         return list_copies(data_dir / BACKUP_FOLDER, clock)
     if len(args) == 2 and args[0] == "check":
         return check(Path(args[1]), password, clock)
     if len(args) == 2 and args[0] == "apply":
-        return apply(Path(args[1]), data_dir, password, clock)
+        return apply(Path(args[1]), data_dir, password, clock, running)
     return Outcome(2, [USAGE])
 
 
-def main(argv: list[str] | None = None) -> int:
+class Console:
+    """The owner's terminal: lines to stdout, answers read from stdin one line at a time (so a terminal and piped answers
+    work alike). Input that is not UTF-8 is read with replacement characters; an answer read from a pipe is echoed."""
+
+    def __init__(self) -> None:
+        reconfigure = getattr(sys.stdin, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+    def say(self, line: str) -> None:
+        print(line, flush=True)
+
+    def ask(self, prompt: str) -> str | None:
+        """The answer without its line end; None at the end of input. `Ctrl+C` ends the line and raises."""
+        print(prompt, end="", flush=True)
+        try:
+            line = sys.stdin.readline()
+        except KeyboardInterrupt:
+            print(flush=True)
+            raise
+        if not line:
+            print(flush=True)
+            return None
+        answer = line.rstrip("\r\n")
+        if not sys.stdin.isatty():
+            print(answer, flush=True)
+        return answer
+
+
+def _say_shown(console: Console, lines: list[str]) -> None:
+    """The lines for the owner: those that do not begin with `@`."""
+    for line in lines:
+        if not line.startswith("@"):
+            console.say(line)
+
+
+def _copies_of(lines: list[str]) -> dict[str, str]:
+    """The number → path of the `@copy` lines of a list."""
+    found = {}
+    for line in lines:
+        match = re.fullmatch(r"@copy (\d+) (.+)", line)
+        if match:
+            found[match.group(1)] = match.group(2)
+    return found
+
+
+def _choose_copy(console: Console, copies: dict[str, str]) -> str | None:
+    """The path of the copy the owner names by its number; None when the owner cancels (Enter or the end of input)."""
+    while True:
+        answer = console.ask(NUMBER_PROMPT)
+        answer = answer.strip() if answer is not None else ""
+        if not answer:
+            return None
+        number = str(int(answer)) if answer.isascii() and answer.isdigit() else answer
+        if number in copies:
+            return copies[number]
+        console.say(NO_SUCH_COPY.format(answer=answer))
+
+
+def ask_restore(
+    path: str | None, data_dir: Path, password: str, now: datetime, console: Console,
+    process_zone: tzinfo | None = None, running: Callable[[], bool] | None = None,
+) -> int:
+    """The asking restore (spec 2.2 of stage 7.3): the copy by a number from the list (`path` None) or the file at `path`,
+    the check, the question, then the replacement; returns the exit code. Nothing is asked while the bot runs, and the
+    guard is asked again just before the change."""
+    is_running = running or bot_running
+    if is_running():
+        console.say(BOT_RUNNING)
+        return 1
+    clock = _clock(data_dir, now, process_zone)
+    try:
+        if path is None:
+            listing = list_copies(data_dir / BACKUP_FOLDER, clock, asking=True)
+            _say_shown(console, listing.lines)
+            copies = _copies_of(listing.lines)
+            if not copies:
+                return listing.code
+            path = _choose_copy(console, copies)
+            if path is None:
+                console.say(CANCELLED)
+                return 0
+        checked = check(Path(path), password, clock)
+        _say_shown(console, checked.lines)
+        if checked.code != 0:
+            return 1
+        phrase = next(line[len("@when "):] for line in checked.lines if line.startswith("@when "))
+        answer = console.ask(QUESTION.format(phrase=phrase))
+    except KeyboardInterrupt:
+        console.say(CANCELLED)
+        return 1
+    if answer is None or "".join(answer.split()).casefold() != YES:
+        console.say(CANCELLED)
+        return 0
+    if is_running():
+        console.say(BOT_RUNNING)
+        return 1
+    outcome = _apply(Path(path), data_dir, password, clock)
+    for line in outcome.lines:
+        console.say(line)
+    console.say(START_NOW if outcome.code == 0 else START_OLD)
+    return outcome.code
+
+
+def main(argv: list[str] | None = None, console: Console | None = None, running: Callable[[], bool] | None = None) -> int:
+    args = sys.argv[1:] if argv is None else argv
     file = database_file()
     data_dir = file.parent if file is not None else Path("data")
     password = os.environ.get("BACKUP_PASSWORD", "").strip()  # stripped as `Settings` strips it
-    outcome = run(sys.argv[1:] if argv is None else argv, data_dir, password, utc_now())
+    if not args or (len(args) == 1 and args[0] not in COMMANDS):
+        return ask_restore(args[0] if args else None, data_dir, password, utc_now(), console or Console(), running=running)
+    outcome = run(args, data_dir, password, utc_now(), running=running)
     for line in outcome.lines:
         print(line, flush=True)
     return outcome.code
