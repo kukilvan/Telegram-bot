@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Тикет 7.3.01»: ticket `.scratch/7-3-nas-readiness/issues/01-asking-restore.md` (the asking restore, the running guard, texts with `/`, KI-70). Model Sonnet 5.5, effort high (`docs/models.md`, medium). Then 7.3.02 (simple, Sonnet medium), 7.3.03 (medium, blocked by 01 and 02), the review of 7.3, then 7.4, 9.2, 8.
+Session «Тикет 7.3.02»: ticket `.scratch/7-3-nas-readiness/issues/02-container-for-nas.md` (a start not as root, KI-15, the `# syntax` line, the override example, the copies on another disk checked live). Model Sonnet 5.5, effort medium (`docs/models.md`, simple). Then 7.3.03 (medium, Sonnet high, blocked by 01 and 02), the review of 7.3, then 7.4, 9.2, 8.
 
 ## State
 
@@ -12,6 +12,7 @@ Session «Тикет 7.3.01»: ticket `.scratch/7-3-nas-readiness/issues/01-aski
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0019. Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The bot menu is «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие»; «➕ Добавить» is gone (6.4.01): any other message is an inbox item.
 - Games: 6.1 (IGDB, platforms, release events, «Пройдено»), 6.2 (Steam prices, `pollers/game_prices.py`, `price_events.py`; no PlayStation prices, ADR 0009), 6.3 (weekly expansions and sequels, `pollers/game_follow_ups.py`, ADR 0011) done. **Stage 6.4 «Входящие» done**: any message to the bot is an inbox item (`app/tracker/inbox.py`), a source link gives its card, else «Что это?» and up to three offers «Это оно?»; the rest in the web tab «Входящие». Details of all four in `docs/history.md`.
+- The restore also asks, by three `docker compose` commands, and refuses while the bot runs (7.3.01; `docs/backups.md`).
 - **Stage 7 split** (2026-11-07, changed 11-15, ADR 0013; `.scratch/7-1-backups-export/`, `.scratch/7-2-access-phone/`): 7.1 backups and export, 7.2 the app address, phone, bot links, safer login, 7.3 NAS readiness and the move guide (`.scratch/7-3-nas-readiness/`), 7.4 the NAS project's report taken in; outside access and the NAS move are the owner's separate NAS project, Tailscale dropped. Order (2026-11-17, 7.4 added 11-24): 7.1 → 7.2 → 9.1 every open known issue (9.1a–d, `.scratch/9-1-known-issues/description.md`) → 7.3 → 7.4 → 9.2 real use → 8. **Done:** 7.1, 7.2 (ADR 0012, 0014), 9.1a (ADR 0015), 9.1b (ADR 0016; KI-79, 80 for 9.2), 9.1c (KI-48, 72 won't fix), 9.1d (migrations 0018, 0019; KI-85–89 for 9.2); details in `docs/history.md`.
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.2 (on the NAS).
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
@@ -35,7 +36,7 @@ Session «Тикет 7.3.01»: ticket `.scratch/7-3-nas-readiness/issues/01-aski
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
 | 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | done | — | — |
-| 7.3 | NAS readiness and the move guide (the move — the NAS project) | tickets 0/3 | 5 | — |
+| 7.3 | NAS readiness and the move guide (the move — the NAS project) | tickets 1/3 | 5 | — |
 | 7.4 | The move taken in: the NAS project's report, sessions check on the NAS | not started | 1 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
@@ -45,7 +46,7 @@ Rows in the order of work. Status values: not started · description · spec · 
 ## Environment
 
 - Windows 11, PowerShell (Git Bash also available), Python 3.12.10 in `.venv/`, Docker 29.x. Runs in Docker on the owner's PC; later on a UGREEN DXP2800 NAS, moved and opened from outside (own domain, Cloudflare Tunnel and Access) by the owner's separate NAS project (ADR 0013).
-- Tests: about 5400 in total. On the owner's PC (checked 2026-11-24): 5450 pass, 3 skipped; two process-launch tests (`test_app_main`, `test_runtime`) fail on Windows without any change (`test_runtime`'s not on every run) — known, do not count.
+- Tests: about 5500 in total. On the owner's PC (checked 2026-11-25): 5485 pass, 3 skipped; two process-launch tests (`test_app_main`, `test_runtime`) fail on Windows without any change (`test_runtime`'s not on every run) — known, do not count.
 - `.env` (values never printed; read by `Settings` in `app/config.py` unless noted):
 
 | Variable | Required | Meaning |

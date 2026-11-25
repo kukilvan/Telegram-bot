@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-25 — Ticket 7.3.01
+
+- `app/utils/restore.py`: the asking restore — `ask_restore` (no arguments: the list without `@` lines, the number prompt, `check`, the question, `apply`; one argument that is not `list`/`check`/`apply`: that file from `check` on), the `Console` (answers read from stdin line by line, piped answers echoed, bad bytes replaced, `Ctrl+C` ends the line), `bot_running` (`getaddrinfo("tracker", 8080)`: `EAI_NONAME`/`EAI_NODATA` — stopped, resolves or any other error — running), the guard in `apply` and again just before the change; `RESTORE_COMMAND`, `SERVICE_NAME` and the new texts; `HEADER`, `UNREADABLE`, `SAVED` with `/`. `restore-bot.ps1`: `Build-Image` (`docker compose build --quiet`, «Готовлю образ бота…», a failure → Docker's lines and «Образ бота не собрать…»), `Invoke-Restore` without `--build --quiet-build` (KI-70 fixed).
+- Docs: `docs/backups.md` «Without PowerShell (the NAS)», `CONTEXT.md` «Восстановление», `docs/tests-map.md`, code map.
+- Tests: the asking mode, the guard (start, between question and change, script `apply`), `bot_running`, `Console`, the script's build. Full run: 5485 passed, 3 skipped, the known `test_app_main` failure. Live (2026-11-25): refused while the bot ran; Enter, wrong number, `нет`, end of input cancel; path arguments and their refusals; a real restore of the newest copy and back from the copy before the restore (dump hash equal to the start), then the same through `restore-bot.ps1`. Three copies «перед восстановлением» of the checks stay in `data/backups`. Accepted by the owner («ОК»).
+
 ## 2026-11-25 — Slicing 7.3
 
 - `.scratch/7-3-nas-readiness/issues/`: three tickets as proposed by the spec — 01 the asking restore, the running guard, texts with `/`, KI-70 (medium); 02 the container for the NAS: a start not as root (KI-15), the `# syntax` line, the override example, the copies on another disk checked live on the PC (simple); 03 the guide `docs/nas-move.md` with the report template, «Переезд», «Отчёт о переезде» (medium, blocked by 01 and 02). No change to the spec.
