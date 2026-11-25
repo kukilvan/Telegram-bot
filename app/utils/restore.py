@@ -1,4 +1,4 @@
-"""The restore of the database from a copy: the list of the copies in `data/backups`, the checks of a copy or a downloaded archive, the replacement of `tracker.db`, and the asking restore that does all of it by questions.
+"""The restore of the database from a copy: the list of copies, the checks of a copy or an archive, the replacement of `tracker.db`, and the asking restore.
 
 Run in a one-off container of the same image (`python -m app.container_start app.utils.restore …`): with no arguments or
 with the path of a file it asks (the NAS: `docker compose run --rm tracker …`, three commands in `RESTORE_COMMAND`'s
