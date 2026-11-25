@@ -19,3 +19,6 @@ data/
 
 # Logs
 app/logs/
+
+# Only on the NAS: the copies on another disk (docker-compose.override.example.yml)
+docker-compose.override.yml

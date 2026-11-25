@@ -1,6 +1,6 @@
 # 02: The container ready for the NAS — a start not as `root`, the `# syntax` line, the copies on another disk — KI-15
 
-Status: accepted
+Status: in review
 Complexity: simple (one function branch, one Dockerfile line, one example file, one ignore line; one live check)
 Blocked by: —
 
@@ -30,3 +30,7 @@ Spec: `../spec.md`, section 1 (facts 4 and 5), section 3 (3.1 KI-15, 3.2 an olde
 ## Owner check
 
 The session has run the live check above and writes the result in one line, then the launch result of the normal bot in one line. The owner opens `http://localhost:8080`, tab «Настройки», presses «Сделать копию сейчас» — a new copy appears in the list. «Не так»: the bot does not start, a red text in `.\logs-bot.ps1`, the copy does not appear. What only the NAS can show (an older Docker, the HDD, UGOS) is checked by the NAS project and comes back in its report.
+
+## Closing note
+
+Live check on the PC (2026-11-25): with an override mounting `C:/Users/erudi/tracker-backups-check` over `/app/data/backups` the start made the daily copy there and sent it to Google Drive, the button «Сделать копию сейчас» made a manual copy there, the asking restore (bot stopped) listed both, and a real restore of the manual copy ran across the two disks (before-restore copy in the C folder, no `.restoring` left); then the override and the folder were removed and the bot started as before («Готово», `/health` ok, no errors in the log). Note: the `# syntax` line makes the build fetch `docker/dockerfile:1` from Docker Hub; in the Claude session's PowerShell `docker-credential-desktop` was not on `PATH` and the build failed until the Docker `resourcesin` folder was added to `PATH` (an environment gap of that shell, not of the project).

@@ -70,6 +70,18 @@ def test_a_refused_change_of_owner_does_not_stop_the_rest():
     assert calls == [Path("a"), Path("b")]
 
 
+def test_the_walk_goes_into_a_folder_mounted_in_data(tmp_path):
+    # a copies folder on another disk is a mount at `data/backups`: it is a plain folder to the walk
+    (tmp_path / "backups").mkdir()
+    copy = tmp_path / "backups" / "tracker_db_20261125_100000Z.db"
+    copy.write_text("x")
+    owners = {path: (0, 0) for path in (tmp_path, tmp_path / "backups", copy)}
+
+    found = cs.paths_to_hand_over(tmp_path, Identity(1000, 1000), stat_owner=owners.__getitem__)
+
+    assert tmp_path / "backups" in found and copy in found
+
+
 def test_the_real_walk_finds_nested_paths(tmp_path):
     (tmp_path / "logs").mkdir()
     (tmp_path / "logs" / "bot.log").write_text("x")
@@ -129,6 +141,22 @@ def test_a_folder_that_refuses_writes_gives_the_owner_a_clear_message(tmp_path):
     assert "PUID и PGID" in text and "неизвестен" in text
 
 
+def test_not_root_the_refusal_names_the_real_user_and_the_user_line():
+    text = cs.write_refusal_message(Path("/app/data"), Identity(1026, 100), (0, 0), user_line=True)
+
+    assert text == (f"Нет прав на запись в папку {Path('/app/data')} (её владелец 0:0, приложение работает как 1026:100 — "
+                    "так задано строкой user: в docker-compose). "
+                    "Сделайте этого пользователя владельцем папки или уберите строку user:")
+    assert "PUID" not in text
+
+
+def test_as_root_the_refusal_text_stays():
+    text = cs.write_refusal_message(Path("/app/data"), Identity(1000, 1000), (1026, 100))
+
+    assert text.endswith("На NAS задайте в .env PUID и PGID — номера владельца папки")
+    assert "user:" not in text
+
+
 def test_the_refusal_message_names_the_owner_of_the_folder():
     text = cs.write_refusal_message(Path("/app/data"), Identity(1000, 1000), (1026, 100))
 
@@ -157,6 +185,8 @@ def test_start_runs_the_given_module_after_the_same_preparation(tmp_path, monkey
     executed = []
     monkeypatch.setattr(cs.os, "execv", lambda path, argv: executed.append(argv), raising=False)
     monkeypatch.setattr(cs.os, "geteuid", lambda: 1000, raising=False)
+    monkeypatch.setattr(cs.os, "getuid", lambda: 1000, raising=False)
+    monkeypatch.setattr(cs.os, "getgid", lambda: 1000, raising=False)
 
     cs.start({}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path, args=["app.utils.restore", "list"])
 
@@ -166,6 +196,8 @@ def test_start_runs_the_given_module_after_the_same_preparation(tmp_path, monkey
 
 def test_a_wrong_module_stops_before_anything_is_made(tmp_path, monkeypatch):
     monkeypatch.setattr(cs.os, "geteuid", lambda: 1000, raising=False)
+    monkeypatch.setattr(cs.os, "getuid", lambda: 1000, raising=False)
+    monkeypatch.setattr(cs.os, "getgid", lambda: 1000, raising=False)
 
     with pytest.raises(StartError):
         cs.start({}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path, args=["os"])
@@ -186,7 +218,9 @@ def test_main_hands_its_arguments_to_the_start(monkeypatch):
 def test_start_makes_the_folders_checks_and_executes_the_application(tmp_path, monkeypatch):
     executed = []
     monkeypatch.setattr(cs.os, "execv", lambda path, argv: executed.append((path, argv)), raising=False)
-    monkeypatch.setattr(cs.os, "geteuid", lambda: 1000, raising=False)  # not root: no change of owner or user
+    monkeypatch.setattr(cs.os, "geteuid", lambda: 1000, raising=False)
+    monkeypatch.setattr(cs.os, "getuid", lambda: 1000, raising=False)
+    monkeypatch.setattr(cs.os, "getgid", lambda: 1000, raising=False)  # not root: no change of owner or user
     monkeypatch.delenv("TZ", raising=False)
     zones = tmp_path / "zones"
     (zones / "Europe").mkdir(parents=True)
@@ -215,6 +249,53 @@ def test_start_as_root_drops_the_rights_after_handing_over_the_folder(tmp_path, 
     assert [step[0] for step in steps] == ["chown", "setgroups", "setgid", "setuid", "exec"]
     assert steps[1:4] == [("setgroups", []), ("setgid", 100), ("setuid", 1026)]
     assert os.environ["HOME"] == "/tmp"
+
+
+def test_start_not_as_root_ignores_puid_and_pgid_and_warns_of_nothing(tmp_path, monkeypatch, capsys):
+    executed, handed = [], []
+    monkeypatch.setattr(cs.os, "geteuid", lambda: 1026, raising=False)
+    monkeypatch.setattr(cs.os, "getuid", lambda: 1026, raising=False)
+    monkeypatch.setattr(cs.os, "getgid", lambda: 100, raising=False)
+    monkeypatch.setattr(cs.os, "execv", lambda path, argv: executed.append(argv), raising=False)
+    monkeypatch.setattr(cs, "hand_over", lambda *args, **kwargs: handed.append(args))
+    seen = []
+    monkeypatch.setattr(cs, "check_writable", lambda folders, identity, **kw: seen.append((identity, kw)))
+
+    cs.start({"PUID": "abc", "PGID": "0"}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path)
+
+    assert executed == [[sys.executable, "-m", "app.main"]]
+    assert handed == []  # no hand-over of rights
+    assert seen == [(Identity(1026, 100), {"user_line": True})]
+    assert capsys.readouterr().out == ""  # no warning, even with PGID=0
+
+
+def test_start_not_as_root_refuses_an_unwritable_folder_with_the_new_text(tmp_path, monkeypatch):
+    monkeypatch.setattr(cs.os, "geteuid", lambda: 1026, raising=False)
+    monkeypatch.setattr(cs.os, "getuid", lambda: 1026, raising=False)
+    monkeypatch.setattr(cs.os, "getgid", lambda: 100, raising=False)
+    monkeypatch.setattr(cs.os, "execv", lambda path, argv: pytest.fail("must not start"), raising=False)
+    monkeypatch.setattr(cs, "_make_folders", lambda data_dir: None)  # `data` stays missing: nothing can be written
+
+    with pytest.raises(StartError) as caught:
+        cs.start({"PUID": "abc"}, data_dir=tmp_path / "missing", zoneinfo_dir=tmp_path)
+
+    assert "приложение работает как 1026:100 — так задано строкой user: в docker-compose" in str(caught.value)
+
+
+def test_start_as_root_still_reads_puid_and_pgid_and_warns_of_zero(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cs.os, "geteuid", lambda: 0, raising=False)
+    monkeypatch.setattr(cs.os, "setgroups", lambda groups: None, raising=False)
+    monkeypatch.setattr(cs.os, "setgid", lambda gid: None, raising=False)
+    monkeypatch.setattr(cs.os, "setuid", lambda uid: None, raising=False)
+    monkeypatch.setattr(cs, "hand_over", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cs.os, "execv", lambda path, argv: None, raising=False)
+    monkeypatch.setenv("HOME", "/root")
+
+    cs.start({"PUID": "0", "PGID": "100"}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path)
+    assert cs.ROOT_WARNING in capsys.readouterr().out
+
+    with pytest.raises(StartError, match="PUID и PGID должны быть числами"):
+        cs.start({"PUID": "abc"}, data_dir=tmp_path / "data", zoneinfo_dir=tmp_path)
 
 
 def test_main_prints_the_error_and_exits_with_1(monkeypatch, capsys):

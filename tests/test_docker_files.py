@@ -40,6 +40,19 @@ def test_compose_has_no_version_no_pgrep_and_waits_for_a_stop():
     assert "env_file: .env" in compose
 
 
+def test_the_override_example_mounts_only_the_copies_folder_and_the_real_override_is_ignored():
+    example = _text("docker-compose.override.example.yml")
+    mounts = re.findall(r"^\s+- (\S+)", example, re.MULTILINE)
+
+    assert len(mounts) == 1 and mounts[0].endswith(":/app/data/backups")
+    assert "services:\n  tracker:\n    volumes:" in example.replace("\r\n", "\n")
+    assert "docker-compose.override.yml" in _text(".gitignore").split()  # the real one stays out of git
+
+
+def test_compose_itself_still_mounts_only_data_so_the_pc_is_unchanged():
+    assert re.findall(r"^\s+- (\./\S+|/\S+:\S+)", _text("docker-compose.yml"), re.MULTILINE) == ["./data:/app/data"]
+
+
 # ---- Dockerfile -----------------------------------------------------------
 
 def test_dockerfile_starts_as_root_and_checks_health_with_python():
@@ -53,6 +66,11 @@ def test_dockerfile_starts_as_root_and_checks_health_with_python():
     assert "EXPOSE 8080" in dockerfile
     assert "python:3.12-slim" in dockerfile
     assert ".sh" not in dockerfile
+
+
+def test_dockerfile_starts_with_the_syntax_line_for_an_older_docker():
+    # BuildKit then takes the newest Dockerfile frontend, which knows `--start-interval` (7.3.02)
+    assert _text("Dockerfile").splitlines()[0] == "# syntax=docker/dockerfile:1"
 
 
 def test_there_are_no_shell_scripts_to_run_in_the_container():

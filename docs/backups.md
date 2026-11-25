@@ -17,6 +17,8 @@ The time in a name is UTC («время в UTC», the `Z` after it): `tracker_db
 app and the restore show every copy in the zone chosen in Settings. A copy made before stage 9.1d has no `Z`: its time is
 the clock of the PC that wrote it, and it is read that way; old and new names stay in one order.
 
+The folder `data\backups\` may lie on another disk (on the NAS: the hard disk, while the database stays on the SSD). Copy `docker-compose.override.example.yml` to `docker-compose.override.yml` next to `docker-compose.yml`, write the folder of the disk before `:/app/data/backups` and start the app as usual; the override file is kept out of git, and the restore (it runs in the same service) lists the copies of that folder too. Without the file nothing changes.
+
 The Google Drive copy is an archive 7-Zip opens: the copy of the database inside, encrypted with AES-256 by the password
 `BACKUP_PASSWORD` from `.env` (even the file name inside is hidden). The app sees only the files it made itself in your
 Google Drive (the permission `drive.file`); it cannot read anything else there.

@@ -1,8 +1,11 @@
 """Start of the container (`python -m app.container_start`, KI-4).
 
-The container starts as root only to fix the rights on the mounted `data` folder, then drops them and replaces itself
+As root (the default `docker-compose.yml`) the container fixes the rights on the mounted `data` folder (and on
+what is mounted in it, such as a copies folder on another disk), drops them to `PUID` and `PGID`, and replaces itself
 with the application (`python -m app.main`), or with the module named after it with its arguments
 (`python -m app.container_start app.utils.restore list`: the restore runs in a one-off container with the same rights).
+Started not as root (a `user:` line in compose) it reads no `PUID` or `PGID`: the identity is the process's own and the
+rights are not handed over (KI-15).
 Everything here is Python, not a shell script: GitHub Desktop may rewrite line endings and a shell script would then not
 start in Linux. The module imports on Windows (the tests run there):
 changing the user and the like are done only inside the start function; paths are passed to the pure functions.
@@ -112,13 +115,19 @@ def choose_tz(environ: Mapping[str, str], zoneinfo_dir: Path = ZONEINFO_DIR) -> 
     return name, None
 
 
-def write_refusal_message(path: Path, identity: Identity, owner: tuple[int, int] | None) -> str:
+def write_refusal_message(path: Path, identity: Identity, owner: tuple[int, int] | None, *,
+                          user_line: bool = False) -> str:
+    """The refusal to write; `user_line` — the container was started not as root, so the user comes from compose."""
     who = f"{owner[0]}:{owner[1]}" if owner else "неизвестен"
+    if user_line:
+        return (f"Нет прав на запись в папку {path} (её владелец {who}, приложение работает как "
+                f"{identity.uid}:{identity.gid} — так задано строкой user: в docker-compose). "
+                "Сделайте этого пользователя владельцем папки или уберите строку user:")
     return (f"Нет прав на запись в папку {path} (её владелец {who}, приложение работает как "
             f"{identity.uid}:{identity.gid}). На NAS задайте в .env PUID и PGID — номера владельца папки")
 
 
-def check_writable(folders: list[Path], identity: Identity) -> None:
+def check_writable(folders: list[Path], identity: Identity, *, user_line: bool = False) -> None:
     """Create and remove a trial file in each folder; a refusal is a clear error."""
     for folder in folders:
         probe = folder / f".write-check-{os.getpid()}"
@@ -130,7 +139,7 @@ def check_writable(folders: list[Path], identity: Identity) -> None:
                 owner = _stat_owner(folder)
             except OSError:
                 owner = None
-            raise StartError(write_refusal_message(folder, identity, owner)) from None
+            raise StartError(write_refusal_message(folder, identity, owner, user_line=user_line)) from None
 
 
 def app_command(args: list[str] | None = None) -> list[str]:
@@ -154,9 +163,12 @@ def start(environ: Mapping[str, str] = os.environ, data_dir: Path = DATA_DIR, zo
     """Prepare the folders and the rights, then become the application (or the module of `args`). Does not return."""
     command = app_command(args)  # a wrong module name stops before anything is changed
     is_root = os.geteuid() == 0
-    identity = read_identity(environ)
-    if is_root and 0 in (identity.uid, identity.gid):
-        print(ROOT_WARNING, flush=True)
+    if is_root:
+        identity = read_identity(environ)
+        if 0 in (identity.uid, identity.gid):
+            print(ROOT_WARNING, flush=True)
+    else:
+        identity = Identity(uid=os.getuid(), gid=os.getgid())  # a `user:` line: PUID and PGID are not read (KI-15)
     try:
         _make_folders(data_dir)
     except OSError:
@@ -173,7 +185,7 @@ def start(environ: Mapping[str, str] = os.environ, data_dir: Path = DATA_DIR, zo
         os.setgroups([])
         os.setgid(identity.gid)
         os.setuid(identity.uid)
-    check_writable([data_dir, data_dir / "logs"], identity)
+    check_writable([data_dir, data_dir / "logs"], identity, user_line=not is_root)
     os.execv(command[0], command)
 
 

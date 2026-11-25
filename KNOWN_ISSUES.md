@@ -29,7 +29,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-12 | Чужая страница с подменой адреса (DNS rebinding) проходит проверку Origin | `app/web/app.py` | fixed | 7.2.04 |
 | KI-13 | Испорченный файл ключа сессий не пересоздаётся | `app/web/auth.py` | fixed | 7.2.03 |
 | KI-14 | Пауза повтора подключения бота сбрасывается раньше, чем в спеке | `app/runtime.py` | fixed | — |
-| KI-15 | Старт контейнера не от root всё равно проверяет PUID и PGID | `app/container_start.py` | open | 7.3 |
+| KI-15 | Старт контейнера не от root всё равно проверяет PUID и PGID | `app/container_start.py` | fixed (test: `tests/test_container_start.py::test_start_not_as_root_ignores_puid_and_pgid_and_warns_of_nothing`) | 7.3.02 |
 | KI-16 | Сбой запуска с меняющимся текстом сообщается при каждом повторе | `app/startup_report.py` | fixed (test: `tests/test_startup_report.py`) | 9.1a |
 | KI-17 | Запись о сбое запуска не сохраняется — сообщение при каждом повторе | `app/startup_report.py` | fixed (test: `tests/test_startup_report.py`) | 9.1a |
 | KI-18 | `.\start-bot.ps1` останавливает и чужой `python -m app.main` | `start-bot.ps1` | fixed (test: `tests/test_docker_files.py`) | 9.1a |
@@ -254,7 +254,7 @@ Format of a new entry:
 - **Что не так:** по спеке 2.2 при запуске не от `root` (строка `user:` в `docker-compose.yml`) `PUID` и `PGID` не нужны, но `start` читает их всегда: мусор в `PUID` — выход 1. Сообщение об отказе в записи называет `PUID:PGID`, а не настоящего пользователя процесса.
 - **Как воспроизвести:** добавить в `docker-compose.yml` строку `user: "1000:1000"`, а в `.env` — `PUID=abc`: контейнер не стартует с «PUID и PGID должны быть числами…».
 - **Насколько вероятно / чем грозит:** наш `docker-compose.yml` запускает от `root`, так что сейчас не встречается; на NAS с `user:` — понятная, но лишняя ошибка.
-- **Статус:** Открыто.
+- **Статус:** Исправлено (тесты: `tests/test_container_start.py::test_start_not_as_root_ignores_puid_and_pgid_and_warns_of_nothing`, `test_start_not_as_root_refuses_an_unwritable_folder_with_the_new_text`, `test_start_as_root_still_reads_puid_and_pgid_and_warns_of_zero`). Не от `root` `PUID` и `PGID` не читаются, личность — `getuid`/`getgid`; отказ в записи называет настоящего пользователя и строку `user:`.
 - **Найдено:** 2026-10-27, код-ревью части 5.1 (Н14).
 
 ## KI-16. Сбой запуска с меняющимся текстом сообщается при каждом повторе
