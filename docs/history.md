@@ -2,6 +2,12 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-25 — Review 7.3
+
+- `.scratch/7-3-nas-readiness/review.md`: commits `1375caf..cb17a20` (tickets 01–03) against the spec and the standards, `code-review` at effort high, then a pass for the spec. Live: the NAS way of the restore with `docker compose stop` (the container stays, stopped; the tickets used `.\stop-bot.ps1`, which removes it) — the guard sees the bot stopped, Enter and «нет» cancel; the guard with an unreachable DNS (`--dns 192.0.2.1`); `restore-bot.ps1` after the fix.
+- Findings: F1 — with no answer from the name service a stopped bot counts as running (`EAI_AGAIN` after 8 s, «Бот работает…»): deferred as **KI-92** (9.2), the guide's section 7 says what it means; F2 — `docs/backups.md` step 3 on the PC: `.\start-bot.ps1`; F3 — the guide's `.env` `$` check finds a `$` after a `#` in a value; F4 — `restore-bot.ps1` checks a given file before building the image (the order test follows). No fix round: stage 7.3 is done.
+- Tests: 5500 passed, 3 skipped at the start and at the end; the two known Windows failures. Accepted by the owner («ОК»); next is «Приём переезда» (7.4) once the NAS project's report comes.
+
 ## 2026-11-25 — Ticket 7.3.03
 
 - New `docs/nas-move.md` (about 15 KB, English, for the agent of the NAS project): ten sections in the order of spec 4 — the app, what moves and what stays, where (never a network share), before the move on the PC, nine steps of the move with the way back, `.env` for the NAS, start/stop/log/update and the three restore commands (`RESTORE_COMMAND`, also the file form), the checks with right and wrong, eighteen problems as «symptom → cause → what to do», and the report template `nas-report.md` (the headings of decision 2 of the description). No code change.

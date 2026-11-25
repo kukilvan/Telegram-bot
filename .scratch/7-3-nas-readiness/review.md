@@ -1,6 +1,6 @@
 # Review 7.3: NAS readiness and the move guide
 
-Status: in review
+Status: accepted
 
 One session (2026-11-25).
 
