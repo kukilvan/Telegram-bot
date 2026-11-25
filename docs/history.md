@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-25 — Ticket 7.3.03
+
+- New `docs/nas-move.md` (about 15 KB, English, for the agent of the NAS project): ten sections in the order of spec 4 — the app, what moves and what stays, where (never a network share), before the move on the PC, nine steps of the move with the way back, `.env` for the NAS, start/stop/log/update and the three restore commands (`RESTORE_COMMAND`, also the file form), the checks with right and wrong, eighteen problems as «symptom → cause → what to do», and the report template `nas-report.md` (the headings of decision 2 of the description). No code change.
+- `docs/outside-access.md` points to it; `CONTEXT.md` got **Переезд** and **Отчёт о переезде**; code map and tests map updated by hand (the non-Python list is hand-written).
+- Tests (`tests/test_restore.py`): the three commands quoted exactly, size under 20,000 bytes, ten sections and eighteen problems, every `.env` name and repository file the guide names exists, no address or token shape, the pointer and the terms. Full run: 5500 passed, 3 skipped, the two known Windows failures (`test_app_main`, `test_runtime`).
+- Decision: the Google Drive sign-in on the NAS goes by an SSH tunnel to a local port (the return address takes the host of the request, so any local port works). What the guide cannot settle without the NAS — the HDD's sleep (KI-90), an Engine below 25, UGOS's Docker autostart and GUI — is asked in the report back.
+
 ## 2026-11-25 — Ticket 7.3.02
 
 - `app/container_start.py`: not as root (a `user:` line) `start` reads no `PUID`/`PGID` (garbage there is no error), the identity is `os.getuid()`/`os.getgid()`, no warning, no hand-over; `write_refusal_message` and `check_writable` got `user_line` — the refusal names the real `uid:gid` and the `user:` line. As root nothing changed. The walk of `data` goes into a folder mounted in it (a plain folder to `rglob`), so a copies folder on another disk gets the rights too; the write check stays on `data` and `data/logs`.

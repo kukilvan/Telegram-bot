@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Тикет 7.3.03»: ticket `.scratch/7-3-nas-readiness/issues/03-nas-move-guide.md` (the guide `docs/nas-move.md`, the report template, «Переезд» and «Отчёт о переезде» in `CONTEXT.md`; no code change). Model Sonnet 5.5, effort high (`docs/models.md`, medium). Then the review of 7.3, then 7.4, 9.2, 8.
+Session «Ревью 7.3»: the whole stage 7.3 (`.scratch/7-3-nas-readiness/`: spec, tickets 01–03, the stage diff) with the `code-review` skill, one pass for standards and one for the spec; run things, not only read; `review.md` (`docs/formats.md`). Model Opus 5.5, effort high (`docs/models.md`, review). Then 7.4 «Приём переезда» (waits for the NAS project's report, `docs/nas-move.md` section 10), 9.2, 8.
 
 ## State
 
@@ -12,13 +12,12 @@ Session «Тикет 7.3.03»: ticket `.scratch/7-3-nas-readiness/issues/03-nas-
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0019. Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The bot menu is «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие»; «➕ Добавить» is gone (6.4.01): any other message is an inbox item.
 - Games: 6.1 (IGDB, platforms, release events, «Пройдено»), 6.2 (Steam prices, `pollers/game_prices.py`, `price_events.py`; no PlayStation prices, ADR 0009), 6.3 (weekly expansions and sequels, `pollers/game_follow_ups.py`, ADR 0011) done. **Stage 6.4 «Входящие» done**: any message to the bot is an inbox item (`app/tracker/inbox.py`), a source link gives its card, else «Что это?» and up to three offers «Это оно?»; the rest in the web tab «Входящие». Details of all four in `docs/history.md`.
-- The restore also asks, by three `docker compose` commands, and refuses while the bot runs (7.3.01; `docs/backups.md`). The container starts not as root too (KI-15), `Dockerfile` has the `# syntax` line, the copies folder may lie on another disk by `docker-compose.override.yml` (7.3.02).
-- **Stage 7 split** (2026-11-07, changed 11-15, ADR 0013; `.scratch/7-1-backups-export/`, `.scratch/7-2-access-phone/`): 7.1 backups and export, 7.2 the app address, phone, bot links, safer login, 7.3 NAS readiness and the move guide (`.scratch/7-3-nas-readiness/`), 7.4 the NAS project's report taken in; outside access and the NAS move are the owner's separate NAS project, Tailscale dropped. Order (2026-11-17, 7.4 added 11-24): 7.1 → 7.2 → 9.1 every open known issue (9.1a–d, `.scratch/9-1-known-issues/description.md`) → 7.3 → 7.4 → 9.2 real use → 8. **Done:** 7.1, 7.2, 9.1a–d (ADR 0012, 0014–0016; migrations 0018, 0019; KI-79, 80, 85–89 left for 9.2); details in `docs/history.md`.
+- The restore also asks, by three `docker compose` commands, and refuses while the bot runs (7.3.01; `docs/backups.md`). The container starts not as root too (KI-15), `Dockerfile` has the `# syntax` line, the copies folder may lie on another disk by `docker-compose.override.yml` (7.3.02). The move guide for the NAS project is `docs/nas-move.md` with the report template (7.3.03).
+- **Stage 7 split** (ADR 0013; `.scratch/7-*`): 7.1 backups and export, 7.2 the app address, phone, safer login, 7.3 NAS readiness and the move guide, 7.4 the NAS project's report taken in; outside access and the NAS move are the owner's separate NAS project. Order: 7.1 → 7.2 → 9.1a–d every open known issue → 7.3 → 7.4 → 9.2 real use → 8. **Done:** 7.1, 7.2, 9.1a–d (ADR 0012, 0014–0016; migrations 0018, 0019; KI-79, 80, 85–89 left for 9.2); details in `docs/history.md`.
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.2 (on the NAS).
 - The owner works in Claude Code on the PC (`E:\LocalAI\Bionic\Telegram-bot`); a session starts the bot itself for the check (`docs/workflow.md`, "Session on the owner's PC"). Main branch is `master`.
 - Repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `egg-info`); cleaned in stage 8.
 - The bot token and the TMDb key leaked in a chat and a console; **replace all keys once, at the end, before publishing** (stage 8).
-- The code map `docs/code-map.md` is built from the module docstrings by `tools/code_map.py` (rule 11).
 
 ## Stages
 
@@ -36,7 +35,7 @@ Session «Тикет 7.3.03»: ticket `.scratch/7-3-nas-readiness/issues/03-nas-
 | 9.1b | Known issues: games and Steam prices (14); Russian in games (idea 002) | done | — | 002 |
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
 | 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | done | — | — |
-| 7.3 | NAS readiness and the move guide (the move — the NAS project) | tickets 2/3 | 5 | — |
+| 7.3 | NAS readiness and the move guide (the move — the NAS project) | review | 5 | — |
 | 7.4 | The move taken in: the NAS project's report, sessions check on the NAS | not started | 1 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
