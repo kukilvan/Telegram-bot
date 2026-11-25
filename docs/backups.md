@@ -185,7 +185,7 @@ docker compose run --rm tracker python -m app.container_start app.utils.restore
    «Нынешняя база сохранена: data/backups/…Z_before-restore.db», «База восстановлена из копии от …» and «Готово.
    Запустите бота: docker compose up -d». When it says «Не удалось …», the database is as it was: start the bot on it.
 
-3. Start the bot:
+3. Start the bot (on the PC with `.\start-bot.ps1` instead, the only way to start it there):
 
 ```
 docker compose up -d

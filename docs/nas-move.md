@@ -29,7 +29,7 @@ Stays on the PC: `.venv`, the Docker image, and the PC's own `data` and `.env`, 
 1. On the NAS: `git clone https://github.com/kukilvan/Telegram-bot.git <app folder>`.
 2. **Stop the bot on the PC.** PowerShell in `E:\LocalAI\Bionic\Telegram-bot`: `.\stop-bot.ps1`; `docker compose ps` shows nothing. From now on the PC bot is **never started again** (problem 1).
 3. Copy `data` and `.env` from the PC to `<app folder>`. In PowerShell on the PC: `cd E:\LocalAI\Bionic\Telegram-bot`, then `scp -r data .env <user>@<NAS>:<app folder>/` (or put the same files there through the NAS's share). `tracker.db`, `-wal` and `-shm` go together, and only while the bot is stopped (step 2). With the copies on the HDD: `mv <app folder>/data/backups/* <copies folder>/` (the folder `data/backups` stays, empty).
-4. `.env` for the NAS, in `<app folder>`: no byte-order mark and no `\r` — `sed -i '1s/^\xEF\xBB\xBF//; s/\r$//' .env`; no `$` in a value (`docker compose` substitutes it) — `grep -n '^[^#]*\$' .env | cut -d= -f1` must print nothing (it shows only the line number and the name); `chmod 600 .env`; then the values of section 6.
+4. `.env` for the NAS, in `<app folder>`: no byte-order mark and no `\r` — `sed -i '1s/^\xEF\xBB\xBF//; s/\r$//' .env`; no `$` in a value (`docker compose` substitutes it) — `grep -nv '^[[:space:]]*#' .env | grep '\$' | cut -d= -f1` must print nothing (it shows only the line number and the name); `chmod 600 .env`; then the values of section 6.
 5. The owner of `data`: `stat -c '%u %g' data` prints two numbers; put them in `.env` as `PUID=` and `PGID=` (problem 3).
 6. Copies on the HDD only: `cp docker-compose.override.example.yml docker-compose.override.yml` and write `<copies folder>` before `:/app/data/backups` (the file says where).
 7. `docker compose up -d --build`. Wait until `docker inspect --format '{{.State.Health.Status}}' $(docker compose ps -q tracker)` prints `healthy` (up to 2 minutes; problem 4 for an older Docker).
@@ -72,7 +72,7 @@ A downloaded Google Drive archive or a `.db`: put it into `data/restore/` (the c
 docker compose run --rm tracker python -m app.container_start app.utils.restore data/restore/<file>
 ```
 
-Answers may be piped (`printf '1\nда\n' | docker compose run --rm -T tracker …`). Details and texts: `docs/backups.md`, «Without PowerShell (the NAS)».
+Answers may be piped (`printf '1\nда\n' | docker compose run --rm -T tracker …`). Details and texts: `docs/backups.md`, «Without PowerShell (the NAS)». If the middle command says «Бот работает…» after a pause of several seconds while `docker compose ps` shows no running `tracker`, the NAS's name service did not answer (no internet or router, KI-92): restore once the network is back.
 
 What `.\start-bot.ps1` checks on the PC, to do by hand: `.env` exists and has no `$`; nothing else runs this bot; the build passed; health is `healthy`; the log has no `токен бота неверного вида` (the web works even then, the bot does not).
 

@@ -101,7 +101,7 @@ function Show-Failure($result, [string]$fallback) {
 }
 
 function Invoke-Main {
-    if (-not (Build-Image)) { return 1 }
+    # A given file is checked before the build: a wrong path is told at once, with no wait and no network
     if ($Path) {
         if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
             Write-Host "Файл не найден: $Path"
@@ -112,6 +112,9 @@ function Invoke-Main {
             Write-Host "Нужен файл .7z из Google Drive или .db из копий. Ничего не изменено."
             return 1
         }
+    }
+    if (-not (Build-Image)) { return 1 }
+    if ($Path) {
         New-Item -ItemType Directory -Force $restoreDir | Out-Null
         $fileName = [System.IO.Path]::GetFileName($Path)
         Copy-Item -LiteralPath $Path -Destination (Join-Path $restoreDir $fileName) -Force

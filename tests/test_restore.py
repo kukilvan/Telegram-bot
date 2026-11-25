@@ -1027,6 +1027,8 @@ def test_the_script_builds_the_image_once_before_the_first_run_and_runs_it_witho
     assert "Образ бота не собрать — ошибка выше. Ничего не изменено." in script
     main = script[script.index("function Invoke-Main"):]
     assert "if (-not (Build-Image)) { return 1 }" in main
-    assert main.index("Build-Image") < main.index("Test-Path -LiteralPath $Path")  # also before a given file
+    # a given file is checked first (a wrong path told at once), then the image is built before the file is used
+    assert main.index("Test-Path -LiteralPath $Path") < main.index("Build-Image")
+    assert main.index("Build-Image") < main.index("Copy-Item -LiteralPath $Path")
     assert main.index("Build-Image") < main.index('Invoke-Restore @("list")')
     assert "--build" not in script.replace("docker compose build", "") and "--quiet-build" not in script

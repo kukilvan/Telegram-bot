@@ -106,6 +106,7 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-89 | «Входящие»: a Russian name with a hyphen in the middle of a sentence is cut at the hyphen («Человек-паук» → «Человек») | `app/tracker/candidates.py` (`_CAPITAL_WORD`) | open | 9.2 |
 | KI-90 | Copies on the HDD: the hourly job lists their folder every hour and may wake the disk | `app/utils/backup.py` (`backup_if_due`), `app/tracker/drive_copies.py` (`_due`) | open | 9.2 |
 | KI-91 | Copies on the HDD: a folder missing at the container's start is created on the system disk | `docker-compose.override.yml` (NAS only) | open | 9.2 |
+| KI-92 | Restore: with no answer from the name service a stopped bot counts as running | `app/utils/restore.py` | open | 9.2 |
 
 ## Entries
 
@@ -946,3 +947,12 @@ Format of a new entry:
 - Likelihood / impact: rare (Docker of UGOS starts after the volumes); the copies on the NAS are then in the wrong place, the Google Drive copy still goes; a dead HDD does not stop the bot (a missing folder must not).
 - Status: open. The guide checks `df <copies folder>` after a restart of the NAS and says how to move what landed on the system disk; 9.2 decides on a guard in code if it is met.
 - Found: 2026-11-24, spec of stage 7.3.
+
+## KI-92. Restore: with no answer from the name service a stopped bot counts as running
+
+- Where: `app/utils/restore.py`, `bot_running` (the guard of the asking restore and of `apply`).
+- What's wrong: the guard asks whether the service name `tracker` resolves; any error but «no such name» counts as running (spec 2.4 of 7.3). When the host's DNS does not answer (no internet, the router down), Docker's resolver forwards the unknown name, gets nothing and answers «temporary failure» (`EAI_AGAIN`) after about 8 s, so the asking restore of a stopped bot refuses with «Бот работает, а базу можно заменить только у остановленного…» — a false text, and no restore until the network is back.
+- How to reproduce: bot stopped (`docker compose stop`), then `docker run --rm --network telegram-bot_default --dns 192.0.2.1 --entrypoint python telegram-bot-tracker -c "from app.utils import restore; print(restore.bot_running())"` — waits 8 s, prints `True` (with the normal DNS it prints `False`).
+- Likelihood / impact: rare (a restore while the NAS has no network; the bot itself needs the internet anyway); the base is never touched by mistake, the restore is only refused with a wrong reason. The guide (`docs/nas-move.md`, section 7) says what the pause and the text mean.
+- Status: open. 9.2: a separate text for «no answer» and a way past it once `docker compose ps` shows the bot stopped, if it is met.
+- Found: 2026-11-25, review of stage 7.3 (F1), checked live.
