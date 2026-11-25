@@ -225,6 +225,16 @@ The data of the owner as a file to download from Settings: the CSV list (one lin
 _Avoid_: импорт, дамп
 In code: `export` — `Tracker.export_list`, `export_all`, the core's `Exports` (`exports`), `export_all` (the JSON document), `export_rows` (the formats, pure); the addresses `/settings/export.csv`, `/settings/export.json`.
 
+**Переезд** (move):
+The app going from the owner's PC to the NAS, done by the NAS project by `docs/nas-move.md`: the whole `data` and `.env` are copied, the app is built and started there by `docker compose`. One instance only: the bot on the PC is stopped first and never started again.
+_Avoid_: миграция (that is a change of the database structure), перенос базы
+In code: not in code yet (a guide, no module).
+
+**Отчёт о переезде** (move report):
+The file `nas-report.md` the NAS project writes at the end of the move (the template is section 10 of `docs/nas-move.md`): the NAS, Docker, folders, `PUID`/`PGID`, the tunnel side, the exact commands, the results of the checks, the problems met; no secret values. The owner brings it here, and stage 7.4 takes it in.
+_Avoid_: акт, лог переезда
+In code: not in code yet.
+
 ## Interface
 
 **Адрес приложения** (app address):

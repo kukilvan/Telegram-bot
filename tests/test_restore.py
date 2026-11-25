@@ -948,6 +948,75 @@ def test_the_commands_are_quoted_in_backups_md():
     assert restore.RESTORE_COMMAND + " data/restore/" in text
 
 
+# ---- docs/nas-move.md: the guide of the move (stage 7.3, ticket 03) ---------------------
+
+GUIDE = ROOT / "docs" / "nas-move.md"
+GUIDE_SIZE_AIM = 20_000  # bytes (spec 4): each fact told once, pointers to docs/outside-access.md and docs/backups.md
+NOT_FILES_OF_THE_REPOSITORY = {"nas-report.md",  # the report the NAS project writes
+                               "docker-compose.override.yml"}  # the NAS-only file, out of git (checked below)
+
+
+def _guide() -> str:
+    return GUIDE.read_text(encoding="utf-8")
+
+
+def test_the_guide_quotes_the_three_restore_commands_exactly():
+    text = _guide()
+
+    assert f"docker compose stop\n{restore.RESTORE_COMMAND}\ndocker compose up -d\n" in text
+    assert "\n" + restore.RESTORE_COMMAND + " data/restore/<file>\n" in text  # the file form of the middle command
+
+
+def test_the_guide_stays_under_its_size_aim():
+    assert len(GUIDE.read_bytes()) < GUIDE_SIZE_AIM
+
+
+def test_the_guide_has_its_ten_sections_in_order_and_the_eighteen_problems():
+    text = _guide()
+    headings = re.findall(r"^## (\d+)\. ", text, re.MULTILINE)
+
+    assert headings == [str(n) for n in range(1, 11)]
+    problems = text[text.index("## 9. Problems"):text.index("## 10. Report back")]
+    assert re.findall(r"^(\d+)\. \*\*", problems, re.MULTILINE) == [str(n) for n in range(1, 19)]
+    assert "```markdown\n# Report on the move" in text  # the report template of section 10
+
+
+def test_the_guide_names_only_files_and_settings_that_exist():
+    text = _guide()
+    env_example = (ROOT / ".env.example").read_text(encoding="utf-8")
+    env_names = set(re.findall(r"^([A-Z][A-Z0-9_]+)=", env_example, re.MULTILINE))
+    tokens = set(re.findall(r"`([^`\s]+)`", text))
+
+    for name in sorted(t for t in tokens if re.fullmatch(r"[A-Z][A-Z0-9_]{3,}", t)):
+        assert name in env_names, f"{name} is no name of .env.example"
+    for name in sorted(t for t in tokens if re.fullmatch(r"[\w./-]+\.(md|yml|ps1)", t)):
+        if name not in NOT_FILES_OF_THE_REPOSITORY:
+            assert (ROOT / name).is_file(), f"{name} is no file of the repository"
+    assert (ROOT / "docker-compose.override.example.yml").is_file()
+    assert "docker-compose.override.example.yml" in text
+    gitignore = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+    assert "docker-compose.override.yml" in gitignore
+    compose = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+    assert "init: true" in compose and "stop_grace_period" in compose and "restart: unless-stopped" in compose
+    assert "# syntax=docker/dockerfile:1" in (ROOT / "Dockerfile").read_text(encoding="utf-8").splitlines()[0]
+
+
+def test_the_guide_has_no_secret_no_address_and_no_value_printing_command():
+    text = _guide()
+
+    assert not re.search(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", text.replace("127.0.0.1", "").replace("0.0.0.0", ""))
+    assert not re.search(r"\b\d{6,}:[\w-]{20,}", text)  # a bot token's shape
+    assert set(re.findall(r"\S+@\S+", text)) <= {"<user>@<NAS>", "<user>@<NAS>:<app", "<user>@<NAS>`,"}
+    assert "cat .env" not in text and "printenv" not in text and "docker compose config" not in text
+
+
+def test_the_guide_is_pointed_to_and_its_two_terms_are_in_the_glossary():
+    assert "docs/nas-move.md" in (ROOT / "docs" / "outside-access.md").read_text(encoding="utf-8")
+    glossary = (ROOT / "CONTEXT.md").read_text(encoding="utf-8")
+    assert "**Переезд** (move):" in glossary and "**Отчёт о переезде** (move report):" in glossary
+    assert "Переезд" in glossary and "section 10 of `docs/nas-move.md`" in glossary
+
+
 # ---- restore-bot.ps1: the build (KI-70) ---------------------------------------------
 
 def test_the_script_builds_the_image_once_before_the_first_run_and_runs_it_without_build_flags():

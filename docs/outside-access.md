@@ -1,5 +1,7 @@
 # Outside access
 
+The move of the app to the NAS itself (what to copy, in what order, the checks, the problems): `docs/nas-move.md`.
+
 For the agent of the NAS project and for the owner. What the app needs to stand behind a domain, a Cloudflare Tunnel and Cloudflare Access (ADR 0013). The tunnel, the domain and Access are set up by the NAS project, not here; this project only made the app ready. Until the move the app stays on the PC (ADR 0006, 0008).
 
 Eight points, each one needed.
