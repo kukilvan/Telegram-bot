@@ -1,6 +1,6 @@
 # 01: The asking restore — three `docker compose` commands, the running guard, texts with `/`, KI-70
 
-Status: in review
+Status: accepted
 Complexity: medium (one module grows a mode and a guard, one script changes, texts and docs; no migration)
 Blocked by: —
 

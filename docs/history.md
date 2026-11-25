@@ -2,6 +2,10 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-25 — Slicing 7.3
+
+- `.scratch/7-3-nas-readiness/issues/`: three tickets as proposed by the spec — 01 the asking restore, the running guard, texts with `/`, KI-70 (medium); 02 the container for the NAS: a start not as root (KI-15), the `# syntax` line, the override example, the copies on another disk checked live on the PC (simple); 03 the guide `docs/nas-move.md` with the report template, «Переезд», «Отчёт о переезде» (medium, blocked by 01 and 02). No change to the spec.
+
 ## 2026-11-24 — Spec 7.3
 
 - `.scratch/7-3-nas-readiness/spec.md`: the asking restore (`app.utils.restore` with no arguments, or a path) — the restore on the NAS is `docker compose stop`, `docker compose run --rm tracker python -m app.container_start app.utils.restore`, `docker compose up -d`; answers read line by line, piped answers work. It refuses while the bot runs: the one-off container resolves the service name `tracker` only while the bot's container runs (checked live: running — resolves, stopped — `Name or service not known`); the script's `apply` gets the same guard. Texts with `/`; `restore-bot.ps1` builds with `docker compose build --quiet` and runs without `--build --quiet-build` (KI-70). KI-15: not as root, `PUID`/`PGID` are not read. The `Dockerfile` gets `# syntax=docker/dockerfile:1` (an Engine before 25 builds; needed at least Engine 23, Compose v2). The copies on the HDD by `docker-compose.override.example.yml` → `docker-compose.override.yml` (out of git). The outline of `docs/nas-move.md` with 18 problems and the report template.

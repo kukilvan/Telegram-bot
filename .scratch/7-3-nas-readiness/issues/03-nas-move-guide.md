@@ -1,6 +1,6 @@
 # 03: The guide `docs/nas-move.md` with the report template, «Переезд» and «Отчёт о переезде»
 
-Status: in review
+Status: accepted
 Complexity: medium (one long document in English, a test that binds it to the code, a few doc lines; no code change)
 Blocked by: 01, 02
 

@@ -1,10 +1,10 @@
 # Project context
 
-Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-24.
+Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents"). Details of finished work live in `docs/history.md`. Updated: 2026-11-25.
 
 ## Next step
 
-Session «Тикеты 7.3»: the tickets of stage 7.3 from `.scratch/7-3-nas-readiness/spec.md` (accepted 2026-11-24; section 8 proposes three: the asking restore and KI-70, the container for the NAS and KI-15, the guide `docs/nas-move.md`) into `issues/` there. Model Sonnet 5.5, effort high (`docs/models.md`). Then 7.4, 9.2, 8.
+Session «Тикет 7.3.01»: ticket `.scratch/7-3-nas-readiness/issues/01-asking-restore.md` (the asking restore, the running guard, texts with `/`, KI-70). Model Sonnet 5.5, effort high (`docs/models.md`, medium). Then 7.3.02 (simple, Sonnet medium), 7.3.03 (medium, blocked by 01 and 02), the review of 7.3, then 7.4, 9.2, 8.
 
 ## State
 
