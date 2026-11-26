@@ -235,6 +235,11 @@ The file `nas-report.md` the NAS project writes at the end of the move (the temp
 _Avoid_: акт, лог переезда
 In code: not in code yet.
 
+**Тестовый бот** (test bot):
+After the move, the owner's second Telegram bot with its own token, `.env` and `data` on the PC: sessions check their work on it, while the real bot runs on the NAS and gets only `master` after «ОК» (ADR 0017). Its `data` is a copy without the Google Drive connection.
+_Avoid_: второй экземпляр (that is the same bot twice, forbidden), dev-бот
+In code: not in code yet (stage 7.4).
+
 ## Interface
 
 **Адрес приложения** (app address):

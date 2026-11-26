@@ -126,7 +126,7 @@ def test_the_card_of_the_bot_shows_the_fixed_address(tracker, movies, said, base
     title_id = run(tracker.add_title("movie", DUNE_2.external_id)).title_id
     dp = build_dispatcher(tracker, [OWNER], None, base_url)
     user = User(id=OWNER, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text="menu")
+    message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text="menu")
 
     feed(dp, callback_query=CallbackQuery(
         id="1", from_user=user, chat_instance="c", data=f"tcard:{title_id}", message=message
@@ -150,7 +150,7 @@ def test_the_offer_card_of_the_inbox_shows_the_fixed_address(monkeypatch, said, 
 
     async def go():
         bot = Bot(token="123456:TEST")
-        message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text="Атака титанов")
+        message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text="Атака титанов")
         await dp.feed_update(bot, Update(update_id=1, message=message))
         await asyncio.sleep(0.3)
 

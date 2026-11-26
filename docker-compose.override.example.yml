@@ -1,6 +1,7 @@
-# Only on the NAS: copy to docker-compose.override.yml (read by docker compose by itself, kept out of git)
-# and put the folder of the copies on the HDD. The database stays in ./data on the SSD.
+# Only on the NAS, and optional: copy to docker-compose.override.yml (read by docker compose by itself, kept out of git)
+# and put the folder of the copies on the HDD. The database stays in ./data on the SSD. Which volume is the HDD depends on
+# the NAS: on the owner's UGREEN /volume1 is the HDD mirror and /volume2 the SSD (check yours in the NAS's storage page).
 services:
   tracker:
     volumes:
-      - /volume2/tracker-backups:/app/data/backups   # <copies folder on the HDD>:/app/data/backups
+      - /volume1/tracker-backups:/app/data/backups   # <copies folder on the HDD>:/app/data/backups

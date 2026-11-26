@@ -503,13 +503,13 @@ def feed_update(tracker, update):
 
 def say(tracker, text):
     user = User(id=OWNER, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text=text)
+    message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text=text)
     feed_update(tracker, Update(update_id=1, message=message))
 
 
 def press(tracker, data):
     user = User(id=OWNER, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text="menu")
+    message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text="menu")
     feed_update(tracker, Update(update_id=2, callback_query=CallbackQuery(
         id="1", from_user=user, chat_instance="c", data=data, message=message,
     )))

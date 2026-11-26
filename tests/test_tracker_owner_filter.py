@@ -97,13 +97,13 @@ def feed(dp, update):
 
 def message_update(uid, text, user=True):
     sender = User(id=uid, is_bot=False, first_name="x") if user else None
-    message = Message(message_id=1, date=0, chat=Chat(id=uid, type="private"), from_user=sender, text=text)
+    message = Message(message_id=1, date=1, chat=Chat(id=uid, type="private"), from_user=sender, text=text)
     return Update(update_id=1, message=message)
 
 
 def callback_update(uid, data):
     user = User(id=uid, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=uid, type="private"), from_user=user, text="m")
+    message = Message(message_id=1, date=1, chat=Chat(id=uid, type="private"), from_user=user, text="m")
     return Update(update_id=2, callback_query=CallbackQuery(id="1", from_user=user, chat_instance="c", data=data, message=message))
 
 

@@ -105,7 +105,8 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 ### Stage 7.4. The move taken in
 
 - Goal: after the NAS project has moved the app and written its report, the sessions of this project work with the app on the NAS.
-- The owner sees at the end: the NAS in `PROJECT_CONTEXT.md` («Environment»), «Run» of `CLAUDE.md` and «Session on the owner's PC» of `docs/workflow.md` rewritten: a session sends its branch to the NAS by SSH and restarts the bot there, the PC runs tests only; SSH, the health and the log on the NAS checked.
+- The owner sees at the end: the NAS in `PROJECT_CONTEXT.md` («Environment»), «Run» of `CLAUDE.md` and «Session on the owner's PC» of `docs/workflow.md` rewritten by ADR 0017: checks run on a **test bot on the PC** (its own token from BotFather, its own `.env` and `data`, without the Google Drive connection), `.\start-bot.ps1` refuses the real token, the PC's real `data` and `.env` kept aside as the way back; the NAS gets only `master` after «ОК», by the NAS project's update command, which a session runs; the health and the log on the NAS read from the PC.
+- Changed 2026-11-25 by the answer to the NAS project (`.scratch/7-3-nas-readiness/nas-answer.md`, ADR 0017): it used to send a session's branch to the NAS.
 - Sessions (est.): 1 («Приём переезда»).
 
 ### Stage 9.2. Fixes after real use
@@ -117,7 +118,7 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 ### Stage 8. Template for GitHub
 
 - Goal: anyone can deploy their own instance.
-- The owner sees at the end: a cleaned repository (junk files), a new repository with a clean history, MIT licence, Russian README, description of keys and settings; the move guide of 7.3 points to the new repository. **Replace all API keys before publishing.** A final review on Fable 5.1.
+- The owner sees at the end: a cleaned repository (junk files), a new repository with a clean history, MIT licence, Russian README, description of keys and settings; the move guide of 7.3 points to the new repository. **Replace all API keys before publishing.** After the move the new values are set on the NAS by the NAS project's command (hidden input), not in the PC's `.env` (it is the stale way back). A final review on Fable 5.1.
 - Sessions (est.): 1.
 
 Risks to the estimates: Shikimori has no official «part of a season» link (a heuristic on names can err); realistic events do not come on schedule, so part of the checks runs on faked events; open question — how to tell reliably «closed or cancelled» for anime.

@@ -54,7 +54,7 @@ def replies(monkeypatch):
 def say(tracker, text, uid=OWNER):
     dp = build_dispatcher(tracker, [OWNER])
     user = User(id=uid, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=uid, type="private"), from_user=user, text=text)
+    message = Message(message_id=1, date=1, chat=Chat(id=uid, type="private"), from_user=user, text=text)
     asyncio.run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=1, message=message)))
 
 

@@ -253,6 +253,14 @@ def test_a_failed_archive_leaves_no_half_made_file(tmp_path):
     assert not (tmp_path / "a.7z").exists()
 
 
+def test_the_archive_compresses_at_preset_6_so_its_memory_stays_under_about_100_mib():
+    # at 9 the encoder took up to about 675 MiB with a 100 MB base (measured in the container), too much for 512 MiB
+    from app.utils import archive
+
+    assert archive.PRESET == 6
+    assert archive.FILTERS[0] == {"id": py7zr.FILTER_LZMA2, "preset": 6}
+
+
 @pytest.mark.parametrize("fail", [False, True])
 def test_the_archive_is_deleted_after_the_attempt_sent_or_not(tracker, tmp_path, google, fail):
     connect(tmp_path)

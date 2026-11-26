@@ -57,7 +57,7 @@ In `<app folder>`:
 
 - start or rebuild: `docker compose up -d --build`; stop: `docker compose stop`;
 - log: `docker compose logs --tail 50 tracker`, and the file `data/logs/bot.log`;
-- update: `git pull`, then `docker compose up -d --build`; migrations run by themselves, a copy of the database is made first;
+- update: `git pull`, then `docker compose up -d --build`; migrations run by themselves, a copy of the database is made first; what needs more than that is in `docs/nas-changes.md`;
 - **restore**, three commands (the middle one lists the copies of `data/backups`, asks the number and «да» itself, and refuses while the bot runs):
 
 ```

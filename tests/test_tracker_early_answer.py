@@ -189,7 +189,7 @@ def press(tracker, data, with_message=True):
     dp.update.outer_middleware(AccessMiddleware([OWNER]))
     register_tracker_handlers(dp, tracker, [OWNER])
     user = User(id=OWNER, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text="m")
+    message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text="m")
     callback = CallbackQuery(
         id="1", from_user=user, chat_instance="c", data=data, message=message if with_message else None
     )

@@ -11,7 +11,10 @@ from pathlib import Path
 import py7zr
 
 ARCHIVE_SUFFIX = ".7z"
-FILTERS = [{"id": py7zr.FILTER_LZMA2, "preset": 9}, {"id": py7zr.FILTER_CRYPTO_AES256_SHA256}]
+# Preset 6, not 9: the memory of the LZMA2 encoder grows with the copy up to its dictionary, at 9 up to about 675 MiB
+# (a 100 MB base), at 6 never over about 100 MiB, so the app fits a 512 MiB limit on the NAS; the archive is barely bigger
+PRESET = 6
+FILTERS = [{"id": py7zr.FILTER_LZMA2, "preset": PRESET}, {"id": py7zr.FILTER_CRYPTO_AES256_SHA256}]
 
 
 def archive_name(copy: Path) -> str:

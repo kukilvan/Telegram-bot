@@ -110,12 +110,12 @@ class Chat_:
 
     def say(self, text):
         user = User(id=OWNER, is_bot=False, first_name="x")
-        message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text=text)
+        message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text=text)
         self.feed(message=message)
 
     def press(self, data):
         user = User(id=OWNER, is_bot=False, first_name="x")
-        message = Message(message_id=1, date=0, chat=Chat(id=OWNER, type="private"), from_user=user, text="m")
+        message = Message(message_id=1, date=1, chat=Chat(id=OWNER, type="private"), from_user=user, text="m")
         self.feed(callback_query=CallbackQuery(id="1", from_user=user, chat_instance="c", data=data, message=message))
 
 

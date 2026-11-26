@@ -111,7 +111,7 @@ class Chat_:
         return User(id=self.uid, is_bot=False, first_name="x")
 
     def _message(self, text=None):
-        return Message(message_id=1, date=0, chat=Chat(id=self.uid, type="private"), from_user=self._user(), text=text)
+        return Message(message_id=1, date=1, chat=Chat(id=self.uid, type="private"), from_user=self._user(), text=text)
 
     def say(self, text):
         self._feed(message=self._message(text))

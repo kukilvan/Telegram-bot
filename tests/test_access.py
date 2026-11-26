@@ -85,7 +85,7 @@ def test_real_dispatcher_gates_message_inline_and_callback():
     def updates(uid):
         u = User(id=uid, is_bot=False, first_name="x")
         chat = Chat(id=uid, type="private")
-        yield Update(update_id=1, message=Message(message_id=1, date=0, chat=chat, from_user=u, text="hi"))
+        yield Update(update_id=1, message=Message(message_id=1, date=1, chat=chat, from_user=u, text="hi"))
         yield Update(update_id=2, inline_query=InlineQuery(id="1", from_user=u, query="q", offset=""))
         yield Update(
             update_id=3,

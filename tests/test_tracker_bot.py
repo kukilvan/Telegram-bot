@@ -67,7 +67,7 @@ def make_dispatcher(tracker, with_middleware=True):
 def press_menu_button(dp, uid):
     user = User(id=uid, is_bot=False, first_name="x")
     chat = Chat(id=uid, type="private")
-    message = Message(message_id=1, date=0, chat=chat, from_user=user, text=TEST_EVENT_BUTTON)
+    message = Message(message_id=1, date=1, chat=chat, from_user=user, text=TEST_EVENT_BUTTON)
     asyncio.run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=1, message=message)))
 
 

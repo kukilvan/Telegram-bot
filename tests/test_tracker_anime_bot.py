@@ -87,7 +87,7 @@ class Chat_:
 
     def _message(self, text=None):
         return Message(
-            message_id=1, date=0, chat=Chat(id=self.uid, type="private"), from_user=self._user(), text=text
+            message_id=1, date=1, chat=Chat(id=self.uid, type="private"), from_user=self._user(), text=text
         )
 
     def say(self, text):

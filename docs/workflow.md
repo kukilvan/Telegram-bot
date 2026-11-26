@@ -81,7 +81,7 @@ Before the owner sees a ticket:
 
 ## End of a session
 
-1. Status line of the step's file → `in review`. Commit and `git push -u origin <branch>` — allowed without asking: the branch waits for review. Commit messages are English, `<Step>: <what>` (`Spec 6.3: …`, `Ticket 6.2.02: …`).
+1. A change to `docker-compose.yml`, a runtime setting of the `Dockerfile`, a `.env` name or anything else the NAS must do beyond a rebuild → an entry in `docs/nas-changes.md` in the same commit (ADR 0017). Status line of the step's file → `in review`. Commit and `git push -u origin <branch>` — allowed without asking: the branch waits for review. Commit messages are English, `<Step>: <what>` (`Spec 6.3: …`, `Ticket 6.2.02: …`).
 2. Message to the owner, Russian:
    - what was done, 2–4 lines;
    - ticket — the launch result in one line and the check (rules below);

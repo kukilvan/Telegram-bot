@@ -64,13 +64,68 @@ def test_dockerfile_starts_as_root_and_checks_health_with_python():
     assert 'CMD ["python", "-m", "app.container_start"]' in dockerfile
     assert "WEB_BIND_HOST=0.0.0.0" in dockerfile and "PYTHONUNBUFFERED=1" in dockerfile
     assert "EXPOSE 8080" in dockerfile
-    assert "python:3.12-slim" in dockerfile
     assert ".sh" not in dockerfile
 
 
 def test_dockerfile_starts_with_the_syntax_line_for_an_older_docker():
-    # BuildKit then takes the newest Dockerfile frontend, which knows `--start-interval` (7.3.02)
-    assert _text("Dockerfile").splitlines()[0] == "# syntax=docker/dockerfile:1"
+    # BuildKit then takes this Dockerfile frontend, which knows `--start-interval` (7.3.02), pinned by its digest
+    first = _text("Dockerfile").splitlines()[0]
+
+    assert re.fullmatch(r"# syntax=docker/dockerfile:1\.\d+@sha256:[0-9a-f]{64}", first), first
+
+
+def test_the_base_image_is_pinned_by_an_exact_tag_and_its_digest():
+    # two builds of one commit on different days get the same system and Python (the NAS project's question 3)
+    bases = re.findall(r"^FROM (\S+)", _text("Dockerfile"), re.MULTILINE)
+
+    assert len(bases) == 1 and re.fullmatch(r"python:3\.12\.\d+-slim@sha256:[0-9a-f]{64}", bases[0]), bases
+
+
+def _lock() -> dict[str, tuple[str, int]]:
+    """requirements.lock as name -> (version, number of hashes), names in lower case with `-`."""
+    pinned: dict[str, tuple[str, int]] = {}
+    name = ""
+    for line in _text("requirements.lock").splitlines():
+        found = re.match(r"^([A-Za-z0-9_.-]+)==(\S+)", line)
+        if found:
+            name = found.group(1).lower().replace("_", "-")
+            pinned[name] = (found.group(2), 0)
+        elif line.strip().startswith("--hash=sha256:"):
+            version, hashes = pinned[name]
+            pinned[name] = (version, hashes + 1)
+    return pinned
+
+
+def test_the_image_installs_only_the_lock_with_hashes():
+    dockerfile = _text("Dockerfile")
+
+    assert "COPY requirements.lock ." in dockerfile
+    assert "pip install --no-cache-dir --require-hashes -r requirements.lock" in dockerfile
+    assert "requirements.txt" not in dockerfile
+    assert "requirements.lock" not in set(_text(".dockerignore").split())
+
+
+def test_every_package_of_the_lock_is_exact_and_hashed():
+    lock = _lock()
+    text = _text("requirements.lock")
+
+    assert len(lock) > 20
+    assert not re.search(r"^[A-Za-z0-9_.-]+\s*(>=|<=|~=|>|<|!=)", text, re.MULTILINE)  # only `==`
+    assert all(hashes for _, hashes in lock.values()), [name for name, (_, hashes) in lock.items() if not hashes]
+
+
+def test_the_lock_holds_every_requirement_within_its_range():
+    from packaging.requirements import Requirement
+
+    lock = _lock()
+    for line in _text("requirements.txt").splitlines():
+        line = line.split("#")[0].strip()
+        if not line:
+            continue
+        wanted = Requirement(line)
+        name = wanted.name.lower().replace("_", "-")
+        assert name in lock, name
+        assert wanted.specifier.contains(lock[name][0]), (name, lock[name][0], str(wanted.specifier))
 
 
 def test_there_are_no_shell_scripts_to_run_in_the_container():

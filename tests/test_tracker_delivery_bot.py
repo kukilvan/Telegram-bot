@@ -97,13 +97,13 @@ def make_dispatcher(tracker, with_middleware=True):
 
 def say(dp, uid, text):
     user = User(id=uid, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=uid, type="private"), from_user=user, text=text)
+    message = Message(message_id=1, date=1, chat=Chat(id=uid, type="private"), from_user=user, text=text)
     asyncio.run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=1, message=message)))
 
 
 def press(dp, uid, data):
     user = User(id=uid, is_bot=False, first_name="x")
-    message = Message(message_id=1, date=0, chat=Chat(id=uid, type="private"), from_user=user, text="m")
+    message = Message(message_id=1, date=1, chat=Chat(id=uid, type="private"), from_user=user, text="m")
     callback = CallbackQuery(id="1", from_user=user, chat_instance="c", data=data, message=message)
     asyncio.run(dp.feed_update(Bot(token="123456:TEST"), Update(update_id=2, callback_query=callback)))
 

@@ -156,7 +156,7 @@ class Chat_:
         self._update_id += 1
         user = User(id=self.uid, is_bot=False, first_name="x")
         message = Message(
-            message_id=1, date=0, chat=Chat(id=self.uid, type="private"), from_user=user, text="m", reply_markup=markup
+            message_id=1, date=1, chat=Chat(id=self.uid, type="private"), from_user=user, text="m", reply_markup=markup
         )
         update = Update(
             update_id=self._update_id,
