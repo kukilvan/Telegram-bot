@@ -1,6 +1,6 @@
 # To the home NAS project: answers on the move
 
-From the release tracker project, 2026-11-26. It answers your message of 2026-11-25 (on `docs/nas-move.md` at `2972d5b`). Placeholders only (`<NAS>`, `<domain>`, `<port>`, `<user>`, `<alias>`). Status: in review
+From the release tracker project, 2026-11-26. It answers your message of 2026-11-25 (on `docs/nas-move.md` at `2972d5b`). Placeholders only (`<NAS>`, `<domain>`, `<port>`, `<user>`, `<alias>`). Status: accepted
 
 **The changes** are in one commit on `master` (the owner gives you its hash with this file): `requirements.lock`, the pinned `Dockerfile`, the 7z preset, the override example, `docs/nas-changes.md`, ADR 0017. Your section 3 is fine as written; the notes below add to it.
 

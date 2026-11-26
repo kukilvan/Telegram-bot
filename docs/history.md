@@ -2,6 +2,16 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-26 — Answer to the NAS project (outside the chain)
+
+- The NAS project's ten questions (its message of 2026-11-25) answered in `.scratch/7-3-nas-readiness/nas-answer.md`; the owner hands it over with the `master` commit.
+- Decision of the owner (ADR 0017): after the move the checks run on a **test bot on the PC** (own token, `.env`, `data` without the Google Drive connection); the NAS gets only `master` after «ОК» by the NAS project's update command; `.\start-bot.ps1` will refuse the real token (by the bot id, 7.4). Rejected: ticket branches on the NAS (unaccepted code on the real base, migrations forward only). Spec 7.4 rewritten, stage 8 notes the keys go to the NAS.
+- Builds made reproducible: `requirements.lock` (53 entries, exact, sha256, universal; built by `uv pip compile` in a Linux container from the versions the image already ran), the `Dockerfile` installs only it with `--require-hashes`; `FROM python:3.12.16-slim@sha256:…`, `# syntax=docker/dockerfile:1.29@sha256:…`. The `.venv` moved to the lock too: it had drifted (SQLAlchemy 2.0.52 vs 2.1.9, aiogram 3.31 vs 3.34, …). On aiogram 3.34, 103 bot tests failed: a test `Message(date=0)` is read as `InaccessibleMessage`, so the patched `Message.answer` was skipped; every test message now has `date=1` (gotcha in `PROJECT_CONTEXT.md`).
+- `app/utils/archive.py`: LZMA2 preset 6 (`PRESET`): measured in the container, preset 9 took +73 / +249 / +675 MiB at a 1 / 20 / 100 MB base, preset 6 +25 / +97 / +97 MiB; steady app about 220–230 MiB, so a 512 MiB limit is safe.
+- New `docs/nas-changes.md` (what the NAS must do beyond a rebuild; rule in `docs/workflow.md`, «End of a session»); `docker-compose.override.example.yml` uses `/volume1` (the HDD on the owner's NAS); `CONTEXT.md` «Тестовый бот»; maps updated.
+- Moved out of `PROJECT_CONTEXT.md` (budget): the repository root holds junk (debug `test_psn_*.py`, `test_steam*.py`, images, `PROMPT.txt`, `opencode.json`, `egg-info`), cleaned in stage 8; GitHub Desktop can look at a copy of the project on drive C while the bot lives on E — if files on E are old after a pull, choose the repository on E (File → Add local repository).
+- Tests: 5505 passed, 3 skipped, the two known Windows failures. Live: rebuilt by `.\start-bot.ps1` on the pinned image — «Готово», `/health` ok, `poll_due` executed successfully, no error; 218 MiB. Accepted by the owner («ОК»); the Next step stays «Приём переезда» (7.4).
+
 ## 2026-11-25 — Review 7.3
 
 - `.scratch/7-3-nas-readiness/review.md`: commits `1375caf..cb17a20` (tickets 01–03) against the spec and the standards, `code-review` at effort high, then a pass for the spec. Live: the NAS way of the restore with `docker compose stop` (the container stays, stopped; the tickets used `.\stop-bot.ps1`, which removes it) — the guard sees the bot stopped, Enter and «нет» cancel; the guard with an unreachable DNS (`--dns 192.0.2.1`); `restore-bot.ps1` after the fix.
