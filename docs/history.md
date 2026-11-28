@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-28 — Spec 6.5
+
+- `.scratch/6-5-meta-quest/spec.md` (accepted), live IGDB answers in `answers/`; the Meta store pages checked in the browser (meta.com answers `400` to plain HTTP clients).
+- IGDB: Meta Quest 3 = 471, Meta Quest 2 = 386, Oculus Quest = 384, no number for Quest 3S; 162 «Oculus VR», 385 Rift, 161 WMR are not counted; the Meta store is `external_game_source` 28 («Oculus», `uid` the app number, 59 % of Quest games have one); new release statuses 34–36 stay not taken (36 is a patch for a new headset: Beat Saber's Quest 3 record).
+- Decisions of the owner (on the real answers, changing the description): no version text for Quest — the headsets are the platform's own numbers (`PlatformInfo.igdb_ids`), the earliest date counts; SteamVR (163) counts as ПК (IGDB writes the PC version of a VR game as SteamVR: 2,758 games without PC 6), so VR games get the ПК row, messages and Steam prices. ADR 0018 is written by ticket 01.
+- By the agent: the snapshot remembers its IGDB numbers (`known`; absent — the pre-6.5 set) and the first poll compares only them, so the update gives no false «дата объявлена» / «перенесена»; the store link — `https://www.meta.com/experiences/<id>/`, else `…/experiences/search/?q=<original name>`, no locale, no check; the button «🛒 Открыть в магазине Meta» under a Quest release, also when the folded message's lead is ПК; store links of meta.com and oculus.com (locale, slug, `quest/`, `app/`) looked up by source 28.
+- Split: 01 the platform (complex), 02 the Meta store (medium).
+
 ## 2026-11-28 — Description 6.5
 
 - `.scratch/6-5-meta-quest/description.md` (accepted) takes in idea 003; mockup `mockups/quest-pieces.html` (the changed pieces of Settings, Search, card, Feed and bot messages).

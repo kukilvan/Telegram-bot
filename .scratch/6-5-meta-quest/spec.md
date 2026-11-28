@@ -1,6 +1,6 @@
 # Spec 6.5: Meta Quest as a platform of games
 
-Status: in review
+Status: accepted
 
 Built from `description.md` (accepted 2026-11-28) and idea 003; where they differ, this file wins. Terms: `CONTEXT.md` (changes in section 13). ADRs: 0009 (no PlayStation prices — the same reasoning keeps Meta store prices out), 0010 (the bot takes posts and links), 0011 (a followed expansion is a game of its own). A new ADR 0018 (section 13) records that a platform of the tracker can have several IGDB numbers of its own.
 
