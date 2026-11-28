@@ -189,7 +189,7 @@ class TitleCard:
     sequels: SequelsView | None = None  # a watched movie whose sequels are looked for; for the web
     score: ScoreView | None = None  # None: the title cannot be scored now (2.3 of the spec of part 5.3), no field
     platforms: tuple[PlatformRow, ...] = ()  # a game: the platforms of «Мои платформы» it is on, in the order of the table
-    store_links: tuple[StoreLink, ...] = ()  # a game: Steam and PlayStation Store, where the owner's platforms have them
+    store_links: tuple[StoreLink, ...] = ()  # a game: Steam, PlayStation Store, the Meta store, where the owner's platforms have them
     platform_note: str = ""  # a game without such platforms: why the list of platforms is empty
     outside_date: str = ""  # a game: «в Японии — 12 марта 2027», a date outside the country's regions; empty: none
     steam: SteamView | None = None  # a game in «Хочу» that is told about PC: its Steam prices; the poller decides

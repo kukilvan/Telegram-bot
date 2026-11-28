@@ -107,6 +107,8 @@ Bugs decided not to fix now, and rare cases where the app can go wrong (source d
 | KI-90 | Copies on the HDD: the hourly job lists their folder every hour and may wake the disk | `app/utils/backup.py` (`backup_if_due`), `app/tracker/drive_copies.py` (`_due`) | open | 9.2 |
 | KI-91 | Copies on the HDD: a folder missing at the container's start is created on the system disk | `docker-compose.override.yml` (NAS only) | open | 9.2 |
 | KI-92 | Restore: with no answer from the name service a stopped bot counts as running | `app/utils/restore.py` | open | 9.2 |
+| KI-93 | Follow-up check: the first check after an IGDB number is taken can announce an old game of the series | `app/tracker/follow_ups.py` (`check`) | open | the next IGDB number taken; 9.2 if met |
+| KI-94 | «Входящие»: a Meta store link IGDB does not know asks «Что это?» and ends in «не нашёл» | `app/tracker/inbox_answers.py`, `app/tracker/offers.py` | open | 9.2 |
 
 ## Entries
 
@@ -956,3 +958,21 @@ Format of a new entry:
 - Likelihood / impact: rare (a restore while the NAS has no network; the bot itself needs the internet anyway); the base is never touched by mistake, the restore is only refused with a wrong reason. The guide (`docs/nas-move.md`, section 7) says what the pause and the text mean.
 - Status: open. 9.2: a separate text for «no answer» and a way past it once `docker compose ps` shows the bot stopped, if it is met.
 - Found: 2026-11-25, review of stage 7.3 (F1), checked live.
+
+## KI-93. Follow-up check: the first check after an IGDB number is taken can announce an old game of the series
+
+- Where: `app/tracker/follow_ups.py` (`check`), the follow-up snapshots (source `igdb_follow_ups`).
+- What's wrong: a follow-up snapshot holds only the platforms and records of the IGDB numbers the tracker knew when it was taken, and its `known` holds only the ids it showed. When the table takes a number (stage 6.5: SteamVR 163 as ПК, the Quest headsets as Meta Quest), a game of the series whose only platform of the tracker is that number was never shown, so the first check after the update shows it and announces it: «Анонсирована новая игра серии: …» for a game that may be years old (when it came out after the followed game and is not in the list). An expansion with no known platform was shown already («announced without any platform», spec 4.2 of 6.3), so it hits the games of the series. The own snapshot has `GameState.known` and `seen_as` for this (spec 5 of 6.5, ADR 0018); the follow-up snapshot has nothing.
+- How to reproduce: a game in the list with a follow-up snapshot from before 6.5 whose series holds a SteamVR-only game released after it; its next weekly check after the update queues the announcement. Simulated on 2026-11-28 with live IGDB answers on the owner's 16 games with follow-up snapshots: no such message (with «Мои платформы» as now and with ПК + PS5).
+- Likelihood / impact: one false message per such game, once; every follow-up snapshot from before 6.5 is checked within 7 days of the update (by 2026-12-05), then the window is closed. It opens again when ADR 0018 takes another number, or when a copy from before 6.5 is restored.
+- Status: open. Fix when another IGDB number is taken (or in 9.2 if met): the follow-up state stores the numbers it knew (a new key: `known` holds the ids) and `check` compares the new snapshot restricted to them, as `GameState.seen_as` does.
+- Found: 2026-11-28, review of stage 6.5 (F1), simulated on live answers.
+
+## KI-94. «Входящие»: a Meta store link IGDB does not know asks «Что это?» and ends in «не нашёл»
+
+- Where: `app/tracker/inbox_answers.py` (`pause_over`), `app/tracker/offers.py` (`_look_up`), `app/tracker/candidates.py` (`_slugs`).
+- What's wrong: when the lookups of its links find nothing, an item goes on as one without links: «Что это?», although a Meta store link can only be a game (spec 7.2 of 6.5: "the kind is known"). After «Игра» nothing is searched — the link alone gives no name candidate — so the item ends in «Входящие», «не нашёл», though the slug of the address (`/experiences/asgards-wrath-2/…`) names the game. IGDB has the store number of 59 % of the Quest games, fewer among the upcoming ones.
+- How to reproduce: send the bot `https://www.meta.com/experiences/some-game/1234567890123456/` alone (`tests/test_tracker_meta_store.py`, `test_an_unknown_store_number_goes_on_with_the_text_and_ends_in_the_inbox`).
+- Likelihood / impact: likely for an upcoming Quest game; one needless question, then the game is found by hand on the web. The same as after a TMDb link nobody knows (the behaviour of 6.4), so not a deviation from the spec's letter.
+- Status: open. 9.2 if met: the slug of a Meta store link as a name candidate (as the jut.su slugs), and the kind taken from the link without «Что это?».
+- Found: 2026-11-28, review of stage 6.5 (F2).
