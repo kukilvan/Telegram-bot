@@ -105,8 +105,8 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 ### Stage 6.5. Meta Quest (idea 003)
 
 - Goal: follow VR games on Meta Quest like games on the other platforms.
-- The owner sees at the end: «Meta Quest» in «Мои платформы»; in the card a row «Meta Quest — <date>» (Quest 2 and first-Quest versions count) with «играю здесь» and the link «Открыть в магазине Meta» (the game's page, else the store's search); the release message on Meta Quest with the same link button; «Meta Quest» in the line of platforms of Search. No Meta store prices.
-- Contains: `docs/ideas/003-meta-quest.md` — taken in by the description of 6.5 (`.scratch/6-5-meta-quest/`). Done while stage 7.4 waits for the NAS project's report.
+- The owner sees at the end: «Meta Quest» in «Мои платформы»; in the card a row «Meta Quest — <date>» (Quest 2 and first-Quest versions count) with «играю здесь» and the link «Открыть в магазине Meta» (the game's page, else the store's search); the release message on Meta Quest with the same link button; «Meta Quest» in the line of platforms of Search; a Meta store link sent to the bot gives «Это оно?» at once. No Meta store prices.
+- Contains: `.scratch/6-5-meta-quest/description.md` (takes in `docs/ideas/003-meta-quest.md`) → spec → tickets → review. Done while stage 7.4 waits for the NAS project's report.
 - Sessions (est.): about 5 (description, spec, slicing, about 2 tickets, review).
 
 ### Stage 7.4. The move taken in

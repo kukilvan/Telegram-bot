@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Набросок: Meta Quest (6.5)</title>
+<style>
+  body { font: 15px/1.45 system-ui, sans-serif; margin: 0; background: #f2f3f5; color: #1d1d22; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px; }
+  .note { background: #fff7d6; border: 1px dashed #c9a800; padding: 8px 12px; border-radius: 6px; font-size: 14px; margin: 0 0 16px; }
+  h2 { font-size: 15px; color: #445; margin: 22px 0 6px; }
+  .box { background: #fff; border: 1px solid #dde; border-radius: 8px; padding: 12px 14px; }
+  .new { background: #e5f6e8; border-radius: 4px; padding: 0 4px; }
+  .muted { color: #667; font-size: 14px; }
+  .row { margin: 4px 0; }
+  .links a { margin-right: 14px; color: #2c6db5; text-decoration: none; }
+  .tg { background: #d9e6f2; padding: 12px; border-radius: 8px; }
+  .msg { background: #fff; border-radius: 12px 12px 12px 4px; padding: 10px 14px; margin: 0 0 4px; white-space: pre-line; box-shadow: 0 1px 2px #0002; }
+  .kb { display: flex; gap: 4px; margin: 0 0 14px; }
+  .kb span { flex: 1; text-align: center; background: #ffffffaa; border-radius: 8px; padding: 6px; font-size: 14px; color: #2c6db5; }
+</style>
+</head>
+<body>
+<main>
+<p class="note">Набросок, не дизайн: только то, что меняется. Новое выделено зелёным. Точные тексты — в спеке.</p>
+
+<h2>Настройки → «Мои платформы»</h2>
+<div class="box">
+  <div class="row">☑ ПК</div>
+  <div class="row">☑ PlayStation 5</div>
+  <div class="row">☐ Xbox Series X|S</div>
+  <div class="row">☐ Nintendo Switch 2</div>
+  <div class="row">☐ Nintendo Switch</div>
+  <div class="row"><span class="new">☑ Meta Quest</span></div>
+</div>
+
+<h2>Поиск: строка под названием игры</h2>
+<div class="box">
+  <b>Asgard's Wrath 2</b> · 2023<br>
+  <span class="muted">Ролевая · <span class="new">Meta Quest</span></span>
+  <hr>
+  <b>Beat Saber</b> · 2019<br>
+  <span class="muted">Ритм · ПК, PS4, <span class="new">Meta Quest</span></span>
+  <p class="muted">«Meta Quest» один раз, есть ли у игры Quest 3, Quest 2 или первый Quest.</p>
+</div>
+
+<h2>Карточка игры (веб)</h2>
+<div class="box">
+  <b>Beat Saber</b><br>
+  <div class="row">ПК — 21 мая 2019 ☑ играю здесь</div>
+  <div class="row"><span class="new">Meta Quest — 21 мая 2019 (версия для Quest) ☑ играю здесь</span></div>
+  <div class="links row">
+    <a href="#">Открыть в Steam</a>
+    <a href="#" class="new">Открыть в магазине Meta</a>
+  </div>
+  <p class="muted">Ссылка ведёт на страницу игры в магазине Meta, если IGDB её знает; иначе — на поиск магазина по названию.</p>
+</div>
+
+<h2>Лента</h2>
+<div class="box">
+  <div class="row"><b>Скоро</b></div>
+  <div class="row">14 марта · Новая VR-игра — <span class="new">Выход на Meta Quest</span></div>
+  <div class="row">2 апреля · Другая игра — <span class="new">Выход на ПК и Meta Quest</span></div>
+</div>
+
+<h2>Telegram: сообщение о выходе</h2>
+<div class="tg">
+  <div class="msg">🎮 Новая VR-игра <span class="new">вышла на Meta Quest</span></div>
+  <div class="kb"><span>Карточка</span><span class="new">Открыть в магазине Meta</span></div>
+  <div class="msg">🎮 Другая игра вышла на ПК и Meta Quest</div>
+  <div class="kb"><span>Карточка</span><span class="new">Открыть в магазине Meta</span></div>
+  <p class="muted">Выход в один день на нескольких платформах — одно сообщение, как сейчас. Кнопка магазина появляется, когда среди платформ сообщения есть Meta Quest.</p>
+</div>
+
+<h2>Telegram: прислали ссылку на магазин Meta</h2>
+<div class="tg">
+  <div class="msg" style="border-radius:12px 12px 4px 12px; margin-left:60px; background:#effdde">https://www.meta.com/experiences/…/</div>
+  <div class="msg">[обложка]
+Это оно?
+<b>Asgard's Wrath 2</b> · игра · 2023
+Meta Quest</div>
+  <div class="kb"><span>✅ Да</span><span>❌ Нет</span></div>
+  <p class="muted">Без вопроса «Что это?» — как сейчас со ссылкой Steam. IGDB не знает игру по этой ссылке — пост уходит во «Входящие», как с любой ненайденной ссылкой.</p>
+</div>
+</main>
+</body>
+</html>

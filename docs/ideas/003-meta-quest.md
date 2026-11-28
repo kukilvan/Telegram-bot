@@ -1,6 +1,6 @@
 # Idea 003: Meta Quest as a platform of games
 
-Status: planned — stage 6.5, taken in by its description
+Status: taken in by `.scratch/6-5-meta-quest/description.md` (stage 6.5)
 Added: 2026-11-28
 
 ## Why
@@ -15,6 +15,7 @@ The owner plays VR games on a Meta Quest 3 and buys them in the Meta store (Meta
 4. A game IGDB lists only for Quest 2 or the first Quest shows its date with the version: «Meta Quest — 12 мая 2024 (версия для Quest 2)».
 5. On the release day on Quest a message comes by the usual delivery rules (summary at 15:00, quiet hours, work days), with a link button «Открыть в магазине Meta» under it.
 6. Expansions and new games of a series coming out on Meta Quest come as usual (stage 6.3), since Meta Quest is now one of «Мои платформы».
+7. The owner forwards a post with a link to a game in the Meta store: the bot sends «Это оно?» at once, as for a Steam link (added by the description of 6.5).
 
 ## Behaviour
 
