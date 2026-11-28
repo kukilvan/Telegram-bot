@@ -2,6 +2,14 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-28 — Description 6.5
+
+- `.scratch/6-5-meta-quest/description.md` (accepted) takes in idea 003; mockup `mockups/quest-pieces.html` (the changed pieces of Settings, Search, card, Feed and bot messages).
+- Meta Quest is one platform `meta_quest` for Quest 3, Quest 2 and the first Quest (the two older headsets are older platforms of it, so «the older platform» grows to several); the label «Meta Quest» everywhere, last in the table; dates, release messages, no prices.
+- Decisions of the owner: the link text «Открыть в магазине Meta» (not «Meta Horizon Store»: shorter on a Telegram button, survives a rename); a Meta store link sent to the bot gives «Это оно?» at once, like a Steam link (added to idea 003 and `docs/project-spec.md`).
+- By the agent: a release on several platforms on one day stays one message (idea 003 said two), the store button under it when Meta Quest is among them. No known issues or review wishes fit. Proposed split: 2 tickets (platform; Meta store link and the bot link).
+- Moved out of `PROJECT_CONTEXT.md` (budget): the Next step 7.4 named the files it updates («Environment», «Run» of `CLAUDE.md`, «Session on the owner's PC» of `docs/workflow.md`) — they are in `docs/project-spec.md`, 7.4.
+
 ## 2026-11-26 — Answer to the NAS project (outside the chain)
 
 - The NAS project's ten questions (its message of 2026-11-25) answered in `.scratch/7-3-nas-readiness/nas-answer.md`; the owner hands it over with the `master` commit.

@@ -1,6 +1,6 @@
 # Stage 6.5: Meta Quest as a platform of games
 
-Status: in review
+Status: accepted
 
 Terms come from `CONTEXT.md`. This stage takes in idea 003 (`docs/ideas/003-meta-quest.md`); the idea stays the detailed reference for scenarios, edge cases and tests, this file is the source of truth where they differ. Decisions it leans on: ADR 0009 (no PlayStation prices — the same reasoning keeps Meta store prices out), ADR 0010 (the bot takes posts and links for adding), ADR 0011 (a followed expansion is a game of its own). Mockup: `mockups/quest-pieces.html` (no new screens; the pieces of existing ones that change). Done while stage 7.4 waits for the NAS project's report.
 
