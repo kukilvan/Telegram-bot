@@ -6,8 +6,8 @@ source is a `Suggestion`. Every request goes through `Titles` (the search of the
 link): ahead of the paced polling, and each record marked with its title when it is in the list.
 
 - Links: each of the first 3 links of a source is looked up (a Steam number IGDB does not know gives the name Steam
-  calls it, a name candidate of the game); the item's kind is the kind of the first offer. A kind press looks the
-  links of that kind up again, before its candidates (8.3 of 9.1d).
+  calls it, a name candidate of the game; a Meta store number it does not know gives nothing); the item's kind is the
+  kind of the first offer. A kind press looks the links of that kind up again, before its candidates (8.3 of 9.1d).
 - Candidates: those whose weight is at least half of the first one's, at most 3; a candidate's records that match it
   by the name key — exact, then prefix — at most 2, new first (5.3); the first candidate alone, with no match, takes the
   source's first record as a weak offer. A name message of 2 words or more with no match is searched again without one
@@ -28,7 +28,7 @@ from datetime import date
 from difflib import SequenceMatcher
 from typing import TYPE_CHECKING, Any
 
-from app.tracker.candidates import IMDB, STEAM, WHOLE, Candidate, SourceLink, name_key
+from app.tracker.candidates import IMDB, META, STEAM, WHOLE, Candidate, SourceLink, name_key
 from app.tracker.errors import SourceFailed, SourceNotConfigured
 from app.tracker.models import TitleKind
 from app.tracker.offer_cards import CORRECTED, HEADING, Offer, offer_of
@@ -250,6 +250,8 @@ class OfferSearch:
             source = self.pollers.of(link.kind).source
         except KeyError:  # the core has no source of that kind
             return [], None
+        if link.source == META:  # nothing is asked of the Meta store: a number IGDB does not know gives no name
+            return await self.titles.look_up(source, lambda: source.suggest_by_meta(link.ref)), None
         if link.source != STEAM:
             return await self.titles.look_up(source, lambda: _listed(source.suggest_by_id(link.ref))), None
         records = await self.titles.look_up(source, lambda: source.suggest_by_steam(link.ref))

@@ -6,7 +6,7 @@ Parsing is pure (response in, data out) and is tested on saved real responses. T
 Only the games themselves count (spec 4.2 of part 6.1): a main game, a standalone expansion, a remake, a remaster, an
 expanded game and a port, and a record that is no edition of another game (`version_parent`). DLC, bundles, mods,
 updates, episodes and every edition are left out. A link sent to the bot is looked up by its record itself (its number
-in IGDB or the number of its app in Steam, `external_games`): any type of record counts there.
+in IGDB or the number of its app in Steam or in the Meta store, `external_games`): any type of record counts there.
 
 The own query also asks the languages of the game (`language_supports`, spec 5.5 of stage 9.1b): Russian is language
 22, its text the support types 2 (subtitles) and 3 (interface), its voice type 1 (audio); a list of languages without
@@ -43,9 +43,8 @@ _SUGGESTION_FIELDS = (
 SEARCH_QUERY = 'search "{query}"; ' + _SUGGESTION_FIELDS + f"{_ONLY_GAMES}; limit 10;"
 # a link sent to the bot names the record itself, so any type of record counts (an expansion is followed too, ADR 0011)
 BY_ID_QUERY = _SUGGESTION_FIELDS + "where id = {id};"
-BY_STEAM_QUERY = (
-    _SUGGESTION_FIELDS + 'where external_games.uid = "{uid}" & external_games.external_game_source = 1; limit 10;'
-)
+_BY_STORE = _SUGGESTION_FIELDS + 'where external_games.uid = "{{uid}}" & external_games.external_game_source = {}; limit 10;'
+BY_STEAM_QUERY, BY_META_QUERY = _BY_STORE.format(1), _BY_STORE.format(28)  # `STEAM_SOURCE`, `META_STORE_SOURCE`
 GAME_QUERY = (
     "fields name,game_type,version_parent,parent_game.name,first_release_date,summary,genres.name,cover.image_id,platforms,"
     "alternative_names.name,alternative_names.comment,release_dates.date,release_dates.date_format,release_dates.y,"
@@ -61,6 +60,7 @@ _RELEASE_TYPES = {None: FULL, 6: FULL, 3: EARLY, 5: CANCELLED}
 
 STEAM_SOURCE = 1  # `external_game_source`: the number of the app in Steam
 PS_STORE_SOURCE = 36  # «Playstation Store US»: the number of the concept
+META_STORE_SOURCE = 28  # «Oculus»: the number of the app in the Meta store
 
 COVER_URL = "https://images.igdb.com/igdb/image/upload/t_cover_big/{}.jpg"
 
@@ -228,10 +228,12 @@ def read_releases(raw: list[dict[str, Any]] | None) -> tuple[Release, ...]:
     )
 
 
-def _store_id(external: list[dict[str, Any]] | None, source: int) -> str | None:
+def _store_id(external: list[dict[str, Any]] | None, source: int, digits: bool = False) -> str | None:
+    """`digits`: only a number counts — it goes into an address, and with anything else the link is a search."""
     for entry in external or ():
         if entry.get("external_game_source") == source:
-            return str(entry.get("uid") or "").strip() or None
+            uid = str(entry.get("uid") or "").strip()
+            return uid if uid and (uid.isdigit() or not digits) else None
     return None
 
 
@@ -278,11 +280,11 @@ def russian_support(raw: dict[str, Any]) -> Support | None:
 
 def parse_state(raw: dict[str, Any]) -> GameState:
     external = raw.get("external_games")
-    concept = _store_id(external, PS_STORE_SOURCE)
     expansion, parent = expansion_with_parent(raw)
     return GameState(
         steam_id=_store_id(external, STEAM_SOURCE),
-        ps_concept=concept if concept and concept.isdigit() else None,  # anything else: the link is a search
+        ps_concept=_store_id(external, PS_STORE_SOURCE, digits=True),
+        meta_store_id=_store_id(external, META_STORE_SOURCE, digits=True),
         platforms=known_platforms(raw.get("platforms")),
         releases=read_releases(raw.get("release_dates")),
         expansion=expansion,
@@ -352,6 +354,12 @@ class IgdbGameSource:
         one, none for an app IGDB does not know. Goes at once."""
         self._check_keys()
         return parse_records(await self._provider.games(BY_STEAM_QUERY.format(uid=int(app_id)), at_once=True))
+
+    async def suggest_by_meta(self, store_id: str) -> list[Suggestion]:
+        """The games IGDB knows by this number of an app in the Meta store (`external_games`, source 28), in one
+        request; none for an app IGDB does not know. Goes at once."""
+        self._check_keys()
+        return parse_records(await self._provider.games(BY_META_QUERY.format(uid=int(store_id)), at_once=True))
 
     async def companies(self, names: Sequence[str]) -> frozenset[str]:
         """The name keys of those `names` that are companies of IGDB (`igdb_companies`), in one request that goes at

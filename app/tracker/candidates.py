@@ -76,9 +76,9 @@ class Candidate:
 
 @dataclass(frozen=True)
 class SourceLink:
-    """A link of a source read into what it points at: `source` is `steam`, `tmdb_movie`, `tmdb_tv`, `shikimori` or
-    `imdb`; `ref` the number (`tt…` for IMDb); `kind` the kind of title it gives (`None` for IMDb, whose lookup
-    finds out); `prefix` the letter before a Shikimori number, if any."""
+    """A link of a source read into what it points at: `source` is `steam`, `meta` (the Meta store), `tmdb_movie`,
+    `tmdb_tv`, `shikimori` or `imdb`; `ref` the number (`tt…` for IMDb); `kind` the kind of title it gives (`None` for
+    IMDb, whose lookup finds out); `prefix` the letter before a Shikimori number, if any."""
 
     source: str
     ref: str
@@ -259,14 +259,19 @@ _STEAM_HOST, _TMDB_HOST, _SHIKIMORI_HOST, _IMDB_HOST = (
     re.compile(host) for host in (r"store\.steampowered\.com", r"themoviedb\.org", r"shikimori\.[a-z]+", r"imdb\.com")
 )
 _STEAM_APP = re.compile(r"^/app/(\d+)", re.I)
+_META_HOST = re.compile(r"(?:meta|oculus)\.com")
+# «/experiences/<number>», with a slug or the word of an old store before the number and a language before it all; the
+# search of the store, its front page and short share links are ordinary links (spec 7.1 of stage 6.5)
+_META_APP = re.compile(r"^/(?:[a-z]{2}[-_][a-z]{2}/)?experiences/(?:(?!search/)[^/]+/)?(\d{6,})(?:/|$)", re.I)
 _TMDB_MOVIE = re.compile(rf"{_TMDB_PREFIX}movie/{_NUMBER}", re.I)
 _TMDB_TV = re.compile(rf"{_TMDB_PREFIX}tv/{_NUMBER}", re.I)
 _SHIKIMORI_ANIME = re.compile(r"^/animes/([a-z]?\d+)(?:-[^/]*)?(?:/|$)", re.I)
 _IMDB_TITLE = re.compile(r"^/(?:[a-z]{2}/)?title/(tt\d+)", re.I)
 _GAME, _MOVIE, _SERIES, _ANIME = TitleKind.GAME, TitleKind.MOVIE, TitleKind.SERIES, TitleKind.ANIME
-STEAM, IMDB = "steam", "imdb"  # the sources of links that are looked up in their own way (`offers`)
+STEAM, META, IMDB = "steam", "meta", "imdb"  # the sources of links that are looked up in their own way (`offers`)
 _LINK_RULES = (  # host, path, source, kind
     (_STEAM_HOST, _STEAM_APP, STEAM, _GAME),
+    (_META_HOST, _META_APP, META, _GAME),
     (_TMDB_HOST, _TMDB_MOVIE, "tmdb_movie", _MOVIE),
     (_TMDB_HOST, _TMDB_TV, "tmdb_tv", _SERIES),
     (_SHIKIMORI_HOST, _SHIKIMORI_ANIME, "shikimori", _ANIME),

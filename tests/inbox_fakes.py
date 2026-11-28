@@ -137,9 +137,10 @@ class FakeIgdb(_Fake):
         if search := re.match(r'search "(.*?)";', body):
             self._note(f"game:{search.group(1)}")
             return self.answers.get(f"game:{search.group(1)}") or []
-        if steam := re.search(r'external_games.uid = "(\d+)"', body):
-            self._note(f"steam:{steam.group(1)}")
-            return self.answers.get(f"igdb-games-by-steam:{steam.group(1)}") or []
+        if linked := re.search(r'external_games.uid = "(\d+)" & external_games.external_game_source = (\d+)', body):
+            number, store = linked.group(1), {"1": "steam", "28": "meta"}[linked.group(2)]
+            self._note(f"{store}:{number}")
+            return self.answers.get(f"igdb-games-by-{store}:{number}") or []
         number = re.search(r"where id = (\d+);", body).group(1)
         self._note(f"id:{number}")
         record = _record(self.answers, "game:", number) or _record(self.answers, "igdb-games-by-steam:", number)

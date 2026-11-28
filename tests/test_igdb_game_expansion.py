@@ -76,8 +76,9 @@ def test_a_snapshot_stored_before_the_stage_reads_as_no_expansion():
     old = {"steam_id": "292030", "ps_concept": None, "platforms": [6], "releases": []}
     state = GameState.from_state(old)
     assert (state.expansion, state.parent) == (None, None)
-    # a game keeps the shape of its snapshot; `known` now says what it could see (spec 5 of stage 6.5)
-    assert state.state() == {**old, "known": [6, 48, 49, 130, 167, 169, 508]}
+    # a game keeps the shape of its snapshot; `known` now says what it could see, and there is no number of the Meta
+    # store until the next poll (spec 5 and 8 of stage 6.5)
+    assert state.state() == {**old, "meta_store_id": None, "known": [6, 48, 49, 130, 167, 169, 508]}
 
 
 @pytest.mark.parametrize(

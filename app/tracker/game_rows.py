@@ -15,7 +15,9 @@ from app.tracker.feed_rows import FeedTitle, Piece
 from app.tracker.game_events import older_tells, platforms_text
 from app.tracker.games import FULL, GameState, PlatformDates, has_platform, igdb_numbers, platform_dates, released_by
 from app.tracker.release_dates import NOT_ANNOUNCED_LABEL, ReleaseDate
-from app.tracker.platforms import NO_REGION, PLATFORMS, REGION_WORDS, STORE_COUNTRIES, Platform, steam_url
+from app.tracker.platforms import (
+    NO_REGION, PLATFORMS, REGION_WORDS, STORE_COUNTRIES, Platform, meta_store_url, steam_url,
+)
 
 CANCELLED_LABEL = "отменена"
 NO_PLATFORMS = "Платформы пока не объявлены"
@@ -127,12 +129,16 @@ def playstation_link(
 def store_links(game: GameState, mine: Collection[Platform], country: str, original_name: str) -> tuple[StoreLink, ...]:
     """Steam, when the game has its number and ПК is one of the owner's; PlayStation Store (`playstation_link`): the
     page of the concept, else a search by the original name. The link of a concept is `checked` for the web: it leads
-    through the check of the page (KI-37)."""
+    through the check of the page (KI-37). The Meta store (`meta_store_url`: the page, else a search), when Meta Quest
+    is one of the owner's and the game is on it."""
     links = []
     if game.steam_id and Platform.PC in mine:
         links.append(StoreLink("Открыть в Steam", "Steam", steam_url(game.steam_id)))
     if (found := playstation_link(game, mine, country, original_name)) is not None:
         links.append(StoreLink("Открыть в PlayStation Store", "PS Store", found.url, checked=found.concept is not None))
+    if Platform.META_QUEST in mine and has_platform(game, Platform.META_QUEST):
+        url = meta_store_url(game.meta_store_id, original_name)
+        links.append(StoreLink("Открыть в магазине Meta", "Магазин Meta", url))
     return tuple(links)
 
 

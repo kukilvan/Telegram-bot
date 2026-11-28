@@ -111,6 +111,7 @@ class GameState:
 
     steam_id: str | None = None
     ps_concept: str | None = None  # the number of the concept in PlayStation Store; None — a search is the link
+    meta_store_id: str | None = None  # the number of the app in the Meta store; None — a search is the link
     platforms: tuple[int, ...] = ()  # the IGDB platforms the tracker knows, ascending
     releases: tuple[Release, ...] = ()
     expansion: str | None = None  # `EXPANSION`, `STANDALONE` or None: not an expansion
@@ -119,7 +120,8 @@ class GameState:
     known: tuple[int, ...] = KNOWN_NOW  # ascending
 
     def state(self) -> dict[str, Any]:
-        state = {"steam_id": self.steam_id, "ps_concept": self.ps_concept, "platforms": list(self.platforms)}
+        state = {"steam_id": self.steam_id, "ps_concept": self.ps_concept, "meta_store_id": self.meta_store_id}
+        state["platforms"] = list(self.platforms)
         state["releases"] = [release.state() for release in self.releases]
         state["known"] = list(self.known)
         if self.expansion is not None:
@@ -139,6 +141,7 @@ class GameState:
         return cls(
             steam_id=data.get("steam_id"),
             ps_concept=data.get("ps_concept"),
+            meta_store_id=data.get("meta_store_id"),
             platforms=tuple(int(number) for number in data.get("platforms") or ()),
             releases=tuple(Release.from_state(release) for release in data.get("releases") or ()),
             expansion=expansion,

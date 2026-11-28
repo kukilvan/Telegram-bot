@@ -10,11 +10,14 @@ import logging
 from collections.abc import Sequence
 from dataclasses import replace
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import delete, select
 
 from app.tracker import delivery, price_events
-from app.tracker.actions import CARD, FOLDED_STEAM_LABEL, FOLLOW, STEAM, WATCHED, Action, event_actions, steam_action
+from app.tracker.actions import (
+    CARD, FOLDED_STEAM_LABEL, FOLLOW, META, STEAM, WATCHED, Action, event_actions, steam_action,
+)
 from app.tracker.context import CoreContext, naive_utc
 from app.tracker.models import DeliveryItem, DeliveryStatus, Event, Title
 from app.tracker.results import DeliveryReport, SummaryResult
@@ -140,17 +143,17 @@ class DeliveryService:
                 continue
             title = _button_name(names.get(lead.title_id, ""))
             announced = lead.data.get("sequel_title") or title  # «Следить» is never cut, its name too (spec 6.5)
-            for action in event_actions(lead.type, lead.event_id, lead.title_id, lead.data):
+            for action in event_actions(lead.type, lead.event_id, lead.title_id, _button_data(unit)):
                 if (action.name, action.arg) in shown:
                     continue
                 shown.add((action.name, action.arg))
                 name = announced if action.name == FOLLOW else title  # «Следить» names the announced game, the rest the event's title
                 actions.append(replace(action, label=f"{action.label}: {name}") if name else action)
         # «Следить» is never cut: a sequel announcement has no card or list entry to follow from. The rest fill
-        # what is left of the limit, «Посмотрел», then «Открыть в Steam», then «Карточка», and are reached from «Мои
-        # тайтлы» if cut.
+        # what is left of the limit, «Посмотрел», then «Открыть в Steam», then «Открыть в магазине Meta», then
+        # «Карточка», and are reached from «Мои тайтлы» if cut.
         follow = [a for a in actions if a.name == FOLLOW]
-        rest = [a for name in (WATCHED, STEAM, CARD) for a in actions if a.name == name]
+        rest = [a for name in (WATCHED, STEAM, META, CARD) for a in actions if a.name == name]
         return follow + rest[: max(0, MAX_SUMMARY_BUTTONS - len(follow))]
 
     async def finish_sends(self, timeout: float) -> bool:
@@ -225,4 +228,11 @@ def _unit_actions(unit: delivery.Unit) -> list[Action]:
         games = price_events.steam_ids(m.data for m in unit.members)[:MAX_SUMMARY_BUTTONS]
         return [steam_action(steam_id, f"{FOLDED_STEAM_LABEL}: {_button_name(name)}") for name, steam_id in games]
     item = unit.lead
-    return event_actions(item.type, item.event_id, item.title_id, item.data) if item is not None else []
+    return event_actions(item.type, item.event_id, item.title_id, _button_data(unit)) if item is not None else []
+
+
+def _button_data(unit: delivery.Unit) -> dict[str, Any]:
+    """The payload the buttons of a unit with a lead are made from: the lead's, with the Meta store address of any
+    member (a game folded over several platforms is led by the first of them, ПК, which has none)."""
+    meta_url = next((m.data["meta_url"] for m in unit.members if m.data.get("meta_url")), None)
+    return {**unit.lead.data, "meta_url": meta_url} if meta_url else unit.lead.data

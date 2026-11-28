@@ -142,6 +142,14 @@ class TestSamples:
                 game_events.sample_two_platforms_events,
             )
         )
+        self.register(
+            TestSample(
+                game_events.SAMPLE_META_ID,
+                game_events.SAMPLE_META_LABEL,
+                lambda: game_events.sample_meta_events()[0][1],
+                game_events.sample_meta_events,
+            )
+        )
         # events of the real types (Steam, Russian): their buttons open Steam as the real ones do
         for sample_id, label, events in price_events.TEST_SAMPLES + russian_events.TEST_SAMPLES:
             self.register(TestSample(sample_id, label, lambda events=events: events()[0][1], events))

@@ -117,6 +117,11 @@ In code: `price history` (table `price_history`, a record — `PriceRecord`; «�
 A game's page in the Steam store; its number (`steam_id`) comes from IGDB. When IGDB first learns the number of a game whose prices would be checked, the message «появилась страница в Steam» comes — once per game.
 In code: `steam page`. The number is `steam_id`; where the core keeps what Steam was asked about — the price look and the price history — it is `appid`, the name Steam answers by (a key of stored snapshots and a column, so it stays, rule 5).
 
+**Магазин Meta** (Meta store):
+The store of the apps of the Quest headsets. A game's page there is found by its number from IGDB; when IGDB knows none, the link is the store's search by the original name. The link stands in the card when Meta Quest is among «Мои платформы» and the game is on it, and as a button under the message of a release on Meta Quest; a link to the page sent to the bot is offered like a Steam link. The tracker asks the store nothing: no prices, no check of the page.
+_Avoid_: Oculus Store, магазин Oculus (the old name)
+In code: `meta store`: the number `meta_store_id`, the address `meta_store_url`, the payload key `meta_url`, the action `META`; the source of a link of an inbox item — `meta` (`suggest_by_meta`).
+
 **Проверка цен** (price check):
 Every 6 hours the tracker asks Steam about the prices of games in «Хочу» that have a Steam page and the checkmark «играю здесь» on PC (and PC among «Мои платформы») — all in one request. The first check after a game became such (added, checkmark set, restored to the list) and after the store country changed is a reference point, without messages. A press that makes a game no longer such («Начал играть», «Прошёл», «Бросил», the checkmark taken off, PC taken out of «Мои платформы») ends its price check at once: its snapshot and its undelivered Steam messages go in the press itself. The events of one check are queued together, so two discounts come as one message.
 In code: `price check` (the snapshot of source `steam`; what one check saw of a game — `PriceLook`, what Steam answered — its `answer`). The rule «игра для цен» — which games have their prices checked and by which number — is `steam_number`; without the number (the card shows its block even before the page in Steam) it is `reports_prices`.
@@ -297,5 +302,5 @@ _Avoid_: все платформы
 In code: `my platforms` (setting `my_platforms`).
 
 **Страна магазинов** (store country):
-The country of the owner's Steam and PlayStation accounts (default Israel). It picks the region of a game's release dates, the store in the PlayStation Store link and the Steam prices (their currency).
+The country of the owner's Steam and PlayStation accounts (default Israel). It picks the region of a game's release dates, the store in the PlayStation Store link and the Steam prices (their currency). The link to the Meta store is the same in every country: the store picks the language and the currency itself.
 In code: `store country` (setting `store_country`, table `STORE_COUNTRIES`).

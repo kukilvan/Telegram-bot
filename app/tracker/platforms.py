@@ -7,6 +7,7 @@ card and the list of a message.
 
 from dataclasses import dataclass
 from enum import StrEnum
+from urllib.parse import quote
 
 
 class Platform(StrEnum):
@@ -107,3 +108,11 @@ def steam_url(steam_id: str) -> str:
     """The page of a game in the Steam store (the same in every country): the link of the card and the button under
     the messages of Steam."""
     return f"https://store.steampowered.com/app/{steam_id}/"
+
+
+def meta_store_url(meta_store_id: str | None, original_name: str) -> str:
+    """The page of a game in the Meta store by its number; no number — the store's search by the original name (the
+    store is in English). The same in every country, and never asked by the tracker (spec 6.2 of stage 6.5)."""
+    if meta_store_id:
+        return f"https://www.meta.com/experiences/{meta_store_id}/"
+    return f"https://www.meta.com/experiences/search/?q={quote(original_name, safe='')}"

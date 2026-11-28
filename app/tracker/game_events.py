@@ -22,7 +22,7 @@ from app.tracker.release_dates import NOT_ANNOUNCED, ReleaseDate
 from app.tracker.kinds import KINDS
 from app.tracker.models import TitleKind
 from app.tracker.movie_events import DetectedEvent, day_start
-from app.tracker.platforms import PLATFORMS, Platform
+from app.tracker.platforms import PLATFORMS, Platform, meta_store_url
 from app.tracker.sources.dates import parse_date
 
 _ICON = KINDS[TitleKind.GAME].icon
@@ -160,6 +160,7 @@ def detect_events(
     observed_at: datetime,
     today: date,
     since: date,
+    original_name: str = "",
 ) -> list[DetectedEvent]:
     """Events between the previous snapshot (taken at `observed_at`) and the new one (taken `today`), for the platforms
     the owner is told about (`told`, see `reported`) that the game has in the new snapshot and that are not cancelled.
@@ -167,7 +168,10 @@ def detect_events(
     told when it came out not earlier than 30 days before it, and named by its day when it is earlier than yesterday.
 
     `new` must already keep the dates the source dropped (`games.carry_over`). It is compared restricted to the numbers
-    `old` knew (spec 5 of stage 6.5): the dates of a number taken later come with no event on this poll."""
+    `old` knew (spec 5 of stage 6.5): the dates of a number taken later come with no event on this poll.
+
+    A release on Meta Quest («вышла», «вышла в раннем доступе») carries `meta_url`, the address of the game in the Meta
+    store as of now (`meta_store_url`: its page, else a search by `original_name`, by `name` without one)."""
     observed_on = observed_at.date()
     new = new.seen_as(old.known)
     events: list[DetectedEvent] = []
@@ -192,6 +196,8 @@ def detect_events(
             if via and older_tells(platform, told):
                 return  # the older platform tells it
             data = {"name": name, "platform": platform.value, "via": via or "", **data}
+            if platform is Platform.META_QUEST and event_type in (RELEASED, EARLY_ACCESS):
+                data["meta_url"] = meta_store_url(new.meta_store_id, original_name or name)
             text = message(event_type, name, [(platform, data["via"])], data)
             happened_at = day_start(out.start) if out is not None else None  # `out`: the exact day it came out
             events.append(DetectedEvent(event_type, key, text, data, earlier, happened_at))
@@ -248,6 +254,19 @@ def sample_two_platforms_events() -> list[tuple[str, dict[str, Any]]]:
         _sample(RELEASED, Platform.PC, date="2026-10-31"),
         _sample(RELEASED, Platform.PS5, date="2026-10-31"),
     ]
+
+
+SAMPLE_META_ID = "game-released-quest"
+SAMPLE_META_LABEL = "Игра: вышла на Meta Quest"
+_SAMPLE_META_GAME = ("Asgard's Wrath II", "2603836099654226")  # the name and the number in the Meta store
+
+
+def sample_meta_events() -> list[tuple[str, dict[str, Any]]]:
+    """A release on Meta Quest as a real event (type and payload): its button opens the Meta store as the real ones do."""
+    name, store_id = _SAMPLE_META_GAME
+    payload = {"name": name, "platform": Platform.META_QUEST.value, "via": "", "date": "2023-12-15"}
+    payload["meta_url"] = meta_store_url(store_id, name)
+    return [(RELEASED, {"text": message(RELEASED, name, [(Platform.META_QUEST, "")], payload), **payload})]
 
 
 # (id, menu label, message text) of the sample events in «Тестовое событие»; the core turns them into menu entries
