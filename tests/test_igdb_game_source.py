@@ -240,7 +240,8 @@ def test_every_saved_game_becomes_its_state(name):
     snapshot = parse_game(game(name))
 
     # the saved answers were taken before the query asked the languages (stage 9.1b): no list — `russian` is null
-    assert snapshot.state() == {**EXPECTED_STATES[name], "russian": None}
+    # `known`: every IGDB number of the table (spec 5 of stage 6.5)
+    assert snapshot.state() == {**EXPECTED_STATES[name], "russian": None, "known": [6, 48, 49, 130, 163, 167, 169, 384, 386, 471, 508]}
     assert snapshot.external_id == str(GAMES[name])
 
 

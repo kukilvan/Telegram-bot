@@ -71,14 +71,15 @@ def warnings_about(caplog, word):
 # --- the tables ---------------------------------------------------------------------------------
 
 
-def test_the_five_platforms_are_in_the_order_of_the_settings_with_their_labels_and_numbers():
-    assert [p.value for p in PLATFORMS] == ["pc", "ps5", "xbox_series", "switch_2", "switch"]
-    assert [(i.settings_label, i.label, i.igdb_id) for i in PLATFORMS.values()] == [
-        ("ПК", "ПК", 6),
-        ("PlayStation 5", "PS5", 167),
-        ("Xbox Series X|S", "Xbox Series X|S", 169),
-        ("Nintendo Switch 2", "Switch 2", 508),
-        ("Nintendo Switch", "Switch", 130),
+def test_the_six_platforms_are_in_the_order_of_the_settings_with_their_labels_and_numbers():
+    assert [p.value for p in PLATFORMS] == ["pc", "ps5", "xbox_series", "switch_2", "switch", "meta_quest"]
+    assert [(i.settings_label, i.label, i.igdb_ids) for i in PLATFORMS.values()] == [
+        ("ПК", "ПК", (6, 163)),  # Windows and SteamVR (spec 1.1 of stage 6.5)
+        ("PlayStation 5", "PS5", (167,)),
+        ("Xbox Series X|S", "Xbox Series X|S", (169,)),
+        ("Nintendo Switch 2", "Switch 2", (508,)),
+        ("Nintendo Switch", "Switch", (130,)),
+        ("Meta Quest", "Meta Quest", (471, 386, 384)),  # Quest 3, Quest 2, the first Quest
     ]
 
 
@@ -89,6 +90,7 @@ def test_a_newer_console_knows_the_older_one_it_runs_the_games_of():
         Platform.XBOX_SERIES: OlderPlatform("Xbox One", 49),
         Platform.SWITCH_2: OlderPlatform("Switch", 130),
         Platform.SWITCH: None,
+        Platform.META_QUEST: None,  # the Quest headsets are its own numbers, not older platforms
     }
 
 
@@ -119,7 +121,7 @@ def test_nothing_stored_reads_as_pc_and_ps5_and_israel_with_the_choices_of_the_t
     assert view.saved.my_platforms == ["pc", "ps5"] and view.saved.store_country == "il"
     assert [(c.value, c.label) for c in view.platforms] == [
         ("pc", "ПК"), ("ps5", "PlayStation 5"), ("xbox_series", "Xbox Series X|S"), ("switch_2", "Nintendo Switch 2"),
-        ("switch", "Nintendo Switch"),
+        ("switch", "Nintendo Switch"), ("meta_quest", "Meta Quest"),
     ]
     assert [(c.value, c.label) for c in view.countries][:3] == [
         ("gb", "Великобритания"), ("de", "Германия"), ("il", "Израиль")

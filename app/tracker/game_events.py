@@ -6,7 +6,9 @@ Pure: no database, no network. The previous and the new snapshot are read for th
 («4 квартал 2026», «2027») changes silently. One event per platform keeps the dedup keys exact; one game is still one
 line of a message: `fold_key` tells `delivery.fold` which events go together, `message` writes the line of all of them.
 A release is told when its day is not earlier than 30 days before the tracker began following the game, and named by its
-day when it is earlier than yesterday (KI-36, spec 1.2 of stage 9.1b).
+day when it is earlier than yesterday (KI-36, spec 1.2 of stage 9.1b). The new snapshot is compared as the old one could
+see it: only the IGDB numbers the old one knew (`GameState.known`), so a number the tracker took later (SteamVR, the
+Quest headsets) is only recorded on its first poll (spec 5 of stage 6.5).
 """
 
 from collections.abc import Collection, Iterable, Mapping, Sequence
@@ -47,7 +49,7 @@ def older_tells(platform: Platform, told: Collection[Platform]) -> bool:
     """The older platform whose date this one took is itself a platform the owner is told about (Switch 2 ← Switch):
     that one gives the message."""
     older = PLATFORMS[platform].older
-    return older is not None and any(PLATFORMS[other].igdb_id == older.igdb_id for other in told)
+    return older is not None and any(older.igdb_id in PLATFORMS[other].igdb_ids for other in told)
 
 
 def _news(game_date: ReleaseDate, today: date, since: date) -> bool:
@@ -164,8 +166,10 @@ def detect_events(
     `since` is the day the tracker began following the game (the later of adding and «Вернуть в список»): a release is
     told when it came out not earlier than 30 days before it, and named by its day when it is earlier than yesterday.
 
-    `new` must already keep the dates the source dropped (`games.carry_over`)."""
+    `new` must already keep the dates the source dropped (`games.carry_over`). It is compared restricted to the numbers
+    `old` knew (spec 5 of stage 6.5): the dates of a number taken later come with no event on this poll."""
     observed_on = observed_at.date()
+    new = new.seen_as(old.known)
     events: list[DetectedEvent] = []
     for platform in Platform:
         if platform not in told:

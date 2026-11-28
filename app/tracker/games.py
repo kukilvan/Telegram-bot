@@ -7,17 +7,20 @@ whoever needs the dates reads it from the settings. Everything that depends on a
 The snapshot of a game holds every record of IGDB for the platforms the tracker knows, of every region (spec 4.3 of
 part 6.1); which of them is the date of the owner is decided here each time the dates are read, so a new country in the
 settings shows its dates at once and gives no messages (spec 5.2). Only the records of the regions of the country are its
-dates: a day only in Japan is none (KI-35, spec 1.1 of stage 9.1b). `GameState` also says whether the game is an expansion
+dates: a day only in Japan is none (KI-35, spec 1.1 of stage 9.1b). A platform with several own IGDB numbers (ПК with
+SteamVR, Meta Quest) takes the date that ends earliest among them (spec 2 of stage 6.5, ADR 0018); the snapshot remembers
+which numbers the tracker knew when it was taken (`known`), so a number added later gives no events on the first poll
+(spec 5 of stage 6.5). `GameState` also says whether the game is an expansion
 and of which game (spec 3.3 of stage 6.3), and what IGDB says about Russian in it (`russian`, spec 5.5 of stage 9.1b).
 """
 
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from typing import Any
 
 from app.tracker.movie_events import INTERVAL_NEAR, INTERVAL_QUIET, INTERVAL_SOON, INTERVAL_WAITING, NEAR, SOON
-from app.tracker.platforms import PLATFORMS, STORE_COUNTRIES, Platform
+from app.tracker.platforms import IGDB_LABELS, PLATFORMS, STORE_COUNTRIES, Platform
 from app.tracker.release_dates import ReleaseDate
 from app.tracker.russian import NOT_ASKED, IgdbRussian, Support, igdb_from_state, igdb_state
 
@@ -55,6 +58,12 @@ class Release:
         return cls(
             platform=int(data["platform"]), region=int(data["region"]), type=release_type, date=ReleaseDate.parse(data["date"])
         )
+
+
+# The IGDB numbers the tracker knows now (`GameState.known` of a new snapshot), and the ones a snapshot without the key
+# knew: the table before stage 6.5 (spec 5)
+KNOWN_NOW: tuple[int, ...] = tuple(sorted(IGDB_LABELS))
+KNOWN_BEFORE_6_5: tuple[int, ...] = (6, 48, 49, 130, 167, 169, 508)
 
 
 # What an expansion is (`GameState.expansion`): one that needs its game (IGDB type 2) or one played alone (type 4)
@@ -97,7 +106,8 @@ class GameState:
     """The part of a game that changes over time, as the snapshot stores it (`source_snapshots.state`, source `igdb`).
     `expansion` and `parent` are set together, only for an expansion (spec 3.3 of stage 6.3), and stored only then.
     `russian` — what IGDB says about Russian (`russian.Support`), None — IGDB has no languages, `NOT_ASKED` — a
-    snapshot from before stage 9.1b (no key)."""
+    snapshot from before stage 9.1b (no key). `known` — the IGDB numbers the tracker knew when the snapshot was taken
+    (its `platforms` and `releases` hold only them); a snapshot without the key is from before stage 6.5."""
 
     steam_id: str | None = None
     ps_concept: str | None = None  # the number of the concept in PlayStation Store; None — a search is the link
@@ -106,10 +116,12 @@ class GameState:
     expansion: str | None = None  # `EXPANSION`, `STANDALONE` or None: not an expansion
     parent: Parent | None = None
     russian: IgdbRussian = NOT_ASKED
+    known: tuple[int, ...] = KNOWN_NOW  # ascending
 
     def state(self) -> dict[str, Any]:
         state = {"steam_id": self.steam_id, "ps_concept": self.ps_concept, "platforms": list(self.platforms)}
         state["releases"] = [release.state() for release in self.releases]
+        state["known"] = list(self.known)
         if self.expansion is not None:
             state["expansion"] = self.expansion
             state["parent"] = self.parent.state() if self.parent is not None else None
@@ -132,6 +144,18 @@ class GameState:
             expansion=expansion,
             parent=Parent.from_state(raw_parent) if raw_parent is not None else None,
             russian=igdb_from_state(data),
+            known=tuple(sorted(int(number) for number in data["known"])) if "known" in data else KNOWN_BEFORE_6_5,
+        )
+
+    def seen_as(self, known: Iterable[int]) -> "GameState":
+        """The snapshot as a snapshot that knew only `known` would hold it: the platforms and the records of the other
+        numbers left out (the first poll after a number was added, spec 5 of stage 6.5)."""
+        numbers = set(known)
+        return replace(
+            self,
+            platforms=tuple(number for number in self.platforms if number in numbers),
+            releases=tuple(release for release in self.releases if release.platform in numbers),
+            known=tuple(sorted(numbers)),
         )
 
 
@@ -171,16 +195,34 @@ class PlatformDates:
 
 
 def igdb_numbers(platform: Platform) -> tuple[int, ...]:
-    """The IGDB numbers of a platform of the tracker: its own and its older one's."""
+    """The IGDB numbers of a platform of the tracker: its own ones and its older one's."""
     info = PLATFORMS[platform]
-    return (info.igdb_id, info.older.igdb_id) if info.older else (info.igdb_id,)
+    return info.igdb_ids + (info.older.igdb_id,) if info.older else info.igdb_ids
 
 
 def has_platform(game: GameState, platform: Platform) -> bool:
-    """The game is on the platform: its IGDB number or the number of its older platform is in `platforms` or in the
-    records (spec 5.3)."""
+    """The game is on the platform: one of its own IGDB numbers or the number of its older platform is in `platforms`
+    or in the records (spec 5.3)."""
     present = set(game.platforms) | {release.platform for release in game.releases}
     return any(number in present for number in igdb_numbers(platform))
+
+
+def _soonest_end(game_date: ReleaseDate) -> tuple[bool, date, int]:
+    """Sort key among the own numbers of a platform: the earlier end first; equal ends — the narrower one (the later
+    start: «31 декабря 2026» before «2026»); «not announced» last."""
+    if not game_date.announced:
+        return (True, date.max, 0)
+    return (False, game_date.end, -game_date.start.toordinal())
+
+
+def own_date(
+    releases: Iterable[Release], numbers: Sequence[int], release_type: str, regions: Sequence[int]
+) -> ReleaseDate | None:
+    """The own date of a platform of one type (spec 2 of stage 6.5): the date of each own number as `pick` reads it,
+    then the one that ends earliest; None — no own number has a record of this type."""
+    releases = tuple(releases)
+    found = [dated for number in numbers if (dated := pick(releases, number, release_type, regions)) is not None]
+    return min(found, key=_soonest_end) if found else None
 
 
 def _better(own: ReleaseDate | None, older: ReleaseDate | None, older_label: str) -> PlatformDate | None:
@@ -207,19 +249,19 @@ def platform_dates(game: GameState, platform: Platform, country: str) -> Platfor
     regions = STORE_COUNTRIES[country].regions
 
     def dated(release_type: str) -> PlatformDate | None:
-        own = pick(game.releases, info.igdb_id, release_type, regions)
+        own = own_date(game.releases, info.igdb_ids, release_type, regions)
         if info.older is None:
             return PlatformDate(own) if own is not None else None
         return _better(own, pick(game.releases, info.older.igdb_id, release_type, regions), info.older.label)
 
     full, early = dated(FULL), dated(EARLY)
-    own_cancelled = is_cancelled(game, info.igdb_id)
+    own_cancelled = is_cancelled(game, info.igdb_ids)
     return PlatformDates(full=full, early=early, cancelled=own_cancelled and full is None and early is None)
 
 
-def is_cancelled(game: GameState, igdb_platform: int) -> bool:
-    """An IGDB platform with records `cancelled` and none `full` or `early`."""
-    types = {release.type for release in game.releases if release.platform == igdb_platform}
+def is_cancelled(game: GameState, igdb_platforms: Collection[int]) -> bool:
+    """IGDB numbers (the own ones of a platform) with records `cancelled` and, all together, none `full` or `early`."""
+    types = {release.type for release in game.releases if release.platform in igdb_platforms}
     return CANCELLED in types and not types & set(DATED_TYPES)
 
 

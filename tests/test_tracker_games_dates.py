@@ -258,7 +258,7 @@ def test_the_date_of_the_older_platform_is_taken_by_the_end_of_the_period(older,
 @pytest.mark.parametrize("platform", [Platform.SWITCH_2, Platform.XBOX_SERIES])
 def test_switch_2_and_xbox_series_take_the_older_date_the_same_way(platform):
     info = PLATFORMS[platform]
-    own, older = info.igdb_id, info.older.igdb_id
+    (own,), older = info.igdb_ids, info.older.igdb_id
     year_only = GameState(platforms=(older, own), releases=(
         Release(own, WORLD, FULL, ReleaseDate.parse("2026-11-10")), Release(older, WORLD, FULL, ReleaseDate.parse("2026")),
     ))

@@ -76,7 +76,8 @@ def test_a_snapshot_stored_before_the_stage_reads_as_no_expansion():
     old = {"steam_id": "292030", "ps_concept": None, "platforms": [6], "releases": []}
     state = GameState.from_state(old)
     assert (state.expansion, state.parent) == (None, None)
-    assert state.state() == old  # a game keeps the shape of its snapshot
+    # a game keeps the shape of its snapshot; `known` now says what it could see (spec 5 of stage 6.5)
+    assert state.state() == {**old, "known": [6, 48, 49, 130, 167, 169, 508]}
 
 
 @pytest.mark.parametrize(

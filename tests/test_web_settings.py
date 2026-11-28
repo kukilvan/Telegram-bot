@@ -407,7 +407,7 @@ def test_the_page_shows_my_platforms_pc_and_ps5_and_israel_by_default(client):
     html = client.get("/settings").text
 
     assert platform_boxes(html) == [
-        ("pc", True), ("ps5", True), ("xbox_series", False), ("switch_2", False), ("switch", False)
+        ("pc", True), ("ps5", True), ("xbox_series", False), ("switch_2", False), ("switch", False), ("meta_quest", False)
     ]
     assert re.search(r'<option value="il" selected>Израиль</option>', html)
     assert [m for m in re.findall(r'<option value="\w\w"[^>]*>([^<]*)</option>', html)] == [
@@ -415,20 +415,22 @@ def test_the_page_shows_my_platforms_pc_and_ps5_and_israel_by_default(client):
     ]
     assert "Игры: сообщения о выходе приходят только по этим платформам" in html
     assert "Ссылка на PlayStation Store ведёт в магазин этой страны, даты выхода — для её региона, цены Steam — в её валюте" in html
-    for label in ("ПК", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch 2", "Nintendo Switch"):
+    for label in ("ПК", "PlayStation 5", "Xbox Series X|S", "Nintendo Switch 2", "Nintendo Switch", "Meta Quest"):
         assert f"> {label}</label>" in html
 
 
 def test_the_platforms_and_the_country_are_saved_and_come_back(client, tracker):
-    response = client.post("/settings", data={**FORM, "platform": ["xbox_series", "pc"], "store_country": "us"})
+    response = client.post(
+        "/settings", data={**FORM, "platform": ["meta_quest", "xbox_series", "pc"], "store_country": "us"}
+    )
 
     assert response.status_code == 303
     html = client.get("/settings").text
     assert platform_boxes(html) == [
-        ("pc", True), ("ps5", False), ("xbox_series", True), ("switch_2", False), ("switch", False)
+        ("pc", True), ("ps5", False), ("xbox_series", True), ("switch_2", False), ("switch", False), ("meta_quest", True)
     ]
     assert re.search(r'<option value="us" selected>США</option>', html)
-    assert run(tracker.settings()).saved.my_platforms == ["pc", "xbox_series"]
+    assert run(tracker.settings()).saved.my_platforms == ["pc", "xbox_series", "meta_quest"]
 
 
 def test_no_platform_ticked_is_refused_with_the_boxes_marked_and_what_was_typed_kept(client, tracker):

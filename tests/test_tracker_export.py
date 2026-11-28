@@ -369,3 +369,22 @@ def test_the_picture_does_not_change_while_a_file_is_built(tracker, session_fact
         export_all._inbox = real
     assert [item["text"] for item in during] == ["новый пост", "старый пост"]
     assert "после начала" in [item["text"] for item in json.loads((run(tracker.export_all())).content)["inbox"]]
+
+
+def test_meta_quest_is_exported_in_the_platforms_and_the_settings(tracker, session_factory):
+    """Spec 8 of stage 6.5: the values come from the table, so `meta_quest` goes out by itself."""
+    with session_factory() as session:
+        quest_game = title(TitleKind.GAME, "Batman: Arkham Shadow", original="Batman: Arkham Shadow", year=2024)
+        session.add(quest_game)
+        session.flush()
+        session.add_all([
+            ExternalId(title_id=quest_game.id, source="igdb", external_id="299736", role="primary"),
+            GamePlatformRecord(title_id=quest_game.id, platform="meta_quest", playing=True),
+            SettingRecord(key="my_platforms", value=["pc", "meta_quest"]),
+        ])
+        session.commit()
+
+    doc = json.loads(run(tracker.export_all()).content)
+
+    assert doc["titles"][0]["platforms"] == [{"platform": "meta_quest", "playing": True}]
+    assert doc["settings"]["my_platforms"] == ["pc", "meta_quest"]

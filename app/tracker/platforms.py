@@ -17,6 +17,7 @@ class Platform(StrEnum):
     XBOX_SERIES = "xbox_series"
     SWITCH_2 = "switch_2"
     SWITCH = "switch"
+    META_QUEST = "meta_quest"
 
 
 @dataclass(frozen=True)
@@ -29,19 +30,26 @@ class OlderPlatform:
 
 @dataclass(frozen=True)
 class PlatformInfo:
+    """A platform of the tracker: its own IGDB numbers (one or more, ADR 0018: the earliest date among them is the
+    platform's own date, with no text) and at most one older platform."""
+
     settings_label: str  # in the settings
     label: str  # in the card and in the messages
-    igdb_id: int
+    igdb_ids: tuple[int, ...]
     older: OlderPlatform | None = None
 
 
-# Windows only, as IGDB names it: Mac and Linux are not platforms of the tracker
+# ПК: Windows (6) as IGDB names it — Mac and Linux are not platforms of the tracker — and SteamVR (163), where IGDB puts
+# the PC version of a VR game. Meta Quest: Quest 3 (471, Quest 3S included), Quest 2 (386) and the first Quest (384) —
+# one app in the Meta store. Not taken: 162 «Oculus VR», 385 Rift, 161 Windows Mixed Reality, 387 Go, the PlayStation VR
+# headsets (spec 1.2 of stage 6.5)
 PLATFORMS: dict[Platform, PlatformInfo] = {
-    Platform.PC: PlatformInfo("ПК", "ПК", 6),
-    Platform.PS5: PlatformInfo("PlayStation 5", "PS5", 167, OlderPlatform("PS4", 48)),
-    Platform.XBOX_SERIES: PlatformInfo("Xbox Series X|S", "Xbox Series X|S", 169, OlderPlatform("Xbox One", 49)),
-    Platform.SWITCH_2: PlatformInfo("Nintendo Switch 2", "Switch 2", 508, OlderPlatform("Switch", 130)),
-    Platform.SWITCH: PlatformInfo("Nintendo Switch", "Switch", 130),
+    Platform.PC: PlatformInfo("ПК", "ПК", (6, 163)),
+    Platform.PS5: PlatformInfo("PlayStation 5", "PS5", (167,), OlderPlatform("PS4", 48)),
+    Platform.XBOX_SERIES: PlatformInfo("Xbox Series X|S", "Xbox Series X|S", (169,), OlderPlatform("Xbox One", 49)),
+    Platform.SWITCH_2: PlatformInfo("Nintendo Switch 2", "Switch 2", (508,), OlderPlatform("Switch", 130)),
+    Platform.SWITCH: PlatformInfo("Nintendo Switch", "Switch", (130,)),
+    Platform.META_QUEST: PlatformInfo("Meta Quest", "Meta Quest", (471, 386, 384)),
 }
 DEFAULT_PLATFORMS = (Platform.PC, Platform.PS5)
 
@@ -49,14 +57,15 @@ DEFAULT_PLATFORMS = (Platform.PC, Platform.PS5)
 def _igdb_labels() -> dict[int, str]:
     labels: dict[int, str] = {}
     for info in PLATFORMS.values():
-        labels.setdefault(info.igdb_id, info.label)
+        for number in info.igdb_ids:
+            labels.setdefault(number, info.label)
         if info.older:
             labels.setdefault(info.older.igdb_id, info.older.label)
     return labels
 
 
-# Every IGDB platform the tracker knows, its own and the older ones, in the order of the table with each older one right
-# after its newer: «ПК, PS5, PS4, Xbox Series X|S, Xbox One, Switch 2, Switch» (the line of platforms of a suggestion)
+# Every IGDB number the tracker knows, its own and the older ones, in the order of the table with each older one right
+# after its newer (the line of platforms of a suggestion: «ПК, PS5, PS4, …, Meta Quest», each label once)
 IGDB_LABELS: dict[int, str] = _igdb_labels()
 
 # The regions of IGDB, as its `release_region` numbers them

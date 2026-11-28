@@ -143,10 +143,10 @@ def cover_url(item: dict[str, Any]) -> str | None:
 
 
 def platform_line(platforms: list[Any] | None) -> str | None:
-    """«ПК, PS5, PS4, Xbox Series X|S, Xbox One, Switch 2, Switch»: the platforms the tracker knows, in that order; None
-    when the game has none of them."""
+    """«ПК, PS5, PS4, Xbox Series X|S, Xbox One, Switch 2, Switch, Meta Quest»: the platforms the tracker knows, in that
+    order, each label once (ПК for 6 and SteamVR 163, Meta Quest for any of its headsets); None when the game has none."""
     present = set(platforms or ())
-    labels = [label for number, label in IGDB_LABELS.items() if number in present]
+    labels = dict.fromkeys(label for number, label in IGDB_LABELS.items() if number in present)
     return ", ".join(labels) or None
 
 

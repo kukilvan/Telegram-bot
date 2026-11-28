@@ -136,12 +136,12 @@ Once a week the tracker asks IGDB about the expansions of a game and the games o
 In code: `follow-up check` (`follow_ups`; the snapshot of source `igdb_follow_ups`; which games are checked — `for_follow_ups`; an expansion or a game of the series the snapshot lists — `FollowUp`, never `Candidate`, which is the «Кандидат» of «Входящие»).
 
 **Платформа** (platform):
-Where a game comes out: PC, PlayStation 5, Xbox Series X|S, Nintendo Switch 2 or Nintendo Switch. PC is one platform wherever the game is sold (Steam is only a link in the card). A game has its own release date and its own checkmark «играю здесь» on each platform.
+Where a game comes out: PC, PlayStation 5, Xbox Series X|S, Nintendo Switch 2, Nintendo Switch or Meta Quest. PC is one platform wherever the game is sold (Steam is only a link in the card), and it includes SteamVR, where IGDB puts the PC version of a VR game. Meta Quest is one platform for Quest 3 (with 3S), Quest 2 and the first Quest: one app in the Meta store. A game has its own release date and its own checkmark «играю здесь» on each platform. A platform may have several IGDB numbers of its own (ПК: Windows and SteamVR; Meta Quest: its three headsets, ADR 0018): the date that ends earliest among them is the platform's date, with no text about a version. The game's snapshot remembers which IGDB numbers the tracker knew when it was taken, so a number taken later gives no messages on its first poll.
 _Avoid_: консоль, система
-In code: `platform` (`Platform`, table `PLATFORMS`).
+In code: `platform` (`Platform`, table `PLATFORMS`; own numbers — `igdb_ids`; the numbers a snapshot knew — `known`).
 
 **Обратная совместимость** (backward compatibility):
-A new console runs the games of the old one: PS5 — PS4 games, Xbox Series X|S — Xbox One, Switch 2 — Switch. If the old version comes out earlier, its date counts as the date of the new platform («PS5 — 27 марта 2015 (версия для PS4)»). "Earlier" is by the end of the period: «2026» ends on 31 December, so the exact day of PS5 «10 ноября 2026» is earlier than the year of the PS4 version; with equal ends the own date is taken. PS4 and Xbox One cannot be chosen in «Мои платформы»; Switch can be chosen on its own.
+A new console runs the games of the old one: PS5 — PS4 games, Xbox Series X|S — Xbox One, Switch 2 — Switch. If the old version comes out earlier, its date counts as the date of the new platform («PS5 — 27 марта 2015 (версия для PS4)»). "Earlier" is by the end of the period: «2026» ends on 31 December, so the exact day of PS5 «10 ноября 2026» is earlier than the year of the PS4 version; with equal ends the own date is taken. PS4 and Xbox One cannot be chosen in «Мои платформы»; Switch can be chosen on its own. The Quest headsets and SteamVR are not older platforms: they are own numbers of Meta Quest and ПК («Платформа»).
 In code: the older platform — `older`; the date taken from it — `via`.
 
 **Ранний доступ** (early access):
