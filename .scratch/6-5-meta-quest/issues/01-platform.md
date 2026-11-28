@@ -1,6 +1,6 @@
 # 01: The platform Meta Quest — several IGDB numbers of one platform, SteamVR as ПК, the first poll after the update
 
-Status: in review
+Status: accepted
 Complexity: complex (the platform table, dates, polling and release events of every game in the list)
 Blocked by: —
 

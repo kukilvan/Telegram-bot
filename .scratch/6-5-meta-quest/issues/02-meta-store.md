@@ -1,6 +1,6 @@
 # 02: The Meta store — the link in the cards, the button under the release message, a store link sent to the bot
 
-Status: in review
+Status: accepted
 Complexity: medium (one link built and shown in the places Steam's already is, one more link form in «Входящие» and its lookup; no migration)
 Blocked by: 01
 

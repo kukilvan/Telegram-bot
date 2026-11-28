@@ -2,6 +2,11 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-28 — Slicing 6.5
+
+- `.scratch/6-5-meta-quest/issues/` (accepted), two tickets as proposed by the spec: 01 the platform — `igdb_ids`, `meta_quest`, SteamVR in ПК, dates, the suggestion line, the snapshot's `known` and the first-poll rule, ADR 0018 (complex); 02 the Meta store — `meta_store_id`, the card links, the button under the release message, the test sample, the store link in «Входящие» (medium, blocked by 01). No change to the spec.
+- The owner check of spec section 12 is divided between the tickets; ticket 02's check deletes and re-adds the games added for ticket 01 (a snapshot gets `meta_store_id` only at its next poll).
+
 ## 2026-11-28 — Spec 6.5
 
 - `.scratch/6-5-meta-quest/spec.md` (accepted), live IGDB answers in `answers/`; the Meta store pages checked in the browser (meta.com answers `400` to plain HTTP clients).
