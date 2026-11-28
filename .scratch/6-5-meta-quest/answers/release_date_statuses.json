@@ -1,0 +1,47 @@
+[
+ {
+  "id": 4,
+  "name": "Offline",
+  "description": "A status of a release that shows when the game was offline for a specific platform and region."
+ },
+ {
+  "id": 6,
+  "name": "Full Release",
+  "description": "A status of release where the game has gone gold. Typically this is referred to as 1.0."
+ },
+ {
+  "id": 2,
+  "name": "Beta",
+  "description": "A status of a release where all major milestones have been met.  Typically this release is used for finding bugs and lacks optimization."
+ },
+ {
+  "id": 1,
+  "name": "Alpha",
+  "description": "A status of a release where milestones have been met and the game is in a playable state."
+ },
+ {
+  "id": 5,
+  "name": "Cancelled",
+  "description": "A status of a release that shows when the game was cancelled for a specific platform and region."
+ },
+ {
+  "id": 3,
+  "name": "Early Access",
+  "description": "A status of a release where the game is usually available publicly for testing.  Early access is used to get player feedback before a full release."
+ },
+ {
+  "id": 34,
+  "name": "Advanced Access",
+  "description": "This status reflects the availability of the game to players that have pre-ordered or purchased a specific edition."
+ },
+ {
+  "id": 35,
+  "name": "Digital Compatibility Release",
+  "description": "This status would apply to digitally purchasable games from the previous console of the same family with no notable changes or enhancements to them."
+ },
+ {
+  "id": 36,
+  "name": "Next-Gen Optimization Patch Release",
+  "description": "This status would apply to games that received a patch to perform better on next-generation hardware without getting a native release."
+ }
+]

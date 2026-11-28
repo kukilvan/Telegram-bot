@@ -1,0 +1,40 @@
+[
+ {
+  "id": 386,
+  "abbreviation": "Meta Quest 2",
+  "alternative_name": "Quest 2",
+  "name": "Meta Quest 2",
+  "slug": "meta-quest-2"
+ },
+ {
+  "id": 162,
+  "abbreviation": "Oculus VR",
+  "name": "Oculus VR",
+  "slug": "oculus-vr"
+ },
+ {
+  "id": 384,
+  "alternative_name": "Quest",
+  "name": "Oculus Quest",
+  "slug": "oculus-quest"
+ },
+ {
+  "id": 385,
+  "alternative_name": "Rift",
+  "name": "Oculus Rift",
+  "slug": "oculus-rift"
+ },
+ {
+  "id": 387,
+  "alternative_name": "Go",
+  "name": "Oculus Go",
+  "slug": "oculus-go"
+ },
+ {
+  "id": 471,
+  "abbreviation": "Meta Quest 3",
+  "generation": 9,
+  "name": "Meta Quest 3",
+  "slug": "meta-quest-3"
+ }
+]

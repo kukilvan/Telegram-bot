@@ -46,6 +46,7 @@ None fit: the open entries about games (KI-79, KI-80) are about Russian and wait
 - A Meta store link sent to the bot gives «Это оно?» at once, like a Steam link (2026-11-28; added to idea 003).
 - The link in the card and under the release message; the store's search when the page is unknown (idea 003).
 - A stage of its own, done while 7.4 waits (idea 003).
+- Changed by the spec, with the owner, on real IGDB answers (2026-11-28; `spec.md`, section 0): no version text for Quest — the three headsets are the platform's own numbers; SteamVR counts as ПК (IGDB writes the PC version of a VR game as SteamVR, not PC).
 - By the agent: the platform last in the table, default platforms unchanged, «Meta Quest» once in the line of a suggestion — the least change to what the owner sees now. One release message per day for several platforms stays as today (idea 003 said "two messages" for a game on PC and Quest; that holds for different days only).
 
 ## Owner check at the end of the stage

@@ -1,0 +1,924 @@
+[
+ {
+  "id": 83731,
+  "external_games": [
+   {
+    "id": 575992,
+    "name": "Beat Saber",
+    "uid": "65652",
+    "url": "https://www.giantbomb.com/games/3030-65652/",
+    "external_game_source": 3
+   },
+   {
+    "id": 2190166,
+    "name": "Beat Saber",
+    "uid": "2448060205267927",
+    "url": "https://www.meta.com/experiences/2448060205267927",
+    "external_game_source": 28
+   },
+   {
+    "id": 238379,
+    "name": "Beat Saber",
+    "uid": "620980",
+    "url": "https://store.steampowered.com/app/620980",
+    "external_game_source": 1
+   },
+   {
+    "id": 2175780,
+    "name": "Beat Saber",
+    "uid": "232492",
+    "url": "https://store.playstation.com/en-us/concept/232492",
+    "external_game_source": 36
+   },
+   {
+    "id": 1193243,
+    "name": "Beat Saber",
+    "uid": "503116",
+    "url": "https://www.twitch.tv/directory/game/Beat Saber",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Beat Saber",
+  "platforms": [
+   386,
+   390,
+   161,
+   165,
+   163,
+   471,
+   385,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 765681,
+    "date": 1542672000,
+    "m": 11,
+    "platform": 165,
+    "y": 2018,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 2
+   },
+   {
+    "id": 765682,
+    "date": 1551916800,
+    "m": 3,
+    "platform": 165,
+    "y": 2019,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 5
+   },
+   {
+    "id": 574226,
+    "date": 1684886400,
+    "m": 5,
+    "platform": 390,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 574227,
+    "date": 1558396800,
+    "m": 5,
+    "platform": 163,
+    "y": 2019,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 765683,
+    "date": 1525132800,
+    "m": 5,
+    "platform": 161,
+    "y": 2018,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 574228,
+    "date": 1558396800,
+    "m": 5,
+    "platform": 161,
+    "y": 2019,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 790306,
+    "date": 1525132800,
+    "m": 5,
+    "platform": 385,
+    "y": 2018,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 790307,
+    "date": 1755907200,
+    "m": 8,
+    "platform": 165,
+    "y": 2025,
+    "status": 4,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 790308,
+    "date": 1755907200,
+    "m": 8,
+    "platform": 390,
+    "y": 2025,
+    "status": 4,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 790309,
+    "date": 1602547200,
+    "m": 10,
+    "platform": 386,
+    "y": 2020,
+    "status": 36,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 790310,
+    "date": 1697155200,
+    "m": 10,
+    "platform": 471,
+    "y": 2023,
+    "status": 36,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 790311,
+    "date": 1558396800,
+    "m": 5,
+    "platform": 384,
+    "y": 2019,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 105416,
+  "external_games": [
+   {
+    "id": 1857317,
+    "name": "The Walking Dead: Saints & Sinners ",
+    "uid": "76748",
+    "url": "https://www.giantbomb.com/games/3030-76748/",
+    "external_game_source": 3
+   },
+   {
+    "id": 1917283,
+    "name": "The Walking Dead: Saints & Sinners",
+    "uid": "515862",
+    "url": "https://www.twitch.tv/directory/game/The%20Walking%20Dead%3A%20Saints%20%26%20Sinners",
+    "external_game_source": 14
+   },
+   {
+    "id": 2172497,
+    "name": "The Walking Dead: Saints & Sinners",
+    "uid": "234963",
+    "url": "https://store.playstation.com/en-us/concept/234963",
+    "external_game_source": 36
+   },
+   {
+    "id": 1942848,
+    "uid": "B08H65146F",
+    "platform": 48,
+    "external_game_source": 20
+   },
+   {
+    "id": 2125362,
+    "name": "The Walking Dead: Saints & Sinners",
+    "uid": "2897337400373711",
+    "url": "https://www.meta.com/experiences/2897337400373711",
+    "external_game_source": 28
+   },
+   {
+    "id": 1776861,
+    "name": "The Walking Dead: Saints & Sinners",
+    "uid": "916840",
+    "url": "https://store.steampowered.com/app/916840",
+    "external_game_source": 1
+   }
+  ],
+  "name": "The Walking Dead: Saints & Sinners",
+  "platforms": [
+   386,
+   390,
+   161,
+   165,
+   163,
+   471,
+   385,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 607981,
+    "date": 1602547200,
+    "m": 10,
+    "platform": 384,
+    "y": 2020,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 743555,
+    "date": 1705363200,
+    "m": 1,
+    "platform": 471,
+    "y": 2024,
+    "status": 36,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 798799,
+    "date": 1602547200,
+    "m": 10,
+    "platform": 386,
+    "y": 2020,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 607982,
+    "date": 1579737600,
+    "m": 1,
+    "platform": 385,
+    "y": 2020,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 607983,
+    "date": 1588636800,
+    "m": 5,
+    "platform": 165,
+    "y": 2020,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 607984,
+    "date": 1679356800,
+    "m": 3,
+    "platform": 390,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 607986,
+    "date": 1579737600,
+    "m": 1,
+    "platform": 161,
+    "y": 2020,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 607985,
+    "date": 1579737600,
+    "m": 1,
+    "platform": 163,
+    "y": 2020,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 110419,
+  "external_games": [
+   {
+    "id": 2125374,
+    "name": "Vader Immortal: Episode I",
+    "uid": "2108775495884888",
+    "url": "https://www.oculus.com/experiences/app/2108775495884888",
+    "external_game_source": 28
+   },
+   {
+    "id": 2172498,
+    "name": "Vader Immortal: Episode 1",
+    "uid": "10000826",
+    "url": "https://store.playstation.com/en-us/concept/10000826",
+    "external_game_source": 36
+   }
+  ],
+  "name": "Vader Immortal: Episode I",
+  "platforms": [
+   386,
+   165,
+   385,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 316519,
+    "date": 1558396800,
+    "m": 5,
+    "platform": 386,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 246952,
+    "date": 1598313600,
+    "m": 8,
+    "platform": 165,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 314056,
+    "date": 1558396800,
+    "m": 5,
+    "platform": 384,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 314061,
+    "date": 1558396800,
+    "m": 5,
+    "platform": 385,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 6
+ },
+ {
+  "id": 119341,
+  "external_games": [
+   {
+    "id": 1778609,
+    "name": "Pistol Whip",
+    "uid": "75390",
+    "url": "https://www.giantbomb.com/games/3030-75390/",
+    "external_game_source": 3
+   },
+   {
+    "id": 1777017,
+    "name": "Pistol Whip",
+    "uid": "1079800",
+    "url": "https://store.steampowered.com/app/1079800",
+    "external_game_source": 1
+   },
+   {
+    "id": 2190041,
+    "name": "Pistol Whip",
+    "uid": "2104963472963790",
+    "url": "https://www.meta.com/experiences/2104963472963790",
+    "external_game_source": 28
+   },
+   {
+    "id": 2172789,
+    "name": "Pistol Whip",
+    "uid": "10001571",
+    "url": "https://store.playstation.com/en-us/concept/10001571",
+    "external_game_source": 36
+   },
+   {
+    "id": 1916007,
+    "name": "Pistol Whip",
+    "uid": "514564",
+    "url": "https://www.twitch.tv/directory/game/Pistol%20Whip",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Pistol Whip",
+  "platforms": [
+   162,
+   386,
+   390,
+   165,
+   163,
+   385,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 335128,
+    "date": 1573084800,
+    "m": 11,
+    "platform": 384,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 398846,
+    "date": 1573084800,
+    "m": 11,
+    "platform": 385,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 200400,
+    "date": 1595894400,
+    "m": 7,
+    "platform": 165,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 198327,
+    "date": 1573084800,
+    "m": 11,
+    "platform": 162,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 455835,
+    "date": 1677024000,
+    "m": 2,
+    "platform": 390,
+    "y": 2023,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 234952,
+    "date": 1573084800,
+    "m": 11,
+    "platform": 163,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 335129,
+    "date": 1573084800,
+    "m": 11,
+    "platform": 386,
+    "y": 2019,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 135124,
+  "external_games": [
+   {
+    "id": 1989874,
+    "name": "Supernatural",
+    "uid": "1067866307",
+    "url": "https://www.twitch.tv/directory/game/Supernatural",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Supernatural",
+  "platforms": [
+   162,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 648018,
+    "date": 1587600000,
+    "m": 4,
+    "platform": 384,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 142095,
+  "external_games": [
+   {
+    "id": 2125363,
+    "name": "Walkabout Mini Golf",
+    "uid": "2462678267173943",
+    "url": "https://www.meta.com/experiences/2462678267173943",
+    "external_game_source": 28
+   },
+   {
+    "id": 2602855,
+    "name": "Walkabout Mini Golf",
+    "uid": "376677451",
+    "url": "https://www.twitch.tv/directory/game/Walkabout Mini Golf",
+    "external_game_source": 14
+   },
+   {
+    "id": 2064292,
+    "name": "Walkabout Mini Golf VR",
+    "uid": "1408230",
+    "url": "https://store.steampowered.com/app/1408230",
+    "external_game_source": 1
+   },
+   {
+    "id": 2702909,
+    "name": "Walkabout Mini Golf",
+    "uid": "10003851",
+    "url": "https://store.playstation.com/en-us/concept/10003851",
+    "external_game_source": 36
+   }
+  ],
+  "name": "Walkabout Mini Golf",
+  "platforms": [
+   162,
+   386,
+   390,
+   163,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 316547,
+    "date": 1600905600,
+    "m": 9,
+    "platform": 384,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 316548,
+    "date": 1600905600,
+    "m": 9,
+    "platform": 386,
+    "y": 2020,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 321397,
+    "date": 1626307200,
+    "m": 7,
+    "platform": 163,
+    "y": 2021,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 470608,
+    "date": 1683763200,
+    "m": 5,
+    "platform": 390,
+    "y": 2023,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 198227,
+  "external_games": [
+   {
+    "id": 2433404,
+    "name": "Red Matter 2",
+    "uid": "1803841616",
+    "url": "https://www.twitch.tv/directory/game/Red%20Matter%202",
+    "external_game_source": 14
+   },
+   {
+    "id": 2519546,
+    "name": "Red Matter 2",
+    "uid": "3682089508520212",
+    "url": "https://www.meta.com/experiences/3682089508520212",
+    "external_game_source": 28
+   },
+   {
+    "id": 2523487,
+    "name": "Red Matter 2",
+    "uid": "2081470",
+    "url": "https://store.steampowered.com/app/2081470",
+    "external_game_source": 1
+   },
+   {
+    "id": 2705168,
+    "name": "Red Matter 2",
+    "uid": "10007229",
+    "url": "https://store.playstation.com/en-us/concept/10007229",
+    "external_game_source": 36
+   }
+  ],
+  "name": "Red Matter 2",
+  "platforms": [
+   386,
+   390,
+   163
+  ],
+  "release_dates": [
+   {
+    "id": 377204,
+    "date": 1660780800,
+    "m": 8,
+    "platform": 386,
+    "y": 2022,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 475266,
+    "date": 1684368000,
+    "m": 5,
+    "platform": 390,
+    "y": 2023,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 931963,
+    "date": 1660780800,
+    "m": 8,
+    "platform": 163,
+    "y": 2022,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 251569,
+  "external_games": [
+   {
+    "id": 2709434,
+    "name": "Asgard’s Wrath II",
+    "uid": "843863754",
+    "url": "https://www.twitch.tv/directory/game/Asgard%E2%80%99s%20Wrath%20II",
+    "external_game_source": 14
+   },
+   {
+    "id": 2711217,
+    "name": "Asgard's Wrath 2",
+    "uid": "2603836099654226",
+    "url": "https://www.meta.com/experiences/2603836099654226",
+    "external_game_source": 28
+   }
+  ],
+  "name": "Asgard’s Wrath II",
+  "platforms": [
+   386,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 541078,
+    "date": 1702598400,
+    "m": 12,
+    "platform": 386,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 543051,
+    "date": 1702598400,
+    "m": 12,
+    "platform": 471,
+    "y": 2023,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 299736,
+  "external_games": [
+   {
+    "id": 2914640,
+    "name": "Batman: Arkham Shadow",
+    "uid": "3551691271620960",
+    "url": "https://www.meta.com/experiences/3551691271620960",
+    "external_game_source": 28
+   },
+   {
+    "id": 2911990,
+    "name": "Batman: Arkham Shadow",
+    "uid": "701087900",
+    "url": "https://www.twitch.tv/directory/game/Batman:%20Arkham%20Shadow",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Batman: Arkham Shadow",
+  "platforms": [
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 647710,
+    "date": 1729555200,
+    "m": 10,
+    "platform": 471,
+    "y": 2024,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 347124,
+  "external_games": [
+   {
+    "id": 3117634,
+    "name": "Thief VR: Legacy of Shadow",
+    "uid": "6429437293824115",
+    "url": "https://www.meta.com/experiences/6429437293824115",
+    "external_game_source": 28
+   },
+   {
+    "id": 3067935,
+    "name": "Thief VR: Legacy of Shadow",
+    "uid": "721187880",
+    "url": "https://www.twitch.tv/directory/game/Thief%20VR:%20Legacy%20of%20Shadow",
+    "external_game_source": 14
+   },
+   {
+    "id": 3171387,
+    "name": "Thief VR: Legacy of Shadow",
+    "uid": "10010853",
+    "url": "https://store.playstation.com/en-us/concept/10010853",
+    "external_game_source": 36
+   },
+   {
+    "id": 3067940,
+    "name": "Thief VR: Legacy of shadow",
+    "uid": "2800080",
+    "url": "https://store.steampowered.com/app/2800080",
+    "external_game_source": 1
+   }
+  ],
+  "name": "Thief VR: Legacy of Shadow",
+  "platforms": [
+   386,
+   390,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 828169,
+    "date": 1764806400,
+    "m": 12,
+    "platform": 386,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 828170,
+    "date": 1764806400,
+    "m": 12,
+    "platform": 471,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 828171,
+    "date": 1764806400,
+    "m": 12,
+    "platform": 390,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 828172,
+    "date": 1764806400,
+    "m": 12,
+    "platform": 163,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 347652,
+  "external_games": [
+   {
+    "id": 3117384,
+    "name": "Marvel's Deadpool VR",
+    "uid": "3240283705987790",
+    "url": "https://www.meta.com/experiences/3240283705987790",
+    "external_game_source": 28
+   },
+   {
+    "id": 3069989,
+    "name": "Marvel's Deadpool VR",
+    "uid": "477833668",
+    "url": "https://www.twitch.tv/directory/game/Marvel%27s%20Deadpool%20VR",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Marvel's Deadpool VR",
+  "platforms": [
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 788024,
+    "date": 1763424000,
+    "m": 11,
+    "platform": 471,
+    "y": 2025,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ },
+ {
+  "id": 393732,
+  "external_games": [
+   {
+    "id": 3152920,
+    "name": "Moss Moss",
+    "uid": "771246226",
+    "url": "https://www.twitch.tv/directory/game/Moss%20Moss",
+    "external_game_source": 14
+   },
+   {
+    "id": 3170513,
+    "name": "Moss Moss",
+    "uid": "4340743",
+    "url": "https://noelcody.itch.io/moss-moss",
+    "external_game_source": 30
+   }
+  ],
+  "name": "Moss Moss",
+  "platforms": [
+   82,
+   6
+  ],
+  "release_dates": [
+   {
+    "id": 885895,
+    "date": 1772582400,
+    "m": 3,
+    "platform": 82,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 907861,
+    "date": 1772582400,
+    "m": 3,
+    "platform": 6,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ],
+  "game_type": 0
+ }
+]

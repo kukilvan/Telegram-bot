@@ -1,0 +1,1142 @@
+[
+ {
+  "id": 419608,
+  "name": "Phoenix Wright: Ace Attorney - Dual Destinies VR",
+  "platforms": [
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 969402,
+    "date": 1830211200,
+    "m": 12,
+    "platform": 384,
+    "y": 2027,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 335134,
+  "external_games": [
+   {
+    "id": 3114646,
+    "uid": "9246928748691633",
+    "url": "https://www.meta.com/experiences/9246928748691633",
+    "external_game_source": 28
+   },
+   {
+    "id": 2991192,
+    "uid": "3534150",
+    "url": "https://store.steampowered.com/app/3534150",
+    "external_game_source": 1
+   }
+  ],
+  "name": "Postal 2 VR",
+  "platforms": [
+   386,
+   390,
+   163
+  ],
+  "release_dates": [
+   {
+    "id": 956041,
+    "date": 1814313600,
+    "m": 6,
+    "platform": 386,
+    "y": 2027,
+    "status": 6,
+    "date_format": 4,
+    "release_region": 8
+   },
+   {
+    "id": 956042,
+    "date": 1814313600,
+    "m": 6,
+    "platform": 390,
+    "y": 2027,
+    "status": 6,
+    "date_format": 4,
+    "release_region": 8
+   },
+   {
+    "id": 956043,
+    "date": 1814313600,
+    "m": 6,
+    "platform": 163,
+    "y": 2027,
+    "status": 6,
+    "date_format": 4,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 318181,
+  "external_games": [
+   {
+    "id": 2926563,
+    "uid": "3064880",
+    "url": "https://store.steampowered.com/app/3064880",
+    "external_game_source": 1
+   },
+   {
+    "id": 2953789,
+    "uid": "1803256236",
+    "url": "https://www.twitch.tv/directory/game/Codebreakers%20VR",
+    "external_game_source": 14
+   },
+   {
+    "id": 3114691,
+    "uid": "9396003793855380",
+    "url": "https://www.meta.com/experiences/9396003793855380",
+    "external_game_source": 28
+   }
+  ],
+  "name": "Codebreakers VR",
+  "platforms": [
+   386,
+   163
+  ],
+  "release_dates": [
+   {
+    "id": 989417,
+    "platform": 386,
+    "status": 6,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 989418,
+    "date": 1806451200,
+    "m": 3,
+    "platform": 163,
+    "y": 2027,
+    "status": 6,
+    "date_format": 3,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 406173,
+  "external_games": [
+   {
+    "id": 3155893,
+    "uid": "24814371138188870",
+    "url": "https://www.meta.com/experiences/24814371138188870",
+    "external_game_source": 28
+   },
+   {
+    "id": 3185355,
+    "uid": "1630555984",
+    "url": "https://www.twitch.tv/directory/game/Flyon%20RC",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Flyon RC",
+  "platforms": [
+   386
+  ],
+  "release_dates": [
+   {
+    "id": 993584,
+    "date": 1799280000,
+    "m": 1,
+    "platform": 386,
+    "y": 2027,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 427254,
+  "external_games": [
+   {
+    "id": 3248289,
+    "uid": "1191453996",
+    "url": "https://www.twitch.tv/directory/game/VR%20Sandbox",
+    "external_game_source": 14
+   }
+  ],
+  "name": "VR Sandbox",
+  "platforms": [
+   162,
+   386,
+   6,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 986600,
+    "date": 1798761600,
+    "m": 1,
+    "platform": 163,
+    "y": 2027,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 991414,
+    "date": 1798761600,
+    "m": 1,
+    "platform": 6,
+    "y": 2027,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 413536,
+  "external_games": [
+   {
+    "id": 3188921,
+    "uid": "4701660",
+    "url": "https://store.steampowered.com/app/4701660",
+    "external_game_source": 1
+   },
+   {
+    "id": 3204156,
+    "uid": "979445463",
+    "url": "https://www.twitch.tv/directory/game/DRIFTERS:%20Blackout%20Crew",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Drifters: Blackout Crew",
+  "platforms": [
+   386,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 953330,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 953331,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 953332,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 471,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 413534,
+  "external_games": [
+   {
+    "id": 3204935,
+    "uid": "4541330",
+    "url": "https://store.steampowered.com/app/4541330",
+    "external_game_source": 1
+   },
+   {
+    "id": 3204360,
+    "uid": "496010949",
+    "url": "https://www.twitch.tv/directory/game/COVR",
+    "external_game_source": 14
+   },
+   {
+    "id": 3176776,
+    "uid": "26564910626481959",
+    "url": "https://www.meta.com/experiences/26564910626481959",
+    "external_game_source": 28
+   }
+  ],
+  "name": "Covr",
+  "platforms": [
+   386,
+   163
+  ],
+  "release_dates": [
+   {
+    "id": 953304,
+    "platform": 386,
+    "status": 6,
+    "date_format": 7,
+    "release_region": 8
+   },
+   {
+    "id": 953973,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 6,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 407986,
+  "external_games": [
+   {
+    "id": 3189120,
+    "uid": "1063469777",
+    "url": "https://www.twitch.tv/directory/game/The%20Rifted%20Skies",
+    "external_game_source": 14
+   },
+   {
+    "id": 3188910,
+    "uid": "4857730",
+    "url": "https://store.steampowered.com/app/4857730",
+    "external_game_source": 1
+   }
+  ],
+  "name": "The Rifted Skies",
+  "platforms": [
+   386,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 953319,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "status": 6,
+    "date_format": 6,
+    "release_region": 8
+   },
+   {
+    "id": 953320,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 6,
+    "release_region": 8
+   },
+   {
+    "id": 953321,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 6,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 406179,
+  "external_games": [
+   {
+    "id": 3092372,
+    "uid": "3970390",
+    "url": "https://store.steampowered.com/app/3970390",
+    "external_game_source": 1
+   }
+  ],
+  "name": "The Obsessive Shadow: Chapter 2",
+  "platforms": [
+   386,
+   390,
+   6,
+   163,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 927785,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 927786,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 927787,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 167,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 927788,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 390,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 927789,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 6,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 402889,
+  "external_games": [
+   {
+    "id": 3181935,
+    "uid": "4708050",
+    "url": "https://store.steampowered.com/app/4708050",
+    "external_game_source": 1
+   },
+   {
+    "id": 3178514,
+    "uid": "1446252484",
+    "url": "https://www.twitch.tv/directory/game/Order%2013%20VR",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Order 13 VR",
+  "platforms": [
+   390,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 979144,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 979141,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 979142,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 390,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 2
+   },
+   {
+    "id": 979143,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 390,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 1
+   }
+  ]
+ },
+ {
+  "id": 395737,
+  "external_games": [
+   {
+    "id": 3158183,
+    "uid": "1453430555",
+    "url": "https://www.twitch.tv/directory/game/Automa",
+    "external_game_source": 14
+   },
+   {
+    "id": 3128700,
+    "uid": "25256338343974413",
+    "url": "https://www.meta.com/experiences/25256338343974413",
+    "external_game_source": 28
+   },
+   {
+    "id": 3126448,
+    "uid": "4139020",
+    "url": "https://store.steampowered.com/app/4139020",
+    "external_game_source": 1
+   }
+  ],
+  "name": "Automa",
+  "platforms": [
+   390,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 892222,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 471,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 892223,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 390,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 892224,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 380582,
+  "external_games": [
+   {
+    "id": 3126847,
+    "uid": "40181002",
+    "url": "https://www.twitch.tv/directory/game/Guardians%20Planetfall",
+    "external_game_source": 14
+   },
+   {
+    "id": 3128702,
+    "uid": "8381697011938246",
+    "url": "https://www.meta.com/experiences/8381697011938246",
+    "external_game_source": 28
+   },
+   {
+    "id": 3126792,
+    "uid": "4210370",
+    "url": "https://store.steampowered.com/app/4210370",
+    "external_game_source": 1
+   }
+  ],
+  "name": "Guardians Planetfall",
+  "platforms": [
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 843064,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 927726,
+    "platform": 471,
+    "date_format": 7,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 377648,
+  "external_games": [
+   {
+    "id": 3145659,
+    "uid": "3584280",
+    "url": "https://store.steampowered.com/app/3584280",
+    "external_game_source": 1
+   },
+   {
+    "id": 3119058,
+    "uid": "94876472",
+    "url": "https://www.twitch.tv/directory/game/Full%20Steam%20Undead",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Full Steam Undead",
+  "platforms": [
+   386,
+   163
+  ],
+  "release_dates": [
+   {
+    "id": 833906,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 833907,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 346587,
+  "external_games": [
+   {
+    "id": 3066914,
+    "uid": "1846435550",
+    "url": "https://www.twitch.tv/directory/game/Ultima%20Chess%20VR",
+    "external_game_source": 14
+   },
+   {
+    "id": 2995400,
+    "uid": "3551180",
+    "url": "https://store.steampowered.com/app/3551180",
+    "external_game_source": 1
+   }
+  ],
+  "name": "Ultima Chess VR",
+  "platforms": [
+   386,
+   390,
+   6,
+   163,
+   167
+  ],
+  "release_dates": [
+   {
+    "id": 841363,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 841364,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 6,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 841365,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 390,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 841366,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 167,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 841367,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 325868,
+  "external_games": [
+   {
+    "id": 2970085,
+    "uid": "1647439725",
+    "url": "https://www.twitch.tv/directory/game/ALREADY%20DEAD",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Already Dead",
+  "platforms": [
+   390,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 927766,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 6,
+    "release_region": 8
+   },
+   {
+    "id": 927767,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 390,
+    "y": 2026,
+    "status": 6,
+    "date_format": 6,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 235806,
+  "external_games": [
+   {
+    "id": 2666693,
+    "uid": "498786048",
+    "url": "https://www.twitch.tv/directory/game/Timeless%20Heart%20VR",
+    "external_game_source": 14
+   },
+   {
+    "id": 2665422,
+    "uid": "1977100",
+    "url": "https://store.steampowered.com/app/1977100",
+    "external_game_source": 1
+   }
+  ],
+  "name": "Timeless Heart VR",
+  "platforms": [
+   386,
+   163
+  ],
+  "release_dates": [
+   {
+    "id": 844904,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 163,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   },
+   {
+    "id": 844903,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "status": 6,
+    "date_format": 2,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 431321,
+  "external_games": [
+   {
+    "id": 3257085,
+    "uid": "70433672",
+    "url": "https://www.twitch.tv/directory/game/MVP%20Career:%20Golf",
+    "external_game_source": 14
+   }
+  ],
+  "name": "MVP Career: Golf",
+  "platforms": [
+   386,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 996183,
+    "date": 1796860800,
+    "m": 12,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 996184,
+    "date": 1796860800,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 375588,
+  "external_games": [
+   {
+    "id": 3115123,
+    "uid": "1689107892",
+    "url": "https://www.twitch.tv/directory/game/Vehicle%20Construction%20Kit",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Vehicle Construction Kit",
+  "platforms": [
+   34,
+   385,
+   384
+  ],
+  "release_dates": [
+   {
+    "id": 827560,
+    "date": 1588896000,
+    "m": 5,
+    "platform": 384,
+    "y": 2020,
+    "status": 1,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 827561,
+    "date": 1588896000,
+    "m": 5,
+    "platform": 385,
+    "y": 2020,
+    "status": 1,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 827562,
+    "date": 1588896000,
+    "m": 5,
+    "platform": 34,
+    "y": 2020,
+    "status": 1,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 978592,
+    "date": 1795651200,
+    "m": 11,
+    "platform": 34,
+    "y": 2026,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 978593,
+    "date": 1795651200,
+    "m": 11,
+    "platform": 384,
+    "y": 2026,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 429653,
+  "external_games": [
+   {
+    "id": 3253827,
+    "uid": "1435253135",
+    "url": "https://www.twitch.tv/directory/game/Age%20of%20Arca",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Age of Arca",
+  "platforms": [
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 991632,
+    "date": 1795046400,
+    "m": 11,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 430193,
+  "name": "Project Hail Mary: Journey Among the Stars",
+  "platforms": [
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 993308,
+    "date": 1794441600,
+    "m": 11,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 410455,
+  "external_games": [
+   {
+    "id": 3193607,
+    "uid": "4908110",
+    "url": "https://store.steampowered.com/app/4908110",
+    "external_game_source": 1
+   },
+   {
+    "id": 3196182,
+    "uid": "407576938",
+    "url": "https://www.twitch.tv/directory/game/Gas%20N%20Cars",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Gas N Cars",
+  "platforms": [
+   386,
+   6,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 943109,
+    "date": 1794355200,
+    "m": 11,
+    "platform": 6,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 944374,
+    "date": 1779753600,
+    "m": 5,
+    "platform": 386,
+    "y": 2026,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 944375,
+    "date": 1779753600,
+    "m": 5,
+    "platform": 471,
+    "y": 2026,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 431060,
+  "external_games": [
+   {
+    "id": 3258496,
+    "uid": "682882698",
+    "url": "https://www.twitch.tv/directory/game/Gilla",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Gilla",
+  "platforms": [
+   386,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 995584,
+    "date": 1794268800,
+    "m": 11,
+    "platform": 386,
+    "y": 2026,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 995585,
+    "date": 1794268800,
+    "m": 11,
+    "platform": 471,
+    "y": 2026,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 395812,
+  "external_games": [
+   {
+    "id": 3157376,
+    "uid": "4514880",
+    "url": "https://store.steampowered.com/app/4514880",
+    "external_game_source": 1
+   },
+   {
+    "id": 3158850,
+    "uid": "328043478",
+    "url": "https://www.twitch.tv/directory/game/Hyperlane%20Highway",
+    "external_game_source": 14
+   }
+  ],
+  "name": "Hyperlane Highway",
+  "platforms": [
+   162,
+   386,
+   165,
+   163,
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 988500,
+    "date": 1794268800,
+    "m": 11,
+    "platform": 163,
+    "y": 2026,
+    "status": 3,
+    "date_format": 0,
+    "release_region": 8
+   },
+   {
+    "id": 893358,
+    "date": 1798675200,
+    "m": 12,
+    "platform": 386,
+    "y": 2026,
+    "status": 3,
+    "date_format": 6,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 380561,
+  "external_games": [
+   {
+    "id": 3126562,
+    "uid": "711257637",
+    "url": "https://www.twitch.tv/directory/game/Xploit.Zero",
+    "external_game_source": 14
+   },
+   {
+    "id": 3130616,
+    "uid": "24364900086485044",
+    "url": "https://www.meta.com/experiences/24364900086485044",
+    "external_game_source": 28
+   }
+  ],
+  "name": "Xploit.Zero",
+  "platforms": [
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 988311,
+    "date": 1794268800,
+    "m": 11,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ },
+ {
+  "id": 380563,
+  "external_games": [
+   {
+    "id": 3126570,
+    "uid": "1343662444",
+    "url": "https://www.twitch.tv/directory/game/The%20Great%20Flood",
+    "external_game_source": 14
+   }
+  ],
+  "name": "The Great Flood",
+  "platforms": [
+   471
+  ],
+  "release_dates": [
+   {
+    "id": 997289,
+    "date": 1794182400,
+    "m": 11,
+    "platform": 471,
+    "y": 2026,
+    "status": 6,
+    "date_format": 0,
+    "release_region": 8
+   }
+  ]
+ }
+]
