@@ -102,6 +102,13 @@ Split by `.scratch/7-1-backups-export/description.md` (2026-11-07). Changed by `
 - Changed by `.scratch/7-3-nas-readiness/description.md` (2026-11-24): this project does not touch the NAS; the checks run on the PC, and the guide `docs/nas-move.md` names every foreseeable problem with its solution and asks the NAS project for a report back. The copies may go to the HDD by a NAS-only compose file; the restore on the NAS is three `docker compose` commands; no code guard against two instances, only the rule in the guide.
 - Sessions (est.): 6 (spec, slicing, about 3 tickets, review).
 
+### Stage 6.5. Meta Quest (idea 003)
+
+- Goal: follow VR games on Meta Quest like games on the other platforms.
+- The owner sees at the end: «Meta Quest» in «Мои платформы»; in the card a row «Meta Quest — <date>» (Quest 2 and first-Quest versions count) with «играю здесь» and the link «Открыть в магазине Meta» (the game's page, else the store's search); the release message on Meta Quest with the same link button; «Meta Quest» in the line of platforms of Search. No Meta store prices.
+- Contains: `docs/ideas/003-meta-quest.md` — taken in by the description of 6.5 (`.scratch/6-5-meta-quest/`). Done while stage 7.4 waits for the NAS project's report.
+- Sessions (est.): about 5 (description, spec, slicing, about 2 tickets, review).
+
 ### Stage 7.4. The move taken in
 
 - Goal: after the NAS project has moved the app and written its report, the sessions of this project work with the app on the NAS.

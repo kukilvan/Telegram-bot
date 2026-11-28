@@ -4,7 +4,7 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Приём переезда» (7.4), only once the owner brings the NAS project's report `nas-report.md` (`docs/nas-move.md`, section 10): the NAS into «Environment», «Run» of `CLAUDE.md` and «Session on the owner's PC» of `docs/workflow.md` (`docs/project-spec.md`, 7.4); the wishes of `.scratch/7-3-nas-readiness/review.md`. Model Opus 5.5, effort high (decisions on the process). Then 9.2, 8.
+Session «Приём переезда» (7.4), only once the owner brings the NAS project's report `nas-report.md` (`docs/nas-move.md`, section 10): the NAS into «Environment», «Run» of `CLAUDE.md` and «Session on the owner's PC» of `docs/workflow.md` (`docs/project-spec.md`, 7.4); the wishes of `.scratch/7-3-nas-readiness/review.md`. Model Opus 5.5, effort high (decisions on the process). Then 9.2, 8. Until the report comes: «Описание 6.5» (idea 003), Opus 5.5, effort high.
 
 ## State
 
@@ -35,6 +35,7 @@ Session «Приём переезда» (7.4), only once the owner brings the NA
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
 | 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | done | — | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | done | — | — |
+| 6.5 | Meta Quest platform (as 7.4 waits) | not started | 5 | 003 |
 | 7.4 | The move taken in: the NAS project's report, sessions check on the NAS | not started | 1 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
