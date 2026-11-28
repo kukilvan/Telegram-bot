@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-28 — Ticket 6.5.02
+
+- `GameState.meta_store_id` (stored; from `external_games` source 28, digits only), `platforms.meta_store_url` (the page, else the search by the original name); `game_rows.store_links` adds «Открыть в магазине Meta» when Meta Quest is mine and the game is on it.
+- «вышла» and «вышла в раннем доступе» on Meta Quest carry `meta_url`; `actions.META` — the link button after «Карточка»; `delivery_service._button_data` gives it to a folded message whose lead is another platform; the summary order «Следить», «Посмотрел», Steam, Meta, «Карточка». Sample «Игра: вышла на Meta Quest».
+- `candidates`: store links of meta.com and oculus.com (source `meta`; `experiences/search/…` is not read); `IgdbGameSource.suggest_by_meta`; an unknown number gives no name, the item goes on as after an unknown TMDb link. `CONTEXT.md` «Магазин Meta». No migration.
+- Self-check: 5591 tests pass; live IGDB in the container — the lookup of Asgard's Wrath II by its number, the numbers of Batman: Arkham Shadow and Beat Saber, none for Supernatural; the page of Asgard's Wrath 2 and the store search open. The search for «Supernatural» did not list the app itself on this PC (probably not offered in the owner's country; not verified). The owner's check passed.
+
 ## 2026-11-28 — Ticket 6.5.01
 
 - `app/tracker/platforms.py`: `PlatformInfo.igdb_id` → `igdb_ids`; ПК (6, 163 SteamVR), new `meta_quest` «Meta Quest» (471, 386, 384), last; `IGDB_LABELS` maps every own number, `platform_line` names each label once.
