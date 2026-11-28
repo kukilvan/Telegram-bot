@@ -2,6 +2,13 @@
 
 Dated details of every accepted step, newest first (entries older than 2026-11-01 are in Russian and not strictly ordered). Read only when a session needs a past detail.
 
+## 2026-11-28 — Ticket 6.5.01
+
+- `app/tracker/platforms.py`: `PlatformInfo.igdb_id` → `igdb_ids`; ПК (6, 163 SteamVR), new `meta_quest` «Meta Quest» (471, 386, 384), last; `IGDB_LABELS` maps every own number, `platform_line` names each label once.
+- `app/tracker/games.py`: `own_date` — the date of each own number by `pick`, then the earliest end (equal ends — the narrower, «не объявлена» loses); `is_cancelled` over all own numbers; `GameState.known` stored in every snapshot (absent — `KNOWN_BEFORE_6_5`), `seen_as`; `game_events.detect_events` compares the new snapshot restricted to the old `known`; `older_tells` reads `igdb_ids`.
+- ADR 0018; `CONTEXT.md` «Платформа», «Обратная совместимость»; tests `test_tracker_meta_quest` on the saved answers (`tests/fixtures/igdb/quest-games.json`), `meta_quest` in the export and the settings. No migration.
+- Self-check: the search lines and the card rows of Batman: Arkham Shadow, Supernatural, Beat Saber and Red Matter 2 on live IGDB as the spec says; a read-only replay of the first poll of the owner's 14 games gave no events (none is a VR game). The session could not tick Meta Quest in Settings (the web password is the owner's): the owner did it in the check.
+
 ## 2026-11-28 — Slicing 6.5
 
 - `.scratch/6-5-meta-quest/issues/` (accepted), two tickets as proposed by the spec: 01 the platform — `igdb_ids`, `meta_quest`, SteamVR in ПК, dates, the suggestion line, the snapshot's `known` and the first-poll rule, ADR 0018 (complex); 02 the Meta store — `meta_store_id`, the card links, the button under the release message, the test sample, the store link in «Входящие» (medium, blocked by 01). No change to the spec.

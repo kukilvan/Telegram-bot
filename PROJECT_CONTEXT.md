@@ -4,14 +4,14 @@ Current state only; budget 20,000 bytes, `wc -c` (`docs/workflow.md`, "Documents
 
 ## Next step
 
-Session «Приём переезда» (7.4), only once the owner brings the NAS project's report `nas-report.md` (`docs/nas-move.md`, section 10) (`docs/project-spec.md`, 7.4); the wishes of `.scratch/7-3-nas-readiness/review.md`. Model Opus 5.5, effort high (decisions on the process). Then 9.2, 8. Until the report comes: «Тикет 6.5.01» (`.scratch/6-5-meta-quest/issues/01-platform.md`), Opus 5.5, effort high (complex). Then 6.5.02 (Sonnet high), review 6.5.
+Session «Приём переезда» (7.4), only once the owner brings the NAS project's report `nas-report.md` (`docs/nas-move.md`, section 10) (`docs/project-spec.md`, 7.4); the wishes of `.scratch/7-3-nas-readiness/review.md`. Model Opus 5.5, effort high (decisions on the process). Then 9.2, 8. Until the report comes: «Тикет 6.5.02» (`.scratch/6-5-meta-quest/issues/02-meta-store.md`), Sonnet 5.5, effort high (medium). Then review 6.5 (Opus xhigh).
 
 ## State
 
 - Telegram bot, polling and web run as **one process** in Docker on the owner's PC (ADR 0006, 0007). Web: `http://localhost:8080` with password login; the bot is the delivery channel (ADR 0002). Commands — `CLAUDE.md`, "Run".
 - Core in `app/tracker/` (entry only through the facade `core.py`), SQLite in WAL mode `data/tracker.db`, migrations up to 0019. Movies, series, anime and games are tracked: add, list, card, seasons and parts, scores, archive, sequels, polling with events, deduplication, delivery rules (summary at 15:00, work days, quiet hours), failure reports, copies of the database.
 - Web is finished (stage 5, parts 5.1–5.4): Feed, List, Archive, Search, card, Settings, PWA manifest. The bot menu is «📚 Мои тайтлы», «📋 Сводка сейчас», «🧪 Тестовое событие»; «➕ Добавить» is gone (6.4.01): any other message is an inbox item.
-- Games: 6.1 (IGDB, platforms, release events, «Пройдено»), 6.2 (Steam prices, `pollers/game_prices.py`, `price_events.py`; no PlayStation prices, ADR 0009), 6.3 (weekly expansions and sequels, `pollers/game_follow_ups.py`, ADR 0011) done. **Stage 6.4 «Входящие» done**: any message to the bot is an inbox item (`app/tracker/inbox.py`).
+- Games: 6.1 (IGDB, platforms, release events, «Пройдено»), 6.2 (Steam prices, `pollers/game_prices.py`, `price_events.py`; no PlayStation prices, ADR 0009), 6.3 (weekly expansions and sequels, `pollers/game_follow_ups.py`, ADR 0011) done. **Stage 6.4 «Входящие» done**: any message to the bot is an inbox item (`app/tracker/inbox.py`). 6.5.01: platform Meta Quest (IGDB 471/386/384), SteamVR (163) is ПК, a snapshot's `known` (ADR 0018).
 - The restore also asks, by three `docker compose` commands, and refuses while the bot runs (`docs/backups.md`). The container starts not as root too (KI-15), `Dockerfile` has the `# syntax` line, the copies folder may lie on another disk by `docker-compose.override.yml` (7.3.02). The move guide is `docs/nas-move.md` (7.3.03). **Stage 7.3 done**. The NAS project's questions answered 2026-11-26 (`.scratch/7-3-nas-readiness/nas-answer.md`; ADR 0017: after the move checks run on a test bot on the PC, the NAS gets only `master`, set up in 7.4): the image installs `requirements.lock` on a base pinned by digest; changes beyond a rebuild go to `docs/nas-changes.md`.
 - **Stage 7 split** (ADR 0013; `.scratch/7-*`): 7.1 backups and export, 7.2 the app address, phone, safer login, 7.3 NAS readiness and the move guide, 7.4 the NAS project's report taken in; outside access and the NAS move are the owner's separate NAS project. Order: 7.1 → 7.2 → 9.1a–d every open known issue → 7.3 → 7.4 → 9.2 real use → 8. **Done:** 7.1, 7.2, 9.1a–d (ADR 0012, 0014–0016; migrations 0018, 0019; KI-79, 80, 85–89 left for 9.2); details in `docs/history.md`.
 - Live check by the owner of early tickets (`release-tracker-v2`, except 02 and 25) waits for stage 9.2 (on the NAS).
@@ -35,7 +35,7 @@ Session «Приём переезда» (7.4), only once the owner brings the NA
 | 9.1c | Known issues: Лента, web and login (12, with KI-77) | done | — | — |
 | 9.1d | Known issues: «Входящие», copies and code health (18, with KI-81, 83, 84 of 9.1c) | done | — | — |
 | 7.3 | NAS readiness and the move guide (the move — the NAS project) | done | — | — |
-| 6.5 | Meta Quest platform, SteamVR as ПК (as 7.4 waits) | tickets 0/2 | 3 | 003 |
+| 6.5 | Meta Quest platform, SteamVR as ПК (as 7.4 waits) | tickets 1/2 | 3 | 003 |
 | 7.4 | The move taken in: the NAS project's report, sessions check on the NAS | not started | 1 | — |
 | 9.2 | Fixes after real use on the NAS (1–2 weeks) | not started | 2+ | — |
 | 8 | GitHub template: cleanup, new repo with clean history, MIT, README, key rotation | not started | 1 | — |
@@ -45,7 +45,7 @@ Rows in the order of work. Status values: not started · description · spec · 
 ## Environment
 
 - Windows 11, PowerShell (Git Bash also available), Python 3.12.10 in `.venv/`, Docker 29.x. Runs in Docker on the owner's PC; later on a UGREEN DXP2800 NAS, moved and opened from outside (own domain, Cloudflare Tunnel and Access) by the owner's separate NAS project (ADR 0013).
-- Tests: about 5500 in total. On the owner's PC (checked 2026-11-26, `.venv` on the versions of `requirements.lock`): 5505 pass, 3 skipped; two process-launch tests (`test_app_main`, `test_runtime`) fail on Windows without any change (`test_runtime`'s not on every run) — known, do not count.
+- Tests: about 5500 in total. On the owner's PC (checked 2026-11-28, `.venv` on the versions of `requirements.lock`): 5549 pass, 3 skipped; two process-launch tests (`test_app_main`, `test_runtime`) fail on Windows without any change (`test_runtime`'s not on every run) — known, do not count.
 - `.env` (values never printed; read by `Settings` in `app/config.py` unless noted):
 
 | Variable | Required | Meaning |
